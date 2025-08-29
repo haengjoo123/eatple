@@ -1480,3 +1480,32 @@ body.nutrition-detail-page .container {
     max-width: none;
   }
 }
+
+/* 파트너스 프로그램 안내 스타일 */
+.partnership-notice {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+}
+
+.partnership-notice p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6c757d;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* 모바일에서 파트너스 프로그램 안내 스타일 */
+@media (max-width: 768px) {
+  .partnership-notice {
+    margin-top: 15px;
+    padding: 12px;
+  }
+  
+  .partnership-notice p {
+    font-size: 0.85rem;
+  }
+}

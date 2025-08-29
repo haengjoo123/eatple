@@ -117,6 +117,48 @@ class SupabaseManualPostingService {
     }
 
     /**
+     * 관련 상품 정보 업데이트
+     * @param {string} postId - 포스팅 ID
+     * @param {Array} relatedProducts - 관련 상품 배열
+     */
+    async updateRelatedProducts(postId, relatedProducts) {
+        try {
+            // 기존 관련 상품 삭제
+            const { error: deleteError } = await this.supabase
+                .from('post_related_products')
+                .delete()
+                .eq('post_id', postId);
+
+            if (deleteError) {
+                throw new Error(`기존 관련 상품 삭제 실패: ${deleteError.message}`);
+            }
+
+            // 새로운 관련 상품 추가
+            if (relatedProducts && relatedProducts.length > 0) {
+                const productsToInsert = relatedProducts.map((product, index) => ({
+                    post_id: postId,
+                    product_name: product.name,
+                    product_link: product.link,
+                    display_order: index + 1
+                }));
+
+                const { error: insertError } = await this.supabase
+                    .from('post_related_products')
+                    .insert(productsToInsert);
+
+                if (insertError) {
+                    throw new Error(`관련 상품 추가 실패: ${insertError.message}`);
+                }
+            }
+
+            console.log(`관련 상품 업데이트 완료: ${postId}`);
+        } catch (error) {
+            console.error('관련 상품 업데이트 중 오류:', error);
+            throw error;
+        }
+    }
+
+    /**
      * 포스팅 삭제
      * @param {string} id - 포스팅 ID
      * @returns {Promise<boolean>} 삭제 성공 여부

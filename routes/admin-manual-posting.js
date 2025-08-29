@@ -263,9 +263,10 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
         if (isDraft !== undefined) updates.is_draft = isDraft;
         if (isActive !== undefined) updates.is_active = isActive;
 
-        // 태그 업데이트
+        // 태그 업데이트 (별도 처리)
+        let tagNames = [];
         if (tags !== undefined) {
-            updates.tags = Array.isArray(tags) ? tags.filter(tag => tag.trim()) : (tags ? tags.split(',').map(t => t.trim()).filter(t => t) : []);
+            tagNames = Array.isArray(tags) ? tags.filter(tag => tag.trim()) : (tags ? tags.split(',').map(t => t.trim()).filter(t => t) : []);
         }
 
         // 관련 상품 정보 처리
@@ -289,13 +290,19 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
             });
         }
         
-        // 관련 상품 정보가 제공된 경우에만 업데이트
-        if (productName1 !== undefined || productName2 !== undefined || productName3 !== undefined) {
-            updates.relatedProducts = relatedProducts;
+        // 포스팅 수정 (relatedProducts는 별도 처리)
+        const { relatedProducts: _, ...dbUpdates } = updates;
+        const updatedPost = await postingService.updatePost(id, dbUpdates, adminInfo);
+
+        // 태그 업데이트가 있는 경우 별도 처리
+        if (tagNames.length > 0 || tags !== undefined) {
+            await postingService.updatePostTags(id, tagNames);
         }
 
-        // 포스팅 수정
-        const updatedPost = await postingService.updatePost(id, updates, adminInfo);
+        // 관련 상품 정보가 제공된 경우 별도 처리
+        if (productName1 !== undefined || productName2 !== undefined || productName3 !== undefined) {
+            await postingService.updateRelatedProducts(id, relatedProducts);
+        }
 
         // 카테고리 포스팅 수 업데이트 (카테고리가 변경된 경우)
         if (finalCategoryId !== undefined) {

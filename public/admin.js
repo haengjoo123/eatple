@@ -1557,12 +1557,28 @@ let currentPostsPage = 1;
 let availableCategories = ["diet", "supplements", "research", "trends"];
 let availableTags = [];
 
+// 새 포스팅 시작 (편집 모드 해제 후 폼 표시)
+function startNewPost() {
+  // 편집 모드 해제
+  if (typeof currentEditingPostId !== 'undefined' && currentEditingPostId !== null) {
+    console.log('새 포스팅 모드로 전환, 편집 모드 해제');
+    currentEditingPostId = null;
+    window.currentEditingPostId = null;
+  }
+  
+  // 폼 초기화
+  resetForm();
+  
+  // 포스팅 폼 표시
+  showPostingForm();
+}
+
 // 수동 포스팅 관리 초기화
 function setupManualPosting() {
   // 네비게이션 버튼 이벤트
   document
     .getElementById("newPostBtn")
-    .addEventListener("click", showPostingForm);
+    .addEventListener("click", startNewPost);
   document
     .getElementById("managePostsBtn")
     .addEventListener("click", showPostManagement);
@@ -2043,11 +2059,12 @@ function showPostingForm() {
   document.getElementById("newPostBtn").style.background = "#4a69bd";
   document.getElementById("managePostsBtn").style.background = "#6b7280";
   
-  // 새 포스팅 버튼을 클릭한 경우 편집 모드 해제
+  // 새 포스팅 버튼을 클릭한 경우에만 편집 모드 해제
+  // editPost에서 호출된 경우는 편집 모드를 유지
   if (typeof currentEditingPostId !== 'undefined' && currentEditingPostId !== null) {
-    console.log('새 포스팅 모드로 전환, 편집 모드 해제');
-    currentEditingPostId = null;
-    window.currentEditingPostId = null;
+    // 편집 모드가 설정된 상태에서 새 포스팅 버튼을 클릭한 경우에만 해제
+    // 이 함수가 직접 호출된 경우(새 포스팅 버튼 클릭)에는 편집 모드를 해제하지 않음
+    console.log('포스팅 폼 표시 - 편집 모드 유지:', currentEditingPostId);
   }
 }
 
@@ -2579,42 +2596,71 @@ async function handleNutritionPostingSubmit(event) {
   event.preventDefault();
   
   const form = event.target;
-  const formData = new FormData();
   
-  // 기본 필드들
-  formData.append('title', document.getElementById('postTitle').value);
-  formData.append('summary', document.getElementById('postSummary').value);
-  formData.append('content', document.getElementById('postContent').innerHTML);
-  formData.append('category', document.getElementById('postCategory').value);
-  formData.append('tags', document.getElementById('postTags').value);
-  formData.append('sourceUrl', document.getElementById('sourceUrl').value);
-  formData.append('thumbnailUrl', document.getElementById('thumbnailUrl').value);
+  // JSON 데이터로 구성
+  const postData = {
+    title: document.getElementById('postTitle').value,
+    summary: document.getElementById('postSummary').value,
+    content: document.getElementById('postContent').innerHTML,
+    category: document.getElementById('postCategory').value,
+    tags: document.getElementById('postTags').value,
+    sourceUrl: document.getElementById('sourceUrl').value,
+    thumbnailUrl: document.getElementById('thumbnailUrl').value,
+    
+    // 관련 상품 정보 추가
+    productName1: document.getElementById('productName1').value,
+    productLink1: document.getElementById('productLink1').value,
+    productName2: document.getElementById('productName2').value,
+    productLink2: document.getElementById('productLink2').value,
+    productName3: document.getElementById('productName3').value,
+    productLink3: document.getElementById('productLink3').value,
+    
+    // 임시저장 여부 확인
+    isDraft: event.submitter && event.submitter.id === 'saveDraftBtn'
+  };
   
-  // 관련 상품 정보 추가
-  formData.append('productName1', document.getElementById('productName1').value);
-  formData.append('productLink1', document.getElementById('productLink1').value);
-  formData.append('productName2', document.getElementById('productName2').value);
-  formData.append('productLink2', document.getElementById('productLink2').value);
-  formData.append('productName3', document.getElementById('productName3').value);
-  formData.append('productLink3', document.getElementById('productLink3').value);
-  
-  // 임시저장 여부 확인
-  const isDraft = event.submitter && event.submitter.id === 'saveDraftBtn';
-  formData.append('isDraft', isDraft);
+  // 편집 모드인지 확인
+  const isEditMode = currentEditingPostId && currentEditingPostId !== null;
+  console.log('편집 모드 확인:', isEditMode, '편집 ID:', currentEditingPostId);
+  console.log('전송할 데이터:', postData);
   
   try {
-    const response = await fetch('/api/admin/manual-posting/posts', {
-      method: 'POST',
-      body: formData,
+    // 편집 모드에 따라 URL과 메서드 결정
+    const url = isEditMode 
+      ? `/api/admin/manual-posting/posts/${currentEditingPostId}`
+      : '/api/admin/manual-posting/posts';
+    const method = isEditMode ? 'PUT' : 'POST';
+    
+    console.log('요청 URL:', url, '메서드:', method);
+    
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(postData),
       credentials: 'include'
     });
     
     const result = await response.json();
     
     if (result.success) {
-      alert(isDraft ? '임시저장되었습니다.' : '포스팅이 게시되었습니다.');
-      form.reset();
-      // 필요시 목록 새로고침
+      const action = isEditMode ? '수정' : '작성';
+      const status = postData.isDraft ? '임시저장' : '게시';
+      alert(`포스팅이 성공적으로 ${action}되어 ${status}되었습니다.`);
+      
+      // 편집 모드였다면 편집 모드 해제
+      if (isEditMode) {
+        currentEditingPostId = null;
+        window.currentEditingPostId = null;
+        console.log('편집 모드 해제됨');
+      }
+      
+      // 폼 초기화
+      resetForm();
+      
+      // 포스팅 관리 페이지로 이동
+      showPostManagement();
     } else {
       alert('포스팅 실패: ' + (result.error || '알 수 없는 오류'));
     }
