@@ -12103,10 +12103,14 @@ input[type="email"]:focus:invalid {
     max-height: 160px;
     width: 170px;
     min-width: 170px;
-    max-width: 170px;
+    max-width: 170px;  
   }
 
-  /* 기타 섹션들 */
+  .hero-card:hover {
+    transform: none;
+  }
+    
+    /* 기타 섹션들 */
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
@@ -14853,7 +14857,7 @@ input[type="email"]:focus:invalid {
 
   .hero-cards {
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.6rem;
+    gap: 1.2rem;
     max-width: 300px;
     margin: 0 auto;
   }
@@ -14870,11 +14874,11 @@ input[type="email"]:focus:invalid {
 
   .card-icon {
     font-size: 1.7rem;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.6rem;
   }
 
   .card-title {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     margin-bottom: 0.2rem;
   }
 
