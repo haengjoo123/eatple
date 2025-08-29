@@ -14940,6 +14940,7 @@ input[type="email"]:focus:invalid {
     letter-spacing: 0.3px;
   }
 
+  
   /* quick-actions 섹션 모바일 최적화 */
   .quick-actions {
     padding: 2.5rem 0;
