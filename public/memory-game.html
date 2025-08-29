@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기억력 게임 - 잇플</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="game-result-ui.css">
+    <link rel="stylesheet" href="error-styles.css">
+    <link rel="stylesheet" href="mobile-optimizations.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Pretendard', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 95vw;
+            width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .game-header {
+            margin-bottom: 1rem;
+        }
+
+        .game-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .info-item {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: #7f8c8d;
+            margin-bottom: 0.2rem;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .difficulty-selector {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: #e8f4fd;
+            border-radius: 8px;
+        }
+
+        .difficulty-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.4rem;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: nowrap;
+        }
+
+        .difficulty-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            margin-top: 0px;
+        }
+
+        .difficulty-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .game-board {
+            display: grid;
+            gap: 0.4rem;
+            margin: 1rem auto;
+            justify-content: center;
+        }
+
+        .game-board.grid-4x4 {
+            grid-template-columns: repeat(4, 1fr);
+            max-width: 400px;
+        }
+
+        .game-board.grid-6x4 {
+            grid-template-columns: repeat(6, 1fr);
+            max-width: 600px;
+        }
+
+        .game-board.grid-6x6 {
+            grid-template-columns: repeat(6, 1fr);
+            max-width: 600px;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            border: 2px solid #34495e;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            user-select: none;
+            min-height: 70px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .memory-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .memory-card.flipped {
+            background: white;
+            color: #2c3e50;
+            border-color: #27ae60;
+        }
+
+        .memory-card.matched {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border-color: #27ae60;
+            cursor: default;
+        }
+
+        .memory-card.matched:hover {
+            transform: none;
+        }
+
+        .memory-card.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .game-controls {
+            margin-top: 0px;
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            flex-wrap: nowrap;
+        }
+
+        .control-btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 4px;
+        }
+        
+        #bgmToggleBtn {
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            font-size: 24px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.7);
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .secondary-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .secondary-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .instructions {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: #e8f4fd;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+
+        .preview-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .preview-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .preview-countdown {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #f39c12;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .memory-card.preview {
+            animation: previewGlow 0.5s ease-in-out;
+        }
+
+        @keyframes previewGlow {
+            0% { box-shadow: 0 0 0 rgba(52, 152, 219, 0.7); }
+            50% { box-shadow: 0 0 20px rgba(52, 152, 219, 0.7); }
+            100% { box-shadow: 0 0 0 rgba(52, 152, 219, 0.7); }
+        }
+
+
+
+        .flip-animation {
+            animation: flipCard 0.3s ease-in-out;
+        }
+
+        @keyframes flipCard {
+            0% { transform: rotateY(0deg); }
+            50% { transform: rotateY(90deg); }
+            100% { transform: rotateY(0deg); }
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 1rem;
+                margin: 1rem;
+            }
+
+            .game-title {
+                font-size: 1.5rem;
+            }
+
+            .memory-card {
+                font-size: 1.5rem;
+                min-height: 50px;
+            }
+
+            .game-info {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                justify-content: space-around;
+            }
+
+            .info-item {
+                min-width: auto;
+                flex: 1;
+                min-width: 80px;
+            }
+
+            .info-value {
+                font-size: 1rem;
+            }
+
+            .info-label {
+                font-size: 0.75rem;
+            }
+
+            .difficulty-selector {
+                padding: 0.75rem;
+            }
+
+            .difficulty-title {
+                font-size: 1rem;
+            }
+
+            .game-board {
+                gap: 0.25rem;
+                margin: 1rem auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                overflow-y: auto;
+                align-items: flex-start;
+                padding: 0.5rem 0;
+            }
+
+            .game-container {
+                padding: 0.75rem;
+                margin: 0.5rem;
+                max-height: none;
+                width: auto;
+            }
+
+            .game-title {
+                font-size: 1.3rem;
+            }
+
+            .game-header {
+                margin-bottom: 1rem;
+            }
+
+            .game-info {
+                padding: 0.75rem;
+                margin-bottom: 1rem;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                justify-content: space-around;
+            }
+
+            .info-item {
+                flex: 1;
+                min-width: 70px;
+                text-align: center;
+            }
+
+            .info-value {
+                font-size: 0.9rem;
+            }
+
+            .info-label {
+                font-size: 0.7rem;
+            }
+
+            .difficulty-selector {
+                padding: 0.75rem;
+                margin-bottom: 1rem;
+            }
+
+            .difficulty-title {
+                font-size: 0.95rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .memory-card {
+                font-size: 1.2rem;
+                min-height: 40px;
+            }
+
+            .game-board {
+                gap: 0.25rem;
+                margin: 1rem auto;
+                max-width: 320px;
+            }
+
+            .game-controls {
+                flex-direction: row;
+                align-items: center;
+                gap: 0.5rem;
+                margin-top: 1rem;
+                flex-wrap: nowrap;
+            }
+
+            .control-btn {
+                flex: 1;
+                min-width: 80px;
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            #bgmToggleBtn {
+                flex: 0 0 auto;
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+                min-width: 40px;
+            }
+
+            .difficulty-buttons {
+                flex-direction: row;
+                align-items: center;
+                gap: 0.5rem;
+                flex-wrap: nowrap;
+            }
+
+            .difficulty-btn {
+                flex: 1;
+                min-width: 80px;
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
+
+            .instructions {
+                font-size: 0.8rem;
+                padding: 0.75rem;
+                margin-top: 1rem;
+                line-height: 1.5;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .game-container {
+                padding: 0.5rem;
+                margin: 0.25rem;
+                width: auto;
+            }
+
+            .game-title {
+                font-size: 1.2rem;
+            }
+
+            .game-info {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 0.4rem;
+                justify-content: space-around;
+            }
+
+            .info-item {
+                flex: 1;
+                min-width: 60px;
+                text-align: center;
+            }
+
+            .info-value {
+                font-size: 0.85rem;
+            }
+
+            .info-label {
+                font-size: 0.65rem;
+            }
+
+            .memory-card {
+                font-size: 1rem;
+                min-height: 35px;
+            }
+
+            .game-board {
+                max-width: 280px;
+                gap: 0.2rem;
+            }
+
+            .control-btn {
+                font-size: 0.8rem;
+                padding: 0.5rem 0.75rem;
+            }
+            
+            #bgmToggleBtn {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+                min-width: 36px;
+            }
+
+            .difficulty-btn {
+                font-size: 0.8rem;
+                padding: 0.35rem 0.7rem;
+                flex: 1;
+                min-width: 60px;
+            }
+
+            .instructions {
+                font-size: 0.75rem;
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="difficulty-selector">
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn active" data-difficulty="easy">쉬움 (4×4)</button>
+                <button class="difficulty-btn" data-difficulty="medium">보통 (6×4)</button>
+                <button class="difficulty-btn" data-difficulty="hard">어려움 (6×6)</button>
+            </div>
+        </div>
+
+        <div class="game-header">
+            <div class="game-info">
+                <div class="info-item">
+                    <div class="info-label">점수</div>
+                    <div class="info-value" id="scoreDisplay">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">시간</div>
+                    <div class="info-value" id="timeDisplay">0초</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">시도</div>
+                    <div class="info-value" id="attemptsDisplay">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">매칭</div>
+                    <div class="info-value" id="matchesDisplay">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="previewMessage" class="preview-message" style="display: none;">
+            <div class="preview-text">카드를 기억하세요!</div>
+            <div class="preview-countdown" id="previewCountdown">3</div>
+        </div>
+
+        <div id="gameBoard" class="game-board grid-4x4">
+            <!-- 카드들이 여기에 동적으로 생성됩니다 -->
+        </div>
+
+        <div class="game-controls">
+            <button id="startBtn" class="control-btn primary-btn">게임 시작</button>
+            <button id="resetBtn" class="control-btn secondary-btn" style="display: none;">다시 시작</button>
+            <button id="backBtn" class="control-btn secondary-btn">게임 목록</button>
+            <button id="bgmToggleBtn" class="control-btn secondary-btn" title="배경음악 ON/OFF">🔊</button>
+        </div>
+
+        <div class="instructions">
+            <strong>게임 방법:</strong><br>
+            카드를 클릭하여 뒤집고 같은 그림의 카드 쌍을 찾으세요.
+        </div>
+    </div>
+
+    <script src="error-handler.js"></script>
+    <script src="points-manager.js"></script>
+    <script src="game-result-ui.js"></script>
+    <script src="game-engine.js"></script>
+    <script src="memory-game.js"></script>
+</body>
+</html>

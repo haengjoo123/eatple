@@ -1,0 +1,68 @@
+{
+  "collection": {
+    "pubmed": {
+      "keywords": [
+        "nutrition",
+        "diet",
+        "supplements",
+        "health"
+      ],
+      "maxResults": 20,
+      "dateRange": "30d"
+    },
+    "youtube": {
+      "channels": [
+        "UC_nutrition_channel_1",
+        "UC_nutrition_channel_2"
+      ],
+      "keywords": [
+        "영양",
+        "건강",
+        "식단"
+      ],
+      "maxResults": 15
+    },
+    "news": {
+      "sources": [
+        "health-news",
+        "nutrition-today"
+      ],
+      "keywords": [
+        "영양",
+        "건강식품",
+        "다이어트"
+      ],
+      "maxResults": 25
+    }
+  },
+  "processing": {
+    "trustScoreThreshold": 60,
+    "duplicateDetectionEnabled": true,
+    "contentFilteringEnabled": true,
+    "autoTranslation": true
+  },
+  "categories": [
+    "diet",
+    "supplements",
+    "research",
+    "trends"
+  ],
+  "sourceTypes": [
+    "paper",
+    "youtube",
+    "news"
+  ],
+  "languages": [
+    "ko",
+    "en"
+  ],
+  "scheduling": {
+    "enabled": true,
+    "schedules": {
+      "full-collection": "0 */6 * * *",
+      "trending-update": "0 */2 * * *",
+      "quality-check": "0 0 * * *",
+      "cleanup": "0 0 * * 0"
+    }
+  }
+}

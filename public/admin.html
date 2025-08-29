@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>가입자 목록 관리</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <!-- 권한 체크 로딩 화면 -->
+  <div id="authCheckLoading">
+    <div>
+      <div class="loading-spinner"></div>
+      <h3>권한 확인 중...</h3>
+      <p>잠시만 기다려주세요.</p>
+    </div>
+  </div>
+  
+  <!-- 메인 콘텐츠 (권한 확인 후 표시) -->
+  <div id="mainContent">
+    <div class="site-brand-fixed"><a href="index.html">잇플</a></div>
+    
+    <!-- 관리자 네비게이션 메뉴 -->
+    <div class="admin-nav-container">
+      <div class="admin-container">
+        <nav class="admin-nav">
+          <button class="nav-btn" data-section="dashboard">
+            대시보드
+          </button>
+          <button class="nav-btn" data-section="users">
+            가입자 관리
+          </button>
+          <button class="nav-btn" data-section="products">
+            상품 관리
+          </button>
+          <button class="nav-btn" data-section="nutrition">
+            영양 정보 관리
+          </button>
+          <button class="nav-btn" data-section="contacts">
+            문의 관리
+          </button>
+          <button class="nav-btn" data-section="promotions">
+            페이지 관리
+          </button>
+        </nav>
+      </div>
+    </div>
+    
+    <div class="admin-container">
+    
+    <!-- 대시보드 섹션 -->
+    <div id="dashboardSection" class="admin-section">
+      <h2>관리자 대시보드</h2>
+      <div class="admin-stats-section">
+        <h3>서비스 이용 통계</h3>
+        <div class="stats-overview">
+          <div class="stat-card">
+            <div class="stat-title">총 사용자</div>
+            <div class="stat-number" id="totalUsers">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">추천식단</div>
+            <div class="stat-number" id="totalMealPlan">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">추천식당</div>
+            <div class="stat-number" id="totalRestaurant">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">추천영양제</div>
+            <div class="stat-number" id="totalSupplement">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">식재료분석</div>
+            <div class="stat-number" id="totalIngredient">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 상품 관리 통계 -->
+      <div class="admin-stats-section">
+        <h3>상품 관리 통계</h3>
+        <div class="stats-overview">
+          <div class="stat-card">
+            <div class="stat-title">총 상품</div>
+            <div class="stat-number" id="totalProducts">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">활성 상품</div>
+            <div class="stat-number" id="activeProducts">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">비활성 상품</div>
+            <div class="stat-number" id="inactiveProducts">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">상품 카테고리</div>
+            <div class="stat-number" id="totalCategories">0</div>
+          </div>
+          <div class="stat-card clickable-stat" id="todayViewsCard" onclick="showTodayViewsDetail()">
+            <div class="stat-title">오늘 조회수</div>
+            <div class="stat-number" id="todayViews">0</div>
+            <div class="stat-subtitle">클릭하여 상세보기</div>
+          </div>
+        </div>
+      </div>
+
+      
+    </div>
+
+    <!-- 오늘 조회수 상세 모달 -->
+    <div class="modal-overlay" id="todayViewsModal">
+      <div class="modal-content views-modal">
+        <div class="modal-header">
+          <h3>오늘 조회수 상세</h3>
+          <button class="modal-close" id="closeTodayViewsModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="views-summary">
+            <div class="summary-item">
+              <span class="summary-label">총 조회수:</span>
+              <span class="summary-value" id="totalTodayViews">0</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">조회된 상품:</span>
+              <span class="summary-value" id="viewedProductsCount">0</span>
+            </div>
+          </div>
+          
+          <div class="views-filters">
+            <select id="viewsSortBy">
+              <option value="views_desc">조회수 높은순</option>
+              <option value="views_asc">조회수 낮은순</option>
+              <option value="name_asc">상품명 순</option>
+            </select>
+            <input type="text" id="viewsSearchInput" placeholder="상품명 검색...">
+          </div>
+
+          <div class="views-list" id="todayViewsList">
+            <div class="loading-placeholder">
+              <div class="spinner"></div>
+              <p>조회수 데이터를 불러오는 중...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 가입자 관리 섹션 -->
+    <div id="usersSection" class="admin-section hidden">
+      <h2>가입자 목록</h2>
+      <div id="userCount"></div>
+      <table id="usersTable" class="admin-table">
+        <thead>
+          <tr><th>ID</th><th>아이디/이메일</th><th>인증방식</th><th>가입일</th><th>삭제</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="adminMsg"></div>
+    </div>
+
+    <!-- 상품 관리 섹션 -->
+    <div id="productsSection" class="admin-section hidden">
+      <h2>상품 관리</h2>
+      <div class="products-header">
+        <div class="products-header-left">
+          <span class="products-header-title">상품 관리 시스템</span>
+        </div>
+        <div class="products-header-right">
+          <button class="admin-action-btn green" onclick="openProductManagement()">
+            상품 관리 페이지 열기
+          </button>
+          <button class="admin-action-btn gray" onclick="refreshProductStats()">
+            통계 새로고침
+          </button>
+        </div>
+      </div>
+      
+      <!-- 상품 관리 임베드 프레임 -->
+      <div class="products-frame-container">
+        <iframe id="productManagementFrame" 
+                src="admin-product-management.html" 
+                onload="handleProductFrameLoad()">
+        </iframe>
+      </div>
+    </div>
+
+
+
+    <!-- 영양 정보 관리 섹션 -->
+    <div id="nutritionSection" class="admin-section hidden">
+      <h2>영양 정보 관리</h2>
+      
+      <!-- 영양 정보 콘텐츠 관리 -->
+      <div class="admin-stats-section">
+        <h3>영양 정보 콘텐츠 관리</h3>
+      
+      <!-- 검색 및 필터 -->
+      <div class="nutrition-filters">
+        <input type="text" id="searchNutritionInfo" class="nutrition-search-input" placeholder="제목 또는 내용 검색...">
+        <select id="filterCategory" class="nutrition-filter-select">
+          <option value="">모든 카테고리</option>
+          <option value="diet">식단</option>
+          <option value="supplements">보충제</option>
+          <option value="research">연구</option>
+          <option value="trends">트렌드</option>
+        </select>
+        <select id="filterSourceType" class="nutrition-filter-select">
+          <option value="">모든 소스</option>
+          <option value="paper">논문</option>
+          <option value="youtube">유튜브</option>
+          <option value="news">뉴스</option>
+        </select>
+        <select id="filterStatus" class="nutrition-filter-select">
+          <option value="">모든 상태</option>
+          <option value="active">활성</option>
+          <option value="inactive">비활성</option>
+          <option value="pending">대기</option>
+        </select>
+        <button id="searchBtn" class="admin-action-btn">검색</button>
+      </div>
+
+      <!-- 일괄 처리 도구 -->
+      <div class="bulk-actions-container">
+        <h4 class="bulk-actions-title">일괄 처리</h4>
+        <div class="bulk-actions-controls">
+          <span class="bulk-actions-label">선택된 항목:</span>
+          <span id="selectedCount" class="bulk-selected-count">0개</span>
+          <select id="bulkAction" class="bulk-action-select">
+            <option value="">작업 선택</option>
+            <option value="activate">활성화</option>
+            <option value="deactivate">비활성화</option>
+            <option value="delete">삭제</option>
+          </select>
+          <button id="executeBulkAction" class="admin-action-btn" disabled>실행</button>
+          <button id="selectAll" class="admin-action-btn gray">전체 선택</button>
+          <button id="deselectAll" class="admin-action-btn gray">선택 해제</button>
+        </div>
+      </div>
+
+      <!-- 영양 정보 목록 -->
+      <div class="nutrition-table-container">
+        <div class="nutrition-table-scroll">
+          <table id="nutritionInfoTable" class="nutrition-table">
+            <thead>
+              <tr>
+                <th class="checkbox-col">
+                  <input type="checkbox" id="selectAllCheckbox">
+                </th>
+                <th>제목</th>
+                <th class="source-col">소스</th>
+                <th class="category-col">카테고리</th>
+                <th class="reliability-col">신뢰도</th>
+                <th class="status-col">상태</th>
+                <th class="actions-col">작업</th>
+              </tr>
+            </thead>
+            <tbody id="nutritionInfoTableBody">
+              <tr>
+                <td colspan="7">로딩 중...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 페이지네이션 -->
+      <div id="pagination" class="admin-pagination">
+        <!-- 페이지네이션 버튼들이 여기에 동적으로 추가됩니다 -->
+      </div>
+    </div>
+
+      <!-- 수동 포스팅 관리 -->
+      <div class="admin-stats-section">
+        <h3>영양 정보 수동 포스팅</h3>
+      
+      <!-- 포스팅 작성 폼 -->
+      <div id="postingFormSection" class="posting-form-container">
+        <div class="posting-form-header">
+          <h4 class="posting-form-title">새 포스팅 작성</h4>
+          <div class="posting-form-actions">
+            <button id="newPostBtn" class="admin-action-btn">새 포스팅</button>
+            <button id="managePostsBtn" class="admin-action-btn gray">포스팅 관리</button>
+          </div>
+        </div>
+        
+        <form id="nutritionPostingForm" class="posting-form">
+          <div class="form-container">
+            <!-- 왼쪽: 메인 입력 폼 -->
+            <div class="posting-form-main">
+              <div class="form-group">
+                <label for="postTitle">제목 *</label>
+                <input type="text" id="postTitle" name="title" required 
+                       placeholder="영양 정보 제목을 입력하세요">
+              </div>
+              
+              <div class="form-group">
+                <label for="postSummary">요약 *</label>
+                <textarea id="postSummary" name="summary" required rows="3"
+                          placeholder="영양 정보의 간단한 요약을 입력하세요"></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label for="postContent">내용 *</label>
+                <div class="editor-toolbar">
+                  <button type="button" class="editor-btn" data-command="bold">
+                    <strong>B</strong>
+                  </button>
+                  <button type="button" class="editor-btn" data-command="italic">
+                    <em>I</em>
+                  </button>
+                  <button type="button" class="editor-btn" data-command="underline" title="밑줄">U</button>
+                  <button type="button" class="editor-btn" data-command="strikeThrough" title="취소선">S</button>
+                  <button type="button" class="editor-btn" data-command="insertUnorderedList">
+                    • 목록
+                  </button>
+                  <button type="button" class="editor-btn" data-command="insertOrderedList">
+                    1. 목록
+                  </button>
+                  <button type="button" class="editor-btn" id="textAlignLeftBtn" title="텍스트 왼쪽 정렬">⬅️</button>
+                  <button type="button" class="editor-btn" id="textAlignCenterBtn" title="텍스트 가운데 정렬">↔️</button>
+                  <button type="button" class="editor-btn" id="textAlignRightBtn" title="텍스트 오른쪽 정렬">➡️</button>
+                  <button type="button" class="editor-btn" id="createLinkBtn" title="링크 추가">🔗</button>
+                  <button type="button" class="editor-btn" id="removeLinkBtn" title="링크 제거">❌🔗</button>
+                  <button type="button" class="editor-btn" id="insertImageBtn">
+                    🖼️ 이미지
+                  </button>
+                  <button type="button" class="editor-btn" id="insertTableBtn">
+                    📊 표
+                  </button>
+                  <button type="button" class="editor-btn" data-command="insertHorizontalRule" title="구분선">━</button>
+                  <button type="button" class="editor-btn" data-command="removeFormat" title="서식 제거">🧹</button>
+                  <button type="button" class="editor-btn" data-command="undo" title="실행 취소">↶</button>
+                  <button type="button" class="editor-btn" data-command="redo" title="다시 실행">↷</button>
+                  <!-- 이미지 정렬 -->
+                  <button type="button" class="editor-btn" id="imgAlignLeftBtn" title="이미지 왼쪽 정렬">🡠🖼️</button>
+                  <button type="button" class="editor-btn" id="imgAlignCenterBtn" title="이미지 가운데 정렬">🖼️</button>
+                  <button type="button" class="editor-btn" id="imgAlignRightBtn" title="이미지 오른쪽 정렬">🖼️🡢</button>
+                  <button type="button" class="editor-btn" id="imgAlignNoneBtn" title="이미지 정렬 해제">⛔🖼️</button>
+                </div>
+                <div class="editor-container">
+                  <div id="postContent" class="editor-content" contenteditable="true" placeholder="상세한 영양 정보 내용을 입력하세요...">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="postCategory">카테고리 *</label>
+                  <select id="postCategory" name="category" required>
+                    <option value="">카테고리 선택</option>
+                    <option value="diet">식단</option>
+                    <option value="supplements">보충제</option>
+                    <option value="research">연구</option>
+                    <option value="trends">트렌드</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="newCategory">새 카테고리</label>
+                  <input type="text" id="newCategory" name="newCategory" 
+                         placeholder="새 카테고리 입력">
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="postTags">태그</label>
+                <input type="text" id="postTags" name="tags" 
+                       placeholder="태그를 쉼표로 구분하여 입력 (예: 비타민D, 면역력, 겨울철영양)">
+                <div id="tagSuggestions" class="tag-suggestions">
+                  <div class="tag-suggestions-container">
+                    <div class="tag-suggestions-label">추천 태그:</div>
+                    <div id="suggestedTags" class="suggested-tags"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 관련 상품 정보 -->
+              <div class="form-group">
+                <label>관련 상품 정보</label>
+                <div class="related-products-container">
+                  <div class="related-product-item" id="product1">
+                    <h4>상품 1</h4>
+                    <div class="form-grid-2">
+                      <div class="form-group">
+                        <label for="productName1">상품명</label>
+                        <input type="text" id="productName1" name="productName1" 
+                               placeholder="상품명을 입력하세요">
+                      </div>
+                      <div class="form-group">
+                        <label for="productLink1">구매링크</label>
+                        <input type="url" id="productLink1" name="productLink1" 
+                               placeholder="https://example.com/product">
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="related-product-item" id="product2">
+                    <h4>상품 2</h4>
+                    <div class="form-grid-2">
+                      <div class="form-group">
+                        <label for="productName2">상품명</label>
+                        <input type="text" id="productName2" name="productName2" 
+                               placeholder="상품명을 입력하세요">
+                      </div>
+                      <div class="form-group">
+                        <label for="productLink2">구매링크</label>
+                        <input type="url" id="productLink2" name="productLink2" 
+                               placeholder="https://example.com/product">
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="related-product-item" id="product3">
+                    <h4>상품 3</h4>
+                    <div class="form-grid-2">
+                      <div class="form-group">
+                        <label for="productName3">상품명</label>
+                        <input type="text" id="productName3" name="productName3" 
+                               placeholder="상품명을 입력하세요">
+                      </div>
+                      <div class="form-group">
+                        <label for="productLink3">구매링크</label>
+                        <input type="url" id="productLink3" name="productLink3" 
+                               placeholder="https://example.com/product">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="sourceUrl">원본 소스 URL</label>
+                <div class="url-validation-container">
+                  <input type="url" id="sourceUrl" name="sourceUrl" 
+                         placeholder="https://example.com/source">
+                  <button type="button" id="validateUrlBtn" class="admin-action-btn">URL 검증</button>
+                </div>
+                <div id="urlValidationResult" class="url-validation-result"></div>
+              </div>
+              
+              <div class="form-group">
+                <label for="nutritionThumbnail">썸네일 이미지</label>
+                <div class="thumbnail-upload-container">
+                  <div class="thumbnail-upload-area" id="thumbnailUploadArea">
+                    <div class="thumbnail-upload-content">
+                      <div class="thumbnail-upload-icon">📷</div>
+                      <div class="thumbnail-upload-text">
+                        <p>썸네일 이미지를 업로드하세요</p>
+                        <p class="thumbnail-upload-hint">JPG, PNG, GIF, WebP (최대 5MB)</p>
+                      </div>
+                      <input type="file" id="nutritionThumbnail" name="nutritionThumbnail" 
+                             accept="image/jpeg,image/png,image/gif,image/webp" 
+                             style="display: none;">
+                      <button type="button" class="admin-action-btn" id="selectThumbnailBtn">파일 선택</button>
+                    </div>
+                  </div>
+                  <div class="thumbnail-preview" id="thumbnailPreview" style="display: none;">
+                    <div class="thumbnail-preview-image">
+                      <img id="thumbnailPreviewImg" src="" alt="썸네일 미리보기">
+                      <button type="button" class="thumbnail-remove-btn" id="removeThumbnailBtn">&times;</button>
+                    </div>
+                    <div class="thumbnail-info">
+                      <div class="thumbnail-filename" id="thumbnailFilename"></div>
+                      <div class="thumbnail-filesize" id="thumbnailFilesize"></div>
+                    </div>
+                  </div>
+                  <div class="thumbnail-url-input" style="margin-top: 10px;">
+                    <input type="url" id="thumbnailUrl" name="thumbnailUrl" 
+                           placeholder="또는 이미지 URL을 직접 입력하세요" 
+                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          
+          <!-- 폼 액션 버튼 -->
+          <div class="form-footer">
+            <button type="button" id="saveDraftBtn" class="admin-action-btn gray">임시저장</button>
+            <button type="submit" id="publishBtn" class="admin-action-btn">게시</button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- 포스팅 관리 섹션 (기본적으로 숨김) -->
+      <div id="postManagementSection" class="post-management-section">
+        <div class="post-management-header">
+          <h4 class="post-management-title">포스팅 관리</h4>
+          <button id="backToFormBtn" class="admin-action-btn gray">작성 폼으로 돌아가기</button>
+        </div>
+        
+        <!-- 포스팅 필터 -->
+        <div class="post-management-filters">
+          <input type="text" id="searchPosts" class="post-search-input-full" placeholder="포스팅 검색...">
+          <select id="filterPostStatus" class="post-filter-select-full">
+            <option value="">모든 상태</option>
+            <option value="published">게시됨</option>
+            <option value="draft">임시저장</option>
+            <option value="inactive">비활성</option>
+          </select>
+          <select id="filterPostCategory" class="post-filter-select-full">
+            <option value="">모든 카테고리</option>
+            <option value="diet">식단</option>
+            <option value="supplements">보충제</option>
+            <option value="research">연구</option>
+            <option value="trends">트렌드</option>
+          </select>
+          <button id="searchPostsBtn" class="admin-action-btn">검색</button>
+        </div>
+        
+        <!-- 포스팅 목록 테이블 -->
+        <div class="posts-table-container-full">
+          <div class="posts-table-scroll-full">
+            <table id="postsManagementTable" class="posts-table-full">
+              <thead>
+                <tr>
+                  <th>제목</th>
+                  <th class="category-col-full">카테고리</th>
+                  <th class="status-col-full">상태</th>
+                  <th class="date-col-full">작성일</th>
+                  <th class="views-col-full">조회수</th>
+                  <th class="manage-col-full">관리</th>
+                </tr>
+              </thead>
+              <tbody id="postsManagementTableBody">
+                <tr>
+                  <td colspan="6">포스팅을 불러오는 중...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- 포스팅 페이지네이션 -->
+        <div id="postsPagination" class="posts-pagination-full">
+          <!-- 페이지네이션 버튼들이 여기에 동적으로 추가됩니다 -->
+        </div>
+      </div>
+    </div>
+    </div> <!-- nutritionSection 끝 -->
+
+    <!-- 문의 관리 섹션 -->
+    <div id="contactsSection" class="admin-section hidden">
+      <h2>문의 관리</h2>
+      
+      <div class="admin-stats-section">
+        <h3>문의 관리</h3>
+      
+      <div class="contact-filters">
+        <div class="filter-group">
+          <label for="statusFilter">상태:</label>
+          <select id="statusFilter">
+            <option value="all">전체</option>
+            <option value="pending">대기중</option>
+            <option value="in-progress">처리중</option>
+            <option value="resolved">해결됨</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="categoryFilter">유형:</label>
+          <select id="categoryFilter">
+            <option value="all">전체</option>
+            <option value="service">서비스 이용 문의</option>
+            <option value="account">계정 관련 문의</option>
+            <option value="payment">결제 관련 문의</option>
+            <option value="suggestion">기능 제안</option>
+            <option value="bug">오류 신고</option>
+            <option value="other">기타 문의</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="dateFilter">기간:</label>
+          <select id="dateFilter">
+            <option value="all">전체</option>
+            <option value="today">오늘</option>
+            <option value="week">최근 7일</option>
+            <option value="month">최근 30일</option>
+          </select>
+        </div>
+      </div>
+      
+      <table class="contact-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>제목</th>
+            <th>유형</th>
+            <th>사용자</th>
+            <th>접수일</th>
+            <th>상태</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="contactTableBody">
+          <!-- 문의 목록이 여기에 동적으로 로드됩니다 -->
+          <tr>
+            <td colspan="7" class="no-contacts">문의 내역을 불러오는 중입니다...</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div class="pagination" id="contactPagination">
+        <!-- 페이지네이션이 여기에 동적으로 로드됩니다 -->
+      </div>
+    </div>
+  </div>
+
+    <!-- 프로모션 관리 섹션 -->
+    <div id="promotionsSection" class="admin-section hidden">
+      <h2>페이지 관리 - 프로모션 카드</h2>
+      
+      <div class="admin-controls">
+        <button class="btn-primary" onclick="openPromotionForm()">
+          새 프로모션 추가
+        </button>
+        <div class="search-container">
+          <input type="text" id="promotionSearch" placeholder="프로모션 검색..." onkeyup="filterPromotions()">
+        </div>
+      </div>
+
+      <div class="promotions-grid" id="promotionsGrid">
+        <!-- 프로모션 카드들이 여기에 동적으로 로드됩니다 -->
+      </div>
+    </div>
+
+    <!-- 프로모션 추가/수정 모달 -->
+    <div id="promotionModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="promotionModalTitle">새 프로모션 추가</h3>
+          <button class="modal-close" onclick="closePromotionModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="promotionForm">
+            <div class="form-group">
+              <label for="promotionTitle">제목 *</label>
+              <input type="text" id="promotionTitle" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="promotionSubtitle">부제목</label>
+              <input type="text" id="promotionSubtitle">
+            </div>
+            
+            <div class="form-group">
+              <label for="promotionDescription">설명</label>
+              <textarea id="promotionDescription" rows="3"></textarea>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="promotionBadge">배지 (할인율 등)</label>
+                <input type="text" id="promotionBadge" placeholder="예: 15%">
+              </div>
+              
+              <div class="form-group">
+                <label for="promotionTag">태그</label>
+                <input type="text" id="promotionTag" placeholder="예: 특가 이벤트">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="promotionTheme">테마 *</label>
+              <select id="promotionTheme" required>
+                <option value="">테마 선택</option>
+                <option value="water-theme">물 테마</option>
+                <option value="bottle-theme">병 테마</option>
+                <option value="travel-theme">여행 테마</option>
+                <option value="food-theme">음식 테마</option>
+                <option value="beauty-theme">뷰티 테마</option>
+                <option value="fitness-theme">피트니스 테마</option>
+                <option value="vitamin-theme">비타민 테마</option>
+                <option value="supplement-theme">영양제 테마</option>
+                <option value="default-theme">기본 테마</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="promotionImageUrl">이미지 URL</label>
+              <input type="url" id="promotionImageUrl" placeholder="https://example.com/image.jpg">
+            </div>
+            
+            <div class="form-group">
+              <label for="promotionIcons">아이콘 (이모지 4개, 쉼표로 구분)</label>
+              <input type="text" id="promotionIcons" placeholder="🥤,📦,🏠,⭐">
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="promotionDisplayOrder">표시 순서</label>
+                <input type="number" id="promotionDisplayOrder" min="0" value="0">
+              </div>
+              
+              <div class="form-group">
+                <label for="promotionIsActive">활성화</label>
+                <select id="promotionIsActive">
+                  <option value="true">활성</option>
+                  <option value="false">비활성</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="promotionStartDate">시작 날짜</label>
+                <input type="datetime-local" id="promotionStartDate">
+              </div>
+              
+              <div class="form-group">
+                <label for="promotionEndDate">종료 날짜</label>
+                <input type="datetime-local" id="promotionEndDate">
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">저장</button>
+              <button type="button" class="btn-secondary" onclick="closePromotionModal()">취소</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  <!-- 문의 상세 모달 -->
+  <div id="contactDetailModal" class="contact-detail-modal">
+    <div class="contact-detail-content">
+      <div class="contact-detail-header">
+        <h2>문의 상세 정보</h2>
+        <span class="close-modal" id="closeDetailModal">&times;</span>
+      </div>
+      <div class="contact-detail-body">
+        <div class="contact-detail-info">
+          <h3 id="contactSubject">문의 제목</h3>
+          <div class="info-row">
+            <div class="info-label">문의 유형</div>
+            <div class="info-value" id="contactCategory">서비스 이용 문의</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">사용자</div>
+            <div class="info-value" id="contactUsername">사용자명</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">이메일</div>
+            <div class="info-value" id="contactEmail">user@example.com</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">접수일</div>
+            <div class="info-value" id="contactDate">2025-07-23 14:30</div>
+          </div>
+        </div>
+        
+        <h3>문의 내용</h3>
+        <div class="contact-message" id="contactMessage">
+          문의 내용이 여기에 표시됩니다.
+        </div>
+        
+        <div class="admin-response">
+          <h3>관리자 응답</h3>
+          <select id="contactStatus" class="status-select">
+            <option value="pending">대기중</option>
+            <option value="in-progress">처리중</option>
+            <option value="resolved">해결됨</option>
+          </select>
+          <textarea id="adminComment" placeholder="관리자 응답을 입력하세요..."></textarea>
+        </div>
+      </div>
+      <div class="contact-detail-footer">
+        <button id="cancelBtn" class="cancel-btn">취소</button>
+        <button id="saveBtn" class="save-btn">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+  <script>
+    // 문의 관리 관련 전역 변수는 admin.js에서 관리합니다.
+    
+    // 페이지 로드 시 문의 목록 로드
+    document.addEventListener('DOMContentLoaded', function() {
+      // 네비게이션 초기화
+      setupNavigationEventListeners();
+      
+      // 기존 admin.js 초기화 이후에 문의 관리 기능 초기화
+      setTimeout(() => {
+        // 필터 이벤트 리스너
+        if (document.getElementById('statusFilter')) {
+          document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        }
+        if (document.getElementById('categoryFilter')) {
+          document.getElementById('categoryFilter').addEventListener('change', applyFilters);
+        }
+        if (document.getElementById('dateFilter')) {
+          document.getElementById('dateFilter').addEventListener('change', applyFilters);
+        }
+        
+        // 모달 닫기 버튼
+        if (document.getElementById('closeDetailModal')) {
+          document.getElementById('closeDetailModal').addEventListener('click', closeContactDetailModal);
+        }
+        if (document.getElementById('cancelBtn')) {
+          document.getElementById('cancelBtn').addEventListener('click', closeContactDetailModal);
+        }
+        
+        // 저장 버튼
+        if (document.getElementById('saveBtn')) {
+          document.getElementById('saveBtn').addEventListener('click', saveContactUpdate);
+        }
+        
+        // 모달 외부 클릭 시 닫기
+        window.addEventListener('click', function(e) {
+          if (e.target === document.getElementById('contactDetailModal')) {
+            closeContactDetailModal();
+          }
+        });
+      }, 500);
+    });
+    
+    // 문의 테이블 렌더링
+    function renderContactTable(filteredContacts) {
+      const tableBody = document.getElementById('contactTableBody');
+      if (!tableBody) return;
+      
+      // 시작 및 종료 인덱스 계산
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, filteredContacts.length);
+      
+      // 테이블 내용 초기화
+      tableBody.innerHTML = '';
+      
+      // 문의가 없는 경우
+      if (filteredContacts.length === 0) {
+        showNoContacts('조건에 맞는 문의 내역이 없습니다.');
+        return;
+      }
+      
+      // 현재 페이지의 문의 목록 렌더링
+      for (let i = startIndex; i < endIndex; i++) {
+        const contact = filteredContacts[i];
+        const row = document.createElement('tr');
+        
+        // 문의 ID (짧게 표시)
+        const shortId = contact.id.split('_')[1]?.substring(0, 8) || contact.id.substring(0, 8);
+        
+        // 카테고리 한글 변환
+        const categoryMap = {
+          'service': '서비스 이용',
+          'account': '계정 관련',
+          'payment': '결제 관련',
+          'suggestion': '기능 제안',
+          'bug': '오류 신고',
+          'other': '기타 문의'
+        };
+        
+        // 상태 한글 변환
+        const statusMap = {
+          'pending': '대기중',
+          'in-progress': '처리중',
+          'resolved': '해결됨'
+        };
+        
+        // 날짜 포맷
+        const date = new Date(contact.createdAt);
+        const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        
+        row.innerHTML = `
+          <td>${shortId}</td>
+          <td>${contact.subject}</td>
+          <td>${categoryMap[contact.category] || contact.category}</td>
+          <td>${contact.username}</td>
+          <td>${formattedDate}</td>
+          <td><span class="status-badge status-${contact.status}">${statusMap[contact.status] || contact.status}</span></td>
+          <td><button class="action-btn view-btn" data-id="${contact.id}">보기</button></td>
+        `;
+        
+        tableBody.appendChild(row);
+      }
+      
+      // 상세 보기 버튼 이벤트 리스너 추가
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const contactId = this.getAttribute('data-id');
+          openContactDetail(contactId);
+        });
+      });
+    }
+    
+    // 페이지네이션 렌더링
+    function renderPagination(totalItems) {
+      const pagination = document.getElementById('contactPagination');
+      if (!pagination) return;
+      
+      pagination.innerHTML = '';
+      
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      
+      // 페이지가 1페이지만 있는 경우 페이지네이션 표시 안함
+      if (totalPages <= 1) {
+        return;
+      }
+      
+      // 이전 페이지 버튼
+      if (currentPage > 1) {
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'pagination-btn';
+        prevBtn.textContent = '이전';
+        prevBtn.addEventListener('click', () => {
+          currentPage--;
+          applyFilters();
+        });
+        pagination.appendChild(prevBtn);
+      }
+      
+      // 페이지 번호 버튼
+      const maxPageButtons = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+      let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+      
+      if (endPage - startPage + 1 < maxPageButtons) {
+        startPage = Math.max(1, endPage - maxPageButtons + 1);
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = 'pagination-btn';
+        if (i === currentPage) {
+          pageBtn.classList.add('active');
+        }
+        pageBtn.textContent = i;
+        pageBtn.addEventListener('click', () => {
+          currentPage = i;
+          applyFilters();
+        });
+        pagination.appendChild(pageBtn);
+      }
+      
+      // 다음 페이지 버튼
+      if (currentPage < totalPages) {
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'pagination-btn';
+        nextBtn.textContent = '다음';
+        nextBtn.addEventListener('click', () => {
+          currentPage++;
+          applyFilters();
+        });
+        pagination.appendChild(nextBtn);
+      }
+    }
+    
+    // 문의 없음 메시지 표시
+    function showNoContacts(message) {
+      const tableBody = document.getElementById('contactTableBody');
+      if (!tableBody) return;
+      
+      tableBody.innerHTML = `<tr><td colspan="7" class="no-contacts">${message}</td></tr>`;
+    }
+    
+    // 문의 상세 정보 열기
+    async function openContactDetail(contactId) {
+      try {
+        const response = await fetch(`/api/contact/admin/detail/${contactId}`, {
+          credentials: 'include'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          const contact = data.data;
+          currentContactId = contact.id;
+          
+          // 카테고리 한글 변환
+          const categoryMap = {
+            'service': '서비스 이용 문의',
+            'account': '계정 관련 문의',
+            'payment': '결제 관련 문의',
+            'suggestion': '기능 제안',
+            'bug': '오류 신고',
+            'other': '기타 문의'
+          };
+          
+          // 모달 내용 채우기
+          document.getElementById('contactSubject').textContent = contact.subject;
+          document.getElementById('contactCategory').textContent = categoryMap[contact.category] || contact.category;
+          document.getElementById('contactUsername').textContent = contact.username;
+          document.getElementById('contactEmail').textContent = contact.email;
+          
+          // 날짜 포맷
+          const date = new Date(contact.createdAt);
+          const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+          document.getElementById('contactDate').textContent = formattedDate;
+          
+          document.getElementById('contactMessage').textContent = contact.message;
+          document.getElementById('contactStatus').value = contact.status;
+          document.getElementById('adminComment').value = contact.adminComment || '';
+          
+          // 모달 표시
+          document.getElementById('contactDetailModal').style.display = 'block';
+          document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+        } else {
+          alert('문의 정보를 불러올 수 없습니다.');
+        }
+      } catch (error) {
+        console.error('문의 상세 정보 로드 오류:', error);
+        alert('문의 정보를 불러오는 중 오류가 발생했습니다.');
+      }
+    }
+    
+    // 문의 상세 모달 닫기
+    function closeContactDetailModal() {
+      const modal = document.getElementById('contactDetailModal');
+      if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = ''; // 배경 스크롤 복원
+        currentContactId = null;
+      }
+    }
+    
+    // 문의 상태 업데이트 저장
+    async function saveContactUpdate() {
+      if (!currentContactId) return;
+      
+      const status = document.getElementById('contactStatus').value;
+      const adminComment = document.getElementById('adminComment').value;
+      
+      try {
+        const response = await fetch(`/api/contact/admin/update/${currentContactId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status, adminComment }),
+          credentials: 'include'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert('문의 상태가 업데이트되었습니다.');
+          closeContactDetailModal();
+          loadContacts(); // 목록 새로고침
+        } else {
+          alert('문의 상태 업데이트에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('문의 상태 업데이트 오류:', error);
+        alert('문의 상태 업데이트 중 오류가 발생했습니다.');
+      }
+    }
+    
+    // 네비게이션 이벤트 리스너 설정
+    function setupNavigationEventListeners() {
+      // 네비게이션 버튼 이벤트는 admin.js의 setupNavigation()에서 처리됨
+      
+      // 프레임 간 통신 처리
+      window.addEventListener('message', function(event) {
+        // 보안을 위해 origin 체크 (같은 도메인만 허용)
+        if (event.origin !== window.location.origin) {
+          return;
+        }
+        
+        if (event.data && event.data.type === 'productStatsUpdate') {
+          // 상품 통계 업데이트 요청
+          if (typeof refreshProductStats === 'function') {
+            refreshProductStats();
+          }
+        } else if (event.data && event.data.type === 'navigateToSection') {
+          // 섹션 네비게이션 요청
+          if (typeof navigateToSection === 'function') {
+            navigateToSection(event.data.section);
+          }
+        }
+      });
+    }
+    </script>
+    </div> <!-- contactsSection 끝 -->
+    
+    </div> <!-- admin-container 끝 -->
+  </div> <!-- mainContent 끝 -->
+  
+  <!-- 이미지 삽입 모달 -->
+  <div id="imageInsertModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3>이미지 삽입</h3>
+        <button class="modal-close" id="imageInsertClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom: 15px;">
+          <label for="imageUrl" style="display: block; margin-bottom: 5px; font-weight: 500;">이미지 URL</label>
+          <input type="url" id="imageUrl" placeholder="https://example.com/image.jpg" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label for="imageAlt" style="display: block; margin-bottom: 5px; font-weight: 500;">대체 텍스트</label>
+          <input type="text" id="imageAlt" placeholder="이미지 설명" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: 500;">또는 파일 업로드</label>
+          <input type="file" id="descriptionImageInput" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+      </div>
+      <div style="padding: 15px 25px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="admin-action-btn" id="imageInsertCancel" style="background: #6c757d;">취소</button>
+        <button type="button" class="admin-action-btn" id="imageInsertConfirm">삽입</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 표 삽입 모달 -->
+  <div id="tableInsertModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3>표 삽입</h3>
+        <button class="modal-close" id="tableInsertClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+          <div>
+            <label for="tableRows" style="display: block; margin-bottom: 5px; font-weight: 500;">행 수</label>
+            <input type="number" id="tableRows" value="3" min="1" max="10" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+          </div>
+          <div>
+            <label for="tableCols" style="display: block; margin-bottom: 5px; font-weight: 500;">열 수</label>
+            <input type="number" id="tableCols" value="2" min="1" max="6" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+          </div>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="tableHeader" checked>
+            <span>첫 번째 행을 헤더로 사용</span>
+          </label>
+        </div>
+      </div>
+      <div style="padding: 15px 25px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="admin-action-btn" id="tableInsertCancel" style="background: #6c757d;">취소</button>
+        <button type="button" class="admin-action-btn" id="tableInsertConfirm">삽입</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
+  <script>
+    // 전역 변수 초기화
+    let currentEditingPostId = null;
+    window.currentEditingPostId = null;
+
+    // 영양정보 포스팅 에디터 관련 JavaScript
+    class NutritionPostEditor {
+      constructor() {
+        this.editor = null;
+        this.savedEditorRange = null;
+        this.lastClickedImage = null;
+        this.isSubmitting = false; // 중복 제출 방지
+        this.init();
+      }
+
+      init() {
+        this.setupEditor();
+        this.bindEditorEvents();
+      }
+
+
+
+      setupEditor() {
+        this.editor = document.getElementById("postContent");
+        if (!this.editor) return;
+
+        // 에디터 포커스/블러 이벤트
+        this.editor.addEventListener("focus", () => {
+          // 플레이스홀더 처리는 CSS로 대체
+        });
+
+        this.editor.addEventListener("blur", () => {
+          // 플레이스홀더 처리는 CSS로 대체
+        });
+
+        // selection 저장
+        const save = () => this.saveEditorSelection();
+        this.editor.addEventListener("keyup", save);
+        this.editor.addEventListener("mouseup", save);
+        this.editor.addEventListener("input", save);
+        this.editor.addEventListener("focus", save);
+        
+
+
+        // 이미지 클릭 시 대상 이미지 기억
+        this.editor.addEventListener("click", (e) => {
+          const img = e.target && (e.target.tagName === "IMG" ? e.target : e.target.closest && e.target.closest("img"));
+          if (img) {
+            this.lastClickedImage = img;
+            this.saveEditorSelection();
+          }
+        });
+      }
+
+      bindEditorEvents() {
+        // 툴바 버튼 이벤트
+        document.querySelectorAll('.editor-btn[data-command]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const command = btn.getAttribute('data-command');
+            this.executeCommand(command);
+          });
+        });
+
+        // 텍스트 정렬 버튼
+        document.getElementById('textAlignLeftBtn')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.executeCommand('justifyLeft');
+        });
+
+        document.getElementById('textAlignCenterBtn')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.executeCommand('justifyCenter');
+        });
+
+        document.getElementById('textAlignRightBtn')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.executeCommand('justifyRight');
+        });
+
+        // 링크 관련 버튼
+        document.getElementById('createLinkBtn')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.createLink();
+        });
+
+        document.getElementById('removeLinkBtn')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.executeCommand('unlink');
+        });
+
+        // 이미지 삽입 버튼
+        document.getElementById('insertImageBtn')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.showImageInsertModal();
+        });
+
+        // 표 삽입 버튼
+        document.getElementById('insertTableBtn')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.showTableInsertModal();
+        });
+
+        // 이미지 정렬 버튼들
+        document.getElementById('imgAlignLeftBtn')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.applyImageAlignment('left');
+        });
+
+        document.getElementById('imgAlignCenterBtn')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.applyImageAlignment('center');
+        });
+
+        document.getElementById('imgAlignRightBtn')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.applyImageAlignment('right');
+        });
+
+        document.getElementById('imgAlignNoneBtn')?.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.applyImageAlignment('none');
+        });
+
+        // 이미지 삽입 모달 이벤트
+        this.bindImageModalEvents();
+        // 표 삽입 모달 이벤트
+        this.bindTableModalEvents();
+        
+        // 폼 제출 이벤트
+        this.bindFormEvents();
+      }
+
+      saveEditorSelection() {
+        try {
+          const selection = window.getSelection();
+          if (!selection || selection.rangeCount === 0) return;
+          const range = selection.getRangeAt(0);
+          if (this.editor && this.editor.contains(range.startContainer) && this.editor.contains(range.endContainer)) {
+            this.savedEditorRange = range.cloneRange();
+          }
+        } catch (_) {}
+      }
+
+      restoreEditorSelection() {
+        if (!this.editor) return;
+        this.editor.focus();
+        const selection = window.getSelection();
+        if (!selection) return;
+        selection.removeAllRanges();
+        const range = this.savedEditorRange;
+        if (range && this.editor.contains(range.startContainer) && this.editor.contains(range.endContainer)) {
+          selection.addRange(range);
+        } else {
+          const caret = document.createRange();
+          caret.selectNodeContents(this.editor);
+          caret.collapse(false);
+          selection.addRange(caret);
+        }
+      }
+
+      executeCommand(command, value = null) {
+        this.restoreEditorSelection();
+        document.execCommand(command, false, value);
+        this.saveEditorSelection();
+      }
+
+      createLink() {
+        const url = prompt('링크 URL을 입력하세요:');
+        if (url) {
+          this.executeCommand('createLink', url);
+        }
+      }
+
+      insertHtmlIntoEditor(html) {
+        this.restoreEditorSelection();
+        const before = this.editor.innerHTML;
+        let succeeded = false;
+        try {
+          succeeded = document.execCommand("insertHTML", false, html);
+        } catch (_) {
+          succeeded = false;
+        }
+        
+        if (!succeeded || this.editor.innerHTML === before) {
+          const selection = window.getSelection();
+          if (selection && selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            const fragmentContainer = document.createElement("div");
+            fragmentContainer.innerHTML = html;
+            const node = fragmentContainer.firstChild;
+            if (node) {
+              range.insertNode(node);
+              range.setStartAfter(node);
+              range.collapse(true);
+              selection.removeAllRanges();
+              selection.addRange(range);
+            } else {
+              this.editor.insertAdjacentHTML("beforeend", html);
+            }
+          } else {
+            this.editor.insertAdjacentHTML("beforeend", html);
+          }
+        }
+        
+        setTimeout(() => {
+          this.editor.focus();
+          this.saveEditorSelection();
+        }, 10);
+      }
+
+      showImageInsertModal() {
+        document.getElementById('imageInsertModal').classList.add('active');
+      }
+
+      showTableInsertModal() {
+        document.getElementById('tableInsertModal').classList.add('active');
+      }
+
+      bindImageModalEvents() {
+        const modal = document.getElementById('imageInsertModal');
+        const closeBtn = document.getElementById('imageInsertClose');
+        const cancelBtn = document.getElementById('imageInsertCancel');
+        const confirmBtn = document.getElementById('imageInsertConfirm');
+
+        closeBtn?.addEventListener('click', () => {
+          modal.classList.remove('active');
+        });
+
+        cancelBtn?.addEventListener('click', () => {
+          modal.classList.remove('active');
+        });
+
+        confirmBtn?.addEventListener('click', () => {
+          this.insertImage();
+        });
+
+        // 모달 외부 클릭 시 닫기
+        modal?.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            modal.classList.remove('active');
+          }
+        });
+      }
+
+      bindFormEvents() {
+        const form = document.getElementById('nutritionPostingForm');
+        const publishBtn = document.getElementById('publishBtn');
+        const saveDraftBtn = document.getElementById('saveDraftBtn');
+        
+        // 폼 제출 이벤트
+        form?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.handleFormSubmit('publish');
+        });
+        
+        // 게시 버튼
+        publishBtn?.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.handleFormSubmit('publish');
+        });
+        
+        // 임시저장 버튼
+        saveDraftBtn?.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.handleFormSubmit('draft');
+        });
+      }
+      
+      async handleFormSubmit(status = 'publish') {
+        // 중복 제출 방지
+        if (this.isSubmitting) {
+          console.log('이미 제출 중입니다. 중복 요청을 무시합니다.');
+          return;
+        }
+        
+        this.isSubmitting = true;
+        
+        // 버튼 비활성화
+        const publishBtn = document.getElementById('publishBtn');
+        const saveDraftBtn = document.getElementById('saveDraftBtn');
+        if (publishBtn) publishBtn.disabled = true;
+        if (saveDraftBtn) saveDraftBtn.disabled = true;
+        
+        try {
+          const formData = this.collectFormData();
+          formData.isDraft = (status === 'draft');
+          
+          // 썸네일 이미지 업로드 처리
+          if (formData.thumbnailFile) {
+            console.log('썸네일 파일 업로드 중...');
+            const thumbnailFormData = new FormData();
+            thumbnailFormData.append('thumbnail', formData.thumbnailFile);
+            
+            const thumbnailResponse = await fetch('/api/admin/manual-posting/upload-thumbnail', {
+              method: 'POST',
+              credentials: 'include',
+              body: thumbnailFormData
+            });
+            
+            if (!thumbnailResponse.ok) {
+              throw new Error(`썸네일 업로드 실패: ${thumbnailResponse.status} ${thumbnailResponse.statusText}`);
+            }
+            
+            const thumbnailResult = await thumbnailResponse.json();
+            
+            if (thumbnailResult.success) {
+              formData.thumbnailUrl = thumbnailResult.data.url;
+              console.log('썸네일 업로드 완료:', formData.thumbnailUrl);
+            } else {
+              throw new Error('썸네일 업로드 실패: ' + thumbnailResult.error);
+            }
+          }
+          
+          // thumbnailFile은 서버로 보내지 않음
+          delete formData.thumbnailFile;
+          
+          console.log('포스팅 데이터:', formData); // 디버깅용
+          
+          // 편집 모드인지 확인 - currentEditingPostId는 전역 변수
+          const isEditMode = typeof currentEditingPostId !== 'undefined' && 
+                            currentEditingPostId !== null && 
+                            currentEditingPostId !== undefined && 
+                            currentEditingPostId !== '';
+          
+          const url = isEditMode 
+            ? `/api/admin/manual-posting/posts/${currentEditingPostId}`
+            : '/api/admin/manual-posting/posts';
+          const method = isEditMode ? 'PUT' : 'POST';
+          
+          console.log('요청 모드:', isEditMode ? '편집' : '새 포스팅', 'URL:', url, 'Method:', method);
+          console.log('currentEditingPostId:', currentEditingPostId);
+          
+          const response = await fetch(url, {
+            method: method,
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(formData)
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            const action = isEditMode ? '수정' : '작성';
+            alert(status === 'publish' ? `포스팅이 ${action}되어 게시되었습니다!` : `포스팅이 ${action}되어 임시저장되었습니다!`);
+            this.resetForm();
+            
+            // 편집 완료 후 포스팅 관리 페이지로 이동
+            if (isEditMode) {
+              setTimeout(() => {
+                if (typeof showPostManagement === 'function') {
+                  showPostManagement();
+                  // 목록 새로고침
+                  if (typeof loadPostsList === 'function') {
+                    loadPostsList();
+                  }
+                }
+              }, 1000);
+            }
+          } else {
+            throw new Error(result.error || '포스팅 실패');
+          }
+        } catch (error) {
+          console.error('포스팅 오류:', error);
+          alert('포스팅 중 오류가 발생했습니다: ' + error.message);
+        } finally {
+          // 제출 완료 후 플래그 리셋 및 버튼 활성화
+          this.isSubmitting = false;
+          const publishBtn = document.getElementById('publishBtn');
+          const saveDraftBtn = document.getElementById('saveDraftBtn');
+          if (publishBtn) publishBtn.disabled = false;
+          if (saveDraftBtn) saveDraftBtn.disabled = false;
+        }
+      }
+      
+      collectFormData() {
+        // 썸네일 데이터 수집
+        const thumbnailFile = document.getElementById('nutritionThumbnail')?.files[0];
+        const thumbnailUrl = document.getElementById('thumbnailUrl')?.value?.trim();
+        
+        return {
+          title: document.getElementById('postTitle')?.value || '',
+          summary: document.getElementById('postSummary')?.value || '',
+          content: this.editor?.innerHTML || '',
+          category: document.getElementById('postCategory')?.value || document.getElementById('newCategory')?.value || '',
+          tags: document.getElementById('postTags')?.value || '',
+          sourceUrl: document.getElementById('sourceUrl')?.value || '',
+          thumbnailUrl: thumbnailUrl || null,
+          thumbnailFile: thumbnailFile || null,
+          sourceType: 'manual',
+          // 관련 상품 입력값 전달 (백엔드 라우트에서 기대하는 필드명과 일치)
+          productName1: document.getElementById('productName1')?.value || '',
+          productLink1: document.getElementById('productLink1')?.value || '',
+          productName2: document.getElementById('productName2')?.value || '',
+          productLink2: document.getElementById('productLink2')?.value || '',
+          productName3: document.getElementById('productName3')?.value || '',
+          productLink3: document.getElementById('productLink3')?.value || ''
+        };
+      }
+      
+      resetForm() {
+        // 폼 리셋
+        document.getElementById('nutritionPostingForm')?.reset();
+        
+        // 에디터 초기화
+        if (this.editor) {
+          this.editor.innerHTML = '';
+        }
+        
+        // 개별 필드 초기화
+        const fields = [
+          'postTitle',
+          'postSummary', 
+          'postCategory',
+          'newCategory',
+          'postTags',
+          'sourceUrl'
+        ];
+        
+        fields.forEach(fieldId => {
+          const field = document.getElementById(fieldId);
+          if (field) {
+            field.value = '';
+          }
+        });
+        
+        // 이미지 관련 초기화
+        const imageFile = document.getElementById('imageFile');
+        const postImage = document.getElementById('postImage');
+        const previewImage = document.getElementById('previewImage');
+        const imagePreview = document.getElementById('imagePreview');
+        const imageInfo = document.getElementById('imageInfo');
+        
+        if (imageFile) imageFile.value = '';
+        if (postImage) postImage.value = '';
+        if (previewImage) previewImage.src = '';
+        if (imagePreview) imagePreview.style.display = 'none';
+        if (imageInfo) imageInfo.textContent = '';
+        
+        // 썸네일 관련 초기화
+        const thumbnailInput = document.getElementById('nutritionThumbnail');
+        const thumbnailUrl = document.getElementById('thumbnailUrl');
+        const thumbnailPreview = document.getElementById('thumbnailPreview');
+        const thumbnailUploadArea = document.getElementById('thumbnailUploadArea');
+        const thumbnailPreviewImg = document.getElementById('thumbnailPreviewImg');
+        
+        if (thumbnailInput) thumbnailInput.value = '';
+        if (thumbnailUrl) thumbnailUrl.value = '';
+        if (thumbnailPreview) thumbnailPreview.style.display = 'none';
+        if (thumbnailUploadArea) thumbnailUploadArea.style.display = 'block';
+        if (thumbnailPreviewImg) thumbnailPreviewImg.src = '';
+        
+        // 편집 모드 초기화
+        if (typeof window.currentEditingPostId !== 'undefined') {
+          window.currentEditingPostId = null;
+        }
+        
+        // 전역 변수로도 설정
+        if (typeof currentEditingPostId !== 'undefined') {
+          currentEditingPostId = null;
+        }
+        
+        // 전역 resetForm 함수도 호출 (admin.js)
+        if (typeof resetForm === 'function') {
+          resetForm();
+        }
+        
+        console.log('폼이 초기화되었습니다.');
+      }
+
+      bindTableModalEvents() {
+        const modal = document.getElementById('tableInsertModal');
+        const closeBtn = document.getElementById('tableInsertClose');
+        const cancelBtn = document.getElementById('tableInsertCancel');
+        const confirmBtn = document.getElementById('tableInsertConfirm');
+
+        closeBtn?.addEventListener('click', () => {
+          modal.classList.remove('active');
+        });
+
+        cancelBtn?.addEventListener('click', () => {
+          modal.classList.remove('active');
+        });
+
+        confirmBtn?.addEventListener('click', () => {
+          this.insertTable();
+        });
+
+        // 모달 외부 클릭 시 닫기
+        modal?.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            modal.classList.remove('active');
+          }
+        });
+      }
+
+      insertImage() {
+        const urlInput = document.getElementById('imageUrl');
+        const altInput = document.getElementById('imageAlt');
+        const fileInput = document.getElementById('descriptionImageInput');
+
+        if (fileInput.files && fileInput.files[0]) {
+          // 파일 업로드 처리
+          const file = fileInput.files[0];
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const html = `<img src="${e.target.result}" alt="${altInput.value || ''}" style="max-width: 100%; height: auto;">`;
+            this.insertHtmlIntoEditor(html);
+          };
+          reader.readAsDataURL(file);
+        } else if (urlInput.value) {
+          // URL로 이미지 삽입
+          const html = `<img src="${urlInput.value}" alt="${altInput.value || ''}" style="max-width: 100%; height: auto;">`;
+          this.insertHtmlIntoEditor(html);
+        }
+
+        // 모달 닫기 및 입력값 초기화
+        document.getElementById('imageInsertModal').classList.remove('active');
+        urlInput.value = '';
+        altInput.value = '';
+        fileInput.value = '';
+      }
+
+      insertTable() {
+        const rows = parseInt(document.getElementById('tableRows').value) || 3;
+        const cols = parseInt(document.getElementById('tableCols').value) || 2;
+        const hasHeader = document.getElementById('tableHeader').checked;
+
+        let html = '<table border="1" style="border-collapse: collapse; width: 100%; margin: 10px 0;">';
+        
+        for (let i = 0; i < rows; i++) {
+          html += '<tr>';
+          for (let j = 0; j < cols; j++) {
+            if (i === 0 && hasHeader) {
+              html += '<th style="padding: 8px; background: #f5f5f5; border: 1px solid #ddd;">헤더</th>';
+            } else {
+              html += '<td style="padding: 8px; border: 1px solid #ddd;">내용</td>';
+            }
+          }
+          html += '</tr>';
+        }
+        html += '</table>';
+
+        this.insertHtmlIntoEditor(html);
+
+        // 모달 닫기
+        document.getElementById('tableInsertModal').classList.remove('active');
+      }
+
+      applyImageAlignment(align) {
+        if (!this.editor) return;
+
+        this.restoreEditorSelection();
+        const selection = window.getSelection();
+        let targetImage = null;
+
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          const container = range.commonAncestorContainer;
+          
+          if (container.nodeType === Node.ELEMENT_NODE && container.tagName === 'IMG') {
+            targetImage = container;
+          } else if (container.nodeType === Node.TEXT_NODE && container.parentElement.tagName === 'IMG') {
+            targetImage = container.parentElement;
+          } else {
+            const imgs = container.querySelectorAll ? container.querySelectorAll('img') : [];
+            if (imgs.length === 1) {
+              targetImage = imgs[0];
+            }
+          }
+        }
+
+        if (!targetImage && this.lastClickedImage && this.editor.contains(this.lastClickedImage)) {
+          targetImage = this.lastClickedImage;
+        }
+
+        if (targetImage) {
+          this.alignImageNode(targetImage, align);
+        }
+      }
+
+      alignImageNode(img, align) {
+        // 기존 정렬 클래스 제거
+        img.classList.remove('apf-img-center', 'apf-img-left', 'apf-img-right', 'apf-img-none');
+        
+        // 새 정렬 클래스 추가
+        if (align !== 'none') {
+          img.classList.add(`apf-img-${align}`);
+        }
+      }
+    }
+
+    // 페이지 로드 시 에디터 초기화
+    document.addEventListener('DOMContentLoaded', () => {
+      // 영양정보 섹션이 활성화될 때 에디터 초기화
+      const nutritionSection = document.getElementById('nutritionSection');
+      if (nutritionSection) {
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+              if (nutritionSection.style.display !== 'none' && !window.nutritionPostEditor) {
+                window.nutritionPostEditor = new NutritionPostEditor();
+              }
+            }
+          });
+        });
+        observer.observe(nutritionSection, { attributes: true });
+      }
+    });
+
+    // 프로모션 관리 기능
+    let currentPromotionId = null;
+    let promotions = [];
+
+    // 프로모션 목록 로드
+    async function loadPromotions() {
+      try {
+        const response = await fetch('/api/promotions/admin', {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          promotions = data.promotions;
+          renderPromotions();
+        } else {
+          alert('프로모션 로드 실패: ' + data.message);
+        }
+      } catch (error) {
+        console.error('프로모션 로드 오류:', error);
+        alert('프로모션 로드 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 프로모션 목록 렌더링
+    function renderPromotions() {
+      const grid = document.getElementById('promotionsGrid');
+      if (!grid) return;
+
+      grid.innerHTML = promotions.map(promo => `
+        <div class="promotion-card-admin" data-id="${promo.id}">
+          <div class="promotion-preview">
+            <div class="promotion-theme ${promo.theme}">
+              ${promo.badge ? `<div class="promotion-badge">${promo.badge}</div>` : ''}
+              <div class="promotion-content">
+                <h4>${promo.title}</h4>
+                <p>${promo.subtitle || ''}</p>
+                <p>${promo.description || ''}</p>
+                ${promo.tag ? `<span class="promotion-tag">${promo.tag}</span>` : ''}
+              </div>
+              ${promo.image_url ? `<img src="${promo.image_url}" alt="${promo.title}">` : ''}
+            </div>
+          </div>
+          <div class="promotion-info">
+            <div class="promotion-meta">
+              <span class="order">순서: ${promo.display_order}</span>
+              <span class="status ${promo.is_active ? 'active' : 'inactive'}">
+                ${promo.is_active ? '활성' : '비활성'}
+              </span>
+            </div>
+            <div class="promotion-actions">
+              <button onclick="editPromotion(${promo.id})" class="btn-edit">수정</button>
+              <button onclick="togglePromotion(${promo.id})" class="btn-toggle">
+                ${promo.is_active ? '비활성화' : '활성화'}
+              </button>
+              <button onclick="deletePromotion(${promo.id})" class="btn-delete">삭제</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 프로모션 검색 필터
+    function filterPromotions() {
+      const searchTerm = document.getElementById('promotionSearch').value.toLowerCase();
+      const cards = document.querySelectorAll('.promotion-card-admin');
+      
+      cards.forEach(card => {
+        const title = card.querySelector('h4').textContent.toLowerCase();
+        const subtitle = card.querySelector('p').textContent.toLowerCase();
+        const description = card.querySelectorAll('p')[1]?.textContent.toLowerCase() || '';
+        
+        if (title.includes(searchTerm) || subtitle.includes(searchTerm) || description.includes(searchTerm)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // 프로모션 추가/수정 모달 열기
+    function openPromotionForm(promotionId = null) {
+      currentPromotionId = promotionId;
+      const modal = document.getElementById('promotionModal');
+      const title = document.getElementById('promotionModalTitle');
+      const form = document.getElementById('promotionForm');
+      
+      if (promotionId) {
+        // 수정 모드
+        const promotion = promotions.find(p => p.id === promotionId);
+        if (promotion) {
+          title.textContent = '프로모션 수정';
+          fillPromotionForm(promotion);
+        }
+      } else {
+        // 추가 모드
+        title.textContent = '새 프로모션 추가';
+        form.reset();
+      }
+      
+      modal.classList.add('active');
+    }
+
+    // 프로모션 폼에 데이터 채우기
+    function fillPromotionForm(promotion) {
+      document.getElementById('promotionTitle').value = promotion.title;
+      document.getElementById('promotionSubtitle').value = promotion.subtitle || '';
+      document.getElementById('promotionDescription').value = promotion.description || '';
+      document.getElementById('promotionBadge').value = promotion.badge || '';
+      document.getElementById('promotionTag').value = promotion.tag || '';
+      document.getElementById('promotionTheme').value = promotion.theme;
+      document.getElementById('promotionImageUrl').value = promotion.image_url || '';
+      document.getElementById('promotionDisplayOrder').value = promotion.display_order || 0;
+      document.getElementById('promotionIsActive').value = promotion.is_active.toString();
+      
+      if (promotion.icons) {
+        const icons = Array.isArray(promotion.icons) ? promotion.icons : JSON.parse(promotion.icons);
+        document.getElementById('promotionIcons').value = icons.join(',');
+      } else {
+        document.getElementById('promotionIcons').value = '';
+      }
+      
+      if (promotion.start_date) {
+        document.getElementById('promotionStartDate').value = promotion.start_date.slice(0, 16);
+      } else {
+        document.getElementById('promotionStartDate').value = '';
+      }
+      
+      if (promotion.end_date) {
+        document.getElementById('promotionEndDate').value = promotion.end_date.slice(0, 16);
+      } else {
+        document.getElementById('promotionEndDate').value = '';
+      }
+    }
+
+    // 프로모션 모달 닫기
+    function closePromotionModal() {
+      document.getElementById('promotionModal').classList.remove('active');
+      currentPromotionId = null;
+    }
+
+    // 프로모션 수정
+    function editPromotion(id) {
+      openPromotionForm(id);
+    }
+
+    // 프로모션 활성화/비활성화 토글
+    async function togglePromotion(id) {
+      try {
+        const response = await fetch(`/api/promotions/${id}/toggle`, {
+          method: 'PUT',
+          credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          alert(data.message);
+          await loadPromotions();
+        } else {
+          alert('상태 변경 실패: ' + data.message);
+        }
+              } catch (error) {
+          console.error('프로모션 토글 오류:', error);
+          alert('상태 변경 중 오류가 발생했습니다.');
+        }
+    }
+
+    // 프로모션 삭제
+    async function deletePromotion(id) {
+      if (!confirm('정말로 이 프로모션을 삭제하시겠습니까?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/promotions/${id}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          alert(data.message);
+          await loadPromotions();
+        } else {
+          alert('삭제 실패: ' + data.message);
+        }
+              } catch (error) {
+          console.error('프로모션 삭제 오류:', error);
+          alert('삭제 중 오류가 발생했습니다.');
+        }
+    }
+
+    // 프로모션 폼 제출 처리
+    document.addEventListener('DOMContentLoaded', function() {
+      const promotionForm = document.getElementById('promotionForm');
+      if (promotionForm) {
+        promotionForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        title: document.getElementById('promotionTitle').value,
+        subtitle: document.getElementById('promotionSubtitle').value,
+        description: document.getElementById('promotionDescription').value,
+        badge: document.getElementById('promotionBadge').value,
+        tag: document.getElementById('promotionTag').value,
+        theme: document.getElementById('promotionTheme').value,
+        image_url: document.getElementById('promotionImageUrl').value,
+        display_order: parseInt(document.getElementById('promotionDisplayOrder').value) || 0,
+        is_active: document.getElementById('promotionIsActive').value === 'true',
+        start_date: document.getElementById('promotionStartDate').value || null,
+        end_date: document.getElementById('promotionEndDate').value || null
+      };
+      
+      // 아이콘 처리
+      const iconsInput = document.getElementById('promotionIcons').value;
+      if (iconsInput.trim()) {
+        formData.icons = iconsInput.split(',').map(icon => icon.trim()).filter(icon => icon);
+      }
+      
+      try {
+        const url = currentPromotionId ? `/api/promotions/${currentPromotionId}` : '/api/promotions';
+        const method = currentPromotionId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert(data.message);
+          closePromotionModal();
+          await loadPromotions();
+        } else {
+          alert('저장 실패: ' + data.message);
+        }
+              } catch (error) {
+          console.error('프로모션 저장 오류:', error);
+          alert('저장 중 오류가 발생했습니다.');
+        }
+    });
+      }
+    });
+
+    // 페이지관리 탭 클릭 시 프로모션 로드
+    const promotionsTab = document.querySelector('[data-section="promotions"]');
+    if (promotionsTab) {
+      promotionsTab.addEventListener('click', function() {
+        loadPromotions();
+      });
+    }
+  </script>
+</body>
+</html>

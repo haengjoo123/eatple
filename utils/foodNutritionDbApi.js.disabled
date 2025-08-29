@@ -1,0 +1,471 @@
+const axios = require("axios");
+
+/**
+ * 목업 영양성분 DB 정보 데이터
+ */
+function getMockNutritionDbData(productName) {
+  const allMockData = [
+    {
+      식품명: "불닭볶음면",
+      식품분류: "면류",
+      식품코드: "D000001",
+      영양성분함량기준량: "100g",
+      에너지: "530",
+      탄수화물: "72.0",
+      단백질: "11.0",
+      지방: "22.0",
+      당류: "8.0",
+      나트륨: "1790",
+      콜레스테롤: "0",
+      포화지방산: "11.0",
+      트랜스지방산: "0.0",
+      출처: "식품의약품안전처",
+      일회섭취참고량: "140g",
+      식품중량: "140g",
+      품목제조보고번호: "20210001",
+      업체명: "삼양식품",
+      수입여부: "국산",
+      원산지: "대한민국",
+      데이터생성방법: "실험분석",
+      데이터생성일자: "2024-01-01",
+      데이터기준일자: "2024-01-01"
+    },
+    {
+      식품명: "새우깡",
+      식품분류: "과자류",
+      식품코드: "D000002",
+      영양성분함량기준량: "100g",
+      에너지: "520",
+      탄수화물: "60.0",
+      단백질: "8.0",
+      지방: "28.0",
+      당류: "3.0",
+      나트륨: "1200",
+      콜레스테롤: "5",
+      포화지방산: "14.0",
+      트랜스지방산: "0.0",
+      출처: "식품의약품안전처",
+      일회섭취참고량: "30g",
+      식품중량: "90g",
+      품목제조보고번호: "20210002",
+      업체명: "농심",
+      수입여부: "국산",
+      원산지: "대한민국",
+      데이터생성방법: "실험분석",
+      데이터생성일자: "2024-01-01",
+      데이터기준일자: "2024-01-01"
+    }
+  ];
+
+  const searchKeyword = productName.toLowerCase().trim();
+  const filteredData = allMockData.filter((item) => {
+    const foodName = item.식품명.toLowerCase();
+    return foodName.includes(searchKeyword);
+  });
+
+  console.log(
+    `[foodNutritionDbApi] 목업 데이터 반환: ${productName} (${filteredData.length}개 결과)`
+  );
+  return filteredData;
+}
+
+/**
+ * API 키 유효성 검증
+ */
+function validateApiKey(serviceKey) {
+  if (!serviceKey) {
+    return { valid: false, error: "API 키가 설정되지 않았습니다." };
+  }
+
+  if (serviceKey === "your_api_key_here" || serviceKey.includes("test")) {
+    return {
+      valid: false,
+      error: "유효하지 않은 API 키입니다. 실제 API 키를 설정해주세요.",
+    };
+  }
+
+  try {
+    decodeURIComponent(serviceKey);
+  } catch (error) {
+    return { valid: false, error: "API 키 형식이 올바르지 않습니다." };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * 식품영양성분DB정보 API를 사용한 검색
+ * @param {string} productName - 검색할 식품명
+ * @param {string} searchTerm - 실제 API에 전송할 검색어
+ * @param {string} serviceKey - API 키
+ * @param {boolean} useMockData - 목업 데이터 사용 여부
+ * @returns {Promise<Object[]>} - 영양정보 배열 반환
+ */
+async function searchWithTerm(productName, searchTerm, serviceKey, useMockData = false) {
+  const maxRetries = 3;
+  const retryDelay = 2000;
+
+  // 식품영양성분DB정보 API 엔드포인트
+  const apiUrl = "https://apis.data.go.kr/1471000/FoodNtrCpntDbInfo02/getFoodNtrCpntDbInq02";
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(
+        `[foodNutritionDbApi] API 요청 시도 ${attempt}/${maxRetries}: ${productName}`
+      );
+
+      const params = {
+        serviceKey: decodeURIComponent(serviceKey),
+        pageNo: 1,
+        numOfRows: 100, // API 제한에 맞춰 100으로 수정
+        type: "json",
+        FOOD_NM_KR: searchTerm, // 식품명으로 검색
+      };
+
+      console.log("[foodNutritionDbApi] 요청 파라미터:", {
+        url: apiUrl,
+        params: {
+          ...params,
+          serviceKey: serviceKey.substring(0, 10) + "...",
+        },
+      });
+
+      const response = await axios.get(apiUrl, {
+        params,
+        timeout: 30000,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json; charset=UTF-8",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        },
+        family: 4,
+        maxRedirects: 5,
+        validateStatus: function (status) {
+          return status >= 200 && status < 300;
+        },
+      });
+
+      console.log("[foodNutritionDbApi] 응답 상태 코드:", response.status);
+
+      const { data } = response;
+      let parsedData = data;
+
+      if (typeof data === "string") {
+        try {
+          parsedData = JSON.parse(data);
+        } catch (parseErr) {
+          console.error("[foodNutritionDbApi] JSON 파싱 오류:", parseErr.message);
+          continue;
+        }
+      }
+
+      console.log("[foodNutritionDbApi] 파싱된 응답 구조:", Object.keys(parsedData));
+
+      if (!parsedData) {
+        console.error("[foodNutritionDbApi] 응답 데이터가 없습니다.");
+        continue;
+      }
+
+      // 공공데이터포털 표준 응답 구조 처리 (response 래퍼가 있는 경우)
+      if (parsedData.response) {
+        const header = parsedData.response.header;
+        const body = parsedData.response.body;
+
+        console.log(
+          `[foodNutritionDbApi] 응답 코드: ${header?.resultCode}, 메시지: ${header?.resultMsg}`
+        );
+
+        if (header?.resultCode !== "00") {
+          console.error(
+            "[foodNutritionDbApi] API 에러:",
+            header?.resultCode,
+            header?.resultMsg
+          );
+          continue;
+        }
+
+        const items = body?.items || body?.item || [];
+        const itemArray = Array.isArray(items) ? items : items ? [items] : [];
+
+        console.log(`[foodNutritionDbApi] API에서 ${itemArray.length}개 결과 수신`);
+
+        // 디버깅: 첫 번째 결과의 구조 확인
+        if (itemArray.length > 0) {
+          console.log('[foodNutritionDbApi] 첫 번째 결과 구조 (header/body):', JSON.stringify(itemArray[0], null, 2));
+        }
+
+        // 검색어를 포함하는 제품들을 필터링
+        const searchKeyword = productName.toLowerCase().trim();
+        console.log(`[foodNutritionDbApi] 검색 키워드 (header/body): "${searchKeyword}"`);
+        console.log(`[foodNutritionDbApi] 필터링 시작 (header/body) - 총 ${itemArray.length}개 항목`);
+        
+        const filteredItems = itemArray.filter((item, index) => {
+          const foodName = (item.FOOD_NM_KR || item.foodNm || "").toLowerCase();
+          const isMatch = foodName.includes(searchKeyword);
+          
+          // 처음 5개 항목에 대해 상세 로깅
+          if (index < 5) {
+            console.log(`[foodNutritionDbApi] 항목 ${index + 1} (header/body): "${foodName}" includes "${searchKeyword}" = ${isMatch}`);
+          }
+          
+          return isMatch;
+        });
+        
+        console.log(`[foodNutritionDbApi] 필터링 완료 (header/body) - ${filteredItems.length}개 매치`);
+
+        return filteredItems.map((item) => ({
+          식품명: item.FOOD_NM_KR || item.foodNm || "",
+          식품분류: item.FOOD_CAT1_NM || item.foodClsNm || "",
+          식품코드: item.FOOD_CD || item.foodCd || "",
+          영양성분함량기준량: item.SERVING_SIZE || item.nutrCont || "100g",
+          에너지: item.AMT_NUM1 || item.enerc || "",
+          탄수화물: item.AMT_NUM2 || item.chocdf || "",
+          단백질: item.AMT_NUM3 || item.prot || "",
+          지방: item.AMT_NUM4 || item.fatce || "",
+          당류: item.AMT_NUM5 || item.sugar || "",
+          나트륨: item.AMT_NUM6 || item.nat || "",
+          콜레스테롤: item.AMT_NUM7 || item.chole || "",
+          포화지방산: item.AMT_NUM8 || item.fasat || "",
+          트랜스지방산: item.AMT_NUM9 || item.fatrn || "",
+          출처: item.SUB_REF_NAME || item.srcNm || "식품의약품안전처",
+          일회섭취참고량: item.Z10500 || item.onceIntakeRefAmt || "",
+          식품중량: item.Z10500 || item.foodWt || "",
+          품목제조보고번호: item.ITEM_REPORT_NO || item.prdlstReportNo || "",
+          업체명: item.MAKER_NM || item.bsshNm || "",
+          수입여부: item.IMP_YN || item.imprtYn || "",
+          원산지: item.NATION_NM || item.orplcNm || "",
+          데이터생성방법: item.CRT_MTH_NM || item.dataCreateMthd || "",
+          데이터생성일자: item.RESEARCH_YMD || item.dataCreateDt || "",
+          데이터기준일자: item.UPDATE_DATE || item.dataStdrDt || ""
+        }));
+      }
+      // 직접 header/body 구조인 경우
+      else if (parsedData.header && parsedData.body) {
+        const header = parsedData.header;
+        const body = parsedData.body;
+
+        console.log(
+          `[foodNutritionDbApi] 응답 코드: ${header?.resultCode}, 메시지: ${header?.resultMsg}`
+        );
+
+        if (header?.resultCode !== "00") {
+          console.error(
+            "[foodNutritionDbApi] API 에러:",
+            header?.resultCode,
+            header?.resultMsg
+          );
+          continue;
+        }
+
+        const items = body?.items || body?.item || [];
+        const itemArray = Array.isArray(items) ? items : items ? [items] : [];
+
+        console.log(`[foodNutritionDbApi] API에서 ${itemArray.length}개 결과 수신`);
+
+        // 디버깅: 첫 번째 결과의 구조 확인
+        if (itemArray.length > 0) {
+          console.log('[foodNutritionDbApi] 첫 번째 결과 구조 (header/body):', JSON.stringify(itemArray[0], null, 2));
+        }
+
+        // 검색어를 포함하는 제품들을 필터링
+        const searchKeyword = productName.toLowerCase().trim();
+        const filteredItems = itemArray.filter((item) => {
+          const foodName = (item.foodNm || "").toLowerCase();
+          return foodName.includes(searchKeyword);
+        });
+
+        console.log(
+          `[foodNutritionDbApi] 부분 일치 필터링 후 ${filteredItems.length}개 결과 반환`
+        );
+
+        return filteredItems.map((item) => ({
+          식품명: item.foodNm || "",
+          식품분류: item.foodClsNm || "",
+          식품코드: item.foodCd || "",
+          영양성분함량기준량: item.nutrCont || "100g",
+          에너지: item.enerc || "",
+          탄수화물: item.chocdf || "",
+          단백질: item.prot || "",
+          지방: item.fatce || "",
+          당류: item.sugar || "",
+          나트륨: item.nat || "",
+          콜레스테롤: item.chole || "",
+          포화지방산: item.fasat || "",
+          트랜스지방산: item.fatrn || "",
+          출처: item.srcNm || "식품의약품안전처",
+          일회섭취참고량: item.onceIntakeRefAmt || "",
+          식품중량: item.foodWt || "",
+          품목제조보고번호: item.prdlstReportNo || "",
+          업체명: item.bsshNm || "",
+          수입여부: item.imprtYn || "",
+          원산지: item.orplcNm || "",
+          데이터생성방법: item.dataCreateMthd || "",
+          데이터생성일자: item.dataCreateDt || "",
+          데이터기준일자: item.dataStdrDt || ""
+        }));
+      }
+      // 직접 배열이 반환되는 경우
+      else if (Array.isArray(parsedData)) {
+        console.log(`[foodNutritionDbApi] API에서 직접 배열로 ${parsedData.length}개 결과 수신`);
+
+        // 디버깅: 첫 번째 결과의 구조 확인
+        if (parsedData.length > 0) {
+          console.log('[foodNutritionDbApi] 첫 번째 결과 구조 (배열):', JSON.stringify(parsedData[0], null, 2));
+        }
+
+        const searchKeyword = productName.toLowerCase().trim();
+        console.log(`[foodNutritionDbApi] 검색 키워드 (배열): "${searchKeyword}"`);
+        console.log(`[foodNutritionDbApi] 필터링 시작 (배열) - 총 ${parsedData.length}개 항목`);
+        
+        const filteredItems = parsedData.filter((item, index) => {
+          const foodName = (item.FOOD_NM_KR || item.foodNm || "").toLowerCase();
+          const isMatch = foodName.includes(searchKeyword);
+          
+          // 처음 5개 항목에 대해 상세 로깅
+          if (index < 5) {
+            console.log(`[foodNutritionDbApi] 항목 ${index + 1} (배열): "${foodName}" includes "${searchKeyword}" = ${isMatch}`);
+          }
+          
+          return isMatch;
+        });
+        
+        console.log(`[foodNutritionDbApi] 필터링 완료 (배열) - ${filteredItems.length}개 매치`);
+
+        return filteredItems.map((item) => ({
+          식품명: item.FOOD_NM_KR || item.foodNm || "",
+          식품분류: item.FOOD_CAT1_NM || item.foodClsNm || "",
+          식품코드: item.FOOD_CD || item.foodCd || "",
+          영양성분함량기준량: item.SERVING_SIZE || item.nutrCont || "100g",
+          에너지: item.AMT_NUM1 || item.enerc || "",
+          탄수화물: item.AMT_NUM2 || item.chocdf || "",
+          단백질: item.AMT_NUM3 || item.prot || "",
+          지방: item.AMT_NUM4 || item.fatce || "",
+          당류: item.AMT_NUM5 || item.sugar || "",
+          나트륨: item.AMT_NUM6 || item.nat || "",
+          콜레스테롤: item.AMT_NUM7 || item.chole || "",
+          포화지방산: item.AMT_NUM8 || item.fasat || "",
+          트랜스지방산: item.AMT_NUM9 || item.fatrn || "",
+          출처: item.SUB_REF_NAME || item.srcNm || "식품의약품안전처",
+          일회섭취참고량: item.Z10500 || item.onceIntakeRefAmt || "",
+          식품중량: item.Z10500 || item.foodWt || "",
+          품목제조보고번호: item.ITEM_REPORT_NO || item.prdlstReportNo || "",
+          업체명: item.MAKER_NM || item.bsshNm || "",
+          수입여부: item.IMP_YN || item.imprtYn || "",
+          원산지: item.NATION_NM || item.orplcNm || "",
+          데이터생성방법: item.CRT_MTH_NM || item.dataCreateMthd || "",
+          데이터생성일자: item.RESEARCH_YMD || item.dataCreateDt || "",
+          데이터기준일자: item.UPDATE_DATE || item.dataStdrDt || ""
+        }));
+      } else {
+        console.error("[foodNutritionDbApi] 예상치 못한 응답 구조:", parsedData);
+        continue;
+      }
+    } catch (err) {
+      console.error(
+        `[foodNutritionDbApi] API 호출 오류 (시도 ${attempt}/${maxRetries}):`,
+        err.message
+      );
+
+      if (err.response) {
+        console.error("[foodNutritionDbApi] 응답 상태:", err.response.status);
+        console.error("[foodNutritionDbApi] 응답 데이터:", err.response.data);
+      }
+
+      if (attempt < maxRetries) {
+        console.log(`[foodNutritionDbApi] ${retryDelay / 1000}초 후 재시도...`);
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      }
+    }
+  }
+
+  if (useMockData) {
+    console.log("[foodNutritionDbApi] API 호출 실패로 인해 목업 데이터를 반환합니다.");
+    return getMockNutritionDbData(productName);
+  }
+
+  return [];
+}
+
+/**
+ * 식품영양성분DB정보로 영양정보 검색
+ * @param {string} productName - 검색할 식품명
+ * @returns {Promise<Object[]>} - 영양정보 배열 반환
+ */
+async function searchFoodNutritionDb(productName) {
+  const serviceKey = process.env.FOOD_NUTRITION_DB_API_KEY;
+  const useMockData = process.env.USE_MOCK_FOOD_DATA === "true";
+
+  // API 키 검증
+  const keyValidation = validateApiKey(serviceKey);
+  if (!keyValidation.valid) {
+    console.error("[foodNutritionDbApi] API 키 오류:", keyValidation.error);
+    console.error("[foodNutritionDbApi] 환경 변수 확인: FOOD_NUTRITION_DB_API_KEY");
+
+    if (useMockData) {
+      return getMockNutritionDbData(productName);
+    }
+    return [];
+  }
+
+  if (!productName || typeof productName !== "string") {
+    console.error("[foodNutritionDbApi] 유효하지 않은 제품명:", productName);
+    return [];
+  }
+
+  // 다양한 검색 전략
+  const searchStrategies = [productName];
+
+  // 한글인 경우에만 추가 전략 사용 (중복 방지)
+  if (/[가-힣]/.test(productName) && productName.length >= 3) {
+    // 3글자 이상인 경우에만 부분 검색 시도
+    if (productName.length >= 4) {
+      searchStrategies.push(productName.substring(0, 3)); // 첫 3글자만
+    }
+  }
+
+  console.log(`[foodNutritionDbApi] 검색 전략: ${searchStrategies.join(", ")}`);
+
+  let allResults = [];
+  const seenProducts = new Set();
+
+  for (let i = 0; i < searchStrategies.length; i++) {
+    const searchTerm = searchStrategies[i];
+    console.log(
+      `[foodNutritionDbApi] 검색 전략 ${i + 1}/${searchStrategies.length}: "${searchTerm}"`
+    );
+
+    try {
+      const results = await searchWithTerm(productName, searchTerm, serviceKey, useMockData);
+      console.log(
+        `[foodNutritionDbApi] 검색 전략 "${searchTerm}"으로 ${results.length}개 결과 발견`
+      );
+
+      results.forEach((item) => {
+        const key = `${item.식품명}_${item.식품코드}_${item.업체명}`;
+        if (!seenProducts.has(key)) {
+          seenProducts.add(key);
+          allResults.push(item);
+        }
+      });
+    } catch (error) {
+      console.error(`[foodNutritionDbApi] 검색 전략 "${searchTerm}" 실패:`, error.message);
+      continue;
+    }
+  }
+
+  if (allResults.length > 0) {
+    console.log(`[foodNutritionDbApi] 총 ${allResults.length}개의 고유한 결과 발견`);
+    return allResults;
+  }
+
+  console.log("[foodNutritionDbApi] 모든 검색 전략 실패");
+
+  if (useMockData) {
+    console.log("[foodNutritionDbApi] 목업 데이터 사용 설정이 활성화되어 목업 데이터를 반환합니다.");
+    return getMockNutritionDbData(productName);
+  }
+
+  return [];
+}
+
+module.exports = { searchFoodNutritionDb };

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 식재료 분석 - 잇플</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="ingredient-analyzer-page">
+    <div class="site-brand-fixed"><a href="index.html">잇플</a></div>
+    <div class="auth-links">
+        <!-- 동적으로 채워짐 -->
+    </div>
+
+    <!-- 헤더 섹션 -->
+    <section class="analyzer-header">
+        <div class="header-content">
+            <h1 class="page-title">AI 식재료 분석</h1>
+            <p class="page-description">
+                식재료를 검색하면 AI가 상세한 영양정보, 효능, 부작용, 요리법 등을 분석해드립니다
+            </p>
+        </div>
+    </section>
+
+    <!-- 검색 섹션 -->
+    <section class="search-section">
+        <div class="ingredient-search-container">
+            <div class="search-box">
+                <div class="ingredient-search-input-wrapper">
+                    <input type="text" id="ingredientSearch" class="search-input"
+                        placeholder="분석할 식재료를 입력하세요 (예: 마늘, 연어...)" autocomplete="off">
+                    <div class="search-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="search-suggestions" id="searchSuggestions">
+                    <!-- 검색 제안이 여기에 표시됩니다 -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 로딩 섹션 -->
+    <section class="loading-section" id="loadingSection" style="display: none;">
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">AI가 식재료를 분석하고 있습니다...</p>
+        </div>
+    </section>
+
+    <!-- 결과 섹션 -->
+    <section class="result-section" id="resultSection" style="display: none;">
+        <div class="result-container">
+            <!-- 결과 헤더 -->
+            <div class="result-header">
+                <div class="ingredient-title">
+                    <h2 id="ingredientName"></h2>
+                    <p id="ingredientDescription"></p>
+                </div>
+                <div class="purchase-section">
+                    <button id="purchaseButton" class="purchase-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m0 0h9m-9 0h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        구매하기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 탭 네비게이션 -->
+            <div class="ingredient-tab-navigation">
+                <button class="ingredient-tab-btn active" data-tab="overview">개요</button>
+                <button class="ingredient-tab-btn" data-tab="nutrition">영양성분</button>
+                <button class="ingredient-tab-btn" data-tab="usage">활용법</button>
+                <button class="ingredient-tab-btn" data-tab="benefits">건강효능</button>
+                <button class="ingredient-tab-btn" data-tab="cautions">주의사항</button>
+            </div>
+
+            <!-- 탭 콘텐츠 -->
+            <div class="ingredient-tab-content-container">
+                <!-- 개요 탭 -->
+                <div class="ingredient-tab-content active" id="overview">
+                    <div class="overview-grid">
+                        <div class="overview-card quick-facts">
+                            <h3>핵심 정보</h3>
+                            <div class="quick-facts-grid">
+                                <div class="fact-item">
+                                    <span class="fact-label">혈당지수</span>
+                                    <span class="fact-value" id="giValue"></span>
+                                </div>
+                                <div class="fact-item">
+                                    <span class="fact-label">제철</span>
+                                    <span class="fact-value" id="seasonValue"></span>
+                                </div>
+                                <div class="fact-item">
+                                    <span class="fact-label">주요 산지</span>
+                                    <span class="fact-value" id="originValue"></span>
+                                </div>
+                                <div class="fact-item">
+                                    <span class="fact-label">반려동물</span>
+                                    <span class="fact-value" id="petSafetyValue"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="overview-card storage-card">
+                            <h3>보관방법</h3>
+                            <div class="storage-content" id="storageInfo"></div>
+                        </div>
+                    </div>
+
+                    <div class="compatibility-section">
+                        <div class="compatibility-card good">
+                            <h3>🤝 궁합 식품</h3>
+                            <div class="compatibility-content" id="compatibilityValue"></div>
+                        </div>
+                        <div class="compatibility-card bad">
+                            <h3>⚠️ 상극 식품</h3>
+                            <div class="compatibility-content" id="incompatibilityValue"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 영양정보 탭 -->
+                <div class="ingredient-tab-content" id="nutrition">
+                    <div class="ingredient-nutrition-header">
+                        <h3>영양성분 (100g 기준)</h3>
+                    </div>
+                    <div class="nutrition-grid-modern" id="nutritionGrid">
+                        <!-- 영양 정보가 여기에 표시됩니다 -->
+                    </div>
+                </div>
+
+                <!-- 건강효능 탭 -->
+                <div class="ingredient-tab-content" id="benefits">
+                    <div class="health-grid">
+                        <div class="health-section benefits-section">
+                            <h3>✅ 건강 효능</h3>
+                            <div class="benefits-list" id="benefitsList"></div>
+                        </div>
+
+                        <div class="health-section components-section">
+                            <h3>🧬 활성성분</h3>
+                            <div class="components-list" id="componentsList"></div>
+                        </div>
+                    </div>
+
+                    <div class="traditional-section">
+                        <h3>🏛️ 한의학적 관점</h3>
+                        <div class="traditional-content" id="traditionalInfo"></div>
+                    </div>
+                </div>
+
+                <!-- 주의사항 탭 -->
+                <div class="ingredient-tab-content" id="cautions">
+                    <div class="cautions-grid">
+                        <div class="side-effects-section">
+                            <h3>⚠️ 부작용 및 주의사항</h3>
+                            <div class="side-effects-list" id="sideEffectsList"></div>
+                        </div>
+
+                        <div class="allergy-section">
+                            <h3>🔴 알레르기 정보</h3>
+                            <div class="allergy-content" id="allergyInfo"></div>
+                        </div>
+                    </div>
+
+                    <div class="info-disclaimer">
+                        <h3>📋 중요 안내</h3>
+                        <p>본 정보는 일반적인 참고용이며, 개인의 건강 상태나 특별한 상황에 따라 다를 수 있습니다. 특히 알레르기나 기존 질환이 있는 경우 의료진과 상담 후 섭취하시기
+                            바랍니다.</p>
+                    </div>
+                </div>
+
+                <!-- 활용법 탭 -->
+                <div class="ingredient-tab-content" id="usage">
+                    <div class="usage-content">
+                        <div class="recipes-section">
+                            <h3>👨‍🍳 추천 요리법</h3>
+                            <div class="recipes-list" id="recipesList"></div>
+                        </div>
+
+                        <div class="tips-section">
+                            <h3>💡 활용 팁</h3>
+                            <div class="ingredient-tips-content" id="usageTips">
+                                <!-- AI가 생성한 활용 팁이 여기에 표시됩니다 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 모바일 하단 네비게이션 바 -->
+    <nav class="footer-nav-mobile">
+      <ul>
+        <li class="footer-nav-item" id="footerNavHome">
+          <a href="index.html">
+            <span class="footer-nav-icon">🏠</span>
+            <span class="footer-nav-label">홈</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavNutrition">
+          <a href="nutrition-info.html">
+            <span class="footer-nav-icon">📰</span>
+            <span class="footer-nav-label">영양정보</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavAI">
+          <button type="button" class="footer-nav-ai-btn">
+            <span class="footer-nav-icon">🤖</span>
+            <span class="footer-nav-label">AI기능</span>
+          </button>
+        </li>
+        <li class="footer-nav-item" id="footerNavStore">
+          <a href="store.html">
+            <span class="footer-nav-icon">🛒</span>
+            <span class="footer-nav-label">스토어</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavMy">
+          <a href="mypage.html">
+            <span class="footer-nav-icon">👤</span>
+            <span class="footer-nav-label">마이</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- AI 기능 모달 -->
+    <div id="aiFeatureModal" class="ai-feature-modal">
+      <div class="ai-feature-modal-content">
+        <ul>
+          <li><a href="meal-plan.html">뭐해먹지?</a></li>
+          <li><a href="supplements.html">나만의 영양제</a></li>
+          <li><a href="restaurant-recommendation.html">오늘의 맛집</a></li>
+        </ul>
+      </div>
+    </div>
+
+
+
+    <script src="script.js"></script>
+    <script src="ingredient-analyzer.js"></script>
+    <script>
+        // 비로그인 상태에서 특정 섹션들 블러 처리
+        function applyIngredientAnalyzerRestrictions() {
+            // 로그인 상태 확인
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            const isLoggedIn = !!user;
+            
+            if (!isLoggedIn) {
+                const sectorsToBlur = ['.nutrition-grid-modern', '.components-list', '.recipes-list'];
+                
+                // DOM 변화 감지
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1) { // Element node
+                                sectorsToBlur.forEach(function(selector) {
+                                    const sections = node.querySelectorAll ? node.querySelectorAll(selector) : [];
+                                    const isTargetSection = node.classList && node.classList.contains(selector.substring(1));
+                                    
+                                    const sectionsToBlur = isTargetSection ? [node] : Array.from(sections);
+                                    
+                                    sectionsToBlur.forEach(function(section) {
+                                        if (!section.classList.contains('login-required-blur')) {
+                                            // 블러 효과 적용
+                                            section.classList.add('login-required-blur');
+                                            
+                                            // position 설정 (중요!)
+                                            const computedStyle = window.getComputedStyle(section);
+                                            if (computedStyle.position === 'static') {
+                                                section.style.position = 'relative';
+                                            }
+                                            
+                                            // 오버레이 메시지 추가
+                                            const overlay = document.createElement('div');
+                                            overlay.className = 'login-required-overlay';
+                                            overlay.innerHTML = `
+                                                <div class="login-required-message">
+                                                    <span class="lock-icon">🔑</span>
+                                                    <span class="message-text">로그인하고 모든 기능을 이용해 보세요</span>
+                                                </div>
+                                            `;
+                                            
+                                            section.appendChild(overlay);
+                                            
+                                            // 디버깅을 위한 로그
+                                            console.log('Ingredient overlay added to:', section);
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                    });
+                });
+                
+                // DOM 변화 감지 시작
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+                
+                // 이미 존재하는 섹션들 처리
+                sectorsToBlur.forEach(function(selector) {
+                    document.querySelectorAll(selector).forEach(function(section) {
+                        if (!section.classList.contains('login-required-blur')) {
+                            section.classList.add('login-required-blur');
+                            
+                            // position 설정 (중요!)
+                            const computedStyle = window.getComputedStyle(section);
+                            if (computedStyle.position === 'static') {
+                                section.style.position = 'relative';
+                            }
+                            
+                            const overlay = document.createElement('div');
+                            overlay.className = 'login-required-overlay';
+                            overlay.innerHTML = `
+                                <div class="login-required-message">
+                                    <span class="lock-icon">🔑</span>
+                                    <span class="message-text">로그인하고 모든 기능을 이용해 보세요</span>
+                                </div>
+                            `;
+                            
+                            section.appendChild(overlay);
+                            
+                            // 디버깅을 위한 로그
+                            console.log('Ingredient overlay added to existing section:', section);
+                        }
+                    });
+                });
+            }
+        }
+        
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', applyIngredientAnalyzerRestrictions);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,40 @@
+{
+  "notifications": {
+    "email": {
+      "enabled": false,
+      "recipients": [],
+      "smtp": {
+        "host": "smtp.gmail.com",
+        "port": 587,
+        "secure": false
+      }
+    },
+    "webhook": {
+      "enabled": false,
+      "url": "",
+      "headers": {}
+    },
+    "slack": {
+      "enabled": false,
+      "webhookUrl": "",
+      "channel": "#monitoring"
+    }
+  },
+  "alerts": {
+    "errorThreshold": 5,
+    "warningThreshold": 3,
+    "criticalThreshold": 10,
+    "timeWindow": 300000,
+    "cooldownPeriod": 600000
+  },
+  "autoRecovery": {
+    "enabled": true,
+    "maxRetries": 3,
+    "retryDelay": 30000,
+    "strategies": {
+      "circuitBreaker": true,
+      "serviceRestart": true,
+      "configReload": true
+    }
+  }
+}

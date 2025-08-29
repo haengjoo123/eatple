@@ -1,0 +1,1002 @@
+/* Profile.css - 프로필 페이지 전용 스타일 */
+
+/* 기본 레이아웃 */
+.profile-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.profile-title {
+  text-align: center;
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.profile-reset-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.reset-profile-btn {
+  font-size: 1rem;
+  padding: 12px 24px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-profile-btn:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+/* 프로필 탭 네비게이션 */
+.profile-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.profile-tab {
+  background: #eaf0fb;
+  color: #2451a6;
+  border: none;
+  border-radius: 8px 8px 0 0;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.profile-tab:hover {
+  background: #d1e0f7;
+  transform: translateY(-1px);
+}
+
+.profile-tab.active {
+  background: #4a69bd;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(74, 105, 189, 0.3);
+}
+
+/* 탭 섹션 */
+.tab-section {
+  display: none;
+  background: #fff;
+  border-radius: 0 8px 8px 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tab-section.active {
+  display: block;
+}
+
+.tab-section h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+/* 섹션 가이드 */
+.section-guide {
+  background: #f8f9fa;
+  border-left: 4px solid #007bff;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.9rem;
+  color: #495057;
+  line-height: 1.5;
+}
+
+.section-guide.required {
+  border-left-color: #dc3545;
+  background: #fff5f5;
+}
+
+.section-guide.optional {
+  border-left-color: #28a745;
+  background: #f8fff9;
+}
+
+/* 입력 필드 그리드 */
+.input-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.input-group-item {
+  flex: 1;
+  min-width: 120px;
+}
+
+.input-group-item label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.input-group-item input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+}
+
+.input-group-item input:focus {
+  outline: none;
+  border-color: #4a69bd;
+  box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.1);
+}
+
+/* 옵션 그룹 */
+.option-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+  margin-bottom: 0px;
+}
+
+.option {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  text-align: center;
+  user-select: none;
+}
+
+.option:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+}
+
+.option.selected {
+  background: #4a69bd;
+  color: #fff;
+  border-color: #4a69bd;
+  box-shadow: 0 2px 8px rgba(74, 105, 189, 0.3);
+}
+
+/* 아코디언 */
+.accordion {
+  margin-bottom: 20px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.accordion-header {
+  background: #f8f9fa;
+  padding: 16px 20px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid #dee2e6;
+  transition: background 0.2s ease;
+  position: relative;
+}
+
+.accordion-header:hover {
+  background: #e9ecef;
+}
+
+.accordion-header::after {
+  content: '▼';
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: transform 0.2s ease;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.accordion.open .accordion-header::after {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.accordion-content {
+  padding: 20px;
+  background: #fff;
+  display: none;
+}
+
+.accordion.open .accordion-content {
+  display: block;
+}
+
+/* 숨겨진 입력 컨테이너 */
+.hidden-input-container {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+  display: none;
+}
+
+.hidden-input-container.active {
+  display: block;
+}
+
+.hidden-input-container label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.hidden-input-container input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+/* 값 입력 필드 */
+.value-input {
+  margin-top: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  display: none;
+}
+
+.value-input.active {
+  display: block;
+}
+
+.unit {
+  color: #666;
+  font-size: 0.8rem;
+  margin-left: 4px;
+}
+
+/* 버튼 그룹 */
+.button-group {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+  gap: 12px;
+}
+
+.submit-button {
+  background: #4a69bd;
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submit-button:hover {
+  background: #3a5a9d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 105, 189, 0.3);
+}
+
+/* 프로필 완성도 섹션 */
+.profile-completion-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.completion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.completion-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.completion-reward-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.reward-icon {
+  font-size: 1.2rem;
+}
+
+.mypage-progress-bar-container {
+  margin: 16px 0;
+}
+
+.mypage-progress-bar {
+  height: 24px;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.mypage-progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #ffd700, #ffed4e);
+  border-radius: 12px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+.mypage-progress-bar-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.completion-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.completion-stats {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.completed-count,
+.total-count {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.completion-guide-toggle button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.completion-guide-toggle button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* 모달 스타일 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #333;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  color: #333;
+  background: #f8f9fa;
+}
+
+.modal-body {
+  padding: 20px 24px;
+}
+
+.guide-section {
+  margin-bottom: 24px;
+}
+
+.guide-section h4 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.guide-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.guide-section li {
+  margin-bottom: 8px;
+  color: #666;
+}
+
+.guide-steps ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.guide-steps li {
+  margin-bottom: 8px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* 보상 모달 */
+.reward-modal .modal-content {
+  max-width: 400px;
+  text-align: center;
+}
+
+.reward-content {
+  padding: 32px 24px;
+}
+
+.reward-animation {
+  animation: rewardPulse 0.6s ease-out;
+}
+
+@keyframes rewardPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.reward-icon-large {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.reward-message {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.reward-points {
+  color: #ff6b35;
+  font-size: 1.3rem;
+}
+
+.reward-details {
+  margin: 20px 0;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.points-info {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.reward-confirm-btn {
+  background: #4a69bd;
+  color: #fff;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reward-confirm-btn:hover {
+  background: #3a5a9d;
+  transform: translateY(-1px);
+}
+
+/* 프로필 저장 모달 */
+#profileSaveModal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+#profileSaveModal .modal-content {
+  background: #fff;
+  padding: 32px 24px;
+  border-radius: 12px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  position: relative;
+}
+
+#profileSaveModal .modal-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+#profileSaveModal .modal-close:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+
+#profileSaveModalMsg {
+  margin-bottom: 24px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+#saveAfterLoginBtn,
+#tempSaveBtn {
+  margin: 0 8px 0 0;
+  padding: 8px 18px;
+  background: #4a69bd;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+#saveAfterLoginBtn:hover,
+#tempSaveBtn:hover {
+  background: #3a5a9d;
+  transform: translateY(-1px);
+}
+
+#tempSaveBtn {
+  background: #6c757d;
+}
+
+#tempSaveBtn:hover {
+  background: #5a6268;
+}
+
+/* 모바일 미디어 쿼리 */
+@media (max-width: 768px) {
+  .profile-container {
+    margin: 20px auto;
+    padding: 0 16px;
+  }
+
+  .profile-title {
+    font-size: 1.5rem;
+  }
+
+  .profile-tabs {
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .profile-tab {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tab-section {
+    padding: 20px 16px;
+    border-radius: 0 0 8px 8px;
+  }
+
+  .input-row {
+    gap: 12px;
+  }
+
+  .input-group-item {
+    min-width: 0;
+  }
+
+  .option-group {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  /* 건강정보 탭의 알레르기, 질병 옵션들을 2열로 배치 */
+  #tab-health .option-group {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .option {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  .completion-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .completion-reward-info {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+
+  .completion-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .modal-content {
+    margin: 20px;
+    max-height: 90vh;
+  }
+
+  .modal-header {
+    padding: 16px 20px 12px;
+  }
+
+  .modal-body {
+    padding: 16px 20px;
+  }
+
+  .accordion-header {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+
+  .accordion-header::after {
+    right: 16px;
+    font-size: 0.7rem;
+  }
+
+  .accordion-content {
+    padding: 16px;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .submit-button {
+    width: 100%;
+    padding: 12px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-container {
+    margin: 16px auto;
+    padding: 0 12px;
+  }
+
+  .profile-title {
+    font-size: 1.3rem;
+  }
+
+  .profile-tabs {
+    gap: 4px;
+  }
+
+  .profile-tab {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  .tab-section {
+    padding: 16px 12px;
+  }
+
+  .tab-section h3 {
+    font-size: 1.1rem;
+  }
+
+  .section-guide {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+
+  .input-group-item input {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  }
+
+  .option {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+
+  /* 건강정보 탭의 옵션들 2열 배치 유지 */
+  #tab-health .option-group {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  #tab-health .option {
+    font-size: 0.7rem;
+    padding: 6px 6px;
+    line-height: 1.1;
+  }
+
+  /* 건강정보 탭의 옵션들 텍스트 크기 조정 */
+  #tab-health .option {
+    font-size: 0.75rem;
+    padding: 10px 8px;
+    line-height: 1.2;
+    min-width: 110px;
+  }
+
+  .profile-completion-section {
+    padding: 20px 16px;
+  }
+
+  .completion-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .reward-icon-large {
+    font-size: 3rem;
+  }
+
+  .reward-message {
+    font-size: 1rem;
+  }
+
+  .modal-content {
+    margin: 16px;
+  }
+
+  .modal-header {
+    padding: 12px 16px 8px;
+  }
+
+  .modal-body {
+    padding: 12px 16px;
+  }
+
+  .accordion-header {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+
+  .accordion-header::after {
+    right: 10px;
+    font-size: 0.6rem;
+  }
+
+  .accordion-content {
+    padding: 12px;
+  }
+
+  #profileSaveModal .modal-content {
+    padding: 24px 16px;
+  }
+
+  #profileSaveModalMsg {
+    font-size: 1rem;
+  }
+
+  #saveAfterLoginBtn,
+  #tempSaveBtn {
+    width: 100%;
+    margin: 4px 0;
+    padding: 10px 16px;
+  }
+}
+
+/* 태블릿 미디어 쿼리 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .profile-container {
+    max-width: 700px;
+    margin: 30px auto;
+  }
+
+  .option-group {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .input-row {
+    gap: 20px;
+  }
+}
+
+/* 다크 모드 지원 */
+@media (prefers-color-scheme: dark) {
+  .tab-section {
+    background: #2d3748;
+    color: #e2e8f0;
+  }
+
+  .tab-section h3 {
+    color: #e2e8f0;
+  }
+
+  .input-group-item label {
+    color: #e2e8f0;
+  }
+
+  .input-group-item input {
+    background: #4a5568;
+    border-color: #718096;
+    color: #e2e8f0;
+  }
+
+  .option {
+    background: #4a5568;
+    border-color: #718096;
+    color: #e2e8f0;
+  }
+
+  .option:hover {
+    background: #718096;
+  }
+
+  .accordion-header {
+    background: #4a5568;
+    color: #e2e8f0;
+    border-color: #718096;
+  }
+
+  .accordion-content {
+    background: #2d3748;
+  }
+
+  .accordion-header::after {
+    color: #a0aec0;
+  }
+
+  .modal-content {
+    background: #2d3748;
+    color: #e2e8f0;
+  }
+
+  .modal-header h3 {
+    color: #e2e8f0;
+  }
+
+  .guide-section h4 {
+    color: #e2e8f0;
+  }
+
+  .guide-section li,
+  .guide-steps li {
+    color: #a0aec0;
+  }
+}
+
+/* 모바일 하단 네비게이션 관련 스타일 */
+@media (max-width: 768px) {
+  /* profile 페이지에서 footer-nav-mobile을 위한 하단 패딩 */
+  body {
+    padding-bottom: 80px;
+  }
+  
+  /* profile-container가 footer-nav-mobile과 겹치지 않도록 */
+  .profile-container {
+    margin-bottom: 20px;
+  }
+  
+  /* footer-nav-mobile이 profile 페이지에서 제대로 표시되도록 */
+  .footer-nav-mobile {
+    display: block;
+  }
+}

@@ -1,0 +1,4075 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>나만의 영양제 - 잇플</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* 정부승인 제품 섹션 설명 업데이트 */
+      .government-section-header .section-description {
+        color: #666;
+        font-size: 0.9rem;
+        margin-top: 4px;
+        font-style: italic;
+      }
+
+      /* 로그인 필요 블러 효과 */
+      .government-products-section.login-required-blur {
+        filter: blur(8px);
+        pointer-events: none;
+        user-select: none;
+        transition: filter 0.3s ease;
+      }
+
+      /* 로그인 필요 오버레이 */
+      .login-required-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        border-radius: 12px;
+        backdrop-filter: blur(2px);
+      }
+
+      .login-required-message {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-family: 'Pretendard', sans-serif;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 16px;
+        animation: pulse 2s infinite;
+      }
+
+      .lock-icon {
+        font-size: 20px;
+        animation: bounce 1s infinite;
+      }
+
+      .message-text {
+        font-weight: 600;
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          transform: scale(1);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        50% {
+          transform: scale(1.05);
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+      }
+
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-5px);
+        }
+        60% {
+          transform: translateY(-3px);
+        }
+      }
+    </style>
+  </head>
+  <body class="supplement-page">
+    <div class="site-brand-fixed"><a href="index.html">잇플</a></div>
+    <div class="auth-links">
+      <!-- 동적으로 채워짐 -->
+    </div>
+    <div class="supplement-wizard">
+      <div class="container">
+        <div class="wizard-content">
+          <!-- Step 1: 건강 목표 -->
+          <div class="wizard-step active" data-step="1">
+            <div class="step-header">
+              <h2>나의 건강 고민</h2>
+              <p>
+                최대 8개의 건강 고민을 선택하면, AI가 맞춤형 영양제를
+                추천해드립니다.
+              </p>
+            </div>
+            <div class="supplement-type-selection">
+              <!-- 탭 메뉴 -->
+              <div class="system-tabs">
+                <div class="tab-button active" data-tab="nervous">
+                  <div class="tab-icon">🧠</div>
+                  <span>신경계</span>
+                </div>
+                <div class="tab-button" data-tab="sensory">
+                  <div class="tab-icon">👁️</div>
+                  <span>감각계</span>
+                </div>
+                <div class="tab-button" data-tab="digestive">
+                  <div class="tab-icon">🌱</div>
+                  <span>소화 대사계</span>
+                </div>
+                <div class="tab-button" data-tab="endocrine">
+                  <div class="tab-icon">⚖️</div>
+                  <span>내분비계</span>
+                </div>
+                <div class="tab-button" data-tab="cardiovascular">
+                  <div class="tab-icon">💗</div>
+                  <span>심혈관계</span>
+                </div>
+                <div class="tab-button" data-tab="immune">
+                  <div class="tab-icon">🛡️</div>
+                  <span>면역계</span>
+                </div>
+                <div class="tab-button" data-tab="muscular">
+                  <div class="tab-icon">💪</div>
+                  <span>근육계</span>
+                </div>
+                <div class="tab-button" data-tab="reproductive">
+                  <div class="tab-icon">👤</div>
+                  <span>생식&비뇨계</span>
+                </div>
+              </div>
+
+              <!-- 탭 컨텐츠 -->
+              <div class="tab-content active" data-tab="nervous">
+                <div class="supplement-cards-grid">
+                  <div
+                    class="supplement-type-card"
+                    data-goal="cognitive_memory"
+                  >
+                    <div class="icon">🧩</div>
+                    <h3>인지기능/기억력</h3>
+                    <p>기억력 개선, 집중력 향상</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="tension_stress">
+                    <div class="icon">😌</div>
+                    <h3>긴장</h3>
+                    <p>스트레스 완화, 안정</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="sleep_quality">
+                    <div class="icon">😴</div>
+                    <h3>수면의 질</h3>
+                    <p>숙면 도움, 불면증 개선</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="fatigue">
+                    <div class="icon">⚡</div>
+                    <h3>피로</h3>
+                    <p>피로 회복, 에너지 증진</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-content" data-tab="sensory">
+                <div class="supplement-cards-grid">
+                  <div class="supplement-type-card" data-goal="dental">
+                    <div class="icon">🦷</div>
+                    <h3>치아</h3>
+                    <p>충치, 잇몸, 구강 관리</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="eye">
+                    <div class="icon">👁️</div>
+                    <h3>눈</h3>
+                    <p>시력, 안구건조 관리</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="skin">
+                    <div class="icon">✨</div>
+                    <h3>피부</h3>
+                    <p>피부 탄력, 노화 방지</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-content" data-tab="digestive">
+                <div class="supplement-cards-grid">
+                  <div class="supplement-type-card" data-goal="liver">
+                    <div class="icon">🫘</div>
+                    <h3>간</h3>
+                    <p>간 기능 개선, 해독 작용</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="stomach">
+                    <div class="icon">🟡</div>
+                    <h3>위</h3>
+                    <p>위 건강, 소화 불량 개선</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="intestine">
+                    <div class="icon">🌿</div>
+                    <h3>장</h3>
+                    <p>장 건강, 변비 개선</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="body_fat">
+                    <div class="icon">🏃‍♀️</div>
+                    <h3>체지방</h3>
+                    <p>체지방 감소, 체중 관리</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-content" data-tab="endocrine">
+                <div class="supplement-cards-grid">
+                  <div class="supplement-type-card" data-goal="blood_glucose">
+                    <div class="icon">🩸</div>
+                    <h3>혈당</h3>
+                    <p>혈당 조절, 당뇨 관리</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="menopause_women">
+                    <div class="icon">👩‍🦳</div>
+                    <h3>갱년기 여성</h3>
+                    <p>여성 갱년기 증상 완화</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="menopause_men">
+                    <div class="icon">👨‍🦳</div>
+                    <h3>갱년기 남성</h3>
+                    <p>남성 갱년기 증상 완화</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="premenstrual">
+                    <div class="icon">🌙</div>
+                    <h3>월경 증후군</h3>
+                    <p>생리전증후군(PMS) 완화</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-content" data-tab="cardiovascular">
+                <div class="supplement-cards-grid">
+                  <div class="supplement-type-card" data-goal="triglycerides">
+                    <div class="icon">🔺</div>
+                    <h3>혈중 중성지방</h3>
+                    <p>중성지방 수치 개선</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="cholesterol">
+                    <div class="icon">🟠</div>
+                    <h3>콜레스테롤</h3>
+                    <p>콜레스테롤 수치 관리</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="blood_pressure">
+                    <div class="icon">🫀</div>
+                    <h3>혈압</h3>
+                    <p>혈압 관리</p>
+                  </div>
+                  <div
+                    class="supplement-type-card"
+                    data-goal="blood_circulation"
+                  >
+                    <div class="icon">🔄</div>
+                    <h3>혈행</h3>
+                    <p>혈액순환 개선, 말초순환</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-content" data-tab="immune">
+                <div class="supplement-cards-grid">
+                  <div class="supplement-type-card" data-goal="immunity">
+                    <div class="icon">🛡️</div>
+                    <h3>면역</h3>
+                    <p>면역력 증진, 감염 예방</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="antioxidant">
+                    <div class="icon">🌟</div>
+                    <h3>항산화</h3>
+                    <p>활성산소 제거, 세포 보호</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-content" data-tab="muscular">
+                <div class="supplement-cards-grid">
+                  <div class="supplement-type-card" data-goal="joint">
+                    <div class="icon">🤸‍♂️</div>
+                    <h3>관절</h3>
+                    <p>관절 건강, 관절염 예방</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="bone">
+                    <div class="icon">🦴</div>
+                    <h3>뼈</h3>
+                    <p>골밀도 증가, 골다공증</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="muscle_strength">
+                    <div class="icon">💪</div>
+                    <h3>근력</h3>
+                    <p>근육량 증가, 근력 향상</p>
+                  </div>
+                  <div
+                    class="supplement-type-card"
+                    data-goal="exercise_performance"
+                  >
+                    <div class="icon">🏃‍♂️</div>
+                    <h3>운동수행능력</h3>
+                    <p>지구력, 운동 능력 향상</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-content" data-tab="reproductive">
+                <div class="supplement-cards-grid">
+                  <div class="supplement-type-card" data-goal="prostate">
+                    <div class="icon">👨</div>
+                    <h3>전립선</h3>
+                    <p>전립선 건강, 남성 건강</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="urination">
+                    <div class="icon">💧</div>
+                    <h3>배뇨</h3>
+                    <p>배뇨 기능 개선, 빈뇨 완화</p>
+                  </div>
+                  <div class="supplement-type-card" data-goal="urinary_tract">
+                    <div class="icon">🚿</div>
+                    <h3>요로</h3>
+                    <p>요로 건강, 감염 예방</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: 내 정보 입력 -->
+          <div class="wizard-step" data-step="2">
+            <div class="step-header">
+              <h2>내 정보 입력</h2>
+              <p>더 정확한 영양제 추천을 위해 프로필 정보를 입력해주세요</p>
+            </div>
+            <div
+              class="button-group"
+              style="margin-bottom: 30px; margin-top: 10px"
+            >
+              <button
+                type="button"
+                onclick="prevStep()"
+                class="health-goal-edit-btn"
+              >
+                건강 고민 수정
+              </button>
+            </div>
+            <div class="progress-container">
+              <div id="profileProgressBar" class="progress-bar"></div>
+              <div
+                class="progress-step active"
+                data-step="1"
+                data-text="기본정보"
+              ></div>
+              <div
+                class="progress-step"
+                data-step="2"
+                data-text="건강정보"
+              ></div>
+              <div
+                class="progress-step"
+                data-step="3"
+                data-text="추가정보"
+              ></div>
+            </div>
+            <form
+              id="profileForm"
+              onsubmit="return false;"
+              action="javascript:void(0)"
+            >
+              <div id="profileSection1" class="profile-section active">
+                <div class="section-guide required">
+                  기본 신체 정보를 정확히 입력해주세요. 정확한 정보일수록 더
+                  나은 맞춤 영양제를 추천할 수 있습니다.
+                </div>
+                <div class="input-row">
+                  <div class="input-group-item">
+                    <label for="age">나이:</label>
+                    <span id="age-error" class="error-message"></span>
+                    <input
+                      type="number"
+                      id="age"
+                      name="age"
+                      min="1"
+                      max="120"
+                      required
+                    />
+                  </div>
+                  <div class="input-group-item">
+                    <label for="height">키 (cm):</label>
+                    <span id="height-error" class="error-message"></span>
+                    <input
+                      type="number"
+                      id="height"
+                      name="height"
+                      min="100"
+                      max="250"
+                      step="0.1"
+                      required
+                    />
+                  </div>
+                  <div class="input-group-item">
+                    <label for="weight">체중 (kg):</label>
+                    <span id="weight-error" class="error-message"></span>
+                    <input
+                      type="number"
+                      id="weight"
+                      name="weight"
+                      min="20"
+                      max="200"
+                      step="0.1"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <label>성별:</label>
+                <div class="option-group" data-name="gender">
+                  <div
+                    class="option"
+                    data-value="male"
+                    role="button"
+                    tabindex="0"
+                  >
+                    남성
+                  </div>
+                  <div
+                    class="option"
+                    data-value="female"
+                    role="button"
+                    tabindex="0"
+                  >
+                    여성
+                  </div>
+                </div>
+                <label>활동량:</label>
+                <div class="option-group" data-name="activity_level">
+                  <div
+                    class="option"
+                    data-value="sedentary"
+                    role="button"
+                    tabindex="0"
+                  >
+                    좌식 생활 (운동 거의 안함)
+                  </div>
+                  <div
+                    class="option"
+                    data-value="light"
+                    role="button"
+                    tabindex="0"
+                  >
+                    가벼운 활동 (주 1-3회 운동)
+                  </div>
+                  <div
+                    class="option"
+                    data-value="moderate"
+                    role="button"
+                    tabindex="0"
+                  >
+                    보통 활동 (주 3-5회 운동)
+                  </div>
+                  <div
+                    class="option"
+                    data-value="active"
+                    role="button"
+                    tabindex="0"
+                  >
+                    활발한 활동 (주 6-7회 운동)
+                  </div>
+                  <div
+                    class="option"
+                    data-value="very_active"
+                    role="button"
+                    tabindex="0"
+                  >
+                    매우 활발함 (하루 2회 이상 운동)
+                  </div>
+                </div>
+                <label>식사 패턴:</label>
+                <div class="option-group" data-name="eating_patterns">
+                  <div
+                    class="option"
+                    data-value="regular"
+                    role="button"
+                    tabindex="0"
+                  >
+                    규칙적 (정해진 시간에 식사)
+                  </div>
+                  <div
+                    class="option"
+                    data-value="irregular"
+                    role="button"
+                    tabindex="0"
+                  >
+                    불규칙적
+                  </div>
+                  <div
+                    class="option"
+                    data-value="intermittent_fasting"
+                    role="button"
+                    tabindex="0"
+                  >
+                    간헐적 단식
+                  </div>
+                </div>
+                <label>수면 패턴:</label>
+                <div class="option-group" data-name="sleep_patterns">
+                  <div
+                    class="option"
+                    data-value="less_than_6"
+                    role="button"
+                    tabindex="0"
+                  >
+                    6시간 미만
+                  </div>
+                  <div
+                    class="option"
+                    data-value="6_to_8"
+                    role="button"
+                    tabindex="0"
+                  >
+                    6-8시간
+                  </div>
+                  <div
+                    class="option"
+                    data-value="more_than_8"
+                    role="button"
+                    tabindex="0"
+                  >
+                    8시간 이상
+                  </div>
+                </div>
+                <label>하루 식사 횟수:</label>
+                <div class="option-group" data-name="meals_per_day">
+                  <div class="option" data-value="1" role="button" tabindex="0">
+                    1회
+                  </div>
+                  <div class="option" data-value="2" role="button" tabindex="0">
+                    2회
+                  </div>
+                  <div class="option" data-value="3" role="button" tabindex="0">
+                    3회
+                  </div>
+                  <div class="option" data-value="4" role="button" tabindex="0">
+                    4회
+                  </div>
+                </div>
+                <label>음주 여부:</label>
+                <div class="option-group" data-name="alcohol_consumption">
+                  <div
+                    class="option"
+                    data-value="none"
+                    role="button"
+                    tabindex="0"
+                  >
+                    없음
+                  </div>
+                  <div
+                    class="option"
+                    data-value="socially"
+                    role="button"
+                    tabindex="0"
+                  >
+                    사회적 음주 (월 1~2회)
+                  </div>
+                  <div
+                    class="option"
+                    data-value="weekly_light"
+                    role="button"
+                    tabindex="0"
+                  >
+                    주 1회 가볍게 (1병 이내)
+                  </div>
+                  <div
+                    class="option"
+                    data-value="weekly_moderate"
+                    role="button"
+                    tabindex="0"
+                  >
+                    주 1~2회 적당히 (1병 이상)
+                  </div>
+                  <div
+                    class="option"
+                    data-value="frequent"
+                    role="button"
+                    tabindex="0"
+                  >
+                    잦은 음주 (주 3회 이상)
+                  </div>
+                </div>
+                <label>흡연 여부:</label>
+                <div class="option-group" data-name="smoking_status">
+                  <div
+                    class="option"
+                    data-value="smoker"
+                    role="button"
+                    tabindex="0"
+                  >
+                    흡연
+                  </div>
+                  <div
+                    class="option"
+                    data-value="non_smoker"
+                    role="button"
+                    tabindex="0"
+                  >
+                    비흡연
+                  </div>
+                </div>
+                <div class="button-group">
+                  <button
+                    type="button"
+                    onclick="nextSupplementProfileSection(1)"
+                    class="next-button"
+                  >
+                    다음
+                  </button>
+                </div>
+              </div>
+
+              <div id="profileSection2" class="profile-section">
+                <div class="section-guide optional">
+                  건강 관련 정보를 입력해주세요. 이 정보는 더 정확한 영양제
+                  추천을 위해 사용됩니다.
+                </div>
+                <div class="accordion">
+                  <div class="accordion-header">알레르기 (중복 선택 가능)</div>
+                  <div class="accordion-content">
+                    <div class="option-group" data-name="allergies">
+                      <div
+                        class="option"
+                        data-value="none"
+                        role="button"
+                        tabindex="0"
+                      >
+                        없음
+                      </div>
+                      <div
+                        class="option"
+                        data-value="peanuts"
+                        role="button"
+                        tabindex="0"
+                      >
+                        땅콩
+                      </div>
+                      <div
+                        class="option"
+                        data-value="tree_nuts"
+                        role="button"
+                        tabindex="0"
+                      >
+                        견과류
+                      </div>
+                      <div
+                        class="option"
+                        data-value="milk"
+                        role="button"
+                        tabindex="0"
+                      >
+                        우유
+                      </div>
+                      <div
+                        class="option"
+                        data-value="eggs"
+                        role="button"
+                        tabindex="0"
+                      >
+                        계란
+                      </div>
+                      <div
+                        class="option"
+                        data-value="fish"
+                        role="button"
+                        tabindex="0"
+                      >
+                        생선
+                      </div>
+                      <div
+                        class="option"
+                        data-value="shellfish"
+                        role="button"
+                        tabindex="0"
+                      >
+                        갑각류
+                      </div>
+                      <div
+                        class="option"
+                        data-value="soy"
+                        role="button"
+                        tabindex="0"
+                      >
+                        콩
+                      </div>
+                      <div
+                        class="option"
+                        data-value="wheat"
+                        role="button"
+                        tabindex="0"
+                      >
+                        밀
+                      </div>
+                      <div
+                        class="option"
+                        data-value="sesame"
+                        role="button"
+                        tabindex="0"
+                      >
+                        참깨
+                      </div>
+                      <div
+                        class="option"
+                        data-value="other_allergy_toggle"
+                        role="button"
+                        tabindex="0"
+                      >
+                        기타 (직접 입력)
+                      </div>
+                    </div>
+                    <div id="otherAllergyInput" class="hidden-input-container">
+                      <label for="other_allergies_text"
+                        >기타 알레르기 식품을 입력해주세요:</label
+                      >
+                      <input
+                        type="text"
+                        id="other_allergies_text"
+                        name="other_allergies_text"
+                        placeholder="예: 키위, 토마토 등"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion">
+                  <div class="accordion-header">
+                    현재 앓고 있는 질병 (중복 선택 가능)
+                  </div>
+                  <div class="accordion-content">
+                    <div class="option-group" data-name="illnesses">
+                      <div
+                        class="option"
+                        data-value="none"
+                        role="button"
+                        tabindex="0"
+                      >
+                        없음
+                      </div>
+                      <div
+                        class="option"
+                        data-value="diabetes"
+                        role="button"
+                        tabindex="0"
+                      >
+                        당뇨병
+                      </div>
+                      <div
+                        class="option"
+                        data-value="hypertension"
+                        role="button"
+                        tabindex="0"
+                      >
+                        고혈압
+                      </div>
+                      <div
+                        class="option"
+                        data-value="heart_disease"
+                        role="button"
+                        tabindex="0"
+                      >
+                        심장병
+                      </div>
+                      <div
+                        class="option"
+                        data-value="kidney_disease"
+                        role="button"
+                        tabindex="0"
+                      >
+                        신장병
+                      </div>
+                      <div
+                        class="option"
+                        data-value="liver_disease"
+                        role="button"
+                        tabindex="0"
+                      >
+                        간 질환
+                      </div>
+                      <div
+                        class="option"
+                        data-value="osteoporosis"
+                        role="button"
+                        tabindex="0"
+                      >
+                        골다공증
+                      </div>
+                      <div
+                        class="option"
+                        data-value="anemia"
+                        role="button"
+                        tabindex="0"
+                      >
+                        빈혈
+                      </div>
+                      <div
+                        class="option"
+                        data-value="thyroid_disorder"
+                        role="button"
+                        tabindex="0"
+                      >
+                        갑상선 질환
+                      </div>
+                      <div
+                        class="option"
+                        data-value="gastritis"
+                        role="button"
+                        tabindex="0"
+                      >
+                        위염
+                      </div>
+                      <div
+                        class="option"
+                        data-value="ibs"
+                        role="button"
+                        tabindex="0"
+                      >
+                        과민성 대장 증후군
+                      </div>
+                      <div
+                        class="option"
+                        data-value="other_illness_toggle"
+                        role="button"
+                        tabindex="0"
+                      >
+                        기타 (직접 입력)
+                      </div>
+                    </div>
+                    <div id="otherIllnessInput" class="hidden-input-container">
+                      <label for="other_illnesses_text"
+                        >기타 질병을 입력해주세요:</label
+                      >
+                      <input
+                        type="text"
+                        id="other_illnesses_text"
+                        name="other_illnesses_text"
+                        placeholder="예: 고지혈증, 관절염 등"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="button-group">
+                  <button
+                    type="button"
+                    onclick="prevSupplementProfileSection(2)"
+                    class="prev-button"
+                  >
+                    이전
+                  </button>
+                  <button
+                    type="button"
+                    onclick="nextSupplementProfileSection(2)"
+                    class="next-button"
+                  >
+                    다음
+                  </button>
+                </div>
+              </div>
+
+              <div id="profileSection3" class="profile-section">
+                <div class="section-guide optional">
+                  더 정확한 영양제 추천을 위한 추가 정보를 입력해주세요.
+                  (선택사항)
+                </div>
+                <div class="accordion">
+                  <div class="accordion-header">
+                    최근 건강검진 수치 (중복 선택 가능)
+                  </div>
+                  <div class="accordion-content">
+                    <div class="option-group" data-name="biomarkers">
+                      <div
+                        class="option"
+                        data-value="none"
+                        role="button"
+                        tabindex="0"
+                      >
+                        없음
+                      </div>
+                      <div
+                        class="option"
+                        data-value="blood_glucose"
+                        role="button"
+                        tabindex="0"
+                      >
+                        혈당 <span class="unit">(mg/dL)</span>
+                        <input
+                          type="number"
+                          name="blood_glucose_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="hba1c"
+                        role="button"
+                        tabindex="0"
+                      >
+                        당화혈색소 <span class="unit">(%)</span>
+                        <input
+                          type="number"
+                          name="hba1c_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                          step="0.1"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="total_cholesterol"
+                        role="button"
+                        tabindex="0"
+                      >
+                        총 콜레스테롤 <span class="unit">(mg/dL)</span>
+                        <input
+                          type="number"
+                          name="total_cholesterol_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="ldl_cholesterol"
+                        role="button"
+                        tabindex="0"
+                      >
+                        LDL 콜레스테롤 <span class="unit">(mg/dL)</span>
+                        <input
+                          type="number"
+                          name="ldl_cholesterol_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="hdl_cholesterol"
+                        role="button"
+                        tabindex="0"
+                      >
+                        HDL 콜레스테롤 <span class="unit">(mg/dL)</span>
+                        <input
+                          type="number"
+                          name="hdl_cholesterol_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="triglycerides"
+                        role="button"
+                        tabindex="0"
+                      >
+                        중성지방 <span class="unit">(mg/dL)</span>
+                        <input
+                          type="number"
+                          name="triglycerides_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="blood_pressure_systolic"
+                        role="button"
+                        tabindex="0"
+                      >
+                        수축기 혈압 <span class="unit">(mmHg)</span>
+                        <input
+                          type="number"
+                          name="blood_pressure_systolic_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="blood_pressure_diastolic"
+                        role="button"
+                        tabindex="0"
+                      >
+                        이완기 혈압 <span class="unit">(mmHg)</span>
+                        <input
+                          type="number"
+                          name="blood_pressure_diastolic_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="bmi"
+                        role="button"
+                        tabindex="0"
+                      >
+                        BMI <span class="unit">(kg/m²)</span>
+                        <input
+                          type="number"
+                          name="bmi_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                          step="0.1"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="other_biomarker_toggle"
+                        role="button"
+                        tabindex="0"
+                      >
+                        기타 (직접 입력)
+                      </div>
+                    </div>
+                    <div
+                      id="otherBiomarkerInput"
+                      class="hidden-input-container"
+                    >
+                      <label for="other_biomarkers_text"
+                        >기타 건강검진 수치를 입력해주세요:</label
+                      >
+                      <input
+                        type="text"
+                        id="other_biomarkers_text"
+                        name="other_biomarkers_text"
+                        placeholder="예: 요산, 크레아티닌 등"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion">
+                  <div class="accordion-header">
+                    섭취 중인 건강기능식품 (중복 선택 가능)
+                  </div>
+                  <div class="accordion-content">
+                    <div class="option-group" data-name="supplements">
+                      <div
+                        class="option"
+                        data-value="none"
+                        role="button"
+                        tabindex="0"
+                      >
+                        없음
+                      </div>
+                      <div
+                        class="option"
+                        data-value="vitamin_a"
+                        role="button"
+                        tabindex="0"
+                      >
+                        비타민 A <span class="unit">(μg)</span>
+                        <input
+                          type="number"
+                          name="vitamin_a_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="vitamin_d"
+                        role="button"
+                        tabindex="0"
+                      >
+                        비타민 D <span class="unit">(IU)</span>
+                        <input
+                          type="number"
+                          name="vitamin_d_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="vitamin_e"
+                        role="button"
+                        tabindex="0"
+                      >
+                        비타민 E <span class="unit">(mg)</span>
+                        <input
+                          type="number"
+                          name="vitamin_e_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="vitamin_k"
+                        role="button"
+                        tabindex="0"
+                      >
+                        비타민 K <span class="unit">(μg)</span>
+                        <input
+                          type="number"
+                          name="vitamin_k_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="iron"
+                        role="button"
+                        tabindex="0"
+                      >
+                        철분 <span class="unit">(mg)</span>
+                        <input
+                          type="number"
+                          name="iron_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="calcium"
+                        role="button"
+                        tabindex="0"
+                      >
+                        칼슘 <span class="unit">(mg)</span>
+                        <input
+                          type="number"
+                          name="calcium_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="magnesium"
+                        role="button"
+                        tabindex="0"
+                      >
+                        마그네슘 <span class="unit">(mg)</span>
+                        <input
+                          type="number"
+                          name="magnesium_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="potassium"
+                        role="button"
+                        tabindex="0"
+                      >
+                        칼륨 <span class="unit">(mg)</span>
+                        <input
+                          type="number"
+                          name="potassium_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="zinc"
+                        role="button"
+                        tabindex="0"
+                      >
+                        아연 <span class="unit">(mg)</span>
+                        <input
+                          type="number"
+                          name="zinc_value"
+                          placeholder="수치"
+                          class="value-input hidden"
+                          min="0"
+                        />
+                      </div>
+                      <div
+                        class="option"
+                        data-value="other_supplement_toggle"
+                        role="button"
+                        tabindex="0"
+                      >
+                        기타 (직접 입력)
+                      </div>
+                    </div>
+                    <div
+                      id="otherSupplementInput"
+                      class="hidden-input-container"
+                    >
+                      <label for="other_supplements_text"
+                        >기타 건강기능식품을 입력해주세요:</label
+                      >
+                      <input
+                        type="text"
+                        id="other_supplements_text"
+                        name="other_supplements_text"
+                        placeholder="예: 콜라겐, 밀크씨슬"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="button-group">
+                  <button
+                    type="button"
+                    onclick="prevSupplementProfileSection(3)"
+                    class="prev-button"
+                  >
+                    이전
+                  </button>
+                  <button
+                    type="button"
+                    class="save-button"
+                    onclick="saveSupplementProfile(event)"
+                  >
+                    저장
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Step 3: 복용 선호도 및 주의사항 -->
+          <div class="wizard-step" data-step="3">
+            <div class="step-header">
+              <h2>AI 맞춤 영양제 추천</h2>
+            </div>
+            <div id="supplementQuestionForm"></div>
+          </div>
+
+          <!-- Step 4: 추천 결과 -->
+          <div class="wizard-step results-step" data-step="4">
+            <div class="step-header">
+              <h2>💊 AI 맞춤 영양제 추천</h2>
+              <p>
+                프로필 정보와 선택하신 내용을 바탕으로 AI가 분석한 맞춤형
+                영양제입니다
+              </p>
+            </div>
+            <div
+              class="recommendations-loading"
+              id="recommendationsLoading"
+              style="display: none"
+            >
+              <div class="loading-spinner"></div>
+              <p>AI가 당신에게 맞는 영양제를 분석하고 있습니다...</p>
+            </div>
+            <div class="recommendations" id="recommendations">
+              <!-- 추천 결과가 여기에 표시됩니다 -->
+            </div>
+          </div>
+        </div>
+
+        <div class="wizard-navigation">
+          <button
+            class="nav-btn prev"
+            id="prevBtn"
+            onclick="prevStep()"
+            disabled
+          >
+            이전
+          </button>
+          <button class="nav-btn next" id="nextBtn" onclick="nextStep()">
+            프로필 입력하기
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 프로필 저장 선택 모달 -->
+    <div id="profileSaveModal" class="modal" style="display: none">
+      <div class="modal-content">
+        <button
+          type="button"
+          class="modal-close"
+          onclick="closeProfileSaveModal()"
+        >
+          &times;
+        </button>
+        <h3>프로필 저장 방법을 선택하세요</h3>
+        <div class="modal-btn-row">
+          <button id="tempSaveBtn" class="modal-btn">
+            비로그인 상태로 임시저장
+          </button>
+          <button id="saveAfterLoginBtn" class="modal-btn alt">
+            로그인 후 프로필에 저장
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 토스트 메시지 컨테이너 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+      let currentStep = 1;
+      const totalSteps = 4;
+      let selectedGoals = [];
+      let userResponses = {};
+      let userProfile = null;
+      let currentRecommendations = null; // 현재 추천 결과 저장
+
+      // 토스트 메시지 함수
+      function showToast(message, type = "info") {
+        const container = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+        toast.className = `toast-message toast toast-${type}`;
+        toast.textContent = message;
+
+        container.appendChild(toast);
+
+        // 애니메이션 시작
+        setTimeout(() => {
+          toast.classList.add("show");
+        }, 100);
+
+        // 3초 후 제거
+        setTimeout(() => {
+          toast.classList.remove("show");
+          setTimeout(() => {
+            container.removeChild(toast);
+          }, 300);
+        }, 3000);
+      }
+
+      // 통합 질문 관련 변수
+      let currentQuestionStep = 0;
+      let questionAnswers = {};
+
+      // 슬라이더 관련 변수
+      let currentSlideIndex = 0;
+      let totalSlides = 0;
+
+      // 통합 질문 프로그레스 계산
+      function getTotalSupplementQuestions() {
+        return allQuestions.length;
+      }
+
+      function getCurrentSupplementQuestionNumber() {
+        return currentQuestionStep + 1;
+      }
+
+      function updateIntegratedProgress() {
+        const currentQuestion = getCurrentSupplementQuestionNumber();
+        const totalQuestions = getTotalSupplementQuestions();
+        const progressPercent = Math.round(
+          (currentQuestion / totalQuestions) * 100
+        );
+
+        const progressBar = document.querySelector(".integrated-progress-bar");
+        const progressLabel = document.querySelector(
+          ".integrated-progress-bar-label"
+        );
+
+        if (progressBar && progressLabel) {
+          progressBar.style.width = `${progressPercent}%`;
+          progressLabel.textContent = `${progressPercent}%`;
+        }
+      }
+      // 통합된 질문 배열 (선호도 질문 + 안전성 질문)
+      let allQuestions = [
+        {
+          key: "supplement_form",
+          label: "💊 복용 선호 방식",
+          description: "어떤 형태의 영양제를 선호하시나요?",
+          type: "single",
+          options: [
+            { value: "tablet", label: "정제(타블렛)" },
+            { value: "capsule", label: "캡슐" },
+            { value: "liquid", label: "액상" },
+            { value: "powder", label: "분말" },
+            { value: "any", label: "무관" },
+          ],
+        },
+        {
+          key: "vegetarian",
+          label: "🌱 채식 여부",
+          description: "채식주의자이신가요?",
+          type: "single",
+          options: [
+            { value: "vegetarian", label: "채식주의" },
+            { value: "vegan", label: "비건" },
+            { value: "none", label: "무관" },
+          ],
+        },
+        {
+          key: "budget",
+          label: "💰 예산 (월 기준)",
+          description: "월 영양제 예산을 선택해주세요",
+          type: "single",
+          options: [
+            { value: "under_10000", label: "1만원 미만" },
+            { value: "10000_30000", label: "1-3만원" },
+            { value: "30000_50000", label: "3-5만원" },
+            { value: "over_50000", label: "5만원 이상" },
+          ],
+        },
+        {
+          key: "avoid_ingredients",
+          label: "⚠️ 특정 성분 기피",
+          description: "피하고 싶은 성분을 모두 선택해주세요",
+          type: "multi",
+          options: [
+            { value: "none", label: "없음" },
+            { value: "gelatin", label: "젤라틴" },
+            { value: "dairy", label: "유제품" },
+            { value: "egg", label: "계란 유래 성분" },
+            { value: "shellfish", label: "갑각류 유래 성분" },
+            { value: "fish", label: "생선 유래 성분" },
+            { value: "gluten", label: "글루텐" },
+            { value: "artificial", label: "인공 색소 및 향료" },
+            { value: "sugar", label: "설탕" },
+            { value: "other", label: "기타" },
+          ],
+          hasOtherInput: true,
+        },
+        {
+          key: "pregnancy_status",
+          label: "🤰 임신 또는 수유 여부",
+          description: "현재 상태를 선택해주세요",
+          type: "single",
+          options: [
+            { value: "pregnant", label: "임신중" },
+            { value: "breastfeeding", label: "수유중" },
+            { value: "planning", label: "계획중" },
+            { value: "no", label: "해당없음" },
+          ],
+        },
+        {
+          key: "medications",
+          label: "💊 현재 복용 중인 약물",
+          description: "현재 복용 중인 약물이 있으신가요?",
+          type: "single",
+          options: [
+            { value: "yes", label: "있음" },
+            { value: "no", label: "없음" },
+          ],
+          hasTextInput: true,
+          textInputKey: "current_medications",
+          textInputPlaceholder:
+            "예: 혈압약(아모디핀), 당뇨약(메트포르민), 소화제(베아제) 탈모약(아보다트,프로페시아) 등",
+        },
+        {
+          key: "digestive_issues",
+          label: "🤢 민감성 또는 위장 문제",
+          description: "해당되는 증상을 선택해주세요",
+          type: "single",
+          options: [
+            { value: "heartburn", label: "속쓰림, 위산 역류" },
+            { value: "difficulty_swallowing", label: "알약 삼키기 어려움" },
+            { value: "none", label: "없음" },
+          ],
+        },
+        {
+          key: "past_reactions",
+          label: "⚠️ 과거 영양제 부작용 경험",
+          description: "과거에 영양제 부작용을 경험한 적이 있으신가요?",
+          type: "single",
+          options: [
+            { value: "yes", label: "있음" },
+            { value: "no", label: "없음" },
+          ],
+          hasTextInput: true,
+          textInputKey: "reaction_details",
+          textInputPlaceholder:
+            "예: 비타민D 복용 후 메스꺼움, 오메가3 복용 후 속쓰림 등",
+        },
+      ];
+
+      // 페이지 로드 시 프로필 정보 불러오기
+      document.addEventListener("DOMContentLoaded", async function () {
+        await updateAuthLinks();
+        await loadUserProfile();
+        setupSupplementProfileEvents();
+        // 초기 프로그레스바 상태 설정
+        updateSupplementProfileProgress(1);
+        updateStep();
+      });
+
+      // 이벤트 리스너가 이미 등록되었는지 확인하는 플래그
+      let eventsSetup = false;
+
+      // 프로필 폼 이벤트 설정
+      function setupSupplementProfileEvents() {
+        // 이미 이벤트가 설정되었다면 중복 설정 방지
+        if (eventsSetup) {
+          return;
+        }
+
+        // 공통 스크립트(script.js)가 옵션/아코디언 처리를 담당하는 경우 중복 바인딩을 피함
+        if (typeof window.handleOptionClick !== "function") {
+          // 이벤트 위임을 사용하여 옵션 클릭 이벤트 처리
+          document.addEventListener("click", function(e) {
+            if (e.target.classList.contains("option")) {
+              handleSupplementOptionClick(e.target);
+            }
+          });
+
+          // 아코디언 이벤트도 이벤트 위임으로 처리
+          document.addEventListener("click", function(e) {
+            if (e.target.classList.contains("accordion-header")) {
+              const accordion = e.target.parentElement;
+              accordion.classList.toggle("open");
+            }
+          });
+        }
+
+        // 수치 입력 이벤트도 이벤트 위임으로 처리
+        document.addEventListener("focus", function(e) {
+          if (e.target.classList.contains("value-input")) {
+            e.target.classList.add("active");
+          }
+        }, true);
+
+        eventsSetup = true;
+      }
+
+      // 옵션 클릭 처리
+      function handleSupplementOptionClick(option) {
+        const group = option.closest(".option-group");
+        if (!group) {
+          console.error("option-group을 찾을 수 없습니다", option);
+          return;
+        }
+        
+        const groupName = group.dataset.name;
+        const value = option.dataset.value;
+
+        // 다중 선택 그룹인지 확인
+        const isMultiSelect = [
+          "allergies",
+          "illnesses",
+          "biomarkers",
+          "supplements",
+        ].includes(groupName);
+
+        if (isMultiSelect) {
+          // 다중 선택 처리
+          if (value === "none") {
+            // '없음' 선택 시 다른 모든 옵션 해제
+            group.querySelectorAll(".option").forEach((opt) => {
+              if (opt !== option) {
+                opt.classList.remove("selected");
+                const valueInput = opt.querySelector(".value-input");
+                if (valueInput) {
+                  valueInput.classList.add("hidden");
+                  valueInput.classList.remove("active");
+                  valueInput.value = "";
+                }
+              }
+            });
+            option.classList.toggle("selected");
+          } else {
+            // 다른 옵션 선택 시 '없음' 해제
+            const noneOption = group.querySelector('[data-value="none"]');
+            if (noneOption) {
+              noneOption.classList.remove("selected");
+            }
+            option.classList.toggle("selected");
+
+            // 수치 입력 필드 처리
+            const valueInput = option.querySelector(".value-input");
+            if (valueInput) {
+              if (option.classList.contains("selected")) {
+                valueInput.classList.remove("hidden");
+                valueInput.classList.add("active");
+                valueInput.focus();
+              } else {
+                valueInput.classList.add("hidden");
+                valueInput.classList.remove("active");
+                valueInput.value = "";
+              }
+            }
+          }
+        } else {
+          // 단일 선택 처리
+          console.log("단일 선택 처리 시작");
+          group.querySelectorAll(".option").forEach((opt) => {
+            opt.classList.remove("selected");
+          });
+          option.classList.add("selected");
+          console.log("단일 선택 처리 후 selected 클래스:", option.classList.contains("selected"));
+        }
+
+        // 기타 입력 필드 처리
+        if (value.includes("toggle")) {
+          let inputContainerId;
+          if (value === "other_allergy_toggle")
+            inputContainerId = "otherAllergyInput";
+          else if (value === "other_illness_toggle")
+            inputContainerId = "otherIllnessInput";
+          else if (value === "other_biomarker_toggle")
+            inputContainerId = "otherBiomarkerInput";
+          else if (value === "other_supplement_toggle")
+            inputContainerId = "otherSupplementInput";
+
+          if (inputContainerId) {
+            const container = document.getElementById(inputContainerId);
+            if (container) {
+              if (option.classList.contains("selected")) {
+                container.classList.add("active");
+                const textInput = container.querySelector('input[type="text"]');
+                if (textInput) {
+                  textInput.focus();
+                }
+              } else {
+                container.classList.remove("active");
+                const textInput = container.querySelector('input[type="text"]');
+                if (textInput) {
+                  textInput.value = "";
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // 현재 질문 가져오기
+      function getCurrentSupplementQuestion() {
+        if (
+          currentQuestionStep < 0 ||
+          currentQuestionStep >= allQuestions.length
+        ) {
+          return null;
+        }
+        return allQuestions[currentQuestionStep];
+      }
+
+      // 질문 렌더링
+      function renderSupplementQuestion(slideFromRight = true) {
+        console.log("renderQuestion 함수 호출됨");
+        const container = document.getElementById("supplementQuestionForm");
+        console.log("supplementQuestionForm 컨테이너:", container);
+        const q = getCurrentSupplementQuestion();
+        console.log("현재 질문:", q);
+
+        if (!q) {
+          console.log("질문이 없음, 함수 종료");
+          return;
+        }
+
+        // 컨테이너에 슬라이드 애니메이션을 위한 구조 추가
+        if (!container.querySelector(".question-container")) {
+          container.innerHTML = '<div class="question-container"></div>';
+        }
+
+        const slideContainer = container.querySelector(".question-container");
+
+        // 특정성분 기피 질문인지 확인하여 클래스 추가
+        const isAvoidIngredientsQuestion = q.key === "avoid_ingredients";
+        const optionsClass = isAvoidIngredientsQuestion
+          ? "preference-options two-columns"
+          : "preference-options";
+
+        // 슬라이드 방향에 따른 초기 클래스 설정
+        const initialSlideClass = slideFromRight
+          ? "slide-in-from-right"
+          : "slide-in-from-left";
+
+        // 질문 렌더링
+        let html = `
+                <div class="preference-question-block question-slide ${initialSlideClass}">
+                    <div class="mypage-progress-bar-container">
+                        <div class="mypage-progress-bar integrated-progress-bar" style="width: 0%;">
+                            <span class="mypage-progress-bar-label integrated-progress-bar-label">0%</span>
+                        </div>
+                    </div>
+                    <div class="preference-question-label">${q.label}</div>
+                    <div class="preference-question-description">${q.description}</div>
+                    <div class="${optionsClass}">
+            `;
+
+        if (q.type === "single" || q.type === "multi") {
+          q.options.forEach((opt) => {
+            const selected = (
+              q.type === "multi"
+                ? (questionAnswers[q.key] || []).includes(opt.value)
+                : questionAnswers[q.key] === opt.value
+            )
+              ? "selected"
+              : "";
+            html += `<div class="preference-option-btn ${selected}" data-value="${opt.value}">${opt.label}</div>`;
+          });
+        } else if (q.type === "text") {
+          html += `<textarea class="preference-text-input" placeholder="${
+            q.placeholder || ""
+          }">${questionAnswers[q.key] || ""}</textarea>`;
+        }
+
+        html += "</div>";
+
+        // 기타 입력 (특정 성분 기피 질문)
+        if (q.hasOtherInput) {
+          const showOther = (questionAnswers[q.key] || []).includes("other");
+          html += `<div class="preference-other-input" style="margin-top:1em;${
+            showOther ? "" : "display:none;"
+          }">
+                    <input type="text" id="other_allergy_text" placeholder="기타 피하고 싶은 성분을 입력해주세요">
+                </div>`;
+        }
+
+        // 텍스트 입력 필드 (약물, 부작용 질문)
+        if (q.hasTextInput) {
+          const showTextInput = questionAnswers[q.key] === "yes";
+          let labelText = "";
+          if (q.textInputKey === "current_medications") {
+            labelText = "복용 중인 약물을 상세히 입력해주세요";
+          } else if (q.textInputKey === "reaction_details") {
+            labelText = "경험하신 부작용을 상세히 입력해주세요";
+          }
+          html += `<div class="preference-text-input-container" style="margin-top:1.5em;${
+            showTextInput ? "" : "display:none;"
+          }">
+                    <label for="${
+                      q.textInputKey
+                    }" class="preference-input-label">${labelText}</label>
+                    <textarea id="${q.textInputKey}" placeholder="${
+            q.textInputPlaceholder
+          }" class="preference-text-input">${
+            questionAnswers[q.textInputKey] || ""
+          }</textarea>
+                </div>`;
+        }
+
+        html += "</div>";
+
+        slideContainer.innerHTML = html;
+
+        // 하단 고정 버튼 컨테이너 준비
+        let navBtnsFixed = document.querySelector(".preference-nav-btns-fixed");
+        if (!navBtnsFixed) {
+          navBtnsFixed = document.createElement("div");
+          navBtnsFixed.className = "preference-nav-btns-fixed";
+          document.body.appendChild(navBtnsFixed);
+        }
+
+        // 버튼 렌더링
+        let btnsHtml = "";
+        if (currentQuestionStep > 0) {
+          btnsHtml +=
+            '<button type="button" class="preference-prev-btn">이전</button>';
+        } else {
+          btnsHtml +=
+            '<button type="button" class="preference-prev-btn" onclick="goToProfileStep()">프로필 수정</button>';
+        }
+        if (isLastSupplementQuestion()) {
+          btnsHtml +=
+            '<button type="button" class="preference-complete-btn">완료</button>';
+        } else {
+          btnsHtml +=
+            '<button type="button" class="preference-next-btn">다음</button>';
+        }
+        navBtnsFixed.innerHTML = btnsHtml;
+        navBtnsFixed.style.display = "flex";
+
+        // 이벤트 바인딩
+        bindQuestionEvents(slideContainer, navBtnsFixed, q);
+
+        // 슬라이드 인 애니메이션 트리거
+        setTimeout(() => {
+          const newSlide = slideContainer.querySelector(
+            ".preference-question-block"
+          );
+          newSlide.classList.remove(
+            "slide-in-from-right",
+            "slide-in-from-left"
+          );
+          newSlide.classList.add("slide-current");
+        }, 50);
+
+        // 프로그레스 바 업데이트
+        setTimeout(() => {
+          updateIntegratedProgress();
+        }, 100);
+      }
+
+      // 이벤트 바인딩
+      function bindQuestionEvents(slideContainer, navBtnsFixed, q) {
+        // 옵션 버튼 이벤트
+        slideContainer
+          .querySelectorAll(".preference-option-btn")
+          .forEach((btn) => {
+            btn.onclick = () => {
+              if (q.type === "multi") {
+                questionAnswers[q.key] = questionAnswers[q.key] || [];
+
+                if (btn.dataset.value === "none") {
+                  // '없음' 선택 시 다른 모든 버튼 해제
+                  if (btn.classList.contains("selected")) {
+                    questionAnswers[q.key] = [];
+                    slideContainer
+                      .querySelectorAll(".preference-option-btn")
+                      .forEach((b) => b.classList.remove("selected"));
+                  } else {
+                    questionAnswers[q.key] = ["none"];
+                    slideContainer
+                      .querySelectorAll(".preference-option-btn")
+                      .forEach((b) => b.classList.remove("selected"));
+                    btn.classList.add("selected");
+                  }
+                } else {
+                  // 다른 옵션 선택 시 '없음' 해제
+                  const noneBtn = slideContainer.querySelector(
+                    '.preference-option-btn[data-value="none"]'
+                  );
+                  if (noneBtn) {
+                    noneBtn.classList.remove("selected");
+                    questionAnswers[q.key] = questionAnswers[q.key].filter(
+                      (v) => v !== "none"
+                    );
+                  }
+
+                  if (questionAnswers[q.key].includes(btn.dataset.value)) {
+                    questionAnswers[q.key] = questionAnswers[q.key].filter(
+                      (v) => v !== btn.dataset.value
+                    );
+                    btn.classList.remove("selected");
+                  } else {
+                    questionAnswers[q.key].push(btn.dataset.value);
+                    btn.classList.add("selected");
+                  }
+                }
+
+                // 기타 입력 토글
+                if (q.hasOtherInput) {
+                  const otherInput = slideContainer.querySelector(
+                    ".preference-other-input"
+                  );
+                  if (btn.dataset.value === "other") {
+                    otherInput.style.display = "block";
+                  } else if (!questionAnswers[q.key].includes("other")) {
+                    otherInput.style.display = "none";
+                  }
+                }
+              } else {
+                // 단일 선택
+                slideContainer
+                  .querySelectorAll(".preference-option-btn")
+                  .forEach((b) => b.classList.remove("selected"));
+                questionAnswers[q.key] = btn.dataset.value;
+                btn.classList.add("selected");
+
+                // 텍스트 입력 필드 토글 (약물, 부작용 질문)
+                if (q.hasTextInput) {
+                  const textInputDiv = slideContainer.querySelector(
+                    ".preference-text-input-container"
+                  );
+                  if (btn.dataset.value === "yes") {
+                    textInputDiv.style.display = "block";
+                    const textarea = textInputDiv.querySelector("textarea");
+                    if (textarea) {
+                      textarea.focus();
+                    }
+                  } else {
+                    textInputDiv.style.display = "none";
+                    questionAnswers[q.textInputKey] = "";
+                    const textarea = textInputDiv.querySelector("textarea");
+                    if (textarea) {
+                      textarea.value = "";
+                    }
+                  }
+                }
+              }
+            };
+          });
+
+        // 텍스트 입력 이벤트
+        const textInput = slideContainer.querySelector(
+          ".preference-text-input"
+        );
+        if (textInput) {
+          textInput.oninput = (e) => {
+            if (q.textInputKey) {
+              questionAnswers[q.textInputKey] = e.target.value;
+            } else {
+              questionAnswers[q.key] = e.target.value;
+            }
+          };
+        }
+
+        // 기타 입력 이벤트
+        const otherInput = slideContainer.querySelector("#other_allergy_text");
+        if (otherInput) {
+          otherInput.value = questionAnswers.other_allergy_text || "";
+          otherInput.oninput = (e) => {
+            questionAnswers.other_allergy_text = e.target.value;
+          };
+        }
+
+        // 네비게이션 버튼 이벤트
+        const prevBtn = navBtnsFixed.querySelector(".preference-prev-btn");
+        if (prevBtn) {
+          // 첫 번째 질문에서는 프로필 수정 버튼으로 작동
+          if (currentQuestionStep === 0) {
+            prevBtn.onclick = () => {
+              goToProfileStep();
+            };
+          } else {
+            // 두 번째 질문부터는 이전 질문으로 이동
+            prevBtn.onclick = () => {
+              const currentSlide = slideContainer.querySelector(
+                ".preference-question-block"
+              );
+              currentSlide.classList.remove("slide-current");
+              currentSlide.classList.add("slide-out-right");
+              setTimeout(() => {
+                currentQuestionStep--;
+                renderSupplementQuestion(false); // 왼쪽에서 슬라이드 인
+              }, 300);
+            };
+          }
+        }
+
+        const nextBtn = navBtnsFixed.querySelector(".preference-next-btn");
+        if (nextBtn) {
+          nextBtn.onclick = () => {
+            // 유효성 검사
+            if (!validateQuestion(q)) {
+              return;
+            }
+
+            const currentSlide = slideContainer.querySelector(
+              ".preference-question-block"
+            );
+            currentSlide.classList.remove("slide-current");
+            currentSlide.classList.add("slide-out-left");
+            setTimeout(() => {
+              currentQuestionStep++;
+              renderSupplementQuestion(true); // 오른쪽에서 슬라이드 인
+            }, 300);
+          };
+        }
+
+        const completeBtn = navBtnsFixed.querySelector(
+          ".preference-complete-btn"
+        );
+        if (completeBtn) {
+          completeBtn.onclick = () => {
+            // 유효성 검사
+            if (!validateQuestion(q)) {
+              return;
+            }
+
+            // 마지막 슬라이드 아웃 애니메이션
+            const currentSlide = slideContainer.querySelector(
+              ".preference-question-block"
+            );
+            currentSlide.classList.remove("slide-current");
+            currentSlide.classList.add("slide-out-left");
+            setTimeout(() => {
+              // 질문 완료 처리
+              completeQuestions();
+            }, 300);
+          };
+        }
+      }
+
+      // 마지막 질문인지 확인
+      function isLastSupplementQuestion() {
+        return currentQuestionStep === allQuestions.length - 1;
+      }
+
+      // 질문 유효성 검사
+      function validateQuestion(q) {
+        if (
+          q.type === "multi" &&
+          (!questionAnswers[q.key] || questionAnswers[q.key].length === 0)
+        ) {
+          alert("하나 이상 선택해주세요.");
+          return false;
+        }
+        if (q.type === "single" && !questionAnswers[q.key]) {
+          alert("선택해주세요.");
+          return false;
+        }
+        if (q.type === "text" && !q.optional && !questionAnswers[q.key]) {
+          alert("입력해주세요.");
+          return false;
+        }
+        if (
+          q.hasOtherInput &&
+          questionAnswers[q.key] &&
+          questionAnswers[q.key].includes("other") &&
+          !questionAnswers.other_allergy_text
+        ) {
+          alert("기타 피하고 싶은 성분을 입력해주세요.");
+          return false;
+        }
+        if (
+          q.hasTextInput &&
+          questionAnswers[q.key] === "yes" &&
+          !questionAnswers[q.textInputKey]
+        ) {
+          alert("자세한 내용을 입력해주세요.");
+          return false;
+        }
+        return true;
+      }
+
+      // 질문 완료 처리
+      function completeQuestions() {
+        // 질문 답변을 userResponses에 복사
+        Object.assign(userResponses, questionAnswers);
+
+        // 하단 고정 버튼 숨기기
+        const navBtnsFixed = document.querySelector(
+          ".preference-nav-btns-fixed"
+        );
+        if (navBtnsFixed) {
+          navBtnsFixed.style.display = "none";
+        }
+
+        // 다음 스텝으로 이동
+        currentStep++;
+        updateStep();
+      }
+
+      // 프로필 스텝으로 돌아가기
+      function goToProfileStep() {
+        console.log("goToProfileStep 함수 호출됨");
+
+        // 하단 고정 버튼 숨기기
+        const navBtnsFixed = document.querySelector(
+          ".preference-nav-btns-fixed"
+        );
+        if (navBtnsFixed) {
+          navBtnsFixed.style.display = "none";
+        }
+
+        // 다이나믹 질문 컨테이너 초기화
+        const supplementQuestionForm = document.getElementById(
+          "supplementQuestionForm"
+        );
+        if (supplementQuestionForm) {
+          supplementQuestionForm.innerHTML = "";
+        }
+
+        // step2(프로필 입력)로 이동
+        currentStep = 2;
+        console.log("currentStep을 2로 설정:", currentStep);
+        updateStep();
+      }
+
+      // 프로필 관련 변수
+      let currentSupplementProfileSection = 1;
+      const totalProfileSections = 3;
+
+      // 프로필 섹션 이동 함수
+      function nextSupplementProfileSection(currentSection) {
+        if (currentSection < totalProfileSections) {
+          // 현재 섹션 유효성 검사
+          if (!validateSupplementProfileSection(currentSection)) {
+            return;
+          }
+
+          // 다음 섹션으로 이동
+          const currentSectionElement = document.getElementById(
+            `profileSection${currentSection}`
+          );
+          const nextSectionElement = document.getElementById(
+            `profileSection${currentSection + 1}`
+          );
+
+          currentSectionElement.classList.remove("active");
+          nextSectionElement.classList.add("active");
+
+          // 프로그레스 바 업데이트
+          updateSupplementProfileProgress(currentSection + 1);
+        }
+      }
+
+      function prevSupplementProfileSection(currentSection) {
+        if (currentSection > 1) {
+          // 이전 섹션으로 이동
+          const currentSectionElement = document.getElementById(
+            `profileSection${currentSection}`
+          );
+          const prevSectionElement = document.getElementById(
+            `profileSection${currentSection - 1}`
+          );
+
+          currentSectionElement.classList.remove("active");
+          prevSectionElement.classList.add("active");
+
+          // 프로그레스 바 업데이트
+          updateSupplementProfileProgress(currentSection - 1);
+        }
+      }
+
+      // 프로필 프로그레스 바 업데이트
+      function updateSupplementProfileProgress(sectionNumber) {
+        const progress =
+          ((sectionNumber - 1) / (totalProfileSections - 1)) * 100;
+        const progressBar = document.getElementById("profileProgressBar");
+        if (progressBar) {
+          progressBar.style.width = `${progress}%`;
+        }
+
+        // 프로그레스 스텝 업데이트
+        document.querySelectorAll(".progress-step").forEach((step, index) => {
+          if (index + 1 <= sectionNumber) {
+            step.classList.add("active");
+          } else {
+            step.classList.remove("active");
+          }
+        });
+      }
+
+      // 프로필 섹션 유효성 검사
+      function validateSupplementProfileSection(sectionElement) {
+        const section =
+          typeof sectionElement === "number"
+            ? document.getElementById(`profileSection${sectionElement}`)
+            : sectionElement;
+
+        if (!section) return false;
+
+        // 필수 입력 필드 검증
+        const requiredInputs = section.querySelectorAll("input[required]");
+        for (let input of requiredInputs) {
+          if (!input.value.trim()) {
+            input.focus();
+            const label = input.previousElementSibling;
+            if (label && label.tagName === "LABEL") {
+              alert(`${label.textContent}를 입력해주세요.`);
+            } else {
+              alert("필수 정보를 모두 입력해주세요.");
+            }
+            return false;
+          }
+        }
+
+        // 나이, 키, 체중 범위 검증
+        const age = section.querySelector("#age");
+        if (age && (age.value < 1 || age.value > 120)) {
+          age.focus();
+          alert("나이를 올바르게 입력해주세요 (1-120세).");
+          return false;
+        }
+
+        const height = section.querySelector("#height");
+        if (height && (height.value < 100 || height.value > 250)) {
+          height.focus();
+          alert("키를 올바르게 입력해주세요 (100-250cm).");
+          return false;
+        }
+
+        const weight = section.querySelector("#weight");
+        if (weight && (weight.value < 20 || weight.value > 200)) {
+          weight.focus();
+          alert("체중을 올바르게 입력해주세요 (20-200kg).");
+          return false;
+        }
+
+        // 선택 옵션 검증 (첫 번째 섹션만)
+        if (section.id === "profileSection1") {
+          const requiredOptionGroups = [
+            "gender",
+            "activity_level",
+            "eating_patterns",
+            "sleep_patterns",
+            "meals_per_day",
+            "alcohol_consumption",
+            "smoking_status",
+          ];
+          for (let groupName of requiredOptionGroups) {
+            const group = section.querySelector(`[data-name="${groupName}"]`);
+            if (group && !group.querySelector(".option.selected")) {
+              alert(
+                `${group.previousElementSibling.textContent}를 선택해주세요.`
+              );
+              return false;
+            }
+          }
+        }
+
+        return true;
+      }
+
+      // 프로필 저장 함수
+      async function saveSupplementProfile(event) {
+        event.preventDefault();
+
+        // 마지막 섹션 유효성 검사
+        if (!validateSupplementProfileSection(3)) {
+          return;
+        }
+
+        try {
+          // 프로필 데이터 수집
+          const profileData = collectSupplementProfileData();
+
+          // 로그인 상태 확인
+          const authResponse = await fetch("/api/auth/me", {
+            credentials: "include",
+          });
+          const authData = await authResponse.json();
+
+          if (authData.loggedIn) {
+            // 로그인 상태: 직접 프로필 저장
+            await saveSupplementProfileToServer(profileData);
+            userProfile = profileData;
+
+            // 다음 스텝으로 이동
+            currentStep++;
+            updateStep();
+          } else {
+            // 비로그인 상태: 모달 표시
+            showSupplementProfileSaveModal(profileData);
+          }
+        } catch (error) {
+          console.error("프로필 저장 오류:", error);
+          showToast(
+            "프로필 저장 중 오류가 발생했습니다. 다시 시도해주세요.",
+            "error"
+          );
+        }
+      }
+
+      // 프로필 데이터 수집
+      function collectSupplementProfileData() {
+        const form = document.getElementById("profileForm");
+        const formData = new FormData(form);
+        const profileData = {};
+
+        console.log("프로필 데이터 수집 시작");
+
+        // 일반 입력 필드
+        for (let [key, value] of formData.entries()) {
+          if (key.endsWith("_value")) {
+            // 수치 입력 필드는 숫자로 변환
+            profileData[key] = value ? parseFloat(value) : null;
+            console.log(`수치 입력 필드 ${key}:`, profileData[key]);
+          } else if (value.trim()) {
+            profileData[key] = value.trim();
+            console.log(`일반 입력 필드 ${key}:`, profileData[key]);
+          }
+        }
+
+        // 옵션 그룹 데이터 수집
+        const optionGroups = [
+          "gender",
+          "activity_level",
+          "eating_patterns",
+          "sleep_patterns",
+          "meals_per_day",
+          "alcohol_consumption",
+          "smoking_status",
+          "allergies",
+          "illnesses",
+          "biomarkers",
+          "supplements",
+        ];
+        optionGroups.forEach((groupName) => {
+          const groupData = collectSupplementOptionGroupData(
+            `[data-name="${groupName}"]`
+          );
+          if (groupData && groupData.length > 0) {
+            profileData[groupName] =
+              groupData.length === 1 ? groupData[0] : groupData;
+            console.log(`${groupName} 그룹 데이터:`, profileData[groupName]);
+          }
+        });
+
+        console.log("최종 프로필 데이터:", profileData);
+        return profileData;
+      }
+
+      // 옵션 그룹 데이터 수집
+      function collectSupplementOptionGroupData(containerSelector) {
+        const container = document.querySelector(containerSelector);
+        if (!container) {
+          console.log(`컨테이너를 찾을 수 없음: ${containerSelector}`);
+          return [];
+        }
+
+        const selectedOptions = container.querySelectorAll(".option.selected");
+        console.log(
+          `${containerSelector} 선택된 옵션 수:`,
+          selectedOptions.length
+        );
+
+        const values = [];
+
+        selectedOptions.forEach((option) => {
+          const value = option.dataset.value;
+          console.log(`${containerSelector} 선택된 옵션:`, value);
+
+          if (value) {
+            // 수치 입력이 있는 경우 함께 저장
+            const valueInput = option.querySelector(".value-input");
+            if (valueInput && valueInput.value) {
+              const valueKey = valueInput.name;
+              values.push({
+                type: value,
+                value: parseFloat(valueInput.value),
+                key: valueKey,
+              });
+              console.log(
+                `${containerSelector} 수치 옵션 저장:`,
+                value,
+                valueInput.value
+              );
+            } else {
+              // 일반 옵션 (none 포함)
+              values.push(value);
+              console.log(`${containerSelector} 일반 옵션 저장:`, value);
+            }
+          }
+        });
+
+        console.log(`${containerSelector} 최종 수집된 값:`, values);
+        return values;
+      }
+
+      // 서버에 프로필 저장
+      async function saveSupplementProfileToServer(profileData) {
+        console.log("서버에 프로필 저장 시작:", profileData);
+
+        const response = await fetch("/api/profile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(profileData),
+        });
+
+        if (!response.ok) {
+          throw new Error("프로필 저장 실패");
+        }
+
+        const result = await response.json();
+        console.log("프로필 저장 성공:", result);
+        showToast("프로필이 성공적으로 저장되었습니다!", "success");
+
+        return result;
+      }
+
+      // 프로필 저장 선택 모달 표시
+      function showSupplementProfileSaveModal(profileData) {
+        const modal = document.getElementById("profileSaveModal");
+        modal.style.display = "flex";
+
+        // 모달 배경 클릭 시 닫기
+        modal.onclick = function (e) {
+          if (e.target === modal) {
+            modal.style.display = "none";
+          }
+        };
+
+        // 임시저장 버튼 이벤트
+        document.getElementById("tempSaveBtn").onclick = () => {
+          userProfile = profileData;
+          localStorage.setItem("pendingProfile", JSON.stringify(profileData));
+          modal.style.display = "none";
+          showToast("프로필이 임시 저장되었습니다.", "success");
+
+          // 다음 스텝으로 이동
+          currentStep++;
+          updateStep();
+        };
+
+        // 로그인 후 저장 버튼 이벤트
+        document.getElementById("saveAfterLoginBtn").onclick = () => {
+          localStorage.setItem("pendingProfile", JSON.stringify(profileData));
+          modal.style.display = "none";
+          window.location.href = "login.html";
+        };
+      }
+
+      // 프로필 저장 모달 닫기 함수
+      function closeProfileSaveModal() {
+        const modal = document.getElementById("profileSaveModal");
+        modal.style.display = "none";
+      }
+
+      // 인증 링크 업데이트 함수
+      async function updateAuthLinks() {
+        const authLinksContainer = document.querySelector(".auth-links");
+        try {
+          const response = await fetch("/api/auth/me", {
+            credentials: "include",
+          });
+          const data = await response.json();
+
+          if (data.loggedIn) {
+            authLinksContainer.innerHTML = `
+                        <a href="mypage.html">마이페이지</a>
+                        <a href="#" onclick="logout()">로그아웃</a>
+                    `;
+          } else {
+            authLinksContainer.innerHTML = `
+                        <a href="login.html">로그인</a>
+                        <a href="signup.html">회원가입</a>
+                    `;
+          }
+        } catch (error) {
+          console.error("인증 상태 확인 오류:", error);
+          authLinksContainer.innerHTML = `
+                    <a href="login.html">로그인</a>
+                    <a href="signup.html">회원가입</a>
+                `;
+        }
+      }
+
+      // 로그아웃 함수
+      async function logout() {
+        try {
+          const response = await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+          });
+
+          if (response.ok) {
+            localStorage.removeItem("user");
+            alert("로그아웃되었습니다.");
+            window.location.href = "index.html";
+          } else {
+            alert("로그아웃 중 오류가 발생했습니다.");
+          }
+        } catch (error) {
+          console.error("로그아웃 오류:", error);
+          alert("로그아웃 중 오류가 발생했습니다.");
+        }
+      }
+
+      // 사용자 프로필 정보 불러오기
+      async function loadUserProfile() {
+        try {
+          const authRes = await fetch("/api/auth/me", {
+            credentials: "include",
+          });
+          const authData = await authRes.json();
+
+          if (authData.loggedIn) {
+            const profileRes = await fetch("/api/profile", {
+              credentials: "include",
+            });
+            const profile = await profileRes.json();
+
+            // 프로필 응답이 유효한지 확인
+            if (profile && typeof profile === "object" && !profile.error) {
+              userProfile = profile;
+
+              // DOM이 준비된 후 프로필 정보를 폼에 자동 채우기
+              setTimeout(async () => {
+                await autofillSupplementProfileForm();
+              }, 100);
+
+              // 임신/수유 상태 설정 (프로필에 있는 경우)
+              if (profile.pregnancy_status) {
+                questionAnswers.pregnancy_status = profile.pregnancy_status;
+              }
+            } else {
+              // 프로필 정보 없음
+            }
+          } else {
+            // 비로그인 상태에서 임시 저장된 프로필 확인
+            const tempProfile = localStorage.getItem("pendingProfile");
+            if (tempProfile) {
+              userProfile = JSON.parse(tempProfile);
+
+              // DOM이 준비된 후 프로필 정보를 폼에 자동 채우기
+              setTimeout(async () => {
+                await autofillSupplementProfileForm();
+              }, 100);
+            }
+          }
+        } catch (error) {
+          console.error("프로필 정보 로드 실패:", error);
+        }
+      }
+
+      // 프로필 정보 자동 채우기
+      async function autofillSupplementProfileForm() {
+        if (!userProfile) return;
+
+        // 기본 정보 채우기
+        const fields = ["age", "height", "weight"];
+        fields.forEach((field) => {
+          const input = document.getElementById(field);
+          if (input && userProfile[field]) {
+            input.value = userProfile[field];
+          }
+        });
+
+        // 텍스트 필드 채우기
+        const textFields = [
+          "other_allergies_text",
+          "other_illnesses_text",
+          "other_biomarkers_text",
+          "other_supplements_text",
+        ];
+        textFields.forEach((field) => {
+          const input = document.getElementById(field);
+          if (input && userProfile[field]) {
+            input.value = userProfile[field];
+          }
+        });
+
+        // 옵션 그룹 선택
+        const optionGroups = [
+          "gender",
+          "activity_level",
+          "eating_patterns",
+          "sleep_patterns",
+          "meals_per_day",
+          "alcohol_consumption",
+          "smoking_status",
+          "allergies",
+          "illnesses",
+          "biomarkers",
+          "supplements",
+        ];
+        optionGroups.forEach((groupName) => {
+          const groupData = userProfile[groupName];
+          if (groupData) {
+            const values = Array.isArray(groupData) ? groupData : [groupData];
+            values.forEach((value) => {
+              if (typeof value === "object" && value.type) {
+                // 수치가 있는 옵션
+                selectSupplementProfileOption(groupName, value.type);
+                const valueInput = document.querySelector(
+                  `[name="${value.key}"]`
+                );
+                if (valueInput) {
+                  valueInput.value = value.value;
+                }
+              } else {
+                // 일반 옵션
+                selectSupplementProfileOption(groupName, value);
+              }
+            });
+          }
+        });
+      }
+
+      // 프로필 옵션 선택
+      function selectSupplementProfileOption(groupName, value) {
+        const group = document.querySelector(`[data-name="${groupName}"]`);
+        if (group) {
+          const option = group.querySelector(`[data-value="${value}"]`);
+          if (option) {
+            option.classList.add("selected");
+
+            // 수치 입력 필드가 있으면 활성화
+            const valueInput = option.querySelector(".value-input");
+            if (valueInput) {
+              valueInput.classList.remove("hidden");
+              valueInput.classList.add("active");
+            }
+
+            // 기타 입력 필드 처리
+            if (value.includes("toggle")) {
+              const targetId = value.replace("_toggle", "Input");
+              const targetContainer = document.getElementById(targetId);
+              if (targetContainer) {
+                targetContainer.classList.add("active");
+              }
+            }
+          }
+        }
+      }
+
+      // 마우스 휠로 가로 스크롤 기능 추가
+      const supplementTypeSelection = document.querySelector(
+        ".supplement-type-selection"
+      );
+      if (supplementTypeSelection) {
+        supplementTypeSelection.addEventListener("wheel", function (e) {
+          if (e.deltaY !== 0) {
+            e.preventDefault();
+            this.scrollLeft += e.deltaY;
+          }
+        });
+      }
+
+      // 탭 기능
+      document.querySelectorAll(".tab-button").forEach((button) => {
+        button.addEventListener("click", function () {
+          const tabName = this.dataset.tab;
+
+          // 모든 탭 버튼 비활성화
+          document.querySelectorAll(".tab-button").forEach((btn) => {
+            btn.classList.remove("active");
+          });
+
+          // 모든 탭 컨텐츠 숨기기
+          document.querySelectorAll(".tab-content").forEach((content) => {
+            content.classList.remove("active");
+          });
+
+          // 선택된 탭 활성화
+          this.classList.add("active");
+          document
+            .querySelector(`.tab-content[data-tab="${tabName}"]`)
+            .classList.add("active");
+        });
+      });
+
+      // 건강 목표 선택
+      document.querySelectorAll(".supplement-type-card").forEach((card) => {
+        card.addEventListener("click", function () {
+          const goal = this.dataset.goal;
+
+          if (this.classList.contains("selected")) {
+            // 선택 해제
+            this.classList.remove("selected");
+            selectedGoals = selectedGoals.filter((g) => g !== goal);
+          } else {
+            // 선택 (최대 8개)
+            if (selectedGoals.length < 8) {
+              this.classList.add("selected");
+              selectedGoals.push(goal);
+            } else {
+              alert("최대 8개까지 선택할 수 있습니다.");
+            }
+          }
+
+          updateNextButton();
+        });
+      });
+
+      // 옵션 버튼 선택 (기존 이벤트 핸들러 제거됨 - 안전성 질문은 다이나믹 질문으로 처리)
+
+      // 알레르기 체크박스 처리
+      document
+        .querySelectorAll('input[name="allergies"]')
+        .forEach((checkbox) => {
+          checkbox.addEventListener("change", function () {
+            if (this.value === "none") {
+              // '없음' 선택 시 다른 모든 체크박스 해제
+              if (this.checked) {
+                document
+                  .querySelectorAll('input[name="allergies"]')
+                  .forEach((cb) => {
+                    if (cb !== this) cb.checked = false;
+                  });
+                document.getElementById("other_allergy").style.display = "none";
+              }
+            } else if (this.value === "other") {
+              // '기타' 선택 시 입력 필드 표시
+              const otherField = document.getElementById("other_allergy");
+              if (this.checked) {
+                otherField.style.display = "block";
+                // '없음' 체크 해제
+                document.querySelector(
+                  'input[name="allergies"][value="none"]'
+                ).checked = false;
+              } else {
+                otherField.style.display = "none";
+                otherField.value = "";
+              }
+            } else {
+              // 다른 항목 선택 시 '없음' 체크 해제
+              if (this.checked) {
+                document.querySelector(
+                  'input[name="allergies"][value="none"]'
+                ).checked = false;
+              }
+            }
+            updateNextButton();
+          });
+        });
+
+      function nextStep() {
+        if (currentStep < totalSteps) {
+          // 현재 스텝 검증
+          if (!validateStep(currentStep)) {
+            return;
+          }
+
+          if (currentStep === 2) {
+            // Step 2에서 Step 3으로 이동할 때 질문 시스템 시작
+            currentStep++;
+            updateStep();
+            currentQuestionStep = 0;
+            renderSupplementQuestion();
+            return;
+          }
+
+          currentStep++;
+          updateStep();
+        }
+      }
+
+      function prevStep() {
+        if (currentStep > 1) {
+          if (currentStep === 3) {
+            // Step 3에서 이전 버튼 클릭 시 질문 시스템 종료
+            const navBtnsFixed = document.querySelector(
+              ".preference-nav-btns-fixed"
+            );
+            if (navBtnsFixed) {
+              navBtnsFixed.style.display = "none";
+            }
+            currentQuestionStep = 0;
+            questionAnswers = {};
+          }
+
+          currentStep--;
+          updateStep();
+        }
+      }
+
+      function updateStep() {
+        // body 클래스 관리 - Step 4에서만 컨테이너 확장
+        const body = document.body;
+        body.classList.remove('step-4');
+        if (currentStep === 4) {
+          body.classList.add('step-4');
+        }
+        
+        // 스텝 표시 업데이트
+        const allWizardSteps = document.querySelectorAll(".wizard-step");
+
+        allWizardSteps.forEach((step) => {
+          step.classList.remove("active");
+          step.style.display = "none"; // 강제로 숨김
+        });
+
+        const currentStepElement = document.querySelector(
+          `.wizard-step[data-step="${currentStep}"]`
+        );
+
+        if (currentStepElement) {
+          currentStepElement.classList.add("active");
+          currentStepElement.style.display = "block"; // 강제로 표시
+
+          // 스텝 2(프로필 입력)로 이동할 때 다이나믹 질문 관련 요소들 정리
+          if (currentStep === 2) {
+            // 다이나믹 질문 컨테이너 초기화
+            const supplementQuestionForm = document.getElementById(
+              "supplementQuestionForm"
+            );
+            if (supplementQuestionForm) {
+              supplementQuestionForm.innerHTML = "";
+            }
+
+            // 하단 고정 버튼 숨기기
+            const navBtnsFixed = document.querySelector(
+              ".preference-nav-btns-fixed"
+            );
+            if (navBtnsFixed) {
+              navBtnsFixed.style.display = "none";
+            }
+          }
+
+          // 스텝 3(질문)에서 질문 렌더링
+          if (currentStep === 3) {
+            // 4단계에서 3단계로 돌아온 경우가 아니라면 첫 번째 질문부터 시작
+            if (
+              currentQuestionStep < 0 ||
+              currentQuestionStep >= allQuestions.length
+            ) {
+              currentQuestionStep = 0;
+            }
+
+            // 질문 네비게이션 버튼 표시
+            let navBtnsFixed = document.querySelector(
+              ".preference-nav-btns-fixed"
+            );
+            if (navBtnsFixed) {
+              navBtnsFixed.style.display = "flex";
+            }
+
+            setTimeout(() => {
+              renderSupplementQuestion();
+            }, 100); // 약간의 지연을 두어 DOM 안정화
+          }
+
+          // 스텝 4(AI 추천)에서 추천 생성
+          if (currentStep === 4) {
+            generateAIRecommendations();
+          }
+        } else {
+          console.error("현재 스텝 요소를 찾을 수 없음:", currentStep);
+        }
+
+        // 네비게이션 버튼 업데이트
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const wizardNavigation = document.querySelector(".wizard-navigation");
+
+        if (currentStep === 2 || currentStep === 3) {
+          // Step 2 (프로필 폼), Step 3 (질문)에서는 하단 네비게이션 버튼 숨기기
+          prevBtn.style.display = "none";
+          nextBtn.style.display = "none";
+
+          // Step 3에서는 질문 버튼 표시
+          if (currentStep === 3) {
+            const navBtnsFixed = document.querySelector(
+              ".preference-nav-btns-fixed"
+            );
+            if (navBtnsFixed) {
+              navBtnsFixed.style.display = "flex";
+            }
+          }
+        } else {
+          // 다른 스텝에서는 네비게이션 버튼 표시하고 질문 버튼 숨기기
+          const preferenceNavBtnsFixed = document.querySelector(
+            ".preference-nav-btns-fixed"
+          );
+          if (preferenceNavBtnsFixed) {
+            preferenceNavBtnsFixed.style.display = "none";
+          }
+
+          if (currentStep === 1) {
+            // Step 1에서는 이전 버튼 숨기고 다음 버튼만 표시
+            prevBtn.style.display = "none";
+            nextBtn.style.display = "block";
+            
+          } else {
+            // 다른 스텝에서는 기본 스타일 복원
+            prevBtn.style.display = "block";
+            nextBtn.style.display =
+              currentStep === totalSteps ? "none" : "block";
+            prevBtn.disabled = currentStep === 1;
+
+            // 기본 스타일 복원 - 이전 버튼만 있을 때는 가운데 정렬
+            if (currentStep === totalSteps) {
+              wizardNavigation.style.justifyContent = "center";
+            } else {
+              wizardNavigation.style.justifyContent = "space-between";
+            }
+            nextBtn.style.width = "";
+            nextBtn.style.fontSize = "";
+            nextBtn.style.padding = "";
+          }
+        }
+
+        updateNextButton();
+      }
+
+      function validateStep(step) {
+        switch (step) {
+          case 1:
+            return selectedGoals.length > 0;
+          case 2:
+            // 프로필 저장 완료 여부 확인
+            return userProfile !== null;
+          case 3:
+            // 질문들이 다이나믹으로 처리되므로 항상 true 반환
+            return true;
+          default:
+            return true;
+        }
+      }
+
+      function updateNextButton() {
+        const nextBtn = document.getElementById("nextBtn");
+        nextBtn.disabled = !validateStep(currentStep);
+      }
+
+      async function generateAIRecommendations() {
+        const loadingDiv = document.getElementById("recommendationsLoading");
+        const recommendationsDiv = document.getElementById("recommendations");
+
+        // 단계별 로딩 표시
+        loadingDiv.innerHTML = `
+                <div class="multi-step-loading">
+                    <div class="loading-step step1 active" role="status" aria-live="polite">
+                        <span class="loading-icon"><span class="loading-spinner step-loading"></span><span class="loading-check" style="display:none">✔️</span></span>
+                        <div class="loading-step-texts">
+                            <div class="loading-title">개인 정보 분석 중입니다...</div>
+                            <div class="loading-desc">건강 목표와 프로필 정보를 종합하고 있어요.</div>
+                        </div>
+                    </div>
+                    <div class="loading-step step2" role="status" aria-live="polite">
+                        <span class="loading-icon"><span class="loading-spinner step-loading" style="display:none"></span><span class="loading-check" style="display:none">✔️</span></span>
+                        <div class="loading-step-texts">
+                            <div class="loading-title">AI가 영양제를 분석하고 있어요...</div>
+                            <div class="loading-desc">최적의 영양제 조합을 찾고 있습니다.</div>
+                        </div>
+                    </div>
+                    <div class="loading-step step3" role="status" aria-live="polite">
+                        <span class="loading-icon"><span class="loading-spinner step-loading" style="display:none"></span></span>
+                        <div class="loading-step-texts">
+                            <div class="loading-title">맞춤 추천을 완성하고 있어요...</div>
+                            <div class="loading-desc">개인별 주의사항과 복용법을 정리 중입니다. 최대 2분이 소요될 수 있습니다.</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        loadingDiv.style.display = "block";
+        recommendationsDiv.innerHTML = "";
+
+        // 첫 번째 스피너에 step-loading 클래스 추가
+        setTimeout(() => {
+          const step1Spinner = document.querySelector(
+            ".step1 .loading-spinner"
+          );
+          if (step1Spinner) {
+            step1Spinner.classList.add("step-loading");
+          }
+        }, 100);
+
+        // 단계별 전환 (10초씩)
+        setTimeout(() => {
+          const step1Spinner = document.querySelector(
+            ".step1 .loading-spinner"
+          );
+          const step1Check = document.querySelector(".step1 .loading-check");
+          const step1 = document.querySelector(".step1");
+          const step2 = document.querySelector(".step2");
+          const step2Spinner = document.querySelector(
+            ".step2 .loading-spinner"
+          );
+          if (step1Spinner && step1Check && step1 && step2 && step2Spinner) {
+            step1Spinner.style.display = "none";
+            step1Check.style.display = "inline-block";
+            step1.classList.remove("active");
+            step2.classList.add("active");
+            step2Spinner.style.display = "inline-block";
+            step2Spinner.classList.add("step-loading");
+          }
+        }, 8000);
+
+        setTimeout(() => {
+          const step2Spinner = document.querySelector(
+            ".step2 .loading-spinner"
+          );
+          const step2Check = document.querySelector(".step2 .loading-check");
+          const step2 = document.querySelector(".step2");
+          const step3 = document.querySelector(".step3");
+          const step3Spinner = document.querySelector(
+            ".step3 .loading-spinner"
+          );
+          if (step2Spinner && step2Check && step2 && step3 && step3Spinner) {
+            step2Spinner.style.display = "none";
+            step2Check.style.display = "inline-block";
+            step2.classList.remove("active");
+            step3.classList.add("active");
+            step3Spinner.style.display = "inline-block";
+            step3Spinner.classList.add("step-loading");
+          }
+        }, 16000);
+
+        try {
+          console.log("🚀 영양제 추천 요청 시작");
+
+          // 사용자 입력 데이터 수집
+          const avoidIngredients = questionAnswers.avoid_ingredients || [];
+          const otherAllergy = questionAnswers.other_allergy_text || "";
+          const currentMedications = questionAnswers.current_medications || "";
+          const reactionDetails = questionAnswers.reaction_details || "";
+
+          const requestData = {
+            healthGoals: selectedGoals,
+            preferences: userResponses,
+            avoidIngredients: avoidIngredients,
+            otherAllergy: otherAllergy,
+            currentMedications: currentMedications,
+            reactionDetails: reactionDetails,
+            profile: userProfile,
+          };
+
+          console.log("📦 요청 데이터:", requestData);
+
+          // AI 추천 요청
+          const response = await fetch("/api/supplements/recommend", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify(requestData),
+          });
+
+          if (!response.ok) {
+            throw new Error("추천 생성 실패");
+          }
+
+          const recommendations = await response.json();
+          console.log("✅ 추천 결과 수신:", recommendations);
+
+          // 각 영양제별로 정부승인 제품을 가져와서 추천 결과에 추가
+          if (recommendations.supplements && recommendations.supplements.length > 0) {
+            console.log("🔍 각 영양제별 정부승인 제품 검색 시작");
+            
+            for (let i = 0; i < recommendations.supplements.length; i++) {
+              const supplement = recommendations.supplements[i];
+              console.log(`영양제 "${supplement.name}" 정부승인 제품 검색 중...`);
+              
+              try {
+                const governmentProducts = await loadGovernmentProductsForSupplement(
+                  supplement.name, 
+                  selectedGoals,
+                  getUserDosagePreference(),
+                  questionAnswers.avoid_ingredients || []
+                );
+                
+                // 각 영양제에 해당하는 정부승인 제품을 추가
+                recommendations.supplements[i].governmentProducts = governmentProducts;
+                console.log(`✅ "${supplement.name}" - ${governmentProducts.length}개 정부승인 제품 찾음`);
+              } catch (error) {
+                console.error(`❌ "${supplement.name}" 정부승인 제품 검색 실패:`, error);
+                recommendations.supplements[i].governmentProducts = [];
+              }
+            }
+          }
+          
+          displayRecommendations(recommendations);
+        } catch (error) {
+          console.error("❌ AI 추천 생성 오류:", error);
+          recommendationsDiv.innerHTML = `
+                    <div class="ai-recommendation-error-message">
+                        <h3>추천 생성 중 오류가 발생했습니다</h3>
+                        <p>네트워크 연결을 확인하고 다시 시도해주세요.</p>
+                        <p>오류 내용: ${error.message}</p>
+                        <button class="retry-btn" onclick="generateAIRecommendations()">다시 시도</button>
+                    </div>
+                `;
+        } finally {
+          loadingDiv.style.display = "none";
+        }
+      }
+
+      // 정부승인 제품 로드 함수 (기존)
+      async function loadGovernmentApprovedProducts(healthGoals, dosagePreference) {
+        try {
+          console.log('정부승인 제품 조회 시작:', { healthGoals, dosagePreference });
+          
+          const response = await fetch('/api/supplements/government-approved-products', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              healthGoals: healthGoals,
+              dosagePreference: dosagePreference,
+              requiredIngredients: [],
+              avoidIngredients: questionAnswers.avoid_ingredients || []
+            })
+          });
+          
+          if (!response.ok) {
+            console.error('정부승인 제품 조회 실패:', response.status);
+            return [];
+          }
+          
+          const data = await response.json();
+          console.log('✅ 정부승인 제품 조회 성공:', data);
+          return data.products || [];
+        } catch (error) {
+          console.error('정부승인 제품 로딩 실패:', error);
+          return [];
+        }
+      }
+
+      // 특정 영양제 명칭으로 정부승인 제품 검색 함수
+      async function loadGovernmentProductsForSupplement(supplementName, healthGoals, dosagePreference, avoidIngredients) {
+        try {
+          console.log(`영양제 "${supplementName}" 정부승인 제품 검색 시작`, { healthGoals, dosagePreference });
+          
+          const response = await fetch('/api/supplements/search-by-supplement-name', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              supplementName: supplementName,
+              healthGoals: healthGoals || [],
+              dosagePreference: dosagePreference,
+              avoidIngredients: avoidIngredients || []
+            })
+          });
+          
+          if (!response.ok) {
+            console.error(`영양제 "${supplementName}" 검색 실패:`, response.status);
+            return [];
+          }
+          
+          const data = await response.json();
+          console.log(`✅ 영양제 "${supplementName}" 검색 성공:`, data);
+          return data.products || [];
+        } catch (error) {
+          console.error(`영양제 "${supplementName}" 검색 중 오류:`, error);
+          return [];
+        }
+      }
+
+      // 사용자 복용 선호도 가져오기 함수
+      function getUserDosagePreference() {
+        // questionAnswers에서 복용 선호도 추출 (supplement_form 키 사용)
+        if (questionAnswers && questionAnswers.supplement_form) {
+          return questionAnswers.supplement_form;
+        }
+        
+        // userResponses에서 복용 선호도 추출
+        if (userResponses && userResponses.supplement_form) {
+          return userResponses.supplement_form;
+        }
+        
+        // 이전 키명들도 체크 (하위호환성)
+        if (userResponses && userResponses.dosage_preference) {
+          return userResponses.dosage_preference;
+        }
+        
+        if (questionAnswers && questionAnswers.dosage_preference) {
+          return questionAnswers.dosage_preference;
+        }
+        
+        return null;
+      }
+
+      // 문자열 유사도 계산 함수 (Levenshtein Distance 기반)
+      function calculateSimilarity(str1, str2) {
+        if (str1 === str2) return 1;
+        if (!str1 || !str2) return 0;
+        
+        const longer = str1.length > str2.length ? str1 : str2;
+        const shorter = str1.length > str2.length ? str2 : str1;
+        
+        if (longer.length === 0) return 1;
+        
+        const editDistance = levenshteinDistance(longer, shorter);
+        return (longer.length - editDistance) / longer.length;
+      }
+
+      // Levenshtein Distance 계산
+      function levenshteinDistance(str1, str2) {
+        const matrix = [];
+        
+        for (let i = 0; i <= str2.length; i++) {
+          matrix[i] = [i];
+        }
+        
+        for (let j = 0; j <= str1.length; j++) {
+          matrix[0][j] = j;
+        }
+        
+        for (let i = 1; i <= str2.length; i++) {
+          for (let j = 1; j <= str1.length; j++) {
+            if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+              matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+              matrix[i][j] = Math.min(
+                matrix[i - 1][j - 1] + 1,
+                matrix[i][j - 1] + 1,
+                matrix[i - 1][j] + 1
+              );
+            }
+          }
+        }
+        
+        return matrix[str2.length][str1.length];
+      }
+
+      // 제품명과 영양제명 간의 유사도 계산 (향상된 버전)
+      function calculateProductSimilarity(productName, supplementName) {
+        if (!productName || !supplementName) return 0;
+        
+        const normalizedProduct = productName.toLowerCase().trim();
+        const normalizedSupplement = supplementName.toLowerCase().trim();
+        
+        // 1. 완전 일치 확인
+        if (normalizedProduct.includes(normalizedSupplement) || normalizedSupplement.includes(normalizedProduct)) {
+          return 1;
+        }
+        
+        // 2. 단어 단위로 분리하여 최고 유사도 계산
+        const productWords = normalizedProduct.split(/[\s\-\(\)]+/).filter(w => w.length > 1);
+        const supplementWords = normalizedSupplement.split(/[\s\-\(\)]+/).filter(w => w.length > 1);
+        
+        let maxSimilarity = 0;
+        
+        // 각 영양제 단어와 제품명 전체 비교
+        supplementWords.forEach(suppWord => {
+          const similarity = calculateSimilarity(suppWord, normalizedProduct);
+          maxSimilarity = Math.max(maxSimilarity, similarity);
+          
+          // 각 제품명 단어와도 비교
+          productWords.forEach(prodWord => {
+            const wordSimilarity = calculateSimilarity(suppWord, prodWord);
+            maxSimilarity = Math.max(maxSimilarity, wordSimilarity);
+          });
+        });
+        
+        // 3. 전체 문자열 유사도도 고려
+        const overallSimilarity = calculateSimilarity(normalizedProduct, normalizedSupplement);
+        maxSimilarity = Math.max(maxSimilarity, overallSimilarity * 0.8); // 가중치 적용
+        
+        return maxSimilarity;
+      }
+
+      // 정부승인 제품 섹션 생성 함수
+      function generateGovernmentProductsSection(products, supplementName = '') {
+        const titleSuffix = supplementName ? ` (${supplementName} 관련)` : '';
+        
+        // 로그인 상태 확인
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        const isLoggedIn = !!user;
+        
+        if (!products || products.length === 0) {
+          const blurClass = !isLoggedIn ? ' login-required-blur' : '';
+          const overlayHtml = !isLoggedIn ? `
+            <div class="login-required-overlay">
+              <div class="login-required-message">
+                <span class="lock-icon">🔑</span>
+                <span class="message-text">로그인하면 열립니다!</span>
+              </div>
+            </div>
+          ` : '';
+          
+          return `
+            <div class="government-products-section${blurClass}" style="${!isLoggedIn ? 'position: relative;' : ''}">
+              <div class="government-section-header">
+                <h4>건강기능식품${titleSuffix}</h4>
+                <p class="no-products-message">해당 영양제와 관련된 정부승인 제품이 없습니다.</p>
+              </div>
+              ${overlayHtml}
+            </div>
+          `;
+        }
+
+        // 제품을 영양제명과의 유사도 기준으로 정렬
+        const sortedProducts = [...products].sort((a, b) => {
+          const similarityA = calculateProductSimilarity(a.name, supplementName);
+          const similarityB = calculateProductSimilarity(b.name, supplementName);
+          return similarityB - similarityA; // 내림차순 정렬 (가장 유사한 것이 위로)
+        });
+
+        console.log(`🔍 "${supplementName}" 제품 유사도 정렬 결과:`);
+        sortedProducts.slice(0, 5).forEach((product, index) => {
+          const similarity = calculateProductSimilarity(product.name, supplementName);
+          console.log(`${index + 1}. ${product.name} (유사도: ${similarity.toFixed(3)})`);
+        });
+
+        // 고유한 ID 생성 (영양제명 기반)
+        const sectionId = `gov-products-${supplementName.replace(/[^a-zA-Z0-9가-힣]/g, '')}`;
+        
+        // 로그인 상태에 따른 클래스와 스타일 설정
+        const blurClass = !isLoggedIn ? ' login-required-blur' : '';
+        const positionStyle = !isLoggedIn ? 'position: relative;' : '';
+        const overlayHtml = !isLoggedIn ? `
+          <div class="login-required-overlay">
+            <div class="login-required-message">
+              <span class="lock-icon">🔑</span>
+              <span class="message-text">로그인하면 열립니다!</span>
+            </div>
+          </div>
+        ` : '';
+
+        let productsHtml = `
+          <div class="government-products-section${blurClass}" id="${sectionId}" style="${positionStyle}">
+            <div class="government-section-header">
+              <h4>건강기능식품${titleSuffix}</h4>
+              <p class="section-description">해당 영양제와 관련된 인증 제품들입니다. (${sortedProducts.length}개 제품)</p>
+            </div>
+            <div class="government-products-grid">
+        `;
+
+        sortedProducts.slice(0, 4).forEach((product, index) => {  // 최대 4개만 표시 (유사도순)
+          productsHtml += `
+            <div class="government-product-card">
+              <div class="product-header">
+                <div class="product-main-info">
+                  <h5 class="product-name">${product.name}</h5>
+                  <span class="product-company">${product.company}</span>
+                </div>
+                <div class="product-badges">
+                  <span class="dosage-badge">${product.dosageForm}</span>
+                </div>
+              </div>
+              
+              <!-- 건강고민 뱃지 영역 -->
+              ${product.healthConcerns && product.healthConcerns.length > 0 
+                ? `<div class="health-concerns-section">
+                     ${product.healthConcerns.map(concern => 
+                       `<span class="health-concern-badge">${concern.label}</span>`
+                     ).join('')}
+                   </div>` 
+                : ''}
+              
+              <div class="product-function">
+                <div class="function-title">주요 기능</div>
+                <p class="function-text">${product.function}</p>
+              </div>
+              
+              <div class="product-details">
+                <div class="detail-item">
+                  <span class="detail-label">원료</span>
+                  <span class="detail-value">${product.ingredients.length > 50 ? product.ingredients.substring(0, 50) + '...' : product.ingredients}</span>
+                </div>
+                ${product.intakeMethod ? `
+                  <div class="detail-item">
+                    <span class="detail-label">섭취법</span>
+                    <span class="detail-value">${product.intakeMethod.length > 30 ? product.intakeMethod.substring(0, 30) + '...' : product.intakeMethod}</span>
+                  </div>
+                ` : ''}
+              </div>
+              
+              <div class="product-actions">
+                <button class="gov-product-btn primary" onclick="showProductDetail('${product.id}')">
+                  <span>📋</span> 상세보기
+                </button>
+                <button class="gov-product-btn secondary" onclick="searchProduct('${product.name}', '${product.company}')">
+                  <span>🔍</span> 검색
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        if (sortedProducts.length > 4) {
+          // 정렬된 제품 데이터를 전역 변수에 저장 (영양제명 기반 키 사용)
+          const dataKey = `govProducts_${supplementName.replace(/[^a-zA-Z0-9가-힣]/g, '')}`;
+          window[dataKey] = sortedProducts; // 정렬된 제품 저장
+          
+          productsHtml += `
+            <div class="more-products-card" onclick="showAllGovernmentProducts('${dataKey}', '${supplementName}')" style="cursor: pointer;">
+              <div class="more-products-content">
+                <span class="more-count">+${sortedProducts.length - 4}개 더보기</span>
+                <button class="show-more-btn" onclick="event.stopPropagation(); showAllGovernmentProducts('${dataKey}', '${supplementName}')">
+                  전체보기
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
+        productsHtml += `
+            </div>
+            ${overlayHtml}
+          </div>
+        `;
+
+        return productsHtml;
+      }
+
+      function displayRecommendations(recommendations) {
+        // 추천 결과를 전역 변수에 저장
+        currentRecommendations = recommendations;
+
+        const container = document.getElementById("recommendations");
+
+        let html = '<div class="ai-recommendations">';
+
+
+
+        // 영양제 추천 섹션
+        if (
+          recommendations.supplements &&
+          recommendations.supplements.length > 0
+        ) {
+          html += `
+                    <div class="supplements-section">
+                        <div class="supplements-slider-container">
+                            <!-- 슬라이더 인디케이터 -->
+                            <div class="supplements-slider-indicators" id="supplements-indicators"></div>
+                            
+                            <!-- 슬라이더 래퍼 -->
+                            <div class="supplements-slider-wrapper">
+                                <!-- 슬라이더 컨트롤 -->
+                                <div class="supplements-slider-controls">
+                                    <button class="supplements-slider-arrow prev" onclick="prevSlide()" disabled>
+                                        <span>‹</span>
+                                    </button>
+                                    <button class="supplements-slider-arrow next" onclick="nextSlide()">
+                                        <span>›</span>
+                                    </button>
+                                </div>
+                                
+                                <div class="supplements-slides" id="supplements-slides">
+                `;
+
+          recommendations.supplements.forEach((supplement, index) => {
+            const priorityClass = supplement.priority || "recommended";
+            const priorityText =
+              {
+                essential: "필수",
+                recommended: "권장",
+                optional: "선택",
+              }[priorityClass] || "권장";
+
+            const categoryIcon =
+              {
+                비타민: "🟡",
+                미네랄: "🟢",
+                오메가: "🔵",
+                프로바이오틱스: "🟣",
+                허브: "🟤",
+                기타: "⚪",
+              }[supplement.category] || "💊";
+
+            html += `
+                        <div class="supplements-slide" style="${index === 0 ? 'display: block;' : 'display: none;'}">
+                            <div class="supplement-card-modern ${priorityClass}">
+                            <!-- 상단 헤더 -->
+                            <div class="card-header-section">
+                                <div class="supplement-main-info">
+                                    <div class="supplement-icon">${categoryIcon}</div>
+                                    <div class="supplement-title-group">
+                                        <h4 class="supplement-name">${supplement.name}</h4>
+                                        <span class="supplement-category">${supplement.category}</span>
+                                    </div>
+                                </div>
+                                <div class="priority-badge ${priorityClass}">${priorityText}</div>
+                            </div>
+                            
+                            <!-- 메인 컨텐츠 영역 -->
+                            <div class="card-content-grid">
+                                <!-- 복용 정보 -->
+                                <div class="dosage-section">
+                                    <div class="section-title">💊 복용법</div>
+                                    <div class="dosage-details">
+                                        <div class="dosage-amount">${supplement.dosage}</div>
+                                        <div class="timing-details">
+                                            <span class="timing-when">${supplement.timing?.when || "식후"}</span>
+                                            <span class="timing-frequency">${supplement.timing?.frequency || "1일 1회"}</span>
+                                            ${supplement.timing?.duration ? `<span class="timing-duration">${supplement.timing.duration}</span>` : ""}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 주요 효능 -->
+                                <div class="benefits-section">
+                                    <div class="section-title">🎯 주요 효능</div>
+                                    <div class="benefits-tags">
+                                        ${
+                                          supplement.benefits
+                                            ? supplement.benefits
+                                                .map(benefit => `<span class="benefit-tag">${benefit}</span>`)
+                                                .join("")
+                                            : ""
+                                        }
+                                    </div>
+                                </div>
+                                
+                                <!-- 과학적 근거 -->
+                                <div class="rationale-section">
+                                    <div class="section-title">🧠 과학적 근거</div>
+                                    <div class="rationale-list">
+                                        ${
+                                          Array.isArray(supplement.scientificRationale)
+                                            ? supplement.scientificRationale
+                                                .map(rationale => `<div class="rationale-item">${rationale}</div>`)
+                                                .join("")
+                                            : `<div class="rationale-item">${supplement.scientificRationale}</div>`
+                                        }
+                                    </div>
+                                </div>
+                                
+                                <!-- 예상 효과 -->
+                                <div class="results-section">
+                                    <div class="section-title">📈 예상 효과</div>
+                                    <p class="results-text">${supplement.expectedResults}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 주의사항 및 상호작용 -->
+                            ${
+                              supplement.safetyNotes || supplement.interactions
+                                ? `
+                                <div class="warnings-section">
+                                    ${
+                                      supplement.safetyNotes
+                                        ? `
+                                        <div class="safety-warning">
+                                            <div class="warning-title">⚠️ 주의사항</div>
+                                            <p>${supplement.safetyNotes}</p>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      supplement.interactions
+                                        ? `
+                                        <div class="interactions-info">
+                                            <div class="warning-title">🔄 상호작용</div>
+                                            <p>${supplement.interactions}</p>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                </div>
+                            `
+                                : ""
+                            }
+                            
+                            <!-- 액션 버튼 -->
+                            <div class="supplement-actions">
+                                <button class="action-btn primary" onclick="buyProduct('${supplement.name}')">
+                                    <span>🛒</span> 구매하기
+                                </button>
+                                <button class="action-btn secondary" onclick="saveSupplement('${supplement.name}', ${JSON.stringify(supplement).replace(/"/g, "&quot;")})">
+                                    <span>💾</span> 저장
+                                </button>
+                            </div>
+                            
+                            <!-- 정부승인 제품 섹션 -->
+                            ${generateGovernmentProductsSection(supplement.governmentProducts || [], supplement.name)}
+                        </div>
+                    </div>
+                    `;
+          });
+
+          html += `
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        }
+
+        // 생활 통합 가이드
+        if (recommendations.lifestyleIntegration) {
+          html += `
+                    <div class="lifestyle-section">
+                        <div class="section-header">
+                            <h3>🏃‍♂️ 생활 통합 가이드</h3>
+                        </div>
+                        <div class="lifestyle-cards">
+                            <div class="lifestyle-card">
+                                <div class="card-icon">🗓️</div>
+                                <div class="card-content">
+                                    <h4>일상 루틴</h4>
+                                    <p>${recommendations.lifestyleIntegration.dailyRoutine}</p>
+                                </div>
+                            </div>
+                            <div class="lifestyle-card">
+                                <div class="card-icon">🍽️</div>
+                                <div class="card-content">
+                                    <h4>식사 계획</h4>
+                                    <p>${recommendations.lifestyleIntegration.mealPlanning}</p>
+                                </div>
+                            </div>
+                            <div class="lifestyle-card">
+                                <div class="card-icon">📊</div>
+                                <div class="card-content">
+                                    <h4>모니터링</h4>
+                                    <p>${recommendations.lifestyleIntegration.monitoringTips}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        }
+
+        // 영양제 섭취 시 주의사항
+        if (recommendations.safetyProtocol) {
+          html += `
+                    <div class="safety-section">
+                        <div class="section-header">
+                            <h3>🛡️ 영양제 섭취 시 주의사항</h3>
+                        </div>
+                        <div class="safety-content">
+                            <div class="safety-item">
+                                <h4>⚠️ 일반 주의사항</h4>
+                                <ul>
+                                    ${
+                                      recommendations.safetyProtocol
+                                        .generalPrecautions
+                                        ? recommendations.safetyProtocol.generalPrecautions
+                                            .map(
+                                              (precaution) =>
+                                                `<li>${precaution}</li>`
+                                            )
+                                            .join("")
+                                        : ""
+                                    }
+                                </ul>
+                            </div>
+                            <div class="safety-item emergency">
+                                <h4>🚨 응급 신호</h4>
+                                <p>${
+                                  recommendations.safetyProtocol
+                                    .emergencySignals
+                                }</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        }
+
+        // 액션 버튼
+        html += `
+                <div class="recommendation-actions">
+                    <button class="action-btn secondary large" onclick="resetWizard()">
+                        <span>🔄</span> 다시 진단하기
+                    </button>
+                    <button class="action-btn tertiary large" onclick="shareRecommendations()">
+                        <span>📤</span> 결과 공유
+                    </button>
+                </div>
+            `;
+
+        html += "</div>";
+
+        container.innerHTML = html;
+
+        // 슬라이더 초기화
+        setTimeout(() => {
+          initializeSlider();
+        }, 100);
+      }
+
+
+
+      // 슬라이더 관련 함수들
+      function nextSlide() {
+        if (currentSlideIndex < totalSlides - 1) {
+          currentSlideIndex++;
+          updateSliderPosition();
+        }
+      }
+
+      function prevSlide() {
+        if (currentSlideIndex > 0) {
+          currentSlideIndex--;
+          updateSliderPosition();
+        }
+      }
+
+      function goToSlide(index) {
+        if (index >= 0 && index < totalSlides) {
+          currentSlideIndex = index;
+          updateSliderPosition();
+        }
+      }
+
+      function updateSliderPosition() {
+        const slides = document.getElementById("supplements-slides");
+        if (slides) {
+          // 모든 슬라이드를 숨김
+          const allSlides = slides.querySelectorAll(".supplements-slide");
+          allSlides.forEach((slide, index) => {
+            slide.style.display = index === currentSlideIndex ? "block" : "none";
+          });
+
+          // 버튼 상태 업데이트
+          const prevBtn = document.querySelector(
+            ".supplements-slider-arrow.prev"
+          );
+          const nextBtn = document.querySelector(
+            ".supplements-slider-arrow.next"
+          );
+
+          if (prevBtn) prevBtn.disabled = currentSlideIndex === 0;
+          if (nextBtn) nextBtn.disabled = currentSlideIndex >= totalSlides - 1;
+
+          // 인디케이터 업데이트
+          updateSliderIndicators();
+        }
+      }
+
+      function createSliderIndicators() {
+        const indicatorsContainer = document.getElementById(
+          "supplements-indicators"
+        );
+        if (!indicatorsContainer) return;
+
+        let indicatorsHTML = "";
+        for (let i = 0; i < totalSlides; i++) {
+          indicatorsHTML += `<div class="supplements-slider-dot ${
+            i === 0 ? "active" : ""
+          }" onclick="goToSlide(${i})"></div>`;
+        }
+        indicatorsContainer.innerHTML = indicatorsHTML;
+      }
+
+      function updateSliderIndicators() {
+        const dots = document.querySelectorAll(".supplements-slider-dot");
+        dots.forEach((dot, index) => {
+          dot.classList.toggle("active", index === currentSlideIndex);
+        });
+      }
+
+      function initializeSlider() {
+        // 슬라이더 초기화
+        const slides = document.querySelectorAll(".supplements-slide");
+        totalSlides = slides.length;
+        
+        if (totalSlides > 0) {
+          // 인디케이터 생성
+          createSliderIndicators();
+          
+          // 초기 버튼 상태 설정
+          const prevBtn = document.querySelector(".supplements-slider-arrow.prev");
+          const nextBtn = document.querySelector(".supplements-slider-arrow.next");
+          
+          if (prevBtn) prevBtn.disabled = true;
+          if (nextBtn) nextBtn.disabled = totalSlides <= 1;
+          
+          // 초기 슬라이드 상태 설정
+          updateSliderPosition();
+        }
+      }
+
+
+
+      function buyProduct(supplementName) {
+        // 쿠팡에서 영양제 검색
+        const searchKeyword = encodeURIComponent(supplementName);
+        const coupangSearchUrl = `https://www.coupang.com/np/search?q=${searchKeyword}`;
+        window.open(coupangSearchUrl, "_blank");
+      }
+
+      function showSupplementInfo(supplementName) {
+        alert(`${supplementName}의 상세 정보를 확인합니다.`);
+      }
+
+      // 정부승인 제품 관련 함수들
+      function showProductDetail(productId) {
+        // 제품 상세 정보 모달 표시
+        fetch(`/api/supplements/government-approved-products/${productId}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.product) {
+              showProductModal(data.product);
+            } else {
+              alert('제품 정보를 불러올 수 없습니다.');
+            }
+          })
+          .catch(error => {
+            console.error('제품 상세 정보 조회 실패:', error);
+            alert('제품 정보를 불러오는 중 오류가 발생했습니다.');
+          });
+      }
+
+      function searchProduct(productName, companyName = '') {
+        // 쿠팡에서 제품 검색 (제품명 + 업체명)
+        let searchKeyword = productName;
+        if (companyName && companyName.trim() && companyName !== '제조사 정보 없음') {
+          searchKeyword = `${productName} ${companyName}`;
+        }
+        const encodedKeyword = encodeURIComponent(searchKeyword);
+        const coupangSearchUrl = `https://www.coupang.com/np/search?q=${encodedKeyword}`;
+        window.open(coupangSearchUrl, "_blank");
+      }
+
+      function showAllGovernmentProducts(dataKey, supplementName = '') {
+        let allProducts = [];
+        
+        try {
+          // 전역 변수에서 제품 데이터 가져오기
+          if (dataKey && window[dataKey]) {
+            allProducts = window[dataKey];
+            console.log(`✅ ${supplementName} 제품 데이터 로드됨:`, allProducts.length, '개');
+          } else {
+            // 백업: 기존 전역 변수에서 가져오기
+            allProducts = window.currentGovernmentProducts || [];
+            console.log('⚠️ 백업 데이터 사용:', allProducts.length, '개');
+          }
+        } catch (error) {
+          console.error('제품 데이터 로드 오류:', error);
+          allProducts = window.currentGovernmentProducts || [];
+        }
+        
+        if (allProducts.length === 0) {
+          alert('표시할 정부승인 제품이 없습니다.');
+          return;
+        }
+        
+        const titleSuffix = supplementName ? ` (${supplementName} 관련)` : '';
+        
+        let modalContent = `
+          <div class="government-products-modal-overlay" id="governmentProductsModal" onclick="closeGovernmentProductsModal(event)">
+            <div class="government-products-modal-content" onclick="event.stopPropagation()">
+              <div class="modal-header">
+                <h3>건강기능식품 전체 목록${titleSuffix}</h3>
+                <button class="modal-close-btn" onclick="closeGovernmentProductsModal()">&times;</button>
+              </div>
+              <div class="modal-body">
+                <div class="products-count">총 ${allProducts.length}개 제품</div>
+                <div class="government-products-grid-modal">
+        `;
+        
+        allProducts.forEach(product => {
+          modalContent += `
+            <div class="government-product-card-modal">
+              <div class="product-header">
+                <div class="product-main-info">
+                  <h5 class="product-name">${product.name}</h5>
+                  <span class="product-company">${product.company}</span>
+                </div>
+                <div class="product-badges">
+                  <span class="dosage-badge">${product.dosageForm}</span>
+                </div>
+              </div>
+              
+              <!-- 건강고민 뱃지 영역 -->
+              ${product.healthConcerns && product.healthConcerns.length > 0 
+                ? `<div class="health-concerns-section">
+                     ${product.healthConcerns.map(concern => 
+                       `<span class="health-concern-badge">${concern.label}</span>`
+                     ).join('')}
+                   </div>` 
+                : ''}
+              
+              <div class="product-function">
+                <div class="function-title">주요 기능</div>
+                <p class="function-text">${product.function}</p>
+              </div>
+              
+              <div class="product-details">
+                <div class="detail-item">
+                  <span class="detail-label">원료:</span>
+                  <span class="detail-value">${product.ingredients}</span>
+                </div>
+              </div>
+              
+              <div class="product-actions">
+                <button class="action-btn detail-btn" onclick="showProductDetail('${product.id}')">
+                  <span>📋</span> 상세정보
+                </button>
+                <button class="action-btn search-btn" onclick="searchProduct('${product.name}', '${product.company}')">
+                  <span>🔍</span> 쿠팡검색
+                </button>
+              </div>
+            </div>
+          `;
+        });
+        
+        modalContent += `
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalContent);
+      }
+      
+      function closeGovernmentProductsModal(event) {
+        if (event && event.target !== event.currentTarget) return;
+        
+        const modal = document.getElementById('governmentProductsModal');
+        if (modal) {
+          modal.remove();
+        }
+      }
+
+      function showProductModal(product) {
+        const modalHtml = `
+          <div class="product-modal-overlay" id="productModal" onclick="closeProductModal(event)">
+            <div class="product-modal-content" onclick="event.stopPropagation()">
+              <div class="product-modal-header">
+                <h3>${product.name}</h3>
+                <button class="modal-close-btn" onclick="closeProductModal()">&times;</button>
+              </div>
+              <div class="product-modal-body">
+                <div class="product-info-grid">
+                  <div class="info-item">
+                    <label>제조사</label>
+                    <span>${product.company}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>제형</label>
+                    <span>${product.dosageForm}</span>
+                  </div>
+                  <div class="info-item full-width">
+                    <label>주요 기능</label>
+                    <span>${product.function}</span>
+                  </div>
+                  <div class="info-item full-width">
+                    <label>원료</label>
+                    <span>${product.ingredients}</span>
+                  </div>
+                  ${product.intakeMethod ? `
+                    <div class="info-item full-width">
+                      <label>섭취방법</label>
+                      <span>${product.intakeMethod}</span>
+                    </div>
+                  ` : ''}
+                  ${product.precautions ? `
+                    <div class="info-item full-width">
+                      <label>주의사항</label>
+                      <span>${product.precautions}</span>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+              <div class="product-modal-footer">
+                <button class="modal-btn primary" onclick="searchProduct('${product.name}', '${product.company}')">
+                  🔍 온라인에서 찾기
+                </button>
+                <button class="modal-btn secondary" onclick="closeProductModal()">
+                  닫기
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+      }
+
+      function closeProductModal(event) {
+        if (event && event.target !== event.currentTarget) return;
+        const modal = document.getElementById('productModal');
+        if (modal) {
+          modal.remove();
+        }
+      }
+
+      function saveRecommendations() {
+        alert("추천 결과가 저장되었습니다. 마이페이지에서 확인할 수 있습니다.");
+      }
+
+      function resetWizard() {
+        currentStep = 1;
+        selectedGoals = [];
+        userResponses = {};
+        currentQuestionStep = 0;
+        questionAnswers = {};
+
+        // 건강 목표 선택만 초기화 (프로필 정보는 유지)
+        document
+          .querySelectorAll(".supplement-type-card.selected")
+          .forEach((el) => {
+            el.classList.remove("selected");
+          });
+
+        // 영양제 추천 관련 선택만 초기화
+        document
+          .querySelectorAll(".supplement-type-selection .selected")
+          .forEach((el) => {
+            el.classList.remove("selected");
+          });
+
+        // 프로필 폼은 초기화하지 않음 (사용자가 입력한 정보 유지)
+
+        updateStep();
+      }
+
+      // 초기화
+      updateStep();
+
+      // 강제로 첫 번째 스텝 표시
+      const firstStep = document.querySelector('.wizard-step[data-step="1"]');
+      if (firstStep) {
+        firstStep.style.display = "block";
+        firstStep.classList.add("active");
+      }
+
+      function shareRecommendations() {
+        if (navigator.share) {
+          navigator.share({
+            title: "잇플 AI 맞춤 영양제 추천",
+            text: "개인 맞춤형 영양제 추천을 받아보세요!",
+            url: window.location.href,
+          });
+        } else {
+          // 공유 기능이 지원되지 않는 경우 URL 복사
+          navigator.clipboard.writeText(window.location.href).then(() => {
+            alert("추천 결과 링크가 클립보드에 복사되었습니다.");
+          });
+        }
+      }
+
+      // 개별 영양제 저장 함수
+      async function saveSupplement(supplementName, supplementData) {
+        try {
+          const response = await fetch("/api/supplements/save-supplement", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              supplement: supplementData,
+              recommendationId: Date.now().toString(), // 추천 ID 생성
+            }),
+          });
+
+          if (response.ok) {
+            showToast(
+              `${supplementName}이(가) 마이페이지에 저장되었습니다.`,
+              "success"
+            );
+          } else {
+            const errorData = await response.json();
+            if (errorData.error === "이미 저장된 영양제입니다.") {
+              showToast("이미 저장된 영양제입니다.", "info");
+            } else {
+              throw new Error(errorData.error || "저장 실패");
+            }
+          }
+        } catch (error) {
+          console.error("영양제 저장 오류:", error);
+          showToast("저장 중 오류가 발생했습니다. 다시 시도해주세요.", "error");
+        }
+      }
+    </script>
+
+    <!-- 모바일 하단 네비게이션 바 -->
+    <nav class="footer-nav-mobile">
+      <ul>
+        <li class="footer-nav-item" id="footerNavHome">
+          <a href="index.html">
+            <span class="footer-nav-icon">🏠</span>
+            <span class="footer-nav-label">홈</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavNutrition">
+          <a href="nutrition-info.html">
+            <span class="footer-nav-icon">📰</span>
+            <span class="footer-nav-label">영양정보</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavAI">
+          <button type="button" class="footer-nav-ai-btn">
+            <span class="footer-nav-icon">🤖</span>
+            <span class="footer-nav-label">AI기능</span>
+          </button>
+        </li>
+        <li class="footer-nav-item" id="footerNavStore">
+          <a href="store.html">
+            <span class="footer-nav-icon">🛒</span>
+            <span class="footer-nav-label">스토어</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavMy">
+          <a href="mypage.html">
+            <span class="footer-nav-icon">👤</span>
+            <span class="footer-nav-label">마이</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- AI 기능 모달 -->
+    <div id="aiFeatureModal" class="ai-feature-modal">
+      <div class="ai-feature-modal-content">
+        <ul>
+          <li><a href="meal-plan.html">뭐해먹지?</a></li>
+          <li><a href="supplements.html">나만의 영양제</a></li>
+          <li><a href="restaurant-recommendation.html">오늘의 맛집</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // 비로그인 상태에서 정부승인 제품 섹션 블러 처리
+        // 기존 applyLoginRestrictions 함수는 제거됨
+        // 이제 generateGovernmentProductsSection 함수에서 직접 로그인 상태를 확인하여 블러 처리함
+    </script>
+  </body>
+</html>

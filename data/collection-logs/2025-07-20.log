@@ -1,0 +1,35 @@
+{"timestamp":"2025-07-20T15:39:13.657Z","eventType":"task_scheduled","data":{"taskName":"full-collection","cronExpression":"0 */6 * * *"}}
+{"timestamp":"2025-07-20T15:39:13.661Z","eventType":"task_scheduled","data":{"taskName":"trending-update","cronExpression":"0 */2 * * *"}}
+{"timestamp":"2025-07-20T15:39:13.664Z","eventType":"task_scheduled","data":{"taskName":"quality-check","cronExpression":"0 0 * * *"}}
+{"timestamp":"2025-07-20T15:39:13.671Z","eventType":"task_scheduled","data":{"taskName":"cleanup","cronExpression":"0 0 * * 0"}}
+{"timestamp":"2025-07-20T15:39:13.673Z","eventType":"scheduler_started","data":{"timestamp":"2025-07-20T15:39:13.673Z"}}
+{"timestamp":"2025-07-20T15:42:38.982Z","eventType":"task_scheduled","data":{"taskName":"full-collection","cronExpression":"0 */6 * * *"}}
+{"timestamp":"2025-07-20T15:42:38.987Z","eventType":"task_scheduled","data":{"taskName":"trending-update","cronExpression":"0 */2 * * *"}}
+{"timestamp":"2025-07-20T15:42:38.993Z","eventType":"task_scheduled","data":{"taskName":"quality-check","cronExpression":"0 0 * * *"}}
+{"timestamp":"2025-07-20T15:42:38.999Z","eventType":"task_scheduled","data":{"taskName":"cleanup","cronExpression":"0 0 * * 0"}}
+{"timestamp":"2025-07-20T15:42:39.001Z","eventType":"scheduler_started","data":{"timestamp":"2025-07-20T15:42:39.001Z"}}
+{"timestamp":"2025-07-20T15:44:59.707Z","eventType":"task_scheduled","data":{"taskName":"full-collection","cronExpression":"0 */6 * * *"}}
+{"timestamp":"2025-07-20T15:44:59.710Z","eventType":"task_scheduled","data":{"taskName":"trending-update","cronExpression":"0 */2 * * *"}}
+{"timestamp":"2025-07-20T15:44:59.714Z","eventType":"task_scheduled","data":{"taskName":"quality-check","cronExpression":"0 0 * * *"}}
+{"timestamp":"2025-07-20T15:44:59.720Z","eventType":"task_scheduled","data":{"taskName":"cleanup","cronExpression":"0 0 * * 0"}}
+{"timestamp":"2025-07-20T15:44:59.721Z","eventType":"scheduler_started","data":{"timestamp":"2025-07-20T15:44:59.721Z"}}
+{"timestamp":"2025-07-20T15:45:39.834Z","eventType":"task_scheduled","data":{"taskName":"full-collection","cronExpression":"0 */6 * * *"}}
+{"timestamp":"2025-07-20T15:45:39.839Z","eventType":"task_scheduled","data":{"taskName":"trending-update","cronExpression":"0 */2 * * *"}}
+{"timestamp":"2025-07-20T15:45:39.842Z","eventType":"task_scheduled","data":{"taskName":"quality-check","cronExpression":"0 0 * * *"}}
+{"timestamp":"2025-07-20T15:45:39.847Z","eventType":"task_scheduled","data":{"taskName":"cleanup","cronExpression":"0 0 * * 0"}}
+{"timestamp":"2025-07-20T15:45:39.848Z","eventType":"scheduler_started","data":{"timestamp":"2025-07-20T15:45:39.848Z"}}
+{"timestamp":"2025-07-20T15:50:29.785Z","eventType":"task_scheduled","data":{"taskName":"full-collection","cronExpression":"0 */6 * * *"}}
+{"timestamp":"2025-07-20T15:50:29.790Z","eventType":"task_scheduled","data":{"taskName":"trending-update","cronExpression":"0 */2 * * *"}}
+{"timestamp":"2025-07-20T15:50:29.794Z","eventType":"task_scheduled","data":{"taskName":"quality-check","cronExpression":"0 0 * * *"}}
+{"timestamp":"2025-07-20T15:50:29.801Z","eventType":"task_scheduled","data":{"taskName":"cleanup","cronExpression":"0 0 * * 0"}}
+{"timestamp":"2025-07-20T15:50:29.802Z","eventType":"scheduler_started","data":{"timestamp":"2025-07-20T15:50:29.802Z"}}
+{"timestamp":"2025-07-20T15:54:06.521Z","eventType":"task_scheduled","data":{"taskName":"full-collection","cronExpression":"0 */6 * * *"}}
+{"timestamp":"2025-07-20T15:54:06.525Z","eventType":"task_scheduled","data":{"taskName":"trending-update","cronExpression":"0 */2 * * *"}}
+{"timestamp":"2025-07-20T15:54:06.529Z","eventType":"task_scheduled","data":{"taskName":"quality-check","cronExpression":"0 0 * * *"}}
+{"timestamp":"2025-07-20T15:54:06.534Z","eventType":"task_scheduled","data":{"taskName":"cleanup","cronExpression":"0 0 * * 0"}}
+{"timestamp":"2025-07-20T15:54:06.536Z","eventType":"scheduler_started","data":{"timestamp":"2025-07-20T15:54:06.536Z"}}
+{"timestamp":"2025-07-20T15:55:59.032Z","eventType":"task_scheduled","data":{"taskName":"full-collection","cronExpression":"0 */6 * * *"}}
+{"timestamp":"2025-07-20T15:55:59.035Z","eventType":"task_scheduled","data":{"taskName":"trending-update","cronExpression":"0 */2 * * *"}}
+{"timestamp":"2025-07-20T15:55:59.038Z","eventType":"task_scheduled","data":{"taskName":"quality-check","cronExpression":"0 0 * * *"}}
+{"timestamp":"2025-07-20T15:55:59.044Z","eventType":"task_scheduled","data":{"taskName":"cleanup","cronExpression":"0 0 * * 0"}}
+{"timestamp":"2025-07-20T15:55:59.045Z","eventType":"scheduler_started","data":{"timestamp":"2025-07-20T15:55:59.045Z"}}

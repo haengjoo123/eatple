@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 식당 추천</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 카카오맵 API를 비동기 방식으로 로드 -->
+    <script>
+        // 카카오맵 API 비동기 로딩
+        (function() {
+            // 이미 로드된 경우 처리
+            if (typeof kakao !== 'undefined') {
+                return;
+            }
+
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = '//dapi.kakao.com/v2/maps/sdk.js?appkey=085770d2077b87b5e25d90791d9712a7&libraries=services&autoload=false';
+            script.async = true;
+            script.defer = true;
+            
+            // 로딩 타임아웃 설정
+            var loadTimeout = setTimeout(function() {
+                console.warn('카카오맵 API 로딩 타임아웃');
+                if (window.restaurantRecommendation) {
+                    window.restaurantRecommendation.handleMapLoadError();
+                }
+            }, 10000); // 10초 타임아웃
+            
+            script.onload = function() {
+                clearTimeout(loadTimeout);
+                
+                // API 로드 완료 후 초기화 (중복 호출 방지)
+                if (typeof kakao !== 'undefined') {
+                    try {
+                        kakao.maps.load(function() {
+                            console.log('카카오맵 API 로드 완료');
+                            // DOMContentLoaded에서 처리하므로 여기서는 호출하지 않음
+                        });
+                    } catch (error) {
+                        console.error('카카오맵 API 초기화 실패:', error);
+                        if (window.restaurantRecommendation) {
+                            window.restaurantRecommendation.handleMapLoadError();
+                        }
+                    }
+                } else {
+                    console.error('카카오맵 API 객체를 찾을 수 없습니다');
+                    if (window.restaurantRecommendation) {
+                        window.restaurantRecommendation.handleMapLoadError();
+                    }
+                }
+            };
+            
+            script.onerror = function() {
+                clearTimeout(loadTimeout);
+                console.error('카카오맵 API 로드 실패');
+                // API 로드 실패 시 대체 처리
+                if (window.restaurantRecommendation) {
+                    window.restaurantRecommendation.handleMapLoadError();
+                }
+            };
+            
+            document.head.appendChild(script);
+        })();
+    </script>
+</head>
+<body class="restaurant-page">
+    <div class="site-brand-fixed"><a href="index.html">잇플</a></div>
+    <div class="auth-links">
+        <!-- 동적으로 채워짐 -->
+    </div>
+
+    <div class="recommendation-container">
+
+        <!-- 1단계: 위치 설정 -->
+        <div class="step-content active" id="step1">
+            <div class="step-container">
+                <div class="step-title">📍 1단계: 위치 설정</div>
+                <div class="step-description">
+                    <p>지도에서 원하는 위치를 선택하거나 현재 위치를 사용하세요.</p>
+                </div>
+                
+                <!-- 카카오 지도 -->
+                <div class="map-container">
+                    <div id="map" class="kakao-map"></div>
+                </div>
+                
+                <!-- 위치 정보 -->
+                <div class="location-info">
+                    <div class="location-input-group">
+                        <label>주소 검색</label>
+                        <div class="address-search-container">
+                            <input type="text" id="addressSearch" class="address-search-input" placeholder="주소를 입력하세요 (구/동/도로명 중 하나, 예: 강남구, 역삼동, 테헤란로)">
+                            <button type="button" id="searchAddressBtn" class="address-search-btn address-search-btn-custom">🔍 검색</button>
+                        </div>
+                    </div>
+                    <div class="location-input-group">
+                        <label>선택한 위치</label>
+                        <input type="text" id="address" class="location-input" placeholder="지도에서 위치를 선택하거나 주소를 검색하세요" readonly>
+                    </div>
+                </div>
+                
+                <!-- 위치 설정 버튼 -->
+                <div class="location-buttons">
+                    <button class="location-btn location-btn-secondary" onclick="getCurrentLocation()">
+                        📍 현재 위치 사용
+                    </button>
+                    <button class="location-btn location-btn-primary" onclick="confirmLocation()" id="confirmLocationBtn" disabled>
+                        ✅ 위치 확인 완료
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2단계: 사용자 프로필 -->
+        <div class="step-content" id="step2">
+            <div class="step-container">
+                <div class="step-title">👤 2단계: 사용자 프로필</div>
+                <div class="step-description">
+                    <p>AI가 더 정확한 추천을 할 수 있도록 프로필 정보를 입력해주세요.</p>
+                </div>
+                
+                <div class="progress-container">
+                    <div id="profileProgressBar" class="progress-bar"></div>
+                    <div class="progress-step active" data-step="1" data-text="기본정보"></div>
+                    <div class="progress-step" data-step="2" data-text="건강정보"></div>
+                    <div class="progress-step" data-step="3" data-text="추가정보"></div>
+                </div>
+                
+                <form id="profileForm" onsubmit="return false;" action="javascript:void(0)">
+                    <div id="profileSection1" class="profile-section active">
+                        <div class="section-guide required">
+                            기본 신체 정보를 정확히 입력해주세요. 정확한 정보일수록 더 나은 맞춤 식당을 추천할 수 있습니다.
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group-item">
+                                <label for="age">나이:</label>
+                                <span id="age-error" class="error-message"></span>
+                                <input type="number" id="age" name="age" min="1" max="120" required>
+                            </div>
+                            <div class="input-group-item">
+                                <label for="height">키 (cm):</label>
+                                <span id="height-error" class="error-message"></span>
+                                <input type="number" id="height" name="height" min="100" max="250" step="0.1" required>
+                            </div>
+                            <div class="input-group-item">
+                                <label for="weight">체중 (kg):</label>
+                                <span id="weight-error" class="error-message"></span>
+                                <input type="number" id="weight" name="weight" min="20" max="200" step="0.1" required>
+                            </div>
+                        </div>
+                        
+                        <label>성별:</label>
+                        <div class="option-group" data-name="gender">
+                            <div class="option" data-value="male" role="button" tabindex="0">남성</div>
+                            <div class="option" data-value="female" role="button" tabindex="0">여성</div>
+                        </div>
+                        <label>활동량:</label>
+                        <div class="option-group" data-name="activity_level">
+                            <div class="option" data-value="sedentary" role="button" tabindex="0">좌식 생활 (운동 거의 안함)</div>
+                            <div class="option" data-value="light" role="button" tabindex="0">가벼운 활동 (주 1-3회 운동)</div>
+                            <div class="option" data-value="moderate" role="button" tabindex="0">보통 활동 (주 3-5회 운동)</div>
+                            <div class="option" data-value="active" role="button" tabindex="0">활발한 활동 (주 6-7회 운동)</div>
+                            <div class="option" data-value="very_active" role="button" tabindex="0">매우 활발함 (하루 2회 이상 운동)</div>
+                        </div>
+                        <label>식사 패턴:</label>
+                        <div class="option-group" data-name="eating_patterns">
+                            <div class="option" data-value="regular" role="button" tabindex="0">규칙적 (정해진 시간에 식사)</div>
+                            <div class="option" data-value="irregular" role="button" tabindex="0">불규칙적</div>
+                            <div class="option" data-value="intermittent_fasting" role="button" tabindex="0">간헐적 단식</div>
+                        </div>
+                        <label>수면 패턴:</label>
+                        <div class="option-group" data-name="sleep_patterns">
+                            <div class="option" data-value="less_than_6" role="button" tabindex="0">6시간 미만</div>
+                            <div class="option" data-value="6_to_8" role="button" tabindex="0">6-8시간</div>
+                            <div class="option" data-value="more_than_8" role="button" tabindex="0">8시간 이상</div>
+                        </div>
+                        <label>하루 식사 횟수:</label>
+                        <div class="option-group" data-name="meals_per_day">
+                            <div class="option" data-value="1" role="button" tabindex="0">1회</div>
+                            <div class="option" data-value="2" role="button" tabindex="0">2회</div>
+                            <div class="option" data-value="3" role="button" tabindex="0">3회</div>
+                            <div class="option" data-value="4" role="button" tabindex="0">4회</div>
+                        </div>
+                        <label>음주 여부:</label>
+                        <div class="option-group" data-name="alcohol_consumption">
+                            <div class="option" data-value="none" role="button" tabindex="0">없음</div>
+                            <div class="option" data-value="socially" role="button" tabindex="0">사회적 음주 (월 1~2회)</div>
+                            <div class="option" data-value="weekly_light" role="button" tabindex="0">주 1회 가볍게 (1병 이내)</div>
+                            <div class="option" data-value="weekly_moderate" role="button" tabindex="0">주 1~2회 적당히 (1병 이상)</div>
+                            <div class="option" data-value="frequent" role="button" tabindex="0">잦은 음주 (주 3회 이상)</div>
+                        </div>
+                        <label>흡연 여부:</label>
+                        <div class="option-group" data-name="smoking_status">
+                            <div class="option" data-value="smoker" role="button" tabindex="0">흡연</div>
+                            <div class="option" data-value="non_smoker" role="button" tabindex="0">비흡연</div>
+                        </div>
+                        <div class="button-group">
+                            <button type="button" onclick="nextRestaurantProfileSection(1)" class="next-button">다음</button>
+                        </div>
+                    </div>
+
+                    <div id="profileSection2" class="profile-section">
+                        <div class="section-guide optional">
+                            건강 관련 정보를 입력해주세요. 이 정보는 더 정확한 식당 추천을 위해 사용됩니다.
+                        </div>
+                        <div class="accordion">
+                            <div class="accordion-header">알레르기 (중복 선택 가능)</div>
+                            <div class="accordion-content">
+                                <div class="option-group" data-name="allergies">
+                                    <div class="option" data-value="none" role="button" tabindex="0">없음</div>
+                                    <div class="option" data-value="peanuts" role="button" tabindex="0">땅콩</div>
+                                    <div class="option" data-value="tree_nuts" role="button" tabindex="0">견과류</div>
+                                    <div class="option" data-value="milk" role="button" tabindex="0">우유</div>
+                                    <div class="option" data-value="eggs" role="button" tabindex="0">계란</div>
+                                    <div class="option" data-value="fish" role="button" tabindex="0">생선</div>
+                                    <div class="option" data-value="shellfish" role="button" tabindex="0">갑각류</div>
+                                    <div class="option" data-value="soy" role="button" tabindex="0">콩</div>
+                                    <div class="option" data-value="wheat" role="button" tabindex="0">밀</div>
+                                    <div class="option" data-value="sesame" role="button" tabindex="0">참깨</div>
+                                    <div class="option" data-value="other_allergy_toggle" role="button" tabindex="0">기타 (직접 입력)</div>
+                                </div>
+                                <div id="otherAllergyInput" class="hidden-input-container">
+                                    <label for="other_allergies_text">기타 알레르기 식품을 입력해주세요:</label>
+                                    <input type="text" id="other_allergies_text" name="other_allergies_text" placeholder="예: 키위, 토마토 등">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion">
+                            <div class="accordion-header">현재 앓고 있는 질병 (중복 선택 가능)</div>
+                            <div class="accordion-content">
+                                <div class="option-group" data-name="illnesses">
+                                    <div class="option" data-value="none" role="button" tabindex="0">없음</div>
+                                    <div class="option" data-value="diabetes" role="button" tabindex="0">당뇨병</div>
+                                    <div class="option" data-value="hypertension" role="button" tabindex="0">고혈압</div>
+                                    <div class="option" data-value="heart_disease" role="button" tabindex="0">심장병</div>
+                                    <div class="option" data-value="kidney_disease" role="button" tabindex="0">신장병</div>
+                                    <div class="option" data-value="liver_disease" role="button" tabindex="0">간 질환</div>
+                                    <div class="option" data-value="osteoporosis" role="button" tabindex="0">골다공증</div>
+                                    <div class="option" data-value="anemia" role="button" tabindex="0">빈혈</div>
+                                    <div class="option" data-value="thyroid_disorder" role="button" tabindex="0">갑상선 질환</div>
+                                    <div class="option" data-value="gastritis" role="button" tabindex="0">위염</div>
+                                    <div class="option" data-value="ibs" role="button" tabindex="0">과민성 대장 증후군</div>
+                                    <div class="option" data-value="other_illness_toggle" role="button" tabindex="0">기타 (직접 입력)</div>
+                                </div>
+                                <div id="otherIllnessInput" class="hidden-input-container">
+                                    <label for="other_illnesses_text">기타 질병을 입력해주세요:</label>
+                                    <input type="text" id="other_illnesses_text" name="other_illnesses_text" placeholder="예: 고지혈증, 관절염 등">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <button type="button" onclick="prevRestaurantProfileSection(2)" class="prev-button">이전</button>
+                            <button type="button" onclick="nextRestaurantProfileSection(2)" class="next-button">다음</button>
+                        </div>
+                    </div>
+
+                    <div id="profileSection3" class="profile-section">
+                        <div class="section-guide optional">
+                            더 정확한 식당 추천을 위한 추가 정보를 입력해주세요. (선택사항)
+                        </div>
+                        <div class="accordion">
+                            <div class="accordion-header">최근 건강검진 수치 (중복 선택 가능)</div>
+                            <div class="accordion-content">
+                                <div class="option-group" data-name="biomarkers">
+                                    <div class="option" data-value="none" role="button" tabindex="0">없음</div>
+                                    <div class="option" data-value="blood_glucose" role="button" tabindex="0">
+                                        혈당 <span class="unit">(mg/dL)</span>
+                                        <input type="number" name="blood_glucose_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="hba1c" role="button" tabindex="0">
+                                        당화혈색소 <span class="unit">(%)</span>
+                                        <input type="number" name="hba1c_value" placeholder="수치" class="value-input hidden" min="0" step="0.1">
+                                    </div>
+                                    <div class="option" data-value="total_cholesterol" role="button" tabindex="0">
+                                        총 콜레스테롤 <span class="unit">(mg/dL)</span>
+                                        <input type="number" name="total_cholesterol_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="ldl_cholesterol" role="button" tabindex="0">
+                                        LDL 콜레스테롤 <span class="unit">(mg/dL)</span>
+                                        <input type="number" name="ldl_cholesterol_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="hdl_cholesterol" role="button" tabindex="0">
+                                        HDL 콜레스테롤 <span class="unit">(mg/dL)</span>
+                                        <input type="number" name="hdl_cholesterol_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="triglycerides" role="button" tabindex="0">
+                                        중성지방 <span class="unit">(mg/dL)</span>
+                                        <input type="number" name="triglycerides_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="blood_pressure_systolic" role="button" tabindex="0">
+                                        수축기 혈압 <span class="unit">(mmHg)</span>
+                                        <input type="number" name="blood_pressure_systolic_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="blood_pressure_diastolic" role="button" tabindex="0">
+                                        이완기 혈압 <span class="unit">(mmHg)</span>
+                                        <input type="number" name="blood_pressure_diastolic_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="bmi" role="button" tabindex="0">
+                                        BMI <span class="unit">(kg/m²)</span>
+                                        <input type="number" name="bmi_value" placeholder="수치" class="value-input hidden" min="0" step="0.1">
+                                    </div>
+                                    <div class="option" data-value="other_biomarker_toggle" role="button" tabindex="0">기타 (직접 입력)</div>
+                                </div>
+                                <div id="otherBiomarkerInput" class="hidden-input-container">
+                                    <label for="other_biomarkers_text">기타 건강검진 수치를 입력해주세요:</label>
+                                    <input type="text" id="other_biomarkers_text" name="other_biomarkers_text" placeholder="예: 요산, 크레아티닌 등">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion">
+                            <div class="accordion-header">섭취 중인 건강기능식품 (중복 선택 가능)</div>
+                            <div class="accordion-content">
+                                <div class="option-group" data-name="supplements">
+                                    <div class="option" data-value="none" role="button" tabindex="0">없음</div>
+                                    <div class="option" data-value="vitamin_a" role="button" tabindex="0">
+                                        비타민 A <span class="unit">(μg)</span>
+                                        <input type="number" name="vitamin_a_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="vitamin_d" role="button" tabindex="0">
+                                        비타민 D <span class="unit">(IU)</span>
+                                        <input type="number" name="vitamin_d_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="vitamin_e" role="button" tabindex="0">
+                                        비타민 E <span class="unit">(mg)</span>
+                                        <input type="number" name="vitamin_e_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="vitamin_k" role="button" tabindex="0">
+                                        비타민 K <span class="unit">(μg)</span>
+                                        <input type="number" name="vitamin_k_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="iron" role="button" tabindex="0">
+                                        철분 <span class="unit">(mg)</span>
+                                        <input type="number" name="iron_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="calcium" role="button" tabindex="0">
+                                        칼슘 <span class="unit">(mg)</span>
+                                        <input type="number" name="calcium_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="magnesium" role="button" tabindex="0">
+                                        마그네슘 <span class="unit">(mg)</span>
+                                        <input type="number" name="magnesium_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="potassium" role="button" tabindex="0">
+                                        칼륨 <span class="unit">(mg)</span>
+                                        <input type="number" name="potassium_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="zinc" role="button" tabindex="0">
+                                        아연 <span class="unit">(mg)</span>
+                                        <input type="number" name="zinc_value" placeholder="수치" class="value-input hidden" min="0">
+                                    </div>
+                                    <div class="option" data-value="other_supplement_toggle" role="button" tabindex="0">기타 (직접 입력)</div>
+                                </div>
+                                <div id="otherSupplementInput" class="hidden-input-container">
+                                    <label for="other_supplements_text">기타 건강기능식품을 입력해주세요:</label>
+                                    <input type="text" id="other_supplements_text" name="other_supplements_text" placeholder="예: 콜라겐, 밀크씨슬">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <button type="button" onclick="prevRestaurantProfileSection(3)" class="prev-button">이전</button>
+                            <button type="button" class="save-button" onclick="saveRestaurantProfile(event)">저장</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 3단계: 요구사항 -->
+        <div class="step-content" id="step3">
+            <div class="step-container">
+                <div class="step-title">💭 3단계: 식당 조건</div>
+                <div class="step-description">
+                    <p>원하는 식당의 조건을 선택해주세요.</p>
+                </div>
+                
+                <div class="requirement-section">
+                    <div class="requirement-group">
+                        <label>음식 카테고리:</label>
+                        <div class="category-options">
+                            <label class="checkbox-option option-any"><input type="radio" name="food_category" value="무관"><span class="checkmark"></span><span class="option-text">무관</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="한식"><span class="checkmark"></span><span class="option-text">한식</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="중식"><span class="checkmark"></span><span class="option-text">중식</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="일식"><span class="checkmark"></span><span class="option-text">일식</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="양식"><span class="checkmark"></span><span class="option-text">양식</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="분식"><span class="checkmark"></span><span class="option-text">분식</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="고기/구이"><span class="checkmark"></span><span class="option-text">고기/구이</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="해산물/회"><span class="checkmark"></span><span class="option-text">해산물/회</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="치킨/피자"><span class="checkmark"></span><span class="option-text">치킨/피자</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="패스트푸드"><span class="checkmark"></span><span class="option-text">패스트푸드</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="브런치/샌드위치"><span class="checkmark"></span><span class="option-text">브런치/샌드위치</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="베이커리/디저트"><span class="checkmark"></span><span class="option-text">베이커리/디저트</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="건강식/비건"><span class="checkmark"></span><span class="option-text">건강식/비건</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="퓨전요리"><span class="checkmark"></span><span class="option-text">퓨전요리</span></label>
+                            <label class="checkbox-option"><input type="radio" name="food_category" value="술집/포차"><span class="checkmark"></span><span class="option-text">술집/포차</span></label>
+                        </div>
+                    </div>
+                    <div class="requirement-group">
+                        <label>가격대:</label>
+                        <div class="price-options">
+                            <label class="checkbox-option">
+                                <input type="radio" name="price_range" value="under_10000">
+                                <span class="checkmark"></span>
+                                <span class="option-text">10,000원 이하</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="radio" name="price_range" value="10000_20000">
+                                <span class="checkmark"></span>
+                                <span class="option-text">10,000원 ~ 20,000원</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="radio" name="price_range" value="over_20000">
+                                <span class="checkmark"></span>
+                                <span class="option-text">20,000원 이상</span>
+                            </label>
+                            <label class="checkbox-option option-any">
+                                <input type="radio" name="price_range" value="no_preference">
+                                <span class="checkmark"></span>
+                                <span class="option-text">무관</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="requirement-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="business_open">
+                            <span class="checkmark"></span>
+                            <span class="label-text">지금 영업 중인 곳만 보기</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="step-navigation">
+                    <button class="step-btn step-btn-secondary" onclick="prevStep()">← 이전</button>
+                    <button class="step-btn step-btn-primary" onclick="nextStep()" id="nextStep3Btn">다음 →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4단계: 추천 시작 -->
+        <div class="step-content" id="step4">
+            <div class="step-container">
+                <div class="step-title">🚀 4단계: AI 추천 시작</div>
+                <div class="step-description">
+                    <p>AI가 입력하신 정보를 분석하여 반경 <b>1km</b> 내에서 최적의 식당을 추천합니다.</p>
+                </div>
+                
+                <!-- 입력 정보 요약 -->
+                <div class="summary-section">
+                    <h3>📋 입력 정보 요약</h3>
+                    <div class="summary-content">
+                        <div class="summary-item">
+                            <strong>위치:</strong> <span id="summaryLocation">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>알레르기:</strong> <span id="summaryAllergies">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>건강상태:</strong> <span id="summaryHealth">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>추가조건:</strong> <span id="summaryPreferences">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>예산:</strong> <span id="summaryBudget">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <strong>음식 카테고리:</strong> <span id="summaryCategory">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-navigation">
+                    <button class="step-btn step-btn-secondary" onclick="prevStep()">← 이전</button>
+                    <button class="step-btn step-btn-primary" onclick="startRecommendation()" id="recommendBtn">🤖 AI 추천 시작</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5단계: 로딩 -->
+        <div class="step-content" id="step5">
+            <div class="step-container">
+                <div class="step-title">⏳ AI 추천 분석 중...</div>
+                <div class="step-description">
+                    <p>입력하신 정보를 바탕으로 최적의 식당을 찾고 있습니다.</p>
+                </div>
+                
+                <div id="loading" class="restaurant-loading" style="display: none;">
+                    <div class="restaurant-loading-spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 결과 표시 -->
+        <div id="resultContainer" class="result-container" style="display: none;">
+            <div class="step-container">
+                <div class="step-title">🎯 AI 추천 결과</div>
+                <div id="recommendationResults"></div>
+                <div class="step-navigation">
+                    <button class="step-btn step-btn-secondary" onclick="restartRecommendation()">🔄 다시 시작</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 프로필 저장 선택 모달 -->
+    <div id="profileSaveModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <button type="button" class="modal-close" onclick="closeProfileSaveModal()">&times;</button>
+            <h3>프로필 저장 방법을 선택하세요</h3>
+            <div class="modal-btn-row">
+                <button id="tempSaveBtn" class="modal-btn">비로그인 상태로 임시저장</button>
+                <button id="saveAfterLoginBtn" class="modal-btn alt">로그인 후 프로필에 저장</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="restaurant-recommendation.js"></script>
+    <script>
+        // 비로그인 상태에서 추천 메뉴 섹션 블러 처리
+        function applyLoginRestrictions() {
+            // 로그인 상태 확인
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            const isLoggedIn = !!user;
+            
+            if (!isLoggedIn) {
+                // recommended-menus-section을 찾아서 블러 처리
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1) { // Element node
+                                const menuSections = node.querySelectorAll ? node.querySelectorAll('.recommended-menus-section') : [];
+                                const isMenuSection = node.classList && node.classList.contains('recommended-menus-section');
+                                
+                                const sectionsToBlur = isMenuSection ? [node] : Array.from(menuSections);
+                                
+                                sectionsToBlur.forEach(function(section) {
+                                    if (!section.classList.contains('login-required-blur')) {
+                                        // 블러 효과 적용
+                                        section.classList.add('login-required-blur');
+                                        
+                                        // position 설정 (중요!)
+                                        const computedStyle = window.getComputedStyle(section);
+                                        if (computedStyle.position === 'static') {
+                                            section.style.position = 'relative';
+                                        }
+                                        
+                                        // 오버레이 메시지 추가
+                                        const overlay = document.createElement('div');
+                                        overlay.className = 'login-required-overlay';
+                                        overlay.innerHTML = `
+                                            <div class="login-required-message">
+                                                <span class="lock-icon">🔑</span>
+                                                <span class="message-text">로그인하고 모든 기능을 이용해 보세요</span>
+                                            </div>
+                                        `;
+                                        
+                                        section.appendChild(overlay);
+                                        
+                                        // 디버깅을 위한 로그
+                                        console.log('Restaurant overlay added to:', section);
+                                    }
+                                });
+                            }
+                        });
+                    });
+                });
+                
+                // DOM 변화 감지 시작
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+                
+                // 이미 존재하는 recommended-menus-section 처리
+                document.querySelectorAll('.recommended-menus-section').forEach(function(section) {
+                    if (!section.classList.contains('login-required-blur')) {
+                        section.classList.add('login-required-blur');
+                        
+                        // position 설정 (중요!)
+                        const computedStyle = window.getComputedStyle(section);
+                        if (computedStyle.position === 'static') {
+                            section.style.position = 'relative';
+                        }
+                        
+                        const overlay = document.createElement('div');
+                        overlay.className = 'login-required-overlay';
+                        overlay.innerHTML = `
+                            <div class="login-required-message">
+                                <span class="lock-icon">🔑</span>
+                                <span class="message-text">로그인하고 모든 기능을 이용해 보세요</span>
+                            </div>
+                        `;
+                        
+                        section.appendChild(overlay);
+                        
+                        // 디버깅을 위한 로그
+                        console.log('Restaurant overlay added to existing section:', section);
+                    }
+                });
+            }
+        }
+
+        // 페이지 로드 시 식당 추천 시스템 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 로그인 제한 적용
+            applyLoginRestrictions();
+            
+            // 카카오맵 API 로딩 상태 확인 후 초기화
+            function initializeWhenReady() {
+                if (typeof kakao !== 'undefined' && typeof kakao.maps !== 'undefined') {
+                    window.restaurantRecommendation = new RestaurantRecommendation();
+                } else {
+                    // API가 아직 로드되지 않은 경우 1초 후 다시 시도
+                    setTimeout(initializeWhenReady, 1000);
+                }
+            }
+            
+            // 초기화 시작
+            initializeWhenReady();
+        });
+    </script>
+
+    <!-- 모바일 하단 네비게이션 바 -->
+    <nav class="footer-nav-mobile">
+      <ul>
+        <li class="footer-nav-item" id="footerNavHome">
+          <a href="index.html">
+            <span class="footer-nav-icon">🏠</span>
+            <span class="footer-nav-label">홈</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavNutrition">
+          <a href="nutrition-info.html">
+            <span class="footer-nav-icon">📰</span>
+            <span class="footer-nav-label">영양정보</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavAI">
+          <button type="button" class="footer-nav-ai-btn">
+            <span class="footer-nav-icon">🤖</span>
+            <span class="footer-nav-label">AI기능</span>
+          </button>
+        </li>
+        <li class="footer-nav-item" id="footerNavStore">
+          <a href="store.html">
+            <span class="footer-nav-icon">🛒</span>
+            <span class="footer-nav-label">스토어</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavMy">
+          <a href="mypage.html">
+            <span class="footer-nav-icon">👤</span>
+            <span class="footer-nav-label">마이</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- AI 기능 모달 -->
+    <div id="aiFeatureModal" class="ai-feature-modal">
+      <div class="ai-feature-modal-content">
+        <ul>
+          <li><a href="meal-plan.html">뭐해먹지?</a></li>
+          <li><a href="supplements.html">나만의 영양제</a></li>
+          <li><a href="restaurant-recommendation.html">오늘의 맛집</a></li>
+        </ul>
+      </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>잇플 스토어 - 건강한 선택의 시작</title>
+    <link rel="stylesheet" href="store.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- 히어로 이미지 프리로드 - 첫 번째 이미지만 우선 로드 -->
+    <link rel="preload" as="image" href="images/hero-background_01.png" />
+    <!-- 나머지 이미지들은 낮은 우선순위로 프리로드 -->
+    <link rel="prefetch" as="image" href="images/hero-background_02.png" />
+    <link rel="prefetch" as="image" href="images/hero-background_03.png" />
+    <link rel="prefetch" as="image" href="images/hero-background_04.png" />
+  </head>
+  <body>
+    <!-- 헤더 상단 -->
+    <div class="header-top" id="headerTop">
+      <div class="container">
+        <div class="header-top-content">
+          <div class="header-left">
+            <a href="store.html" class="logo">잇플</a>
+          </div>
+
+          <div class="header-center">
+            <div class="search-container">
+              <input
+                type="text"
+                class="search-input"
+                placeholder="검색어를 입력해주세요"
+              />
+              <button class="search-btn">
+                <svg
+                  class="search-icon"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="header-right">
+            <div class="header-right-section">
+              <div class="header-links">
+                <a href="login.html" class="header-link">로그인</a>
+                <a href="signup.html" class="header-link">회원가입</a>
+                <a href="#support" class="header-link">고객센터</a>
+              </div>
+              <div class="header-actions">
+                <button class="action-btn user-btn">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </button>
+
+                <button class="action-btn cart-btn">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path
+                      d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                    ></path>
+                  </svg>
+                  <span class="cart-count">0</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 헤더 네비게이션 -->
+    <nav class="header-nav" id="headerNav">
+      <div class="container">
+        <div class="nav-container">
+          <div class="nav-left-group">
+            <div class="category-dropdown">
+              <button class="category-btn">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+                카테고리
+              </button>
+              <div class="category-dropdown-menu">
+                <div class="category-dropdown-section">
+                  <h4 class="category-dropdown-header">건강식품</h4>
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=health_functional_food"
+                    >건강기능식품</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=protein_food"
+                    >단백질 식품</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=healthy_snack"
+                    >건강 간식</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=healthy_juice"
+                    >건강 주스</a
+                  >
+                </div>
+                <div class="category-dropdown-section">
+                  <h4 class="category-dropdown-header">간편식/반찬</h4>
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=home_meal_replacement"
+                    >가정간편식</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=side_dish"
+                    >반찬</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=salad"
+                    >샐러드</a
+                  >
+                </div>
+                <div class="category-dropdown-section">
+                  <h4 class="category-dropdown-header">신선식품</h4>
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=fruit"
+                    >과일</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=meat"
+                    >정육/계란</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=seafood"
+                    >수산/해산</a
+                  >
+                </div>
+              </div>
+            </div>
+            <ul class="nav-menu">
+              <li class="nav-item">
+                <a class="nav-link" href="collection-groups.html?group=best">베스트</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="collection-groups.html?group=new">신상품</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="collection-groups.html?group=sale">특가상품</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="event.html">이벤트</a>
+              </li>
+            </ul>
+            <div class="search-container-nav">
+              <input
+                type="text"
+                class="search-input-nav"
+                placeholder="검색어를 입력해주세요"
+              />
+              <button class="search-btn-nav">
+                <svg
+                  class="search-icon"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="header-actions-nav">
+            <button class="action-btn user-btn">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </button>
+
+            <button class="action-btn cart-btn">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path
+                  d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                ></path>
+              </svg>
+              <span class="cart-count">0</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 히어로 섹션 -->
+    <section class="hero-section">
+      <div class="hero-background" id="heroBackground">
+        <!-- 배경 이미지들이 JavaScript로 생성됩니다 -->
+      </div>
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="container">
+          <div class="hero-text">
+            <h1 class="hero-title">건강한 선택의 시작<br />잇플 스토어</h1>
+            <p class="hero-subtitle">
+              프리미엄 건강식품과 영양제로 더 나은 내일을 만들어보세요
+            </p>
+            <button class="hero-btn" onclick="eatpleStore.scrollToProducts()">
+              상품 둘러보기
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 프로모션 섹션 -->
+    <section class="promotion-section">
+      <div class="container">
+        <div class="promotion-slider">
+          <div class="promotion-track" id="promotionTrack">
+            <!-- 프로모션 카드들이 JavaScript로 생성됩니다 -->
+          </div>
+
+          <div class="slider-controls">
+            <button class="slider-btn prev-btn" id="prevBtn">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="15,18 9,12 15,6"></polyline>
+              </svg>
+            </button>
+            <div class="slider-counter">
+              <span class="current-slide" id="currentSlide">01</span>
+              <span class="total-slides">/ 08</span>
+            </div>
+            <button class="slider-btn next-btn" id="nextBtn">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="9,18 15,12 9,6"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+
+
+      <!-- 특가 상품 섹션 -->
+      <section class="featured-section">
+        <div class="container">
+          <h2 class="section-title">🔥 특가 상품</h2>
+          <div class="featured-slider-container">
+            <button class="slider-arrow slider-arrow-left" id="featuredSliderLeft">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15,18 9,12 15,6"></polyline>
+              </svg>
+            </button>
+            <div class="featured-slider-wrapper">
+              <div class="featured-slider" id="featuredGrid">
+                <!-- 특가 상품들이 JavaScript로 생성됩니다 -->
+              </div>
+            </div>
+            <button class="slider-arrow slider-arrow-right" id="featuredSliderRight">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9,18 15,12 9,6"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 전체 상품 섹션 -->
+      <section class="products-section" id="products">
+        <div class="container">
+          <div class="products-header">
+            <div class="products-title-section">
+              <h2 class="section-title" id="products-title">전체 상품</h2>
+              <p class="section-subtitle" id="products-subtitle">
+                건강한 라이프스타일을 위한 프리미엄 제품들을 만나보세요
+              </p>
+            </div>
+            <div class="products-controls">
+              <button
+                class="btn-filter-reset"
+                id="resetFilter"
+                style="display: none"
+              >
+                전체 상품 보기
+              </button>
+            </div>
+          </div>
+          <div class="products-grid" id="productsGrid">
+            <!-- 상품들이 JavaScript로 생성됩니다 -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 상품 상세 모달 -->
+    <div id="productDetailModal" class="modal">
+      <div class="modal-content product-detail-modal">
+        <div class="modal-header">
+          <h2 class="modal-title" id="productDetailTitle">상품 상세</h2>
+          <button class="modal-close" id="productDetailClose">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="product-detail-content">
+            <div class="product-detail-image">
+              <div id="productDetailImageContainer"></div>
+            </div>
+            <div class="product-detail-info">
+              <h3 id="productDetailName"></h3>
+              <p id="productDetailSummary"></p>
+              <div class="price-quantity-row">
+                <div class="product-detail-price">
+                  <span class="current-price" id="productDetailPrice"></span>
+                  <span
+                    class="original-price"
+                    id="productDetailOriginalPrice"
+                  ></span>
+                </div>
+                <div class="quantity-section">
+                  <div class="quantity-controls">
+                    <button type="button" class="quantity-btn" id="decreaseQty">
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      class="quantity-input"
+                      id="quantityInput"
+                      value="1"
+                      min="1"
+                      max="10"
+                    />
+                    <button type="button" class="quantity-btn" id="increaseQty">
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="total-section">
+                <span>합계</span>
+                <span class="total-price" id="totalPrice">29,900원</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer product-detail-footer">
+          <button
+            type="button"
+            class="modal-btn cancel-btn"
+            id="productDetailCancel"
+          >
+            취소
+          </button>
+          <button type="button" class="modal-btn confirm-btn" id="addToCartBtn">
+            장바구니 담기
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 구매 모달 -->
+    <div id="purchaseModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">상품 구매</h2>
+          <button class="modal-close" id="modalClose">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="error-message" id="errorMessage"></div>
+          <div class="success-message" id="successMessage"></div>
+
+          <div class="loading" id="loadingSpinner">
+            <div class="spinner"></div>
+            <p>처리 중...</p>
+          </div>
+
+          <div id="purchaseForm">
+            <div class="purchase-summary" id="purchaseSummary">
+              <!-- 구매 요약이 JavaScript로 생성됩니다 -->
+            </div>
+
+            <div class="points-section">
+              <label class="points-label">사용할 포인트</label>
+              <div class="points-input-group">
+                <input
+                  type="number"
+                  id="pointsInput"
+                  class="points-input"
+                  min="0"
+                  max="0"
+                  placeholder="0"
+                />
+                <button type="button" class="max-points-btn" id="maxPointsBtn">
+                  최대
+                </button>
+              </div>
+              <div class="points-info">
+                보유 포인트: <span id="availablePoints">0</span>P (1포인트 = 1원
+                할인)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="modal-btn cancel-btn" id="cancelBtn">
+            취소
+          </button>
+          <button type="button" class="modal-btn confirm-btn" id="confirmBtn">
+            구매하기
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 마이페이지 모달 -->
+    <div id="mypageModal" class="modal">
+      <div class="modal-content mypage-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">마이페이지</h2>
+          <button class="modal-close" id="mypageModalClose">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mypage-tabs">
+            <button class="mypage-tab active" data-tab="orders">
+              주문/배송내역
+            </button>
+            <button class="mypage-tab" data-tab="wishlist">찜한 상품</button>
+            <button class="mypage-tab" data-tab="reviews">리뷰 관리</button>
+            <button class="mypage-tab" data-tab="points">포인트</button>
+          </div>
+
+          <div class="mypage-content">
+            <!-- 주문/배송내역 탭 -->
+            <div id="orders-tab" class="tab-content active">
+              <div class="orders-list" id="ordersList">
+                <!-- 주문 내역이 JavaScript로 생성됩니다 -->
+              </div>
+            </div>
+
+            <!-- 찜한 상품 탭 -->
+            <div id="wishlist-tab" class="tab-content">
+              <div class="wishlist-grid" id="wishlistGrid">
+                <!-- 찜한 상품들이 JavaScript로 생성됩니다 -->
+              </div>
+            </div>
+
+            <!-- 리뷰 관리 탭 -->
+            <div id="reviews-tab" class="tab-content">
+              <div class="review-sections">
+                <div class="review-section">
+                  <h3>작성 가능한 리뷰</h3>
+                  <div class="pending-reviews" id="pendingReviews">
+                    <!-- 작성 가능한 리뷰들이 JavaScript로 생성됩니다 -->
+                  </div>
+                </div>
+                <div class="review-section">
+                  <h3>내가 작성한 리뷰</h3>
+                  <div class="my-reviews" id="myReviews">
+                    <!-- 작성한 리뷰들이 JavaScript로 생성됩니다 -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 포인트 탭 -->
+            <div id="points-tab" class="tab-content">
+              <div class="points-summary">
+                <div class="current-points">
+                  <h3>보유 포인트</h3>
+                  <div class="points-amount" id="currentPointsAmount">0P</div>
+                </div>
+              </div>
+              <div class="points-history">
+                <div
+                  class="points-history-header"
+                  onclick="togglePointsHistory()"
+                >
+                  <h3>포인트 내역</h3>
+                  <span class="dropdown-arrow" id="pointsHistoryArrow">▼</span>
+                </div>
+                <div class="points-list" id="pointsList" style="display: none">
+                  <!-- 포인트 내역이 JavaScript로 생성됩니다 -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 검색 모달 -->
+    <div id="searchModal" class="modal">
+      <div class="modal-content search-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">상품 검색</h2>
+          <button class="modal-close" id="searchModalClose">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="search-modal-container">
+            <div class="search-input-container">
+              <input
+                type="text"
+                id="searchModalInput"
+                class="search-modal-input"
+                placeholder="검색어를 입력해주세요"
+                autocomplete="off"
+              />
+              <button class="search-modal-btn" id="searchModalBtn">
+                <svg
+                  class="search-icon"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="search-results-container" id="searchResultsContainer">
+              <!-- 검색 결과가 여기에 표시됩니다 -->
+            </div>
+            
+            <div class="search-history" id="searchHistory">
+              <h3>최근 검색어</h3>
+              <div class="search-history-list" id="searchHistoryList">
+                <!-- 최근 검색어가 여기에 표시됩니다 -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 리뷰 작성 모달 -->
+    <div id="reviewModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">리뷰 작성</h2>
+          <button class="modal-close" id="reviewModalClose">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="review-product-info" id="reviewProductInfo">
+            <!-- 상품 정보가 JavaScript로 생성됩니다 -->
+          </div>
+
+          <div class="review-form">
+            <div class="rating-section">
+              <label>평점</label>
+              <div class="star-rating" id="starRating">
+                <span class="star" data-rating="1">★</span>
+                <span class="star" data-rating="2">★</span>
+                <span class="star" data-rating="3">★</span>
+                <span class="star" data-rating="4">★</span>
+                <span class="star" data-rating="5">★</span>
+              </div>
+            </div>
+
+            <div class="review-text-section">
+              <label for="reviewText">리뷰 내용</label>
+              <textarea
+                id="reviewText"
+                placeholder="상품에 대한 솔직한 후기를 작성해주세요."
+                rows="5"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="modal-btn cancel-btn"
+            id="reviewCancelBtn"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            class="modal-btn confirm-btn"
+            id="reviewSubmitBtn"
+          >
+            리뷰 등록
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 모바일 하단 네비게이션 바 -->
+    <nav class="store-footer-nav-mobile">
+      <ul>
+        <li class="store-footer-nav-item" id="storeNavHome">
+          <a href="store.html">
+            <span class="store-footer-nav-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9,22 9,12 15,12 15,22"></polyline>
+              </svg>
+            </span>
+          </a>
+        </li>
+        <li class="store-footer-nav-item" id="storeNavMenu">
+          <button type="button" class="store-footer-nav-menu-btn">
+            <span class="store-footer-nav-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </span>
+          </button>
+        </li>
+        <li class="store-footer-nav-item" id="storeNavSearch">
+          <button type="button" class="store-footer-nav-search-btn">
+            <span class="store-footer-nav-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </span>
+          </button>
+        </li>
+        <li class="store-footer-nav-item" id="storeNavMy">
+          <button type="button" class="store-footer-nav-my-btn">
+            <span class="store-footer-nav-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- 햄버거 메뉴 모달 -->
+    <div id="storeHamburgerModal" class="store-hamburger-modal">
+      <div class="store-hamburger-modal-content">
+        <div class="hamburger-menu-layout">
+          <!-- 왼쪽 상위 카테고리 -->
+          <div class="main-categories">
+            <div class="category-item" data-category="health">
+              <span>건강식품</span>
+            </div>
+            <div class="category-item" data-category="convenient">
+              <span>간편식/반찬</span>
+            </div>
+            <div class="category-item active" data-category="fresh">
+              <span>신선식품</span>
+            </div>
+          </div>
+          
+          <!-- 오른쪽 서브카테고리 -->
+          <div class="sub-categories">
+            <!-- 건강식품 서브카테고리 -->
+            <div class="sub-category-group" data-category="health">
+              <div class="sub-category-header">
+                <div class="sub-category-icon">🏥</div>
+                <span>건강식품</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9,18 15,12 9,6"></polyline>
+                </svg>
+              </div>
+              <ul class="sub-category-list">
+                <li><a href="category.html?category=health_functional_food">건강기능식품</a></li>
+                <li><a href="category.html?category=protein_food">단백질 식품</a></li>
+                <li><a href="category.html?category=healthy_snack">건강 간식</a></li>
+                <li><a href="category.html?category=healthy_juice">건강 주스</a></li>
+              </ul>
+            </div>
+            
+            <!-- 간편식/반찬 서브카테고리 -->
+            <div class="sub-category-group" data-category="convenient">
+              <div class="sub-category-header">
+                <div class="sub-category-icon">🍽️</div>
+                <span>간편식/반찬</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9,18 15,12 9,6"></polyline>
+                </svg>
+              </div>
+              <ul class="sub-category-list">
+                <li><a href="category.html?category=home_meal_replacement">가정간편식</a></li>
+                <li><a href="category.html?category=side_dish">반찬</a></li>
+                <li><a href="category.html?category=salad">샐러드</a></li>
+              </ul>
+            </div>
+            
+            <!-- 신선식품 서브카테고리 -->
+            <div class="sub-category-group active" data-category="fresh">
+              <div class="sub-category-header">
+                <div class="sub-category-icon">🍎</div>
+                <span>신선식품</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9,18 15,12 9,6"></polyline>
+                </svg>
+              </div>
+              <ul class="sub-category-list">
+                <li><a href="category.html?category=fruit">과일</a></li>
+                <li><a href="category.html?category=meat">정육/계란</a></li>
+                <li><a href="category.html?category=seafood">수산/해산</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="header-auth.js"></script>
+    <script src="store.js"></script>
+    <script>
+      // 모바일 하단 네비게이션 기능
+      document.addEventListener('DOMContentLoaded', function() {
+        const hamburgerBtn = document.querySelector('.store-footer-nav-menu-btn');
+        const hamburgerModal = document.getElementById('storeHamburgerModal');
+        const searchBtn = document.querySelector('.store-footer-nav-search-btn');
+        const myBtn = document.querySelector('.store-footer-nav-my-btn');
+
+        // 햄버거 메뉴 열기/닫기 토글
+        if (hamburgerBtn) {
+          hamburgerBtn.addEventListener('click', function() {
+            // 모달이 이미 열려있으면 닫기, 아니면 열기
+            if (hamburgerModal.classList.contains('active')) {
+              hamburgerModal.classList.remove('active');
+            } else {
+              hamburgerModal.classList.add('active');
+            }
+          });
+        }
+
+
+
+        // 모달 외부 클릭 시 닫기
+        if (hamburgerModal) {
+          hamburgerModal.addEventListener('click', function(e) {
+            if (e.target === hamburgerModal) {
+              hamburgerModal.classList.remove('active');
+            }
+          });
+        }
+
+        // 검색 버튼 클릭 시 검색 모달 열기
+        if (searchBtn) {
+          searchBtn.addEventListener('click', function() {
+            if (window.openSearchModal) {
+              window.openSearchModal();
+            }
+          });
+        }
+
+        // 마이페이지 버튼 클릭 시 마이페이지 모달 열기 (기존 기능 활용)
+        if (myBtn) {
+          myBtn.addEventListener('click', function() {
+            // 로그인 상태 확인 후 마이페이지 모달 열기
+            const userBtn = document.querySelector('.user-btn');
+            if (userBtn) {
+              userBtn.click();
+            }
+          });
+        }
+
+
+
+        // 햄버거 메뉴 카테고리 전환 기능
+        const categoryItems = document.querySelectorAll('.category-item');
+        const subCategoryGroups = document.querySelectorAll('.sub-category-group');
+
+        categoryItems.forEach(item => {
+          item.addEventListener('click', function() {
+            const category = this.getAttribute('data-category');
+            
+            // 모든 카테고리 아이템에서 active 클래스 제거
+            categoryItems.forEach(cat => cat.classList.remove('active'));
+            // 클릭된 카테고리 아이템에 active 클래스 추가
+            this.classList.add('active');
+            
+            // 모든 서브카테고리 그룹 숨기기
+            subCategoryGroups.forEach(group => group.classList.remove('active'));
+            // 해당하는 서브카테고리 그룹 보이기
+            const targetGroup = document.querySelector(`.sub-category-group[data-category="${category}"]`);
+            if (targetGroup) {
+              targetGroup.classList.add('active');
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

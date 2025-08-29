@@ -1,0 +1,153 @@
+{
+  "currentWeek": {
+    "weekNumber": 33,
+    "year": 2025,
+    "startDate": "2025-08-10T15:00:00.000Z",
+    "endDate": "2025-08-17T15:00:00.000Z",
+    "displayText": "2025년 8월 11일 주차"
+  },
+  "leaderboards": {
+    "snake-game": [
+      {
+        "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+        "playerName": "gudw****",
+        "score": 590,
+        "gameId": "snake-game",
+        "firstRecorded": "2025-08-11T01:48:38.110Z",
+        "lastUpdated": "2025-08-23T11:26:13.447Z"
+      },
+      {
+        "userId": "2b485125-8bd8-41f9-9d04-1cd2956add80",
+        "playerName": "김형준",
+        "score": 460,
+        "gameId": "snake-game",
+        "firstRecorded": "2025-08-12T05:40:48.448Z",
+        "lastUpdated": "2025-08-12T05:44:42.966Z"
+      }
+    ],
+    "memory-game": [
+      {
+        "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+        "playerName": "관리자",
+        "score": 856,
+        "gameId": "memory-game",
+        "firstRecorded": "2025-08-13T05:43:34.420Z",
+        "lastUpdated": "2025-08-13T05:43:34.420Z"
+      }
+    ],
+    "puzzle-game": [
+      {
+        "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+        "playerName": "관리자",
+        "score": 389,
+        "gameId": "puzzle-game",
+        "firstRecorded": "2025-08-17T06:20:55.170Z",
+        "lastUpdated": "2025-08-17T06:20:55.170Z"
+      }
+    ]
+  },
+  "history": [
+    {
+      "week": {
+        "weekNumber": 31,
+        "year": 2025,
+        "startDate": "2025-07-27T15:00:00.000Z",
+        "endDate": "2025-08-03T15:00:00.000Z",
+        "displayText": "2025년 7월 28일 주차"
+      },
+      "leaderboards": {
+        "snake-game": [
+          {
+            "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+            "playerName": "gudw****",
+            "score": 560,
+            "gameId": "snake-game",
+            "firstRecorded": "2025-07-28T03:16:39.533Z",
+            "lastUpdated": "2025-07-29T07:16:21.313Z"
+          }
+        ],
+        "memory-game": [],
+        "puzzle-game": []
+      },
+      "rewards": {
+        "totalRewardsGiven": 500,
+        "gameRewards": {
+          "snake-game": [
+            {
+              "rank": 1,
+              "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+              "playerName": "gudw****",
+              "score": 560,
+              "rewardPoints": 500,
+              "success": true
+            }
+          ],
+          "memory-game": [],
+          "puzzle-game": []
+        }
+      },
+      "resetDate": "2025-08-04T06:28:45.134Z"
+    },
+    {
+      "week": {
+        "weekNumber": 32,
+        "year": 2025,
+        "startDate": "2025-08-03T15:00:00.000Z",
+        "endDate": "2025-08-10T15:00:00.000Z",
+        "displayText": "2025년 8월 4일 주차"
+      },
+      "leaderboards": {
+        "snake-game": [
+          {
+            "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+            "playerName": "gudw****",
+            "score": 500,
+            "gameId": "snake-game",
+            "firstRecorded": "2025-08-04T06:31:21.214Z",
+            "lastUpdated": "2025-08-05T08:48:58.689Z"
+          }
+        ],
+        "memory-game": [],
+        "puzzle-game": [
+          {
+            "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+            "playerName": "gudw****",
+            "score": 317,
+            "gameId": "puzzle-game",
+            "firstRecorded": "2025-08-07T07:33:41.766Z",
+            "lastUpdated": "2025-08-07T07:33:41.766Z"
+          }
+        ]
+      },
+      "rewards": {
+        "totalRewardsGiven": 1000,
+        "gameRewards": {
+          "snake-game": [
+            {
+              "rank": 1,
+              "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+              "playerName": "gudw****",
+              "score": 500,
+              "rewardPoints": 500,
+              "success": true
+            }
+          ],
+          "memory-game": [],
+          "puzzle-game": [
+            {
+              "rank": 1,
+              "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+              "playerName": "gudw****",
+              "score": 317,
+              "rewardPoints": 500,
+              "success": true
+            }
+          ]
+        }
+      },
+      "resetDate": "2025-08-11T01:41:58.192Z"
+    }
+  ],
+  "lastResetDate": "2025-08-11T01:41:58.192Z",
+  "nextResetDate": "2025-08-17T15:00:00.000Z"
+}

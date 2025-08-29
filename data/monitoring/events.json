@@ -1,0 +1,254 @@
+[
+  {
+    "id": "event_1752994532330_axjrevi8t",
+    "type": "auto_recovery_success",
+    "timestamp": "2025-07-20T06:55:32.330Z",
+    "data": {
+      "recoveryKey": "news_general",
+      "attempts": 1,
+      "result": {
+        "success": true,
+        "message": "news 연결 테스트 성공",
+        "timestamp": "2025-07-20T06:55:32.329Z"
+      }
+    }
+  },
+  {
+    "id": "event_1752994531319_q0815at9l",
+    "type": "alert_created",
+    "timestamp": "2025-07-20T06:55:31.319Z",
+    "data": {
+      "id": "alert_1752994531319_7eptc3eyr",
+      "timestamp": "2025-07-20T06:55:31.319Z",
+      "acknowledged": false,
+      "resolved": false,
+      "type": "CONSECUTIVE_FAILURES",
+      "severity": "critical",
+      "message": "news 연속 실패: 3회",
+      "data": {
+        "source": "news",
+        "errorCount": 3
+      }
+    }
+  },
+  {
+    "id": "event_1752994531316_ugblyly51",
+    "type": "alert_created",
+    "timestamp": "2025-07-20T06:55:31.316Z",
+    "data": {
+      "id": "alert_1752994531315_fe0nnfdsq",
+      "timestamp": "2025-07-20T06:55:31.315Z",
+      "acknowledged": false,
+      "resolved": false,
+      "type": "HIGH_ERROR_RATE",
+      "severity": "warning",
+      "message": "높은 오류율 감지: 80.0%",
+      "data": {
+        "errorRate": 0.8,
+        "threshold": 0.2
+      }
+    }
+  },
+  {
+    "id": "event_1752994531314_leryblb6z",
+    "type": "collection_failed",
+    "timestamp": "2025-07-20T06:55:31.314Z",
+    "data": {
+      "source": "news",
+      "error": "연속 실패 3",
+      "responseTime": 8000,
+      "timestamp": "2025-07-20T06:55:31.314Z"
+    }
+  },
+  {
+    "id": "event_1752994531300_txfv760cf",
+    "type": "auto_recovery_success",
+    "timestamp": "2025-07-20T06:55:31.300Z",
+    "data": {
+      "recoveryKey": "news_general",
+      "attempts": 1,
+      "result": {
+        "success": true,
+        "message": "news 연결 테스트 성공",
+        "timestamp": "2025-07-20T06:55:31.298Z"
+      }
+    }
+  },
+  {
+    "id": "event_1752994530812_1l1snqexx",
+    "type": "alert_created",
+    "timestamp": "2025-07-20T06:55:30.812Z",
+    "data": {
+      "id": "alert_1752994530811_ice4rt2wq",
+      "timestamp": "2025-07-20T06:55:30.811Z",
+      "acknowledged": false,
+      "resolved": false,
+      "type": "CONSECUTIVE_FAILURES",
+      "severity": "critical",
+      "message": "news 연속 실패: 2회",
+      "data": {
+        "source": "news",
+        "errorCount": 2
+      }
+    }
+  },
+  {
+    "id": "event_1752994530807_3b2ljbi1y",
+    "type": "alert_created",
+    "timestamp": "2025-07-20T06:55:30.807Z",
+    "data": {
+      "id": "alert_1752994530806_nwlpblzc1",
+      "timestamp": "2025-07-20T06:55:30.806Z",
+      "acknowledged": false,
+      "resolved": false,
+      "type": "HIGH_ERROR_RATE",
+      "severity": "warning",
+      "message": "높은 오류율 감지: 75.0%",
+      "data": {
+        "errorRate": 0.75,
+        "threshold": 0.2
+      }
+    }
+  },
+  {
+    "id": "event_1752994530805_tokgt8zk3",
+    "type": "collection_failed",
+    "timestamp": "2025-07-20T06:55:30.805Z",
+    "data": {
+      "source": "news",
+      "error": "연속 실패 2",
+      "responseTime": 8000,
+      "timestamp": "2025-07-20T06:55:30.805Z"
+    }
+  },
+  {
+    "id": "event_1752994530299_qjywrrdbg",
+    "type": "alert_created",
+    "timestamp": "2025-07-20T06:55:30.299Z",
+    "data": {
+      "id": "alert_1752994530299_5qnnf8i6v",
+      "timestamp": "2025-07-20T06:55:30.299Z",
+      "acknowledged": false,
+      "resolved": false,
+      "type": "SLOW_RESPONSE",
+      "severity": "warning",
+      "message": "느린 응답 시간: 8000ms",
+      "data": {
+        "responseTime": 8000,
+        "threshold": 3000
+      }
+    }
+  },
+  {
+    "id": "event_1752994530297_lcr17a499",
+    "type": "alert_created",
+    "timestamp": "2025-07-20T06:55:30.297Z",
+    "data": {
+      "id": "alert_1752994530297_0fd7x7i0f",
+      "timestamp": "2025-07-20T06:55:30.297Z",
+      "acknowledged": false,
+      "resolved": false,
+      "type": "HIGH_ERROR_RATE",
+      "severity": "warning",
+      "message": "높은 오류율 감지: 66.7%",
+      "data": {
+        "errorRate": 0.6666666666666666,
+        "threshold": 0.2
+      }
+    }
+  },
+  {
+    "id": "event_1752994530297_wq2kmangd",
+    "type": "collection_failed",
+    "timestamp": "2025-07-20T06:55:30.297Z",
+    "data": {
+      "source": "news",
+      "error": "연속 실패 1",
+      "responseTime": 8000,
+      "timestamp": "2025-07-20T06:55:30.296Z"
+    }
+  },
+  {
+    "id": "event_1752994530296_nlbfe49rs",
+    "type": "auto_recovery_success",
+    "timestamp": "2025-07-20T06:55:30.296Z",
+    "data": {
+      "recoveryKey": "youtube_general",
+      "attempts": 1,
+      "result": {
+        "success": true,
+        "message": "youtube 연결 테스트 성공",
+        "timestamp": "2025-07-20T06:55:30.295Z"
+      }
+    }
+  },
+  {
+    "id": "event_1752994529292_owbdllw8u",
+    "type": "alert_created",
+    "timestamp": "2025-07-20T06:55:29.292Z",
+    "data": {
+      "id": "alert_1752994529291_jqcdcmx7c",
+      "timestamp": "2025-07-20T06:55:29.291Z",
+      "acknowledged": false,
+      "resolved": false,
+      "type": "SLOW_RESPONSE",
+      "severity": "warning",
+      "message": "느린 응답 시간: 5000ms",
+      "data": {
+        "responseTime": 5000,
+        "threshold": 3000
+      }
+    }
+  },
+  {
+    "id": "event_1752994529287_3h6bmqdic",
+    "type": "alert_created",
+    "timestamp": "2025-07-20T06:55:29.287Z",
+    "data": {
+      "id": "alert_1752994529286_k66gnu99n",
+      "timestamp": "2025-07-20T06:55:29.286Z",
+      "acknowledged": false,
+      "resolved": false,
+      "type": "HIGH_ERROR_RATE",
+      "severity": "warning",
+      "message": "높은 오류율 감지: 50.0%",
+      "data": {
+        "errorRate": 0.5,
+        "threshold": 0.2
+      }
+    }
+  },
+  {
+    "id": "event_1752994529285_v1w01p05b",
+    "type": "collection_failed",
+    "timestamp": "2025-07-20T06:55:29.285Z",
+    "data": {
+      "source": "youtube",
+      "error": "API 키 오류 시뮬레이션",
+      "responseTime": 5000,
+      "timestamp": "2025-07-20T06:55:29.284Z"
+    }
+  },
+  {
+    "id": "event_1752994528282_qx4mh51o4",
+    "type": "collection_completed",
+    "timestamp": "2025-07-20T06:55:28.282Z",
+    "data": {
+      "source": "pubmed",
+      "taskName": "pubmed-collection",
+      "responseTime": 2500,
+      "itemsCollected": 10,
+      "timestamp": "2025-07-20T06:55:28.282Z"
+    }
+  },
+  {
+    "id": "event_1752994527274_mhw9oo25v",
+    "type": "collection_started",
+    "timestamp": "2025-07-20T06:55:27.274Z",
+    "data": {
+      "source": "pubmed",
+      "taskName": "pubmed-collection",
+      "timestamp": "2025-07-20T06:55:27.274Z"
+    }
+  }
+]

@@ -1,0 +1,165 @@
+{
+  "metrics": {
+    "database": {
+      "connectionPool": true,
+      "queryPerformance": true,
+      "tableSize": true,
+      "indexUsage": true,
+      "slowQueries": {
+        "threshold": "1000ms",
+        "enabled": true
+      },
+      "connectionCount": {
+        "threshold": 80,
+        "enabled": true
+      }
+    },
+    "application": {
+      "responseTime": true,
+      "errorRate": true,
+      "throughput": true,
+      "userActivity": true,
+      "memoryUsage": true,
+      "cpuUsage": true
+    },
+    "supabase": {
+      "apiCalls": true,
+      "storageUsage": true,
+      "authEvents": true,
+      "realtimeConnections": true
+    }
+  },
+  "alerts": {
+    "highErrorRate": {
+      "threshold": "5%",
+      "window": "5m",
+      "severity": "critical",
+      "enabled": true
+    },
+    "slowQueries": {
+      "threshold": "1000ms",
+      "window": "1m",
+      "severity": "warning",
+      "enabled": true
+    },
+    "highCpuUsage": {
+      "threshold": "80%",
+      "window": "5m",
+      "severity": "warning",
+      "enabled": true
+    },
+    "lowDiskSpace": {
+      "threshold": "90%",
+      "window": "1m",
+      "severity": "critical",
+      "enabled": true
+    },
+    "highMemoryUsage": {
+      "threshold": "80%",
+      "window": "3m",
+      "severity": "warning",
+      "enabled": true
+    },
+    "databaseConnections": {
+      "threshold": 75,
+      "window": "2m",
+      "severity": "warning",
+      "enabled": true
+    },
+    "apiRateLimit": {
+      "threshold": "90%",
+      "window": "1m",
+      "severity": "warning",
+      "enabled": true
+    }
+  },
+  "logging": {
+    "level": "info",
+    "retention": "30 days",
+    "structured": true,
+    "format": "json",
+    "destinations": [
+      "console",
+      "file",
+      "supabase"
+    ],
+    "categories": {
+      "database": {
+        "level": "info",
+        "enabled": true
+      },
+      "api": {
+        "level": "info",
+        "enabled": true
+      },
+      "auth": {
+        "level": "warn",
+        "enabled": true
+      },
+      "performance": {
+        "level": "info",
+        "enabled": true
+      },
+      "security": {
+        "level": "warn",
+        "enabled": true
+      }
+    }
+  },
+  "healthChecks": {
+    "enabled": true,
+    "interval": "30s",
+    "timeout": "5s",
+    "endpoints": [
+      "/health",
+      "/api/health",
+      "/api/nutrition-info/health"
+    ],
+    "checks": [
+      "database_connection",
+      "supabase_connection",
+      "memory_usage",
+      "disk_space",
+      "api_response_time"
+    ]
+  },
+  "dashboards": {
+    "enabled": true,
+    "refreshInterval": "30s",
+    "widgets": [
+      "system_overview",
+      "database_metrics",
+      "api_performance",
+      "error_rates",
+      "user_activity",
+      "resource_usage"
+    ]
+  },
+  "notifications": {
+    "channels": [
+      {
+        "type": "email",
+        "enabled": true,
+        "recipients": ["admin@example.com"],
+        "severity": ["critical", "warning"]
+      },
+      {
+        "type": "webhook",
+        "enabled": true,
+        "url": "https://hooks.slack.com/services/...",
+        "severity": ["critical"]
+      },
+      {
+        "type": "sms",
+        "enabled": false,
+        "numbers": ["+1234567890"],
+        "severity": ["critical"]
+      }
+    ],
+    "throttling": {
+      "enabled": true,
+      "maxPerHour": 10,
+      "cooldownMinutes": 15
+    }
+  }
+}

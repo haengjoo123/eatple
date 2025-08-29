@@ -1,0 +1,53 @@
+{
+  "strategy": "automated",
+  "frequency": "daily",
+  "retention": "30 days",
+  "tables": [
+    "nutrition_posts",
+    "categories",
+    "tags",
+    "post_tags",
+    "post_modification_history"
+  ],
+  "backupLocation": "supabase-managed",
+  "pointInTimeRecovery": true,
+  "crossRegionReplication": false,
+  "schedule": {
+    "daily": {
+      "time": "02:00",
+      "timezone": "UTC"
+    },
+    "weekly": {
+      "day": "sunday",
+      "time": "01:00",
+      "timezone": "UTC"
+    },
+    "monthly": {
+      "day": 1,
+      "time": "00:00",
+      "timezone": "UTC"
+    }
+  },
+  "verification": {
+    "enabled": true,
+    "schedule": "daily",
+    "checks": [
+      "table_counts",
+      "data_integrity",
+      "relationships",
+      "performance"
+    ]
+  },
+  "notifications": {
+    "success": false,
+    "failure": true,
+    "channels": [
+      "email",
+      "webhook"
+    ]
+  },
+  "encryption": {
+    "enabled": true,
+    "algorithm": "AES-256"
+  }
+}

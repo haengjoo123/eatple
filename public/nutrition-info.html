@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>잇플 인사이트</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="nutrition-info-styles.css" />
+    <style>
+      @media (max-width: 768px) {
+        .footer {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body class="nutrition-info-page">
+    <div class="site-brand-fixed"><a href="index.html">잇플</a></div>
+    <div class="auth-links">
+      <!-- 동적으로 채워짐 -->
+    </div>
+    
+    <!-- 페이지 제목 -->
+    <div class="page-title-header">
+      <h1 class="page-title">잇플 인사이트</h1>
+    </div>
+
+    <!-- 영양 정보 목록 섹션 -->
+    <section class="nutrition-content">
+      <div class="container">
+        <!-- 필터 및 검색 섹션 -->
+        <div class="nutrition-filters">
+          <div class="filter-container">
+            <!-- 검색 바 -->
+            <div class="nutrition-search-container">
+              <div class="nutrition-search-input-wrapper">
+                <span class="nutrition-search-icon">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  id="searchInput"
+                  class="nutrition-search-input"
+                  placeholder="영양 정보 검색..."
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 로딩 상태 -->
+        <div id="loadingState" class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>영양 정보를 불러오는 중...</p>
+        </div>
+
+        <!-- 에러 상태 -->
+        <div id="errorState" class="error-container" style="display: none">
+          <div class="error-icon">⚠️</div>
+          <h3>정보를 불러올 수 없습니다</h3>
+          <p id="errorMessage">
+            네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
+          </p>
+          <button id="retryBtn" class="retry-btn">다시 시도</button>
+        </div>
+
+        <!-- 빈 상태 -->
+        <div id="emptyState" class="empty-container" style="display: none">
+          <div class="empty-icon">📄</div>
+          <h3>검색 결과가 없습니다</h3>
+          <p>다른 검색어나 필터를 사용해보세요.</p>
+        </div>
+
+        <!-- 영양 정보 그리드 -->
+        <div id="nutritionGrid" class="nutrition-grid" style="display: none">
+          <!-- 영양 정보 카드들이 여기에 동적으로 추가됩니다 -->
+        </div>
+
+        <!-- 페이지네이션 -->
+        <div
+          id="paginationContainer"
+          class="pagination-container"
+          style="display: none"
+        >
+          <button id="prevPageBtn" class="pagination-arrow prev-arrow" disabled>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M15 18L9 12L15 6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <div id="pageNumbers" class="page-numbers"></div>
+          <button id="nextPageBtn" class="pagination-arrow next-arrow" disabled>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M9 18L15 12L9 6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 푸터 -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <div class="brand-logo">잇플</div>
+            <p>건강한 식생활을 위한 종합 플랫폼</p>
+          </div>
+          <div class="footer-links">
+            <div class="footer-section">
+              <h4>서비스</h4>
+              <ul>
+                <li><a href="meal-plan.html">뭐해먹지?</a></li>
+                <li><a href="supplements.html">나만의 영양제</a></li>
+                <li><a href="restaurant-recommendation.html">오늘의 맛집</a></li>
+              </ul>
+            </div>
+            <div class="footer-section">
+              <h4>고객지원</h4>
+              <ul>
+                <li><a href="index.html#faq">자주묻는질문</a></li>
+                <li><a href="#contact">문의하기</a></li>
+                <li><a href="#privacy">개인정보처리방침</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2025 잇플. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- 모바일 하단 네비게이션 바 -->
+    <nav class="footer-nav-mobile">
+      <ul>
+        <li class="footer-nav-item" id="footerNavHome">
+          <a href="index.html">
+            <span class="footer-nav-icon">🏠</span>
+            <span class="footer-nav-label">홈</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavNutrition">
+          <a href="nutrition-info.html">
+            <span class="footer-nav-icon">📰</span>
+            <span class="footer-nav-label">영양정보</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavAI">
+          <button type="button" class="footer-nav-ai-btn">
+            <span class="footer-nav-icon">🤖</span>
+            <span class="footer-nav-label">AI기능</span>
+          </button>
+        </li>
+        <li class="footer-nav-item" id="footerNavStore">
+          <a href="store.html">
+            <span class="footer-nav-icon">🛒</span>
+            <span class="footer-nav-label">스토어</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavMy">
+          <a href="mypage.html">
+            <span class="footer-nav-icon">👤</span>
+            <span class="footer-nav-label">마이</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- AI 기능 모달 -->
+    <div id="aiFeatureModal" class="ai-feature-modal">
+      <div class="ai-feature-modal-content">
+        <ul>
+          <li><a href="meal-plan.html">뭐해먹지?</a></li>
+          <li><a href="supplements.html">나만의 영양제</a></li>
+          <li><a href="restaurant-recommendation.html">오늘의 맛집</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <script src="nutrition-info.js"></script>
+    <script>
+      // 인증 링크 업데이트 함수
+      async function updateAuthLinks() {
+        const authLinksContainer = document.querySelector(".auth-links");
+        try {
+          const response = await fetch("/api/auth/me", {
+            credentials: "include",
+          });
+          const data = await response.json();
+
+          if (data.loggedIn) {
+            authLinksContainer.innerHTML = `
+                        <a href="mypage.html">마이페이지</a>
+                        <a href="#" onclick="logout()">로그아웃</a>
+                    `;
+          } else {
+            authLinksContainer.innerHTML = `
+                        <a href="login.html">로그인</a>
+                        <a href="signup.html">회원가입</a>
+                    `;
+          }
+        } catch (error) {
+          console.error("인증 상태 확인 오류:", error);
+          authLinksContainer.innerHTML = `
+                    <a href="login.html">로그인</a>
+                    <a href="signup.html">회원가입</a>
+                `;
+        }
+      }
+
+      // 로그아웃 함수
+      async function logout() {
+        try {
+          const response = await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+          });
+
+          if (response.ok) {
+            localStorage.removeItem("user");
+            alert("로그아웃되었습니다.");
+            window.location.href = "index.html";
+          } else {
+            alert("로그아웃 중 오류가 발생했습니다.");
+          }
+        } catch (error) {
+          console.error("로그아웃 오류:", error);
+          alert("로그아웃 중 오류가 발생했습니다.");
+        }
+      }
+
+      // 페이지 로드 시 인증 링크 업데이트
+      document.addEventListener("DOMContentLoaded", async function () {
+        await updateAuthLinks();
+
+        // footer-nav 활성 상태 설정
+        const footerNavNutrition = document.getElementById("footerNavNutrition");
+        if (footerNavNutrition) {
+          footerNavNutrition.classList.add("active");
+        }
+
+        // AI 기능 모달 처리
+        const aiFeatureBtn = document.querySelector(".footer-nav-ai-btn");
+        const aiFeatureModal = document.getElementById("aiFeatureModal");
+
+        if (aiFeatureBtn && aiFeatureModal) {
+          aiFeatureBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            aiFeatureModal.classList.toggle("active");
+          });
+
+          // 모달 외부 클릭 시 닫기
+          document.addEventListener("click", function (e) {
+            if (
+              !aiFeatureBtn.contains(e.target) &&
+              !aiFeatureModal.contains(e.target)
+            ) {
+              aiFeatureModal.classList.remove("active");
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영양 정보 상세 - 잇플</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="nutrition-info-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @media (max-width: 768px) {
+            .footer {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="nutrition-detail-page">
+    <!-- 메인 네비게이션 -->
+    <nav class="main-nav">
+        <div class="container">
+            <div class="nav-content">
+                <div class="nav-brand">
+                    <a href="index.html">잇플</a>
+                </div>
+                <div class="nav-menu">
+                    <a href="meal-plan.html">뭐해먹지?</a>
+                    <a href="supplements.html">나만의 영양제</a>
+                    <a href="restaurant-recommendation.html">오늘의 맛집</a>
+                    <a href="nutrition-info.html">잇플 인사이트</a>
+                    <a href="ingredient-analyzer.html">식재료 분석</a>
+                </div>
+                <div class="nav-auth" id="navAuth">
+                    <a href="login.html" class="main-nav-button">로그인</a>
+                    <a href="signup.html" class="main-nav-button primary">회원가입</a>
+                </div>
+                <div class="nav-toggle" id="navToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 로딩 상태 -->
+    <div id="loadingState" class="detail-loading-container">
+        <div class="loading-spinner"></div>
+        <p>영양 정보를 불러오는 중...</p>
+    </div>
+
+    <!-- 에러 상태 -->
+    <div id="errorState" class="detail-error-container" style="display: none;">
+        <div class="error-icon">⚠️</div>
+        <h3>정보를 불러올 수 없습니다</h3>
+        <p id="errorMessage">네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
+        <div class="error-actions">
+            <button id="retryBtn" class="retry-btn">다시 시도</button>
+            <a href="nutrition-info.html" class="back-btn">목록으로 돌아가기</a>
+        </div>
+    </div>
+
+    <!-- 상세 콘텐츠 -->
+    <div id="detailContent" class="detail-content" style="display: none;">
+        <!-- 브레드크럼 -->
+        <section class="breadcrumb-section">
+            <div class="container">
+                <nav class="breadcrumb">
+                    <a href="index.html">홈</a>
+                    <span class="breadcrumb-separator">›</span>
+                    <a href="nutrition-info.html">영양 정보</a>
+                    <span class="breadcrumb-separator">›</span>
+                    <span id="breadcrumbTitle">상세 정보</span>
+                </nav>
+            </div>
+        </section>
+
+        <!-- 메인 헤더 -->
+        <section class="detail-header">
+            <div class="container">
+                <div class="detail-header-content">
+                    <div class="detail-meta">
+
+                    </div>
+                    <h1 class="detail-title" id="detailTitle">영양 정보 제목</h1>
+                    <div class="detail-source-info">
+                        <span class="detail-source" id="detailSource">출처명</span>
+                        <span class="detail-date" id="detailDate">2025.01.19</span>
+                        <span class="detail-author" id="detailAuthor">저자명</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 메인 콘텐츠 -->
+        <section class="detail-main">
+            <div class="container">
+                <div class="detail-layout">
+                    <!-- 좌측 콘텐츠 -->
+                    <div class="detail-content-area">
+                        <!-- 이미지 -->
+                        <div class="detail-image-container">
+                            <img id="detailImage" src="" alt="영양 정보 이미지" class="detail-image">
+                        </div>
+
+                        <!-- 요약 -->
+                        <div class="detail-summary-section">
+                            <h2 class="section-title">요약</h2>
+                            <div class="detail-summary" id="detailSummary">
+                                영양 정보 요약 내용이 여기에 표시됩니다.
+                            </div>
+                        </div>
+
+                        <!-- 상세 내용 -->
+                        <div class="detail-content-section" id="detailContentSection" style="display: none;">
+                            <h2 class="section-title">상세 내용</h2>
+                            <div class="detail-main-content" id="detailMainContent">
+                                상세 내용이 여기에 표시됩니다.
+                            </div>
+                        </div>
+
+                        <!-- 원본 소스 링크 -->
+                        <div class="detail-source-section">
+                            <h3 class="section-subtitle">원본 소스</h3>
+                            <div class="detail-source-url">
+                                <a id="detailSourceLink" href="#" target="_blank" rel="noopener noreferrer" class="source-url-link">
+                                    <span class="source-url-text">원본 링크 주소가 여기에 표시됩니다</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- 관련 상품 -->
+                        <div class="detail-products-section" id="detailProductsSection" style="display: none;">
+                            <h3 class="section-subtitle">관련 상품</h3>
+                            <div class="detail-products" id="detailProducts">
+                                <!-- 상품들이 동적으로 추가됩니다 -->
+                            </div>
+                        </div>
+
+                        <!-- 태그 -->
+                        <div class="detail-tags-section">
+                            <h3 class="section-subtitle">관련 태그</h3>
+                            <div class="detail-tags" id="detailTags">
+                                <!-- 태그들이 동적으로 추가됩니다 -->
+                            </div>
+                        </div>
+
+                        <!-- 액션 버튼 -->
+                        <div class="detail-actions">
+                            <button class="detail-action-btn bookmark-btn" id="detailBookmarkBtn">
+                                <span class="nutrition-action-icon">🔖</span>
+                                <span class="action-text">북마크</span>
+                            </button>
+                            <button class="detail-action-btn share-btn" id="detailShareBtn">
+                                <span class="nutrition-action-icon">📤</span>
+                                <span class="action-text">공유</span>
+                            </button>
+                        </div>
+
+                        <!-- 원본 콘텐츠 (논문의 경우) -->
+                        <div class="detail-original-section" id="originalSection" style="display: none;">
+                            <h2 class="section-title">원본 내용</h2>
+                            <div class="detail-original-content" id="detailOriginalContent">
+                                원본 콘텐츠가 여기에 표시됩니다.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 추천 섹션 -->
+        <section class="detail-recommendations">
+            <div class="container">
+                <h2 class="section-title">관련 추천 정보</h2>
+                <div id="recommendedInfo" class="recommended-grid">
+                    <!-- 추천 정보들이 동적으로 추가됩니다 -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 푸터 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="brand-logo">잇플</div>
+                    <p>건강한 식생활을 위한 종합 플랫폼</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>서비스</h4>
+                        <ul>
+                            <li><a href="meal-plan.html">뭐해먹지?</a></li>
+                            <li><a href="supplements.html">나만의 영양제</a></li>
+                            <li><a href="restaurant-recommendation.html">오늘의 맛집</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>고객지원</h4>
+                        <ul>
+                            <li><a href="index.html#faq">자주묻는질문</a></li>
+                            <li><a href="#contact">문의하기</a></li>
+                            <li><a href="#privacy">개인정보처리방침</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 잇플. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="nutrition-info-detail.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // 모바일 네비게이션 토글 (index.html과 동일)
+        document.getElementById('navToggle').addEventListener('click', function () {
+            const navMenu = document.querySelector('.nav-menu');
+            const navAuth = document.querySelector('.nav-auth');
+            navMenu.classList.toggle('active');
+            navAuth.classList.toggle('active');
+            this.classList.toggle('active');
+        });
+        // 로그인 상태 확인
+        async function checkAuthStatus() {
+            const navAuth = document.getElementById('navAuth');
+            
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (data.loggedIn && data.user) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    navAuth.innerHTML = `
+                        <a href="mypage.html" class="main-nav-button">마이페이지</a>
+                        <button class="main-nav-button" onclick="logout()">로그아웃</button>
+                    `;
+                } else {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    navAuth.innerHTML = `
+                        <a href="login.html" class="main-nav-button">로그인</a>
+                        <a href="signup.html" class="main-nav-button primary">회원가입</a>
+                    `;
+                }
+            } catch (error) {
+                console.error('Auth status check failed:', error);
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                navAuth.innerHTML = `
+                    <a href="login.html" class="main-nav-button">로그인</a>
+                    <a href="signup.html" class="main-nav-button primary">회원가입</a>
+                `;
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('Logout failed:', error);
+            }
+            
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            location.reload();
+        }
+
+        // 페이지 로드 시 로그인 상태 확인
+        checkAuthStatus();
+    </script>
+</body>
+</html>

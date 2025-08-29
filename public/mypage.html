@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>마이페이지</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="mypage.css" />
+  </head>
+  <body class="mypage-page">
+    <div class="site-brand-fixed"><a href="index.html">잇플</a></div>
+    <div class="auth-links">
+      <!-- 동적으로 채워짐 -->
+    </div>
+    <div class="container">
+      <h1>마이페이지</h1>
+      <button
+        id="settingsBtn"
+        title="설정"
+        onclick="window.location.href='settings.html'"
+      >
+        <span id="settingsText">계정관리 및 설정</span>
+      </button>
+      <!-- Row 1: 프로필 정보 + 영양정보 북마크 -->
+      <div class="mypage-dashboard-row1">
+        <div
+          class="mypage-card profile-activity-card"
+          id="mypageProfileCard"
+          tabindex="0"
+        >
+          <div class="mypage-card-title">
+            <span class="profile-icon">👤</span>
+            프로필 정보
+          </div>
+          <div class="mypage-card-content">
+            <div class="profile-activity-stats">
+              <div class="activity-stat-item">
+                <div class="activity-icon">⚧️</div>
+                <div class="activity-info">
+                  <div class="activity-label">성별</div>
+                  <div class="activity-count" id="profileGender">-</div>
+                </div>
+              </div>
+              <div class="activity-stat-item">
+                <div class="activity-icon">🎂</div>
+                <div class="activity-info">
+                  <div class="activity-label">나이</div>
+                  <div class="activity-count" id="profileAge">-</div>
+                </div>
+              </div>
+              <div class="activity-stat-item">
+                <div class="activity-icon">📏</div>
+                <div class="activity-info">
+                  <div class="activity-label">키</div>
+                  <div class="activity-count" id="profileHeight">-</div>
+                </div>
+              </div>
+              <div class="activity-stat-item">
+                <div class="activity-icon">⚖️</div>
+                <div class="activity-info">
+                  <div class="activity-label">체중</div>
+                  <div class="activity-count" id="profileWeight">-</div>
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="profile-activity-btn"
+              onclick="window.location.href='profile.html'"
+            >
+              <span class="btn-icon">✏️</span>
+              프로필 수정하기
+            </button>
+          </div>
+        </div>
+        <div
+          class="mypage-card nutrition-activity-card"
+          id="mypageNutritionCard"
+          tabindex="0"
+        >
+          <div class="mypage-card-title">
+            <span>
+              <span class="nutrition-icon">📊</span>
+              영양정보 북마크
+            </span>
+          </div>
+          <div class="mypage-card-content">
+            <div
+              id="savedNutritionPreview"
+              class="saved-nutrition-mini-preview"
+              style="
+                margin: 12px 0;
+                font-size: 0.8rem;
+                color: #6b7280;
+                text-align: center;
+              "
+            >
+              북마크한 영양정보가 없습니다
+            </div>
+            <div
+              id="savedNutritionCount"
+              style="
+                margin: 12px 0;
+                font-size: 0.9rem;
+                color: #27408b;
+                font-weight: 600;
+                text-align: center;
+              "
+            >
+              0개
+            </div>
+            <button
+              type="button"
+              class="nutrition-activity-btn"
+              onclick="window.location.href='nutrition.html'"
+            >
+              <span class="btn-icon">📊</span>
+              영양정보 보러가기
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: 스토어 활동 + 내 포인트 -->
+      <div class="mypage-dashboard-row2">
+        <div
+          class="mypage-card store-activity-card"
+          id="storeMypageCard"
+          tabindex="0"
+        >
+          <div class="mypage-card-title">
+            <span class="store-icon">🛒</span>
+            스토어 활동
+          </div>
+          <div class="mypage-card-content">
+            <div class="store-activity-stats">
+              <div class="activity-stat-item">
+                <div class="activity-icon">📦</div>
+                <div class="activity-info">
+                  <div class="activity-label">주문/배송</div>
+                  <div class="activity-count" id="orderCount">0</div>
+                </div>
+              </div>
+              <div class="activity-stat-item">
+                <div class="activity-icon">❤️</div>
+                <div class="activity-info">
+                  <div class="activity-label">찜한상품</div>
+                  <div class="activity-count" id="wishlistCount">0</div>
+                </div>
+              </div>
+              <div class="activity-stat-item">
+                <div class="activity-icon">⭐</div>
+                <div class="activity-info">
+                  <div class="activity-label">리뷰</div>
+                  <div class="activity-count" id="reviewCount">0</div>
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              id="openStoreMypageBtn"
+              class="store-activity-btn"
+            >
+              <span class="btn-icon">🏪</span>
+              스토어 활동 보기
+            </button>
+          </div>
+        </div>
+        <div
+          class="mypage-card points-activity-card"
+          id="mypagePointsCard"
+          tabindex="0"
+        >
+          <div class="mypage-card-title">
+            <span class="points-icon">🎯</span>
+            내 포인트
+          </div>
+          <div class="mypage-card-content">
+            <div class="points-activity-stats">
+              <div class="activity-stat-item">
+                <div class="activity-icon">💰</div>
+                <div class="activity-info">
+                  <div class="activity-label">보유 포인트</div>
+                  <div class="activity-count" id="currentPoints">0P</div>
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="points-activity-btn"
+              onclick="window.location.href='mini-games.html'"
+            >
+              <span class="btn-icon">🎮</span>
+              미니게임 하러가기
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: 저장된 식단 + 추천 영양제 -->
+      <div class="mypage-dashboard-row3">
+        <div
+          class="mypage-card meal-activity-card"
+          id="mypageSavedMealsCard"
+          tabindex="0"
+        >
+          <div
+            class="mypage-card-title"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
+            <span>
+              <span class="meal-icon">🍽️</span>
+              저장된 식단
+            </span>
+            <span
+              id="savedMealsCount"
+              style="font-size: 0.9rem; color: #27408b; font-weight: 600"
+              >0개</span
+            >
+          </div>
+          <div class="mypage-card-content">
+            <div
+              id="savedMealsPreview"
+              class="saved-meals-mini-preview"
+              style="
+                margin: 12px 0;
+                font-size: 0.8rem;
+                color: #6b7280;
+                text-align: center;
+              "
+            >
+              저장된 식단이 없습니다
+            </div>
+            <button
+              type="button"
+              class="meal-activity-btn"
+              onclick="window.location.href='meal-plan.html'"
+            >
+              <span class="btn-icon">🍽️</span>
+              식단 계획하기
+            </button>
+          </div>
+        </div>
+        <div
+          class="mypage-card supplement-activity-card"
+          id="mypageSupplementCard"
+          tabindex="0"
+        >
+          <div
+            class="mypage-card-title"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
+            <span>
+              <span class="supplement-icon">💊</span>
+              나만의의 영양제
+            </span>
+            <span
+              id="savedSupplementsCount"
+              style="font-size: 0.9rem; color: #27408b; font-weight: 600"
+              >0개</span
+            >
+          </div>
+          <div class="mypage-card-content">
+            <div
+              id="savedSupplementsPreview"
+              class="saved-supplements-mini-preview"
+              style="
+                margin: 12px 0;
+                font-size: 0.8rem;
+                color: #6b7280;
+                text-align: center;
+              "
+            >
+              저장된 영양제가 없습니다
+            </div>
+            <button
+              type="button"
+              class="supplement-activity-btn"
+              onclick="window.location.href='supplement.html'"
+            >
+              <span class="btn-icon">💊</span>
+              영양제 추천받기
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="mypage-stats-row">
+        <div class="mypage-card stats-activity-card">
+          <div class="mypage-card-title">
+            <span class="stats-icon">📊</span>
+            서비스 이용 통계
+          </div>
+          <div class="mypage-card-content">
+            <div class="stats-activity-grid">
+              <div class="activity-stat-item">
+                <div class="activity-icon">🍽️</div>
+                <div class="activity-info">
+                  <div class="activity-label">추천식단</div>
+                  <div class="activity-count" id="mealPlanCount">0회</div>
+                </div>
+              </div>
+              <div class="activity-stat-item">
+                <div class="activity-icon">🏪</div>
+                <div class="activity-info">
+                  <div class="activity-label">추천식당</div>
+                  <div class="activity-count" id="restaurantCount">0회</div>
+                </div>
+              </div>
+              <div class="activity-stat-item">
+                <div class="activity-icon">💊</div>
+                <div class="activity-info">
+                  <div class="activity-label">추천영양제</div>
+                  <div class="activity-count" id="supplementCount">0회</div>
+                </div>
+              </div>
+              <div class="activity-stat-item">
+                <div class="activity-icon">🔍</div>
+                <div class="activity-info">
+                  <div class="activity-label">식재료분석</div>
+                  <div class="activity-count" id="ingredientCount">0회</div>
+                </div>
+              </div>
+            </div>
+            <pre id="stats-debug" style="display: none"></pre>
+          </div>
+        </div>
+      </div>
+      <!-- 스토어 마이페이지 모달 -->
+      <div
+        id="storeMypageModal"
+        class="storeMypage-backdrop"
+        aria-hidden="true"
+      >
+        <div
+          class="storeMypage-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="storeMypageTitle"
+        >
+          <div class="storeMypage-header">
+            <div class="storeMypage-title" id="storeMypageTitle">
+              스토어 마이페이지
+            </div>
+            <button
+              class="storeMypage-close"
+              id="storeMypageClose"
+              aria-label="닫기"
+            >
+              ×
+            </button>
+          </div>
+          <div class="storeMypage-body">
+            <div class="storeMypage-tabs" role="tablist">
+              <button
+                class="storeMypage-tab active"
+                data-tab="orders"
+                role="tab"
+              >
+                주문/배송
+              </button>
+              <button class="storeMypage-tab" data-tab="wishlist" role="tab">
+                찜한상품
+              </button>
+              <button class="storeMypage-tab" data-tab="reviews" role="tab">
+                리뷰
+              </button>
+            </div>
+            <div class="storeMypage-content">
+              <div id="storeTab-orders" class="tab active" role="tabpanel">
+                <div id="storeOrders" class="storeMypage-list"></div>
+              </div>
+              <div id="storeTab-wishlist" class="tab" role="tabpanel">
+                <div
+                  id="storeWishlist"
+                  class="storeMypage-list"
+                  style="
+                    grid-template-columns: repeat(
+                      auto-fill,
+                      minmax(180px, 1fr)
+                    );
+                  "
+                ></div>
+              </div>
+              <div id="storeTab-reviews" class="tab" role="tabpanel">
+                <div id="storePendingReviews" class="storeMypage-list"></div>
+                <hr
+                  style="
+                    border: none;
+                    border-top: 1px solid #eef2f7;
+                    margin: 12px 0;
+                  "
+                />
+                <div id="storeMyReviews" class="storeMypage-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+      // 로그인 상태 확인 (서버 세션 기반)
+      async function checkAuthStatus() {
+        const navAuth = document.getElementById("navAuth");
+
+        try {
+          const response = await fetch("/api/auth/me", {
+            credentials: "include",
+          });
+          const data = await response.json();
+
+          if (data.loggedIn && data.user) {
+            // 로그인된 상태
+            localStorage.setItem("user", JSON.stringify(data.user));
+
+            // 디버깅: 사용자 정보 출력
+            console.log("사용자 정보:", data.user);
+            console.log("isAdmin:", data.user.isAdmin);
+            console.log("role:", data.user.role);
+
+            // 관리자 권한 확인
+            let adminButton = "";
+            if (data.user.isAdmin === true || data.user.role === "admin") {
+              adminButton =
+                '<a href="admin.html" class="main-nav-button" style="background-color: #dc3545; color: white;">관리자</a>';
+              console.log("관리자 버튼 추가됨");
+            } else {
+              console.log("관리자 권한 없음");
+            }
+
+            navAuth.innerHTML = `
+                    <a href="mypage.html" class="main-nav-button">마이페이지</a>
+                    ${adminButton}
+                    <button class="main-nav-button" onclick="logout()">로그아웃</button>
+                `;
+          } else {
+            // 로그아웃된 상태
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navAuth.innerHTML = `
+                        <a href="login.html" class="main-nav-button">로그인</a>
+                        <a href="signup.html" class="main-nav-button primary">회원가입</a>
+                    `;
+          }
+        } catch (error) {
+          console.error("Auth status check failed:", error);
+          // 에러 시 로그아웃 상태로 표시
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navAuth.innerHTML = `
+                    <a href="login.html" class="main-nav-button">로그인</a>
+                    <a href="signup.html" class="main-nav-button primary">회원가입</a>
+                `;
+        }
+      }
+
+      async function logout() {
+        try {
+          await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+          });
+        } catch (error) {
+          console.error("Logout failed:", error);
+        }
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        location.reload();
+      }
+
+      // 페이지 로드 시 로그인 상태 확인
+      checkAuthStatus();
+    </script>
+    <script>
+      // 로그인 상태 체크
+      async function checkAuthStatus() {
+        try {
+          const response = await fetch("/api/auth/me", {
+            credentials: "include",
+          });
+          const data = await response.json();
+
+          if (!data.loggedIn) {
+            alert("로그인이 필요한 서비스입니다.");
+            window.location.href = "login.html";
+            return false;
+          }
+          return true;
+        } catch (error) {
+          console.error("인증 상태 확인 오류:", error);
+          alert("로그인 상태를 확인할 수 없습니다. 다시 시도해주세요.");
+          window.location.href = "login.html";
+          return false;
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", async function () {
+        // 먼저 로그인 상태 체크
+        const isLoggedIn = await checkAuthStatus();
+        if (!isLoggedIn) return;
+        var profileCard = document.getElementById("mypageProfileCard");
+        if (profileCard) {
+          profileCard.addEventListener("click", function () {
+            window.location.href = "profile.html";
+          });
+          profileCard.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") {
+              window.location.href = "profile.html";
+            }
+          });
+        }
+        var settingsBtn = document.getElementById("settingsBtn");
+        if (settingsBtn) {
+          settingsBtn.addEventListener("click", function () {
+            window.location.href = "settings.html";
+          });
+        }
+
+        // 스토어 마이페이지 모달 바인딩
+        const storeCard = document.getElementById("storeMypageCard");
+        const openStoreBtn = document.getElementById("openStoreMypageBtn");
+        const storeModal = document.getElementById("storeMypageModal");
+        const storeClose = document.getElementById("storeMypageClose");
+
+        let lastFocusedElement; // 포커스 추적을 위한 변수
+
+        function openStoreMypageModal() {
+          // 모달이 열리기 전 현재 포커스된 요소를 저장
+          lastFocusedElement = document.activeElement;
+          // 탭 초기화 후 데이터 로드
+          switchStoreTab("orders");
+          loadStoreOrders();
+          loadStoreWishlist();
+          loadStoreReviews();
+          storeModal.classList.add("active");
+          storeModal.setAttribute("aria-hidden", "false");
+          // 모달이 열리면 닫기 버튼에 포커스
+          storeClose.focus();
+        }
+
+        function closeStoreMypageModal() {
+          storeModal.classList.remove("active");
+          storeModal.setAttribute("aria-hidden", "true");
+          // 모달이 닫히면 이전에 포커스된 요소로 포커스 복원
+          if (lastFocusedElement) {
+            lastFocusedElement.focus();
+          }
+        }
+
+        function switchStoreTab(name) {
+          document
+            .querySelectorAll(".storeMypage-tab")
+            .forEach((t) => t.classList.remove("active"));
+          document
+            .querySelectorAll(".storeMypage-content .tab")
+            .forEach((c) => c.classList.remove("active"));
+          const tabBtn = document.querySelector(
+            `.storeMypage-tab[data-tab="${name}"]`
+          );
+          const tabPanel = document.getElementById(`storeTab-${name}`);
+          if (tabBtn) tabBtn.classList.add("active");
+          if (tabPanel) tabPanel.classList.add("active");
+        }
+
+        // 이벤트 연결
+        if (storeCard) {
+          storeCard.addEventListener("click", openStoreMypageModal);
+          storeCard.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") openStoreMypageModal();
+          });
+        }
+        if (openStoreBtn)
+          openStoreBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            openStoreMypageModal();
+          });
+        if (storeClose)
+          storeClose.addEventListener("click", closeStoreMypageModal);
+        if (storeModal)
+          storeModal.addEventListener("click", function (e) {
+            if (e.target === storeModal) closeStoreMypageModal();
+          });
+
+        // 탭 버튼 클릭
+        document.addEventListener("click", function (e) {
+          const btn = e.target.closest(".storeMypage-tab");
+          if (!btn) return;
+          const name = btn.getAttribute("data-tab");
+          switchStoreTab(name);
+        });
+
+        // 데이터 로드: 스토어 API 재사용
+        async function loadStoreOrders() {
+          try {
+            const res = await fetch("/api/shop/orders", {
+              credentials: "include",
+            });
+            const data = await res.json();
+            const list = document.getElementById("storeOrders");
+            if (!list) return;
+            if (!data.success || !data.data || data.data.length === 0) {
+              list.innerHTML =
+                '<div class="storeMypage-empty">주문/배송 내역이 없습니다</div>';
+              return;
+            }
+            list.innerHTML = data.data
+              .map(
+                (o) => `
+              <div class="storeMypage-cardRow">
+                <div>
+                  <div style="font-weight:700;color:#27408b;">주문일: ${new Date(
+                    o.created_at
+                  ).toLocaleDateString("ko-KR")}</div>
+                  <div style="font-size:0.9rem;color:#475569;">상품 ${
+                    o.items?.length || 0
+                  }개 · 결제 ${(
+                  o.final_amount ?? o.total_amount
+                ).toLocaleString()}원</div>
+                </div>
+                <div class="storeMypage-orderStatus">${getStoreStatusText(
+                  o.status
+                )}</div>
+              </div>`
+              )
+              .join("");
+          } catch (err) {
+            console.error("스토어 주문 로드 오류:", err);
+            const list = document.getElementById("storeOrders");
+            if (list)
+              list.innerHTML =
+                '<div class="storeMypage-empty">주문 정보를 불러올 수 없습니다</div>';
+          }
+        }
+
+        function getStoreStatusText(status) {
+          const map = {
+            pending: "주문 확인중",
+            processing: "준비중",
+            shipped: "배송중",
+            delivered: "배송완료",
+          };
+          return map[status] || "주문 확인중";
+        }
+
+        async function loadStoreWishlist() {
+          try {
+            const res = await fetch("/api/shop/wishlist", {
+              credentials: "include",
+            });
+            const data = await res.json();
+            const grid = document.getElementById("storeWishlist");
+            if (!grid) return;
+            if (!data.success || !data.data || data.data.length === 0) {
+              grid.innerHTML =
+                '<div class="storeMypage-empty">찜한 상품이 없습니다</div>';
+              return;
+            }
+            grid.innerHTML = data.data
+              .map(
+                (w) => `
+              <div class="storeMypage-cardRow" style="flex-direction:column; align-items:stretch;">
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <div style="font-size:1.4rem;">${
+                    getCategoryEmoji(w.category) || "📦"
+                  }</div>
+                  <div style="flex:1;">
+                    <div style="font-weight:700;color:#27408b;">${
+                      w.name || "상품명 없음"
+                    }</div>
+                    <div style="color:#475569;">${
+                      w.price ? w.price.toLocaleString() : "0"
+                    }원</div>
+                  </div>
+                </div>
+              </div>`
+              )
+              .join("");
+          } catch (err) {
+            console.error("스토어 찜 로드 오류:", err);
+            const grid = document.getElementById("storeWishlist");
+            if (grid)
+              grid.innerHTML =
+                '<div class="storeMypage-empty">찜 정보를 불러올 수 없습니다</div>';
+          }
+        }
+
+        async function loadStoreReviews() {
+          try {
+            const [pendingRes, myRes] = await Promise.all([
+              fetch("/api/shop/reviews/pending", { credentials: "include" }),
+              fetch("/api/shop/reviews/my", { credentials: "include" }),
+            ]);
+            const [pendingData, myData] = await Promise.all([
+              pendingRes.json(),
+              myRes.json(),
+            ]);
+            const pending = pendingData.success ? pendingData.data : [];
+            const mine = myData.success ? myData.data : [];
+            const pendingEl = document.getElementById("storePendingReviews");
+            const myEl = document.getElementById("storeMyReviews");
+            if (pendingEl) {
+              pendingEl.innerHTML =
+                pending.length === 0
+                  ? '<div class="storeMypage-empty">작성 가능한 리뷰가 없습니다</div>'
+                  : pending
+                      .map(
+                        (p) => `
+                    <div class="storeMypage-cardRow">
+                      <div>
+                        <div style="font-weight:700;color:#27408b;">${
+                          p.product_name || "상품명 없음"
+                        }</div>
+                        <div style="color:#475569;">배송 완료 상품</div>
+                      </div>
+                      <button style="padding:8px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;" onclick="window.location.href='cart.html'">리뷰 작성</button>
+                    </div>`
+                      )
+                      .join("");
+            }
+            if (myEl) {
+              myEl.innerHTML =
+                mine.length === 0
+                  ? '<div class="storeMypage-empty">작성한 리뷰가 없습니다</div>'
+                  : mine
+                      .map(
+                        (r) => `
+                    <div class="storeMypage-cardRow" style="align-items:flex-start;">
+                      <div>
+                        <div style="font-weight:700;color:#27408b;">${
+                          r.product_name || "상품명 없음"
+                        }</div>
+                        <div class="storeMypage-reviewRating">${"★".repeat(
+                          r.rating
+                        )}${"☆".repeat(5 - r.rating)}</div>
+                        <div style="color:#475569;">${r.content || ""}</div>
+                      </div>
+                    </div>`
+                      )
+                      .join("");
+            }
+          } catch (err) {
+            console.error("스토어 리뷰 로드 오류:", err);
+            const pendingEl = document.getElementById("storePendingReviews");
+            const myEl = document.getElementById("storeMyReviews");
+            if (pendingEl)
+              pendingEl.innerHTML =
+                '<div class="storeMypage-empty">리뷰 정보를 불러올 수 없습니다</div>';
+            if (myEl) myEl.innerHTML = "";
+          }
+        }
+
+        function getCategoryEmoji(category) {
+          const map = {
+            비타민: "🟡",
+            미네랄: "🟢",
+            오메가: "🔵",
+            프로바이오틱스: "🟣",
+            허브: "🟤",
+            기타: "⚪",
+          };
+          return map[category];
+        }
+        // 프로필 정보 불러오기
+        fetch("/api/profile", { credentials: "include" })
+          .then((res) => res.json())
+          .then((profile) => {
+            document.getElementById("profileGender").textContent =
+              profile.gender === "male"
+                ? "남성"
+                : profile.gender === "female"
+                ? "여성"
+                : "-";
+            document.getElementById("profileAge").textContent =
+              profile.age || "-";
+            document.getElementById("profileHeight").textContent =
+              profile.height ? profile.height + "cm" : "-";
+            document.getElementById("profileWeight").textContent =
+              profile.weight ? profile.weight + "kg" : "-";
+          });
+
+        // 저장된 식단 정보 불러오기
+        fetch("/api/saved-meals", { credentials: "include" })
+          .then((res) => res.json())
+          .then((savedMeals) => {
+            const countElement = document.getElementById("savedMealsCount");
+            const previewElement = document.getElementById("savedMealsPreview");
+            if (savedMeals.length === 0) {
+              countElement.style.display = "none";
+              previewElement.textContent = "저장된 식단이 없습니다";
+            } else {
+              countElement.style.display = "block";
+              countElement.textContent = `저장된 식단: ${savedMeals.length}개`;
+              // 최신 3개만 미니카드로 보여주기
+              const mealTypeEmoji = {
+                breakfast: "🍞",
+                lunch: "🍚",
+                dinner: "🍲",
+                snacks: "🍎",
+              };
+              previewElement.innerHTML = savedMeals
+                .slice(0, 5)
+                .map((meal) => {
+                  const emoji = mealTypeEmoji[meal.mealType] || "🍽️";
+                  const savedDate = new Date(meal.savedAt).toLocaleDateString(
+                    "ko-KR"
+                  );
+
+                  // 주재료에서 첫 번째 재료 추출
+                  let mainIngredient = "주재료";
+                  try {
+                    const tempDiv = document.createElement("div");
+                    tempDiv.innerHTML = meal.content;
+                    const ingredientList = tempDiv.querySelector(
+                      ".main-ingredient-title + .ingredient-list"
+                    );
+                    if (ingredientList) {
+                      const firstIngredient =
+                        ingredientList.querySelector(".ingredient-name");
+                      if (firstIngredient) {
+                        mainIngredient = firstIngredient.textContent
+                          .split("(")[0]
+                          .trim(); // 괄호 앞부분만 추출
+                      }
+                    }
+                  } catch (e) {
+                    console.log("재료 추출 실패:", e);
+                  }
+
+                  return `<div class="mini-meal-card" tabindex="0" onclick="window.location.href='saved-meals.html'">
+                <div class="mini-meal-title"><span class="mini-meal-emoji">${emoji}</span>${meal.title}</div>
+                <div class="mini-meal-ingredient">${mainIngredient}</div>
+                <div class="mini-meal-date">${savedDate}</div>
+              </div>`;
+                })
+                .join("");
+            }
+          });
+
+        // 북마크한 영양정보 불러오기
+        // 북마크 개수 조회
+        fetch("/api/nutrition-info/bookmarks/count", { credentials: "include" })
+          .then((res) => {
+            if (res.ok) {
+              return res.json();
+            } else {
+              console.log("북마크 개수 조회 실패:", res.status);
+              return { success: false, count: 0 };
+            }
+          })
+          .then((countResponse) => {
+            const countElement = document.getElementById("savedNutritionCount");
+            const totalCount = countResponse.success ? countResponse.count : 0;
+            
+            // 북마크 목록 조회 (미리보기용)
+            return fetch("/api/nutrition-info/bookmarks?limit=5", { credentials: "include" })
+              .then((res) => {
+                if (res.ok) {
+                  return res.json();
+                } else {
+                  console.log("북마크 목록 조회 실패:", res.status);
+                  return { success: false, data: [] };
+                }
+              })
+              .then((listResponse) => {
+                const previewElement = document.getElementById("savedNutritionPreview");
+                const bookmarkedNutrition = listResponse.success ? listResponse.data : [];
+
+                if (totalCount === 0) {
+                  if (countElement) countElement.style.display = "none";
+                  if (previewElement)
+                    previewElement.textContent = "북마크한 영양정보가 없습니다";
+                } else {
+                  if (countElement) {
+                    countElement.style.display = "block";
+                    countElement.textContent = `북마크한 정보: ${totalCount}개`;
+                  }
+                  // 최신 5개만 미니카드로 보여주기
+                  const categoryEmoji = {
+                    비타민: "🟡",
+                    미네랄: "🟢",
+                    단백질: "🔴",
+                    탄수화물: "🟤",
+                    지방: "🟠",
+                    식이섬유: "🟢",
+                    항산화: "🟣",
+                    기타: "⚪",
+                  };
+                  if (previewElement) {
+                    previewElement.innerHTML = bookmarkedNutrition
+                      .slice(0, 5)
+                      .map((nutrition) => {
+                        const emoji = categoryEmoji[nutrition.category] || "📚";
+                        const savedDate = new Date(
+                          nutrition.createdAt || nutrition.publishedAt
+                        ).toLocaleDateString("ko-KR");
+
+                        return `<div class="mini-nutrition-card" tabindex="0" onclick="window.location.href='bookmarked-nutrition.html'">
+                      <div class="mini-nutrition-title"><span class="mini-nutrition-emoji">${emoji}</span>${nutrition.title}</div>
+                      <div class="mini-nutrition-category">${nutrition.category}</div>
+                      <div class="mini-nutrition-date">${savedDate}</div>
+                    </div>`;
+                      })
+                      .join("");
+                  }
+                }
+              });
+          })
+          .catch((error) => {
+            console.error("북마크 영양정보 조회 오류:", error);
+            const countElement = document.getElementById("savedNutritionCount");
+            const previewElement = document.getElementById(
+              "savedNutritionPreview"
+            );
+            if (countElement) countElement.style.display = "none";
+            if (previewElement)
+              previewElement.textContent = "북마크한 영양정보가 없습니다";
+          });
+
+        // 저장된 영양제 정보 불러오기
+        fetch("/api/supplements/saved-supplements", { credentials: "include" })
+          .then((res) => res.json())
+          .then((savedSupplements) => {
+            const countElement = document.getElementById(
+              "savedSupplementsCount"
+            );
+            const previewElement = document.getElementById(
+              "savedSupplementsPreview"
+            );
+            if (savedSupplements.length === 0) {
+              countElement.style.display = "none";
+              previewElement.textContent = "저장된 영양제가 없습니다";
+            } else {
+              countElement.style.display = "block";
+              countElement.textContent = `저장된 영양제: ${savedSupplements.length}개`;
+              // 최신 5개만 미니카드로 보여주기
+              const categoryEmoji = {
+                비타민: "�",
+                미네랄: "�",
+                오메가: "🔵",
+                프로바이오틱스: "🟣",
+                허브: "🟤",
+                기타: "⚪",
+              };
+              previewElement.innerHTML = savedSupplements
+                .slice(0, 5)
+                .map((supplement) => {
+                  const emoji = categoryEmoji[supplement.category] || "💊";
+                  const savedDate = new Date(
+                    supplement.savedAt
+                  ).toLocaleDateString("ko-KR");
+
+                  return `<div class="mini-supplement-card" tabindex="0" onclick="window.location.href='saved-supplements.html'">
+                <div class="mini-supplement-title"><span class="mini-supplement-emoji">${emoji}</span>${supplement.name}</div>
+                <div class="mini-supplement-category">${supplement.category}</div>
+                <div class="mini-supplement-date">${savedDate}</div>
+              </div>`;
+                })
+                .join("");
+            }
+          });
+
+        // 북마크한 영양정보 카드 클릭 이벤트
+        var savedNutritionCard = document.getElementById("mypageNutritionCard");
+        if (savedNutritionCard) {
+          savedNutritionCard.addEventListener("click", function () {
+            window.location.href = "bookmarked-nutrition.html";
+          });
+          savedNutritionCard.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") {
+              window.location.href = "bookmarked-nutrition.html";
+            }
+          });
+        }
+
+        // 저장된 영양제 카드 클릭 이벤트
+        var savedSupplementsCard = document.getElementById(
+          "mypageSupplementCard"
+        );
+        if (savedSupplementsCard) {
+          savedSupplementsCard.addEventListener("click", function () {
+            window.location.href = "saved-supplements.html";
+          });
+          savedSupplementsCard.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") {
+              window.location.href = "saved-supplements.html";
+            }
+          });
+        }
+
+        // 저장된 식단 카드 클릭 이벤트
+        var savedMealsCard = document.getElementById("mypageSavedMealsCard");
+        if (savedMealsCard) {
+          savedMealsCard.addEventListener("click", function () {
+            window.location.href = "saved-meals.html";
+          });
+          savedMealsCard.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") {
+              window.location.href = "saved-meals.html";
+            }
+          });
+        }
+
+        function getMealTypeText(mealType) {
+          const mealTypes = {
+            breakfast: "아침",
+            lunch: "점심",
+            dinner: "저녁",
+            snacks: "간식",
+          };
+          return mealTypes[mealType] || mealType;
+        }
+
+        // 포인트 정보 불러오기
+        fetch("/api/points/balance", { credentials: "include" })
+          .then((res) => {
+            if (res.ok) {
+              return res.json();
+            } else {
+              console.log("포인트 조회 실패:", res.status);
+              return { balance: 0 };
+            }
+          })
+          .then((data) => {
+            document.getElementById("currentPoints").textContent =
+              data.balance || 0;
+          })
+          .catch((error) => {
+            console.error("포인트 조회 오류:", error);
+            document.getElementById("currentPoints").textContent = "0";
+          });
+
+        // 포인트 내역은 숨김 처리 (필요시 나중에 활성화)
+        const historyElement = document.getElementById("pointsHistory");
+        if (historyElement) {
+          historyElement.style.display = "none";
+        }
+
+        // 포인트 카드 클릭 이벤트
+        var pointsCard = document.getElementById("mypagePointsCard");
+        if (pointsCard) {
+          pointsCard.addEventListener("click", function () {
+            window.location.href = "mini-games.html";
+          });
+          pointsCard.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") {
+              window.location.href = "mini-games.html";
+            }
+          });
+        }
+
+        // 서비스 이용 통계 불러오기
+        fetch("/api/stats/my", { credentials: "include" })
+          .then((res) => {
+            console.log("통계 API 응답 상태:", res.status);
+            if (res.ok) {
+              return res.json();
+            } else {
+              console.log("통계 조회 실패:", res.status, res.statusText);
+              return null;
+            }
+          })
+          .then((data) => {
+            console.log("통계 데이터:", data);
+            if (data && data.serviceUsage) {
+              const usage = data.serviceUsage;
+              console.log("서비스 사용량 데이터:", usage);
+
+              const mealPlanElement = document.getElementById("mealPlanCount");
+              const restaurantElement =
+                document.getElementById("restaurantCount");
+              const supplementElement =
+                document.getElementById("supplementCount");
+              const ingredientElement =
+                document.getElementById("ingredientCount");
+
+              if (mealPlanElement)
+                mealPlanElement.textContent = `${usage.mealPlan || 0}회`;
+              if (restaurantElement)
+                restaurantElement.textContent = `${
+                  usage.restaurantRecommendation || 0
+                }회`;
+              if (supplementElement)
+                supplementElement.textContent = `${
+                  usage.supplementRecommendation || 0
+                }회`;
+              if (ingredientElement)
+                ingredientElement.textContent = `${
+                  usage.ingredientAnalysis || 0
+                }회`;
+            } else {
+              console.log("통계 데이터가 없거나 구조가 다릅니다:", data);
+            }
+          })
+          .catch((error) => {
+            console.error("통계 조회 오류:", error);
+          });
+
+        // 모바일 하단 네비게이션 바 활성화
+        const footerNavMy = document.getElementById("footerNavMy");
+        if (footerNavMy) {
+          footerNavMy.classList.add("active");
+        }
+
+        // AI 기능 모달 처리
+        const aiFeatureBtn = document.querySelector(".footer-nav-ai-btn");
+        const aiFeatureModal = document.getElementById("aiFeatureModal");
+
+        if (aiFeatureBtn && aiFeatureModal) {
+          aiFeatureBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            aiFeatureModal.classList.toggle("active");
+          });
+
+          // 모달 외부 클릭 시 닫기
+          document.addEventListener("click", function (e) {
+            if (
+              !aiFeatureBtn.contains(e.target) &&
+              !aiFeatureModal.contains(e.target)
+            ) {
+              aiFeatureModal.classList.remove("active");
+            }
+          });
+        }
+      });
+    </script>
+
+    <!-- 모바일 하단 네비게이션 바 -->
+    <nav class="footer-nav-mobile">
+      <ul>
+        <li class="footer-nav-item" id="footerNavHome">
+          <a href="index.html">
+            <span class="footer-nav-icon">🏠</span>
+            <span class="footer-nav-label">홈</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavNutrition">
+          <a href="nutrition-info.html">
+            <span class="footer-nav-icon">📰</span>
+            <span class="footer-nav-label">영양정보</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavAI">
+          <button type="button" class="footer-nav-ai-btn">
+            <span class="footer-nav-icon">🤖</span>
+            <span class="footer-nav-label">AI기능</span>
+          </button>
+        </li>
+        <li class="footer-nav-item" id="footerNavStore">
+          <a href="store.html">
+            <span class="footer-nav-icon">🛒</span>
+            <span class="footer-nav-label">스토어</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavMy">
+          <a href="mypage.html" class="active">
+            <span class="footer-nav-icon">👤</span>
+            <span class="footer-nav-label">마이</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- AI 기능 모달 -->
+    <div id="aiFeatureModal" class="ai-feature-modal">
+      <div class="ai-feature-modal-content">
+        <ul>
+          <li><a href="meal-plan.html">뭐해먹지?</a></li>
+          <li><a href="supplements.html">나만의 영양제</a></li>
+          <li><a href="restaurant-recommendation.html">오늘의 맛집</a></li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

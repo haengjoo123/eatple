@@ -1,0 +1,15 @@
+[
+  {
+    "id": "alert_1753432237857_436nx9ljg",
+    "timestamp": "2025-07-25T08:30:37.857Z",
+    "acknowledged": false,
+    "resolved": false,
+    "type": "HIGH_MEMORY_USAGE",
+    "severity": "warning",
+    "message": "높은 메모리 사용률: 95.0%",
+    "data": {
+      "memoryUsagePercent": 0.9504305507596685,
+      "threshold": 0.95
+    }
+  }
+]

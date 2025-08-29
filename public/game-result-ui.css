@@ -1,0 +1,1216 @@
+/**
+ * Game Result UI CSS
+ * 게임 결과 및 포인트 적립 UI 스타일
+ */
+
+/* Game Result Modal */
+.game-result-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.game-result-modal.show {
+    opacity: 1;
+}
+
+.result-content {
+    background: white;
+    border-radius: 20px;
+    padding: 1rem;
+    max-width: 900px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    box-sizing: border-box;
+}
+
+.game-result-modal.show .result-content {
+    transform: scale(1);
+}
+
+/* Scrollbar Styling */
+.result-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.result-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.result-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.result-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Firefox scrollbar */
+.result-content {
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Game Statistics */
+.result-stats {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 0.75rem;
+    margin-bottom: 0.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.result-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+    background: white;
+    border: 1px solid #e9ecef;
+    min-width: 80px;
+    flex: 1;
+    max-width: 120px;
+}
+
+.stat-label {
+    font-weight: 500;
+    color: #6c757d;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+
+.points-display {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 0.75rem;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.points-loading {
+    text-align: center;
+}
+
+.points-loading .loading-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+.points-loading p {
+    color: #6c757d;
+    margin: 0;
+}
+
+.points-success {
+    text-align: center;
+}
+
+.points-success h3 {
+    color: #27ae60;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    margin-top: 0px;
+}
+
+.points-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.points-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.375rem 0.5rem;
+    border-radius: 10px;
+    background: white;
+    border: 1px solid #e9ecef;
+}
+
+.points-item.earned {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    border-color: #b8daff;
+}
+
+.points-item.total {
+    background: linear-gradient(135deg, #cce5ff, #b8daff);
+    border-color: #99d6ff;
+}
+
+.points-item.remaining {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border-color: #ffd93d;
+}
+
+.points-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.points-value {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.points-item.earned .points-value {
+    color: #155724;
+}
+
+.points-item.total .points-value {
+    color: #004085;
+}
+
+.points-item.remaining .points-value {
+    color: #856404;
+}
+
+/* Points Error */
+.points-error-content {
+    text-align: center;
+    padding: 1rem;
+}
+
+.points-error-content h3 {
+    color: #e74c3c;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.points-error-content .error-message {
+    color: #6c757d;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.points-error-content .error-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.points-error-content .error-info {
+    margin-top: 1rem;
+}
+
+.points-error-content .error-help {
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-style: italic;
+    margin: 0;
+}
+
+/* 특정 오류 타입별 스타일 */
+.points-error-content.limit-reached h3 {
+    color: #f39c12;
+}
+
+.points-error-content.limit-reached .error-message {
+    color: #e67e22;
+    font-weight: 500;
+}
+
+.points-error-content.requirements-not-met h3 {
+    color: #9b59b6;
+}
+
+.points-error-content.requirements-not-met .error-message {
+    color: #8e44ad;
+    font-weight: 500;
+}
+
+.points-error-content.session-error h3 {
+    color: #34495e;
+}
+
+.points-error-content.session-error .error-message {
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.retry-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.retry-btn:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+}
+
+/* Result Actions */
+.result-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.result-btn {
+    padding: 0.625rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    min-width: 110px;
+    margin-top: 10px;
+}
+
+.result-btn.primary-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.result-btn.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.result-btn.secondary-btn {
+    background: #6c757d;
+    color: white;
+}
+
+.result-btn.secondary-btn:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+/* Animations */
+.points-animate {
+    animation: pointsSuccess 0.8s ease-out;
+}
+
+@keyframes pointsSuccess {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Success Celebration Effect */
+.points-success::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7);
+    background-size: 400% 400%;
+    border-radius: 20px;
+    z-index: -1;
+    animation: gradientShift 3s ease infinite;
+    opacity: 0.1;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Leaderboard Section */
+.leaderboard-section {
+    margin-bottom: 1.25rem;
+    max-width: 320px;
+}
+
+/* Weekly Leaderboard Styles */
+.weekly-leaderboard-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.weekly-leaderboard-section h3 {
+    color: #e67e22;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+    margin-top: 0;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+    padding: 0.5rem 0;
+}
+
+.week-info {
+    background: linear-gradient(135deg, #74b9ff, #0984e3);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.reset-info {
+    background: rgba(116, 185, 255, 0.1);
+    color: #0984e3;
+    padding: 0.3rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    text-align: center;
+    border: 1px solid rgba(116, 185, 255, 0.3);
+}
+
+.no-data-message {
+    text-align: center;
+    padding: 1rem;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.no-data-message p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.weekly-item {
+    background: linear-gradient(135deg, #fff8e1, #ffecb3);
+    border-color: #ffc107;
+}
+
+.weekly-item .rank-info {
+    gap: 0.75rem;
+}
+
+.reward-info {
+    background: linear-gradient(135deg, #4caf50, #388e3c);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    margin-left: 0.5rem;
+}
+
+
+
+.leaderboard-display {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 0.75rem;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.leaderboard-loading {
+    text-align: center;
+}
+
+.leaderboard-loading .loading-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+.leaderboard-loading p {
+    color: #6c757d;
+    margin: 0;
+}
+
+.leaderboard-success {
+    text-align: center;
+    width: 100%;
+}
+
+.leaderboard-success h3 {
+    color: #f39c12;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    margin-top: 0px;
+}
+
+.leaderboard-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.leaderboard-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+    background: white;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.leaderboard-item.current-user {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border-color: #ffd93d;
+    box-shadow: 0 2px 8px rgba(255, 217, 61, 0.3);
+}
+
+.leaderboard-item.outside-top3 {
+    border-top: 2px solid #e9ecef;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+}
+
+.rank-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rank-medal {
+    font-size: 1.2rem;
+}
+
+.rank-number {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.player-name {
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.player-score {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.leaderboard-item.current-user .player-name {
+    color: #856404;
+}
+
+.leaderboard-item.current-user .player-score {
+    color: #856404;
+}
+
+.leaderboard-item.new-score {
+    animation: newScorePulse 2s ease-in-out;
+    border-color: #ff6b6b;
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+}
+
+.new-badge {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.4rem;
+    border-radius: 8px;
+    margin-left: 0.5rem;
+    animation: badgePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes newScorePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+@keyframes badgePulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* Leaderboard Error */
+.leaderboard-error-content {
+    text-align: center;
+    padding: 1rem;
+}
+
+.leaderboard-error-content h3 {
+    color: #6c757d;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.leaderboard-error-content .error-message {
+    color: #6c757d;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+/* Sections Container */
+.sections-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    justify-content: center;
+    align-items: center;
+    min-height: auto;
+}
+
+.leaderboard-section,
+.points-section {
+    flex: 1;
+    margin-bottom: 0;
+    max-width: 320px;
+    min-height: auto;
+}
+
+.leaderboard-display {
+    height: auto;
+    min-height: auto;
+    max-height: none;
+    overflow-y: visible;
+}
+
+.points-display {
+    height: auto;
+    min-height: auto;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .game-result-modal {
+        padding: 0.25rem;
+    }
+    
+    .result-content {
+        padding: 0.75rem;
+        max-width: 98%;
+        width: 98%;
+        max-height: 85vh;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .sections-container {
+        flex-direction: column;
+        gap: 0.75rem;
+        min-height: auto;
+    }
+    
+    .leaderboard-display {
+        min-height: auto;
+        max-height: none;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .leaderboard-breakdown {
+        max-height: 180px;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .points-display {
+        min-height: auto;
+        max-height: 250px;
+    }
+    
+    .result-stats {
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+    
+    .result-stat {
+        min-width: 70px;
+        max-width: 100px;
+        padding: 0.4rem 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    .stat-value {
+        font-size: 1rem;
+    }
+    
+    .result-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .result-btn {
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    .points-breakdown,
+    .leaderboard-breakdown {
+        gap: 0.5rem;
+    }
+    
+    .points-item,
+    .leaderboard-item {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .points-value,
+    .player-score {
+        font-size: 1rem;
+    }
+    
+    .leaderboard-success h3 {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-result-modal {
+        padding: 0.125rem;
+    }
+    
+    .result-content {
+        padding: 0.5rem;
+        max-width: 99%;
+        width: 99%;
+        max-height: 80vh;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .sections-container {
+        gap: 0.5rem;
+        min-height: auto;
+    }
+    
+    .leaderboard-display {
+        min-height: auto;
+        max-height: none;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .leaderboard-breakdown {
+        max-height: 150px;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .weekly-leaderboard-section h3 {
+        font-size: 1rem;
+        padding: 0.4rem 0;
+    }
+    
+    .points-display {
+        min-height: auto;
+        max-height: 200px;
+    }
+    
+    .result-stats {
+        gap: 0.4rem;
+        padding: 0.4rem;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .result-stat {
+        min-width: 120px;
+        max-width: 150px;
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        margin-bottom: 0;
+    }
+    
+    .stat-value {
+        font-size: 0.9rem;
+    }
+    
+    .result-stats,
+    .points-display,
+    .leaderboard-display {
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .points-item,
+    .leaderboard-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.25rem;
+        padding: 0.6rem 0.8rem;
+    }
+    
+    .points-label,
+    .player-name {
+        font-size: 0.85rem;
+    }
+    
+    .points-value,
+    .player-score {
+        font-size: 0.95rem;
+    }
+    
+    .result-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+        min-width: 120px;
+    }
+    
+    .result-actions {
+        gap: 0.75rem;
+    }
+    
+    .points-success h3,
+    .leaderboard-success h3 {
+        font-size: 1.1rem;
+    }
+    
+    .rank-medal {
+        font-size: 1rem;
+    }
+    
+    .rank-number {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .game-result-modal {
+        padding: 0.0625rem;
+    }
+    
+    .result-content {
+        padding: 0.375rem;
+        max-width: 99.5%;
+        width: 99.5%;
+        max-height: 75vh;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .sections-container {
+        gap: 0.4rem;
+        min-height: auto;
+    }
+    
+    .leaderboard-display {
+        min-height: auto;
+        max-height: none;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .leaderboard-breakdown {
+        max-height: 120px;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .weekly-leaderboard-section h3 {
+        font-size: 0.9rem;
+        padding: 0.3rem 0;
+    }
+    
+    .points-display {
+        min-height: auto;
+        max-height: 180px;
+    }
+    
+    .result-stats {
+        gap: 0.3rem;
+        padding: 0.3rem;
+    }
+    
+    .result-stat {
+        min-width: 100px;
+        max-width: 130px;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    .stat-value {
+        font-size: 0.85rem;
+    }
+    
+    .result-stats,
+    .points-display,
+    .leaderboard-display {
+        padding: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .points-item,
+    .leaderboard-item {
+        padding: 0.5rem 0.6rem;
+    }
+    
+    .points-label,
+    .stat-label,
+    .player-name {
+        font-size: 0.8rem;
+    }
+    
+    .points-value,
+    .stat-value,
+    .player-score {
+        font-size: 0.9rem;
+    }
+    
+    .result-btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.85rem;
+        min-width: 100px;
+    }
+    
+    .points-success h3,
+    .leaderboard-success h3 {
+        font-size: 1rem;
+    }
+    
+    .retry-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+    
+    .rank-medal {
+        font-size: 0.9rem;
+    }
+    
+    .rank-number {
+        font-size: 0.85rem;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .game-result-modal,
+    .result-content,
+    .points-animate {
+        transition: none;
+        animation: none;
+    }
+    
+    .points-loading .loading-spinner {
+        animation: none;
+    }
+    
+    .points-success::before {
+        animation: none;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .game-result-modal {
+        background: rgba(0, 0, 0, 0.95);
+    }
+    
+    .result-content {
+        border: 2px solid #000;
+    }
+    
+    .points-item {
+        border: 2px solid #000;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .result-content {
+        background: #2c3e50;
+        color: #ecf0f1;
+    }
+    
+    .result-stats {
+        background: #34495e;
+    }
+    
+    .result-stat {
+        background: #34495e;
+        border-color: #4a5f7a;
+    }
+    
+    .stat-label {
+        color: #bdc3c7;
+    }
+    
+    .stat-value {
+        color: #ecf0f1;
+    }
+    
+    .points-display,
+    .leaderboard-display {
+        background: #34495e;
+    }
+    
+    .points-label,
+    .player-name {
+        color: #bdc3c7;
+    }
+    
+    .points-value,
+    .player-score {
+        color: #ecf0f1;
+    }
+    
+    .points-item,
+    .leaderboard-item {
+        background: #34495e;
+        border-color: #4a5f7a;
+    }
+    
+    .points-error-content .error-message,
+    .leaderboard-error-content .error-message {
+        color: #bdc3c7;
+    }
+    
+    .points-error-content .error-help {
+        color: #95a5a6;
+    }
+    
+    /* 다크 모드에서 특정 오류 타입별 스타일 */
+    .points-error-content.limit-reached h3 {
+        color: #f39c12;
+    }
+    
+    .points-error-content.limit-reached .error-message {
+        color: #e67e22;
+    }
+    
+    .points-error-content.requirements-not-met h3 {
+        color: #a29bfe;
+    }
+    
+    .points-error-content.requirements-not-met .error-message {
+        color: #8e44ad;
+    }
+    
+    .points-error-content.session-error h3 {
+        color: #95a5a6;
+    }
+    
+    .points-error-content.session-error .error-message {
+        color: #7f8c8d;
+    }
+    
+    .rank-number {
+        color: #ecf0f1;
+    }
+    
+    .leaderboard-item.current-user {
+        background: linear-gradient(135deg, #856404, #6c5ce7);
+        border-color: #a29bfe;
+    }
+    
+    .leaderboard-item.current-user .player-name,
+    .leaderboard-item.current-user .player-score {
+        color: #fdcb6e;
+    }
+    
+    .leaderboard-item.new-score {
+        border-color: #ff6b6b;
+        box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+    }
+    
+    .new-badge {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        color: white;
+    }
+    
+    /* Dark mode scrollbar */
+    .result-content::-webkit-scrollbar-track {
+        background: #34495e;
+    }
+    
+    .result-content::-webkit-scrollbar-thumb {
+        background: #5a6c7d;
+    }
+    
+    .result-content::-webkit-scrollbar-thumb:hover {
+        background: #6c7b8a;
+    }
+    
+    .result-content {
+        scrollbar-color: #5a6c7d #34495e;
+    }
+}
+
+/* Browser Compatibility - Sticky Position Fallback */
+@supports not (position: sticky) {
+    .weekly-leaderboard-section h3 {
+        position: relative;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(5px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: 0.75rem;
+    }
+}
+
+/* Enhanced Scrollbar Styling for Leaderboard */
+.leaderboard-breakdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.leaderboard-breakdown::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 3px;
+}
+
+.leaderboard-breakdown::-webkit-scrollbar-thumb {
+    background: #dee2e6;
+    border-radius: 3px;
+}
+
+.leaderboard-breakdown::-webkit-scrollbar-thumb:hover {
+    background: #adb5bd;
+}
+
+/* Firefox scrollbar for leaderboard */
+.leaderboard-breakdown {
+    scrollbar-width: thin;
+    scrollbar-color: #dee2e6 #f8f9fa;
+}
+/* Accessibility Improvements */
+.leaderboard-display:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.leaderboard-breakdown:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .weekly-leaderboard-section h3 {
+        background: #ffffff;
+        border: 2px solid #000000;
+        color: #000000;
+    }
+    
+    .leaderboard-item {
+        border: 2px solid #000000;
+    }
+    
+    .leaderboard-breakdown::-webkit-scrollbar-thumb {
+        background: #000000;
+    }
+}/* Perf
+ormance Optimizations */
+.result-content {
+    will-change: transform;
+}
+
+.leaderboard-breakdown {
+    will-change: scroll-position;
+    transform: translateZ(0); /* Force hardware acceleration */
+}
+
+.weekly-leaderboard-section h3 {
+    will-change: transform;
+    transform: translateZ(0); /* Force hardware acceleration for sticky positioning */
+}
+
+/* Smooth scrolling for better UX */
+.result-content,
+.leaderboard-breakdown {
+    scroll-behavior: smooth;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .result-content,
+    .leaderboard-breakdown {
+        scroll-behavior: auto;
+    }
+    
+    .result-content {
+        will-change: auto;
+    }
+    
+    .leaderboard-breakdown {
+        will-change: auto;
+        transform: none;
+    }
+    
+    .weekly-leaderboard-section h3 {
+        will-change: auto;
+        transform: none;
+    }
+}

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>음식 영양성분 검색 - 잇플</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body class="ingredient-analyzer-page">
+    <div class="site-brand-fixed"><a href="index.html">잇플</a></div>
+    <div class="auth-links">
+      <!-- 동적으로 채워짐 -->
+    </div>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main-content">
+      <!-- 헤더 섹션 -->
+      <section class="analyzer-header">
+        <div class="header-content">
+          <h1 class="page-title">음식 영양성분 검색</h1>
+          <p class="page-description">
+            제품명을 입력하면 영양성분 정보를 확인할 수 있습니다.
+          </p>
+        </div>
+      </section>
+      <!-- 검색 섹션 -->
+      <section class="search-section">
+        <div class="ingredient-search-container">
+          <div class="search-box">
+            <div class="ingredient-search-input-wrapper">
+              <input
+                type="text"
+                id="externalSearchInput"
+                class="search-input"
+                placeholder="제품명을 입력하세요 (예: 불닭볶음면)"
+                autocomplete="off"
+              />
+              <div class="search-icon" id="searchIcon">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div class="search-suggestions" id="searchSuggestions">
+              <!-- 검색 제안이 여기에 표시됩니다 -->
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- 검색 결과 요약 섹션 -->
+      <section class="search-results-summary" id="searchResultsSummary" style="display: none">
+        <div class="container">
+          <div class="summary-content">
+            <p class="summary-text">
+              <span class="search-keyword" id="summaryKeyword"></span>에 대한 검색결과 
+              <span class="result-count" id="summaryCount"></span>건이 표시되었습니다.
+            </p>
+          </div>
+        </div>
+      </section>
+      <!-- 음식 영양성분 검색(공공데이터포털 API) 섹션 -->
+      <section class="external-nutrition-search-section">
+        <div class="container">
+          <div
+            id="externalSearchLoading"
+            class="loading-container"
+            style="display: none"
+          >
+            <div class="loading-spinner"></div>
+            <p>검색 중...</p>
+          </div>
+          <div
+            id="externalSearchError"
+            class="error-container"
+            style="display: none"
+          ></div>
+          <div
+            id="externalSearchResults"
+            class="nutrition-grid external-nutrition-grid"
+          ></div>
+          <div
+            id="externalNutritionDetail"
+            class="nutrition-detail-container"
+            style="display: none"
+          ></div>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 모바일 하단 네비게이션 바 -->
+    <nav class="footer-nav-mobile">
+      <ul>
+        <li class="footer-nav-item" id="footerNavHome">
+          <a href="index.html">
+            <span class="footer-nav-icon">🏠</span>
+            <span class="footer-nav-label">홈</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavNutrition">
+          <a href="nutrition-info.html">
+            <span class="footer-nav-icon">📰</span>
+            <span class="footer-nav-label">영양정보</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavAI">
+          <button type="button" class="footer-nav-ai-btn">
+            <span class="footer-nav-icon">🤖</span>
+            <span class="footer-nav-label">AI기능</span>
+          </button>
+        </li>
+        <li class="footer-nav-item" id="footerNavStore">
+          <a href="">
+            <span class="footer-nav-icon">🛒</span>
+            <span class="footer-nav-label">스토어</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavMy">
+          <a href="mypage.html">
+            <span class="footer-nav-icon">👤</span>
+            <span class="footer-nav-label">마이</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- AI 기능 모달 -->
+    <div id="aiFeatureModal" class="ai-feature-modal">
+      <div class="ai-feature-modal-content">
+        <ul>
+          <li><a href="meal-plan.html">뭐해먹지?</a></li>
+          <li><a href="supplements.html">나만의 영양제</a></li>
+          <li><a href="restaurant-recommendation.html">오늘의 맛집</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="food-nutrition-search.js"></script>
+  </body>
+</html>

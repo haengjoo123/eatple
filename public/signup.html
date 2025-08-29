@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>회원가입</title>
+    <link rel="stylesheet" href="auth-style.css" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  </head>
+  <body>
+    <div class="site-brand-fixed"><a href="index.html">잇플</a></div>
+    <div class="auth-container">
+      <h2>회원가입</h2>
+      <form id="signupForm">
+        <div class="input-row-icon" style="position: relative">
+          <span class="input-icon">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 26 26"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M15 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM6 21v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"
+                stroke="#b0b8c1"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="이메일"
+            required
+            autocomplete="email"
+          />
+          <span
+            class="input-checkmark"
+            id="emailCheckmark"
+            style="
+              position: absolute;
+              right: 14px;
+              top: 50%;
+              transform: translateY(-50%);
+              font-size: 1.2em;
+              color: #2ecc40;
+              display: none;
+            "
+            >✓</span
+          >
+        </div>
+        <div id="emailMsg" class="email-msg"></div>
+        <div class="input-row-icon">
+          <span class="input-icon">
+            <svg
+              width="20"
+              height="20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                x="4"
+                y="8"
+                width="12"
+                height="8"
+                rx="2"
+                stroke="#b0b8c1"
+                stroke-width="1.5"
+              />
+              <path
+                d="M7 8V6a3 3 0 1 1 6 0v2"
+                stroke="#b0b8c1"
+                stroke-width="1.5"
+              />
+            </svg>
+          </span>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="비밀번호"
+            required
+            autocomplete="new-password"
+          />
+        </div>
+        <ul id="passwordRules" class="password-rules" style="display: none">
+          <li data-rule="length">
+            <span class="rule-icon">✗</span> 영문/숫자/특수문자 2가지 이상 조합
+            (8~20자)
+          </li>
+          <li data-rule="repeat">
+            <span class="rule-icon">✗</span> 3개 이상 연속되거나 동일한
+            문자/숫자 제외
+          </li>
+          <li data-rule="email">
+            <span class="rule-icon">✗</span> 이메일 주소 포함 불가
+          </li>
+        </ul>
+        <div class="input-row-icon">
+          <span class="input-icon">
+            <svg
+              width="20"
+              height="20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                x="4"
+                y="8"
+                width="12"
+                height="8"
+                rx="2"
+                stroke="#b0b8c1"
+                stroke-width="1.5"
+              />
+              <path
+                d="M7 8V6a3 3 0 1 1 6 0v2"
+                stroke="#b0b8c1"
+                stroke-width="1.5"
+              />
+            </svg>
+          </span>
+          <input
+            type="password"
+            id="passwordConfirm"
+            name="passwordConfirm"
+            placeholder="비밀번호 확인"
+            required
+            autocomplete="new-password"
+          />
+        </div>
+        <div id="passwordConfirmMsg" class="password-confirm-msg"></div>
+        <hr class="signup-divider" />
+        <div style="margin: 18px 0 8px 0">
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              font-size: 1rem;
+              font-weight: 500;
+            "
+          >
+            <input type="checkbox" id="terms1" required />
+            <span
+              >[필수]
+              <a
+                href="#"
+                id="terms1Link"
+                style="color: #4a69bd; text-decoration: underline"
+                >잇플 이용 약관 동의</a
+              ></span
+            >
+          </label>
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              font-size: 1rem;
+              font-weight: 500;
+              margin-top: 6px;
+            "
+          >
+            <input type="checkbox" id="terms2" required />
+            <span
+              >[필수]
+              <a
+                href="#"
+                id="terms2Link"
+                style="color: #4a69bd; text-decoration: underline"
+                >개인정보 수집 및 이용 동의</a
+              ></span
+            >
+          </label>
+        </div>
+        <button type="submit">회원가입</button>
+      </form>
+
+      <div class="auth-divider">
+        <span>또는</span>
+      </div>
+
+      <div
+        class="social-login-container"
+        style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+          margin-top: 10px;
+          margin-bottom: 10px;
+        "
+      >
+        <div
+          id="g_id_onload"
+          data-client_id="920406793234-56jnhhjsg1fvc938pl79khb79f6jn6fe.apps.googleusercontent.com"
+          data-callback="handleGoogleSignup"
+          data-auto_prompt="false"
+        ></div>
+        <div style="width: 240px">
+          <div
+            class="g_id_signin"
+            data-type="standard"
+            data-size="large"
+            data-theme="outline"
+            data-text="signup_with"
+            data-shape="rectangular"
+            data-logo_alignment="left"
+            data-width="240"
+          ></div>
+        </div>
+
+        <button
+          id="kakao-signup-btn"
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background-color: #fee500;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 240px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #3c1e1e;
+            transition: all 0.2s ease;
+            margin-top: 0;
+          "
+        >
+          <img
+            src="/images/kakao-icon.svg"
+            alt="카카오 아이콘"
+            style="width: 20px; height: 20px"
+          />
+          <span>카카오로 회원가입</span>
+        </button>
+
+        <button
+          id="naver-signup-btn"
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background-color: #03c75a;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 240px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffffff;
+            transition: all 0.2s ease;
+            margin-top: 0;
+          "
+        >
+          <img
+            src="/images/naver-icon.svg"
+            alt="네이버 아이콘"
+            style="width: 20px; height: 20px"
+          />
+          <span>네이버로 회원가입</span>
+        </button>
+      </div>
+
+      <div class="auth-link">
+        이미 계정이 있으신가요? <a href="login.html">로그인</a>
+      </div>
+      <div id="signupMsg"></div>
+    </div>
+
+    <!-- 약관 모달 -->
+    <div id="termsModal" class="terms-modal">
+      <div class="terms-modal-content">
+        <div class="terms-modal-header">
+          <h3>잇플 이용약관</h3>
+          <span class="terms-modal-close" id="termsModalClose">&times;</span>
+        </div>
+        <div class="terms-modal-body">
+          <div class="terms-content">
+            <h4>제 1 장 총칙</h4>
+            <h5>제 1 조 (목적)</h5>
+            <p>
+              이 약관은 “잇플”(이하 “당 사이트”)이 제공하는 개인 맞춤형 식단
+              추천, 영양 정보, 건강 관리, 영양제 추천, 식재료 분석, 레스토랑
+              추천, 미니게임, 포인트, AI 기반 서비스, 기타 부가 서비스(이하
+              “서비스”)의 이용조건, 당 사이트와 이용자의 권리·의무 및 책임사항,
+              기타 필요한 사항을 규정함을 목적으로 합니다.
+            </p>
+            <h5>제 2 조 (용어의 정의)</h5>
+            <ol>
+              <li>
+                “이용자”란 당 사이트에 접속하여 본 약관에 따라 당 사이트가
+                제공하는 서비스를 받는 회원 및 비회원을 말합니다.
+              </li>
+              <li>
+                “회원”이란 서비스를 이용하기 위하여 당 사이트에 개인정보를
+                제공하여 아이디(ID)와 비밀번호를 부여받은 자를 말합니다.
+              </li>
+              <li>
+                “소셜로그인”이란 구글, 카카오, 네이버 등 외부 인증 서비스를 통한
+                로그인 방식을 의미합니다.
+              </li>
+              <li>
+                “포인트”란 서비스 내에서 활동, 미션, 게임 등을 통해 적립·사용할
+                수 있는 가상 보상 수단을 의미합니다.
+              </li>
+              <li>
+                “AI 서비스”란 Gemini, Google, OpenAI 등 인공지능 API를 활용한
+                식단 추천, 영양제 추천, 식재료 분석, 기타 자동화 기능을
+                의미합니다.
+              </li>
+            </ol>
+            <h4>제 2 장 이용계약의 체결</h4>
+            <h5>제 3 조 (이용계약의 성립 등)</h5>
+            <ol>
+              <li>
+                이용계약은 이용자가 본 약관에 동의하고, 당 사이트가 정한
+                회원가입 양식을 작성하여 서비스 이용을 신청한 후, 당 사이트가
+                이를 승낙함으로써 성립합니다.
+              </li>
+              <li>
+                소셜로그인(구글, 카카오, 네이버 등)으로 가입 시, 해당 외부
+                서비스의 약관 및 정책도 함께 적용됩니다.
+              </li>
+            </ol>
+            <h5>제 4 조 (회원정보의 변경)</h5>
+            <p>
+              회원은 언제든지 자신의 개인정보를 열람하고 수정할 수 있습니다. 단,
+              서비스 제공 및 보안을 위해 일부 정보는 변경이 제한될 수 있습니다.
+            </p>
+            <h4>제 3 장 서비스의 이용</h4>
+            <h5>제 5 조 (서비스의 제공 및 변경)</h5>
+            <ol>
+              <li>
+                당 사이트는 다음과 같은 서비스를 제공합니다.
+                <ul>
+                  <li>개인 맞춤형 식단 추천 및 영양 분석</li>
+                  <li>건강 관리 정보 제공</li>
+                  <li>영양제 추천 및 정보 제공</li>
+                  <li>식재료 분석 및 AI 기반 정보 제공</li>
+                  <li>레스토랑 추천 서비스</li>
+                  <li>미니게임, 포인트 적립 및 사용</li>
+                  <li>기타 당 사이트가 정하는 서비스</li>
+                </ul>
+              </li>
+              <li>
+                당 사이트는 서비스의 내용, 운영, 기술적 사양 등을 변경할 수
+                있으며, 변경 시 사전에 공지합니다.
+              </li>
+            </ol>
+            <h5>제 6 조 (서비스의 이용시간 및 중단)</h5>
+            <ol>
+              <li>서비스는 연중무휴, 1일 24시간 제공을 원칙으로 합니다.</li>
+              <li>
+                시스템 점검, 장애, 천재지변, 기타 불가피한 사유가 발생할 경우
+                서비스 제공이 일시 중단될 수 있습니다.
+              </li>
+            </ol>
+            <h4>제 4 장 회원의 의무 및 책임</h4>
+            <h5>제 7 조 (회원의 의무)</h5>
+            <ol>
+              <li>
+                회원은 실명 및 사실에 근거한 정보를 제공해야 하며, 허위 또는
+                타인의 정보를 등록할 경우 모든 권리를 주장할 수 없습니다.
+              </li>
+              <li>
+                회원은 자신의 계정 및 비밀번호 관리에 대한 책임이 있습니다.
+              </li>
+              <li>
+                회원은 당 사이트 및 제3자의 지식재산권, 명예, 개인정보를
+                침해해서는 안 됩니다.
+              </li>
+              <li>
+                회원은 서비스 내에서 부정행위(포인트 부정 적립, 자동화 도구 사용
+                등)를 해서는 안 됩니다.
+              </li>
+            </ol>
+            <h5>제 8 조 (금지행위)</h5>
+            <ol>
+              <li>
+                서비스 내에서 불법적이거나 부적절한 행위(욕설, 도배, 광고, 해킹
+                시도 등)는 금지됩니다.
+              </li>
+              <li>
+                AI 서비스의 악용(비정상적 반복 요청, 불법 정보 생성 등)은 제한될
+                수 있습니다.
+              </li>
+            </ol>
+            <h4>제 5 장 개인정보 보호 및 관리</h4>
+            <h5>제 9 조 (개인정보의 수집 및 이용)</h5>
+            <ol>
+              <li>
+                당 사이트는 서비스 제공을 위해 최소한의 개인정보(아이디,
+                비밀번호, 이메일, 소셜로그인 정보 등)만을 수집·이용합니다.
+              </li>
+              <li>
+                개인정보의 수집·이용 목적, 항목, 보유기간 등은 별도의
+                개인정보처리방침에 따릅니다.
+              </li>
+            </ol>
+            <h5>제 10 조 (개인정보의 제3자 제공 및 위탁)</h5>
+            <ol>
+              <li>
+                당 사이트는 법령에 근거하거나 회원 동의가 있는 경우를 제외하고
+                개인정보를 제3자에게 제공하지 않습니다.
+              </li>
+              <li>
+                AI API, 소셜로그인 등 외부 서비스 연동 시, 해당 서비스
+                제공자에게 일부 정보가 전달될 수 있습니다.
+              </li>
+            </ol>
+            <h4>제 6 장 포인트 및 게임 서비스</h4>
+            <h5>제 11 조 (포인트의 적립 및 사용)</h5>
+            <ol>
+              <li>
+                포인트는 서비스 내 활동, 미션, 게임 등을 통해 적립할 수
+                있습니다.
+              </li>
+              <li>
+                포인트는 현금으로 환전되지 않으며, 당 사이트가 정한 용도
+                내에서만 사용할 수 있습니다.
+              </li>
+              <li>
+                부정한 방법으로 포인트를 적립하거나 사용하는 경우, 포인트 회수
+                및 계정 이용 제한이 있을 수 있습니다.
+              </li>
+            </ol>
+            <h5>제 12 조 (게임 및 부가 서비스)</h5>
+            <ol>
+              <li>
+                미니게임, 퀴즈, 기타 부가 서비스는 오락 및 보상 제공을 목적으로
+                하며, 서비스 운영 정책에 따라 변경·중단될 수 있습니다.
+              </li>
+            </ol>
+            <h4>제 7 장 계약 해지 및 이용 제한</h4>
+            <h5>제 13 조 (계약 해지 및 탈퇴)</h5>
+            <ol>
+              <li>
+                회원은 언제든지 마이페이지 등에서 이용계약 해지를 신청할 수
+                있습니다.
+              </li>
+              <li>
+                탈퇴 시, 관련 법령에 따라 보관이 필요한 정보를 제외한 모든 회원
+                정보 및 포인트는 즉시 삭제됩니다.
+              </li>
+            </ol>
+            <h5>제 14 조 (이용 제한 및 해지)</h5>
+            <ol>
+              <li>
+                회원이 본 약관 또는 관련 법령을 위반할 경우, 서비스 이용이
+                제한되거나 계정이 해지될 수 있습니다.
+              </li>
+            </ol>
+            <h4>제 8 장 책임 및 면책</h4>
+            <h5>제 15 조 (책임의 한계)</h5>
+            <ol>
+              <li>
+                당 사이트가 제공하는 건강, 영양, 식단, 영양제, AI 정보 등은
+                참고용이며, 의학적 진단·치료를 대체하지 않습니다. 건강상 문제
+                발생 시 반드시 전문가와 상담해야 하며, 당 사이트는 이에 대한
+                책임을 지지 않습니다.
+              </li>
+              <li>
+                AI 서비스 결과, 외부 API 오류, 데이터 부정확성 등으로 인한
+                손해에 대해 당 사이트는 고의 또는 중대한 과실이 없는 한 책임을
+                지지 않습니다.
+              </li>
+            </ol>
+            <h4>제 9 장 기타</h4>
+            <h5>제 16 조 (약관의 변경)</h5>
+            <ol>
+              <li>
+                당 사이트는 약관을 변경할 수 있으며, 변경 시 적용일자 및
+                변경사유를 명시하여 사전에 공지합니다.
+              </li>
+              <li>
+                회원이 변경된 약관에 동의하지 않을 경우, 서비스 이용을 중단하고
+                탈퇴할 수 있습니다.
+              </li>
+            </ol>
+            <h5>제 17 조 (분쟁 해결 및 관할법원)</h5>
+            <ol>
+              <li>
+                서비스 이용과 관련하여 분쟁이 발생할 경우, 당 사이트와 회원은
+                원만한 해결을 위해 노력합니다.
+              </li>
+              <li>
+                분쟁이 해결되지 않을 경우, 민사소송법상 관할 법원에 소를 제기할
+                수 있습니다.
+              </li>
+            </ol>
+            <h4>부칙</h4>
+            <p>
+              본 약관은 2025년 8월 21일부터 적용됩니다. 이전 약관은 본 약관으로
+              대체합니다.
+            </p>
+          </div>
+        </div>
+        <div class="terms-modal-footer">
+          <button type="button" class="terms-modal-btn" id="termsModalConfirm">
+            확인
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 개인정보 수집 및 이용 동의 모달 -->
+    <div id="privacyModal" class="terms-modal">
+      <div class="terms-modal-content">
+        <div class="terms-modal-header">
+          <h3>개인정보 수집 및 이용 동의</h3>
+          <span class="terms-modal-close" id="privacyModalClose">&times;</span>
+        </div>
+        <div class="terms-modal-body">
+          <div class="terms-content">
+            <p>
+              잇플은 개인정보보호법에 따라 이용자의 개인정보 보호 및 권익을
+              보호하고 개인정보와 관련한 이용자의 고충을 원활하게 처리할 수
+              있도록 다음과 같은 처리방침을 두고 있습니다.
+            </p>
+
+            <h4>1. 개인정보의 수집 및 이용목적</h4>
+            <p>
+              잇플은 다음의 목적을 위하여 개인정보를 처리합니다. 처리하고 있는
+              개인정보는 다음의 목적 이외의 용도로는 이용되지 않으며, 이용
+              목적이 변경되는 경우에는 개인정보보호법 제18조에 따라 별도의
+              동의를 받는 등 필요한 조치를 이행할 예정입니다.
+            </p>
+
+            <h5>① 회원가입 및 관리</h5>
+            <ul>
+              <li>
+                회원 가입의사 확인, 회원제 서비스 제공에 따른 본인 식별·인증,
+                회원자격 유지·관리, 서비스 부정이용 방지, 만14세 미만 아동
+                개인정보 수집 시 법정 대리인 동의여부 확인, 각종 고지·통지,
+                고충처리 목적으로 개인정보를 처리합니다.
+              </li>
+            </ul>
+
+            <h5>② 맞춤형 식단 관리 서비스 제공</h5>
+            <ul>
+              <li>
+                개인 맞춤형 식단 추천, 영양 분석, 건강 관리 정보 제공, 식단 기록
+                및 관리 서비스 제공 목적으로 개인정보를 처리합니다.
+              </li>
+            </ul>
+
+            <h4>2. 개인정보의 처리 및 보유기간</h4>
+            <p>
+              ① 잇플은 법령에 따른 개인정보 보유·이용기간 또는 정보주체로부터
+              개인정보를 수집 시에 동의받은 개인정보 보유·이용기간 내에서
+              개인정보를 처리·보유합니다.
+            </p>
+            <p>② 각각의 개인정보 처리 및 보유 기간은 다음과 같습니다.</p>
+
+            <h5>회원가입 및 관리</h5>
+            <ul>
+              <li>회원 탈퇴 시까지</li>
+              <li>
+                단, 관계법령의 규정에 의하여 보존할 필요가 있는 경우 잇플은
+                아래와 같이 관계법령에서 정한 일정한 기간 동안 회원정보를
+                보관합니다.
+              </li>
+              <li>
+                계약 또는 청약철회 등에 관한 기록: 5년 (전자상거래 등에서의
+                소비자보호에 관한 법률)
+              </li>
+              <li>
+                대금결제 및 재화 등의 공급에 관한 기록: 5년 (전자상거래 등에서의
+                소비자보호에 관한 법률)
+              </li>
+              <li>
+                소비자의 불만 또는 분쟁처리에 관한 기록: 3년 (전자상거래
+                등에서의 소비자보호에 관한 법률)
+              </li>
+              <li>웹사이트 방문기록: 3개월 (통신비밀보호법)</li>
+            </ul>
+
+            <h4>3. 개인정보의 제3자 제공</h4>
+            <p>
+              ① 잇플은 정보주체의 개인정보를 제1조(개인정보의 처리 목적)에서
+              명시한 범위 내에서만 처리하며, 정보주체의 동의, 법률의 특별한 규정
+              등 개인정보보호법 제17조 및 제18조에 해당하는 경우에만 개인정보를
+              제3자에게 제공합니다.
+            </p>
+            <p>
+              ② 잇플은 다음과 같은 경우에 개인정보를 제3자에게 제공할 수
+              있습니다.
+            </p>
+            <ul>
+              <li>정보주체로부터 별도의 동의를 받은 경우</li>
+              <li>법령에 근거하여 정부기관으로부터 요청받은 경우</li>
+              <li>
+                통계작성 및 학술연구 등의 목적을 위하여 특정 개인을 알아볼 수
+                없는 형태로 가공하여 제공하는 경우
+              </li>
+            </ul>
+
+            <h4>4. 개인정보처리의 위탁</h4>
+            <p>
+              ① 잇플은 원활한 개인정보 업무처리를 위하여 다음과 같이 개인정보
+              처리업무를 위탁하고 있습니다.
+            </p>
+            <ul>
+              <li>위탁받는 자 (수탁자): 서버 호스팅 업체</li>
+              <li>위탁하는 업무의 내용: 서버 운영 및 관리</li>
+            </ul>
+            <p>
+              ② 잇플은 위탁계약 체결시 개인정보보호법 제26조에 따라 위탁업무
+              수행목적 외 개인정보 처리금지, 기술적·관리적 보호조치, 재위탁
+              제한, 수탁자에 대한 관리·감독, 손해배상 등 책임에 관한 사항을
+              계약서 등 문서에 명시하고, 수탁자가 개인정보를 안전하게
+              처리하는지를 감독하고 있습니다.
+            </p>
+            <p>
+              ③ 위탁업무의 내용이나 수탁자가 변경될 경우에는 지체없이 본
+              개인정보 처리방침을 통하여 공개하겠습니다.
+            </p>
+
+            <h4>5. 정보주체의 권리·의무 및 그 행사방법</h4>
+            <p>
+              이용자는 개인정보주체로서 다음과 같은 권리를 행사할 수 있습니다.
+            </p>
+
+            <h5>① 개인정보 열람요구</h5>
+            <p>
+              개인정보보호법 제35조에 따른 개인정보의 열람을 요구할 수 있습니다.
+            </p>
+
+            <h5>② 개인정보에 오류 등이 있을 경우 정정·삭제 요구</h5>
+            <p>
+              개인정보보호법 제36조에 따른 개인정보의 정정·삭제를 요구할 수
+              있습니다.
+            </p>
+
+            <h5>③ 개인정보 처리정지 요구</h5>
+            <p>
+              개인정보보호법 제37조에 따른 개인정보의 처리정지를 요구할 수
+              있습니다.
+            </p>
+
+            <h5>④ 개인정보 처리방침에 대한 동의 철회</h5>
+            <p>
+              회원 탈퇴를 통해 개인정보 처리에 대한 동의를 철회할 수 있습니다.
+            </p>
+
+            <h4>6. 개인정보의 안전성 확보 조치</h4>
+            <p>
+              잇플은 개인정보보호법 제29조에 따라 다음과 같은 안전성 확보 조치를
+              취하고 있습니다.
+            </p>
+
+            <h5>① 개인정보의 암호화</h5>
+            <p>
+              이용자의 개인정보는 비밀번호는 암호화되어 저장 및 관리되고 있어,
+              본인만이 알 수 있으며 중요한 데이터는 파일 및 전송 데이터를
+              암호화하여 사용하는 등의 별도 보안기능을 사용하고 있습니다.
+            </p>
+
+            <h5>② 해킹 등에 대비한 기술적 대책</h5>
+            <p>
+              잇플은 해킹이나 컴퓨터 바이러스 등에 의한 개인정보 유출 및 훼손을
+              막기 위하여 보안프로그램을 설치하고 주기적인 갱신·점검을 하며
+              외부로부터 접근이 통제된 구역에 시스템을 설치하고
+              기술적/물리적으로 감시 및 차단하고 있습니다.
+            </p>
+
+            <h5>③ 개인정보에 대한 접근 제한</h5>
+            <p>
+              개인정보를 처리하는 데이터베이스시스템에 대한 접근권한의 부여,
+              변경, 말소를 통하여 개인정보에 대한 접근통제를 위하여 필요한
+              조치를 하고 있으며 침입차단시스템을 이용하여 외부로부터의 무단
+              접근을 통제하고 있습니다.
+            </p>
+
+            <h4>7. 개인정보 보호책임자</h4>
+            <p>
+              ① 잇플은 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보
+              처리와 관련한 정보주체의 불만처리 및 피해구제 등을 위하여 아래와
+              같이 개인정보 보호책임자를 지정하고 있습니다.
+            </p>
+
+            <h5>▶ 개인정보 보호책임자</h5>
+            <ul>
+              <li>성명: 김형준</li>
+              <li>연락처: support@eatple.com</li>
+            </ul>
+
+            <h4>8. 개인정보 처리방침 변경</h4>
+            <p>
+              ① 이 개인정보처리방침은 시행일로부터 적용되며, 법령 및 방침에 따른
+              변경내용의 추가, 삭제 및 정정이 있는 경우에는 변경사항의 시행 7일
+              전부터 공지사항을 통하여 고지할 것입니다.
+            </p>
+
+            <h4>9. 개인정보의 열람청구를 접수·처리하는 부서</h4>
+            <p>
+              정보주체는 개인정보보호법 제35조에 따른 개인정보의 열람 청구를
+              아래의 부서에 할 수 있습니다. 잇플은 정보주체의 개인정보
+              열람청구가 신속하게 처리되도록 노력하겠습니다.
+            </p>
+
+            <h5>▶ 개인정보 열람청구 접수·처리 부서</h5>
+            <ul>
+              <li>부서명: 고객지원팀</li>
+              <li>담당자: 김형준</li>
+              <li>연락처: support@eatple.com</li>
+            </ul>
+
+            <h4>10. 정보주체의 권익침해에 대한 구제방법</h4>
+            <p>
+              아래의 기관에 대해 개인정보 침해에 대한 신고나 상담이 가능합니다.
+            </p>
+
+            <h5>▶ 개인정보 침해신고센터 (한국인터넷진흥원 운영)</h5>
+            <ul>
+              <li>소관업무: 개인정보 침해사실 신고, 상담 신청</li>
+              <li>홈페이지: privacy.kisa.or.kr</li>
+              <li>전화: (국번없이) 118</li>
+              <li>주소: (58324) 전남 나주시 진흥길 9(빛가람동 218-41)</li>
+            </ul>
+
+            <h5>▶ 개인정보 분쟁조정위원회</h5>
+            <ul>
+              <li>
+                소관업무: 개인정보 분쟁조정신청, 집단분쟁조정 (민사적 해결)
+              </li>
+              <li>홈페이지: www.privacy.go.kr</li>
+              <li>전화: 1833-6972</li>
+              <li>
+                주소: (03171)서울특별시 종로구 세종대로 209 정부서울청사 4층
+              </li>
+            </ul>
+
+            <h5>▶ 대검찰청 사이버범죄수사단</h5>
+            <ul>
+              <li>전화: 02-3480-3573</li>
+              <li>홈페이지: www.spo.go.kr</li>
+            </ul>
+
+            <h5>▶ 경찰청 사이버안전국</h5>
+            <ul>
+              <li>전화: 182</li>
+              <li>홈페이지: cyberbureau.police.go.kr</li>
+            </ul>
+
+            <h4>11. 개인정보 수집·이용 동의 거부권</h4>
+            <p>
+              개인정보보호법 제15조에 따라 본 개인정보 수집·이용에 대한 동의를
+              거부할 수 있으나, 이 경우 회원가입이 제한됩니다.
+            </p>
+
+            <h4>[부 칙]</h4>
+            <p>이 개인정보처리방침은 2025년 8월 1일부터 적용됩니다.</p>
+          </div>
+        </div>
+        <div class="terms-modal-footer">
+          <button
+            type="button"
+            class="terms-modal-btn"
+            id="privacyModalConfirm"
+          >
+            확인
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="signup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1200 @@
+[
+  {
+    "id": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+    "email": "gudwns999999@naver.com",
+    "name": "관리자",
+    "authType": "email",
+    "emailConfirmed": true,
+    "createdAt": "2025-07-24T06:50:24.739Z",
+    "supabaseId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+    "isAdmin": true,
+    "role": "admin",
+    "gamePoints": {
+      "totalPoints": 2849,
+      "dailyEarned": 0,
+      "dailyLimit": 100,
+      "lastEarnedDate": "2025-08-29",
+      "history": [
+        {
+          "id": "1753341193454",
+          "type": "earn",
+          "amount": 16,
+          "source": "mini-game",
+          "timestamp": "2025-07-24T07:13:13.454Z",
+          "description": "스네이크 게임에서 400점 획득"
+        },
+        {
+          "id": "1753421172085",
+          "type": "earn",
+          "amount": 500,
+          "source": "profile-completion",
+          "timestamp": "2025-07-25T05:26:12.085Z",
+          "description": "프로필 완성 보상 500포인트 지급",
+          "bypassedDailyLimit": true
+        },
+        {
+          "id": "1753421424960",
+          "type": "earn",
+          "amount": 6,
+          "source": "mini-game",
+          "timestamp": "2025-07-25T05:30:24.960Z",
+          "description": "스네이크 게임에서 150점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753421439634",
+          "type": "earn",
+          "amount": 2,
+          "source": "mini-game",
+          "timestamp": "2025-07-25T05:30:39.634Z",
+          "description": "스네이크 게임에서 70점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753421506120",
+          "type": "earn",
+          "amount": 12,
+          "source": "mini-game",
+          "timestamp": "2025-07-25T05:31:46.120Z",
+          "description": "스네이크 게임에서 300점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753422103538",
+          "type": "earn",
+          "amount": 7,
+          "source": "mini-game",
+          "timestamp": "2025-07-25T05:41:43.538Z",
+          "description": "스네이크 게임에서 190점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753422517386",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-07-25T05:48:37.386Z",
+          "description": "스네이크 게임에서 30점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753422764286",
+          "type": "earn",
+          "amount": 16,
+          "source": "mini-game",
+          "timestamp": "2025-07-25T05:52:44.286Z",
+          "description": "스네이크 게임에서 400점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753506062717",
+          "type": "earn",
+          "amount": 10,
+          "source": "mini-game",
+          "timestamp": "2025-07-26T05:01:02.717Z",
+          "description": "스네이크 게임에서 270점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753506121688",
+          "type": "earn",
+          "amount": 10,
+          "source": "mini-game",
+          "timestamp": "2025-07-26T05:02:01.688Z",
+          "description": "스네이크 게임에서 250점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753513949326",
+          "type": "earn",
+          "amount": 16,
+          "source": "mini-game",
+          "timestamp": "2025-07-26T07:12:29.326Z",
+          "description": "스네이크 게임에서 410점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753621778611",
+          "type": "earn",
+          "amount": 14,
+          "source": "mini-game",
+          "timestamp": "2025-07-27T13:09:38.611Z",
+          "description": "퍼즐 게임에서 351점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753621805915",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-07-27T13:10:05.915Z",
+          "description": "스네이크 게임에서 40점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753621880490",
+          "type": "earn",
+          "amount": 12,
+          "source": "mini-game",
+          "timestamp": "2025-07-27T13:11:20.490Z",
+          "description": "스네이크 게임에서 320점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753621981657",
+          "type": "earn",
+          "amount": 15,
+          "source": "mini-game",
+          "timestamp": "2025-07-27T13:13:01.657Z",
+          "description": "스네이크 게임에서 380점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753621998228",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-07-27T13:13:18.228Z",
+          "description": "스네이크 게임에서 40점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753622012590",
+          "type": "earn",
+          "amount": 2,
+          "source": "mini-game",
+          "timestamp": "2025-07-27T13:13:32.590Z",
+          "description": "스네이크 게임에서 60점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753622018003",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-07-27T13:13:38.003Z",
+          "description": "스네이크 게임에서 30점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753622210944",
+          "type": "earn",
+          "amount": 22,
+          "source": "mini-game",
+          "timestamp": "2025-07-27T13:16:50.944Z",
+          "description": "스네이크 게임에서 570점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753671471150",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T02:57:51.150Z",
+          "description": "스네이크 게임에서 30점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753671555808",
+          "type": "earn",
+          "amount": 11,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T02:59:15.808Z",
+          "description": "스네이크 게임에서 280점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753671619155",
+          "type": "earn",
+          "amount": 10,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T03:00:19.155Z",
+          "description": "스네이크 게임에서 250점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753671770202",
+          "type": "earn",
+          "amount": 18,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T03:02:50.202Z",
+          "description": "스네이크 게임에서 450점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753671809558",
+          "type": "earn",
+          "amount": 8,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T03:03:29.558Z",
+          "description": "스네이크 게임에서 220점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753671834147",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T03:03:54.147Z",
+          "description": "스네이크 게임에서 30점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753671927896",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T03:05:27.896Z",
+          "description": "스네이크 게임에서 40점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753672599524",
+          "type": "earn",
+          "amount": 6,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T03:16:39.524Z",
+          "description": "스네이크 게임에서 170점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753673516963",
+          "type": "earn",
+          "amount": 3,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T03:31:56.963Z",
+          "description": "스네이크 게임에서 80점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753673567679",
+          "type": "earn",
+          "amount": 7,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T03:32:47.679Z",
+          "description": "스네이크 게임에서 180점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753674453140",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T03:47:33.140Z",
+          "description": "스네이크 게임에서 30점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753674840669",
+          "type": "earn",
+          "amount": 7,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T03:54:00.669Z",
+          "description": "스네이크 게임에서 190점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753675153723",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T03:59:13.723Z",
+          "description": "스네이크 게임에서 10점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753699952616",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T10:52:32.616Z",
+          "description": "스네이크 게임에서 30점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753700010656",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T10:53:30.656Z",
+          "description": "스네이크 게임에서 20점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753700045502",
+          "type": "earn",
+          "amount": 6,
+          "source": "mini-game",
+          "timestamp": "2025-07-28T10:54:05.502Z",
+          "description": "스네이크 게임에서 150점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753773111945",
+          "type": "earn",
+          "amount": 4,
+          "source": "mini-game",
+          "timestamp": "2025-07-29T07:11:51.945Z",
+          "description": "스네이크 게임에서 120점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753773214774",
+          "type": "earn",
+          "amount": 16,
+          "source": "mini-game",
+          "timestamp": "2025-07-29T07:13:34.774Z",
+          "description": "스네이크 게임에서 410점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753773238711",
+          "type": "earn",
+          "amount": 3,
+          "source": "mini-game",
+          "timestamp": "2025-07-29T07:13:58.711Z",
+          "description": "스네이크 게임에서 80점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753773381302",
+          "type": "earn",
+          "amount": 22,
+          "source": "mini-game",
+          "timestamp": "2025-07-29T07:16:21.302Z",
+          "description": "스네이크 게임에서 560점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1753773455500",
+          "type": "earn",
+          "amount": 11,
+          "source": "mini-game",
+          "timestamp": "2025-07-29T07:17:35.500Z",
+          "description": "스네이크 게임에서 280점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754053372922",
+          "type": "earn",
+          "amount": 2,
+          "source": "mini-game",
+          "timestamp": "2025-08-01T13:02:52.922Z",
+          "description": "스네이크 게임에서 60점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754053459533",
+          "type": "earn",
+          "amount": 14,
+          "source": "mini-game",
+          "timestamp": "2025-08-01T13:04:19.533Z",
+          "description": "스네이크 게임에서 370점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754053545076",
+          "type": "earn",
+          "amount": 15,
+          "source": "mini-game",
+          "timestamp": "2025-08-01T13:05:45.076Z",
+          "description": "스네이크 게임에서 380점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754053556646",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-01T13:05:56.646Z",
+          "description": "스네이크 게임에서 40점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754120784219",
+          "type": "earn",
+          "amount": 13,
+          "source": "mini-game",
+          "timestamp": "2025-08-02T07:46:24.219Z",
+          "description": "스네이크 게임에서 330점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754120868262",
+          "type": "earn",
+          "amount": 14,
+          "source": "mini-game",
+          "timestamp": "2025-08-02T07:47:48.262Z",
+          "description": "스네이크 게임에서 370점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754120911980",
+          "type": "earn",
+          "amount": 9,
+          "source": "mini-game",
+          "timestamp": "2025-08-02T07:48:31.980Z",
+          "description": "스네이크 게임에서 230점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754207180161",
+          "type": "earn",
+          "amount": 9,
+          "source": "mini-game",
+          "timestamp": "2025-08-03T07:46:20.161Z",
+          "description": "스네이크 게임에서 230점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754288925131",
+          "type": "earn",
+          "amount": 500,
+          "source": "weekly-leaderboard",
+          "timestamp": "2025-08-04T06:28:45.131Z",
+          "description": "스네이크 게임 주간 리더보드 1등 보상",
+          "bypassedDailyLimit": true
+        },
+        {
+          "id": "1754289081202",
+          "type": "earn",
+          "amount": 18,
+          "source": "mini-game",
+          "timestamp": "2025-08-04T06:31:21.202Z",
+          "description": "스네이크 게임에서 470점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754289164523",
+          "type": "earn",
+          "amount": 4,
+          "source": "mini-game",
+          "timestamp": "2025-08-04T06:32:44.523Z",
+          "description": "스네이크 게임에서 120점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754289192130",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-04T06:33:12.130Z",
+          "description": "스네이크 게임에서 40점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754289269946",
+          "type": "earn",
+          "amount": 8,
+          "source": "mini-game",
+          "timestamp": "2025-08-04T06:34:29.946Z",
+          "description": "스네이크 게임에서 200점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754289313095",
+          "type": "earn",
+          "amount": 4,
+          "source": "mini-game",
+          "timestamp": "2025-08-04T06:35:13.095Z",
+          "description": "스네이크 게임에서 110점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754289433587",
+          "type": "earn",
+          "amount": 17,
+          "source": "mini-game",
+          "timestamp": "2025-08-04T06:37:13.587Z",
+          "description": "스네이크 게임에서 430점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754289471971",
+          "type": "earn",
+          "amount": 3,
+          "source": "mini-game",
+          "timestamp": "2025-08-04T06:37:51.971Z",
+          "description": "스네이크 게임에서 90점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754289536574",
+          "type": "earn",
+          "amount": 10,
+          "source": "mini-game",
+          "timestamp": "2025-08-04T06:38:56.574Z",
+          "description": "스네이크 게임에서 250점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754289551905",
+          "type": "earn",
+          "amount": 3,
+          "source": "mini-game",
+          "timestamp": "2025-08-04T06:39:11.905Z",
+          "description": "스네이크 게임에서 80점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754289624253",
+          "type": "earn",
+          "amount": 12,
+          "source": "mini-game",
+          "timestamp": "2025-08-04T06:40:24.253Z",
+          "description": "스네이크 게임에서 320점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754383738673",
+          "type": "earn",
+          "amount": 20,
+          "source": "mini-game",
+          "timestamp": "2025-08-05T08:48:58.673Z",
+          "description": "스네이크 게임에서 500점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754532854936",
+          "type": "earn",
+          "amount": 5,
+          "source": "mini-game",
+          "timestamp": "2025-08-07T02:14:14.936Z",
+          "description": "스네이크 게임에서 130점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754543957141",
+          "type": "earn",
+          "amount": 6,
+          "source": "mini-game",
+          "timestamp": "2025-08-07T05:19:17.141Z",
+          "description": "스네이크 게임에서 170점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754548798016",
+          "type": "earn",
+          "amount": 6,
+          "source": "mini-game",
+          "timestamp": "2025-08-07T06:39:58.016Z",
+          "description": "스네이크 게임에서 160점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754548818603",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-07T06:40:18.603Z",
+          "description": "스네이크 게임에서 10점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754548852576",
+          "type": "earn",
+          "amount": 2,
+          "source": "mini-game",
+          "timestamp": "2025-08-07T06:40:52.576Z",
+          "description": "스네이크 게임에서 60점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754548887786",
+          "type": "earn",
+          "amount": 3,
+          "source": "mini-game",
+          "timestamp": "2025-08-07T06:41:27.786Z",
+          "description": "스네이크 게임에서 90점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754549032471",
+          "type": "earn",
+          "amount": 15,
+          "source": "mini-game",
+          "timestamp": "2025-08-07T06:43:52.471Z",
+          "description": "스네이크 게임에서 390점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754549065183",
+          "type": "earn",
+          "amount": 4,
+          "source": "mini-game",
+          "timestamp": "2025-08-07T06:44:25.183Z",
+          "description": "스네이크 게임에서 110점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754549086606",
+          "type": "earn",
+          "amount": 4,
+          "source": "mini-game",
+          "timestamp": "2025-08-07T06:44:46.606Z",
+          "description": "스네이크 게임에서 100점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754552021758",
+          "type": "earn",
+          "amount": 12,
+          "source": "mini-game",
+          "timestamp": "2025-08-07T07:33:41.758Z",
+          "description": "퍼즐 게임에서 317점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754618396009",
+          "type": "earn",
+          "amount": 7,
+          "source": "mini-game",
+          "timestamp": "2025-08-08T01:59:56.009Z",
+          "description": "스네이크 게임에서 180점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754618455948",
+          "type": "earn",
+          "amount": 13,
+          "source": "mini-game",
+          "timestamp": "2025-08-08T02:00:55.948Z",
+          "description": "스네이크 게임에서 330점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754809731312",
+          "type": "earn",
+          "amount": 14,
+          "source": "mini-game",
+          "timestamp": "2025-08-10T07:08:51.312Z",
+          "description": "스네이크 게임에서 350점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754809753808",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-10T07:09:13.808Z",
+          "description": "스네이크 게임에서 30점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754876518186",
+          "type": "earn",
+          "amount": 500,
+          "source": "weekly-leaderboard",
+          "timestamp": "2025-08-11T01:41:58.186Z",
+          "description": "스네이크 게임 주간 리더보드 1등 보상",
+          "bypassedDailyLimit": true
+        },
+        {
+          "id": "1754876518189",
+          "type": "earn",
+          "amount": 500,
+          "source": "weekly-leaderboard",
+          "timestamp": "2025-08-11T01:41:58.189Z",
+          "description": "퍼즐 게임 주간 리더보드 1등 보상",
+          "bypassedDailyLimit": true
+        },
+        {
+          "id": "1754876918097",
+          "type": "earn",
+          "amount": 3,
+          "source": "mini-game",
+          "timestamp": "2025-08-11T01:48:38.097Z",
+          "description": "스네이크 게임에서 80점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754991079596",
+          "type": "earn",
+          "amount": 20,
+          "source": "mini-game",
+          "timestamp": "2025-08-12T09:31:19.596Z",
+          "description": "스네이크 게임에서 510점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754991219480",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-12T09:33:39.480Z",
+          "description": "스네이크 게임에서 10점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754991275437",
+          "type": "earn",
+          "amount": 2,
+          "source": "mini-game",
+          "timestamp": "2025-08-12T09:34:35.437Z",
+          "description": "스네이크 게임에서 60점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754991388865",
+          "type": "earn",
+          "amount": 18,
+          "source": "mini-game",
+          "timestamp": "2025-08-12T09:36:28.865Z",
+          "description": "스네이크 게임에서 470점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754991442229",
+          "type": "earn",
+          "amount": 10,
+          "source": "mini-game",
+          "timestamp": "2025-08-12T09:37:22.229Z",
+          "description": "스네이크 게임에서 250점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755060714207",
+          "type": "earn",
+          "amount": 2,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T04:51:54.207Z",
+          "description": "스네이크 게임에서 60점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755060756807",
+          "type": "earn",
+          "amount": 7,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T04:52:36.807Z",
+          "description": "스네이크 게임에서 190점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755060809103",
+          "type": "earn",
+          "amount": 10,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T04:53:29.103Z",
+          "description": "스네이크 게임에서 250점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755060848975",
+          "type": "earn",
+          "amount": 8,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T04:54:08.975Z",
+          "description": "스네이크 게임에서 200점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755061174721",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T04:59:34.721Z",
+          "description": "스네이크 게임에서 30점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755061312413",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:01:52.413Z",
+          "description": "스네이크 게임에서 20점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755061384691",
+          "type": "earn",
+          "amount": 13,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:03:04.691Z",
+          "description": "스네이크 게임에서 340점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755061397349",
+          "type": "earn",
+          "amount": 2,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:03:17.349Z",
+          "description": "스네이크 게임에서 50점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755061670867",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:07:50.867Z",
+          "description": "스네이크 게임에서 30점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755061689420",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:08:09.420Z",
+          "description": "스네이크 게임에서 40점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755061712485",
+          "type": "earn",
+          "amount": 3,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:08:32.485Z",
+          "description": "스네이크 게임에서 80점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755062162976",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:16:02.976Z",
+          "description": "스네이크 게임에서 20점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755062452569",
+          "type": "earn",
+          "amount": 4,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:20:52.569Z",
+          "description": "스네이크 게임에서 120점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755062468481",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:21:08.481Z",
+          "description": "스네이크 게임에서 10점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755062685575",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:24:45.575Z",
+          "description": "스네이크 게임에서 30점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755063087287",
+          "type": "earn",
+          "amount": 2,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:31:27.287Z",
+          "description": "스네이크 게임에서 70점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755063169262",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:32:49.262Z",
+          "description": "스네이크 게임에서 30점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755063183337",
+          "type": "earn",
+          "amount": 2,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:33:03.337Z",
+          "description": "스네이크 게임에서 50점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755063814402",
+          "type": "earn",
+          "amount": 25,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:43:34.402Z",
+          "description": "기억력 게임에서 856점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755064120426",
+          "type": "earn",
+          "amount": 11,
+          "source": "mini-game",
+          "timestamp": "2025-08-13T05:48:40.426Z",
+          "description": "기억력 게임에서 387점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755144435787",
+          "type": "earn",
+          "amount": 3,
+          "source": "mini-game",
+          "timestamp": "2025-08-14T04:07:15.787Z",
+          "description": "스네이크 게임에서 90점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755144507387",
+          "type": "earn",
+          "amount": 13,
+          "source": "mini-game",
+          "timestamp": "2025-08-14T04:08:27.387Z",
+          "description": "스네이크 게임에서 340점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755144519587",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-14T04:08:39.587Z",
+          "description": "스네이크 게임에서 40점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755144667331",
+          "type": "earn",
+          "amount": 18,
+          "source": "mini-game",
+          "timestamp": "2025-08-14T04:11:07.331Z",
+          "description": "스네이크 게임에서 450점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755411655155",
+          "type": "earn",
+          "amount": 15,
+          "source": "mini-game",
+          "timestamp": "2025-08-17T06:20:55.155Z",
+          "description": "퍼즐 게임에서 389점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755413494580",
+          "type": "earn",
+          "amount": 4,
+          "source": "mini-game",
+          "timestamp": "2025-08-17T06:51:34.580Z",
+          "description": "스네이크 게임에서 100점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755413769673",
+          "type": "earn",
+          "amount": 4,
+          "source": "mini-game",
+          "timestamp": "2025-08-17T06:56:09.673Z",
+          "description": "스네이크 게임에서 120점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755413791594",
+          "type": "earn",
+          "amount": 4,
+          "source": "mini-game",
+          "timestamp": "2025-08-17T06:56:31.594Z",
+          "description": "스네이크 게임에서 100점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755413866130",
+          "type": "earn",
+          "amount": 15,
+          "source": "mini-game",
+          "timestamp": "2025-08-17T06:57:46.130Z",
+          "description": "스네이크 게임에서 380점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755413916655",
+          "type": "earn",
+          "amount": 8,
+          "source": "mini-game",
+          "timestamp": "2025-08-17T06:58:36.655Z",
+          "description": "스네이크 게임에서 200점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1755948373436",
+          "type": "earn",
+          "amount": 23,
+          "source": "mini-game",
+          "timestamp": "2025-08-23T11:26:13.436Z",
+          "description": "스네이크 게임에서 590점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756044687311",
+          "type": "earn",
+          "amount": 3,
+          "source": "mini-game",
+          "timestamp": "2025-08-24T14:11:27.311Z",
+          "description": "스네이크 게임에서 90점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756100313428",
+          "type": "earn",
+          "amount": 13,
+          "source": "mini-game",
+          "timestamp": "2025-08-25T05:38:33.428Z",
+          "description": "스네이크 게임에서 330점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756100355410",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-08-25T05:39:15.410Z",
+          "description": "스네이크 게임에서 40점 획득",
+          "bypassedDailyLimit": false
+        }
+      ]
+    },
+    "serviceUsage": {
+      "mealPlan": 31,
+      "restaurantRecommendation": 28,
+      "supplementRecommendation": 167,
+      "ingredientAnalysis": 24,
+      "mini-game": 112,
+      "lastUpdated": "2025-08-29T07:29:50.251Z"
+    },
+    "profile": {
+      "age": "31",
+      "height": "175",
+      "weight": "75",
+      "blood_glucose_value": null,
+      "hba1c_value": null,
+      "total_cholesterol_value": null,
+      "ldl_cholesterol_value": null,
+      "hdl_cholesterol_value": null,
+      "triglycerides_value": null,
+      "blood_pressure_systolic_value": null,
+      "blood_pressure_diastolic_value": null,
+      "bmi_value": null,
+      "vitamin_a_value": null,
+      "vitamin_d_value": null,
+      "vitamin_e_value": null,
+      "vitamin_k_value": null,
+      "iron_value": null,
+      "calcium_value": null,
+      "magnesium_value": null,
+      "potassium_value": null,
+      "zinc_value": null,
+      "gender": "male",
+      "activity_level": "light",
+      "eating_patterns": "regular",
+      "sleep_patterns": "6_to_8",
+      "meals_per_day": "2",
+      "alcohol_consumption": "socially",
+      "smoking_status": "non_smoker",
+      "allergies": "none",
+      "illnesses": "none",
+      "biomarkers": "none",
+      "supplements": "none"
+    },
+    "profileCompletionReward": true,
+    "profileCompletionDate": "2025-07-25T05:25:20.553Z",
+    "savedMeals": [],
+    "savedSupplements": [
+      {
+        "id": "1756442796866",
+        "name": "마그네슘",
+        "category": "미네랄",
+        "dosage": "200-400mg (구연산 마그네슘 또는 글리신산 마그네슘 등 흡수율이 좋은 형태)",
+        "timing": {
+          "when": "저녁 식후|취침전",
+          "frequency": "1일 1회",
+          "duration": "지속 복용"
+        },
+        "benefits": [
+          "신경 안정 및 근육 이완",
+          "수면의 질 개선 및 스트레스 감소",
+          "에너지 생성 및 피로 회복",
+          "뇌 가소성 및 인지 기능 간접 지원"
+        ],
+        "scientificRationale": [
+          "마그네슘은 뇌의 NMDA 수용체 활동을 조절하여 신경 흥분성을 안정화하고, 신경 전달 물질 방출 및 신경 보호에 중요한 역할을 합니다.",
+          "수면의 질 개선에 도움을 주어 충분한 휴식을 통해 뇌 기능 회복 및 인지 기능 향상을 간접적으로 지원합니다.",
+          "뇌의 신경세포 가소성에 필수적이며, 학습 및 기억력 과정과 관련이 있어 인지 기능에 긍정적인 영향을 미칩니다."
+        ],
+        "priority": "recommended",
+        "safetyNotes": "과량 섭취 시 설사, 복통 등 위장 장애를 유발할 수 있습니다. 신장 질환이 있는 경우 의사 상담 후 복용해야 합니다.",
+        "interactions": "특정 항생제 (테트라사이클린, 퀴놀론계) 및 골다공증 약물 (비스포스포네이트) 등과 함께 복용 시 흡수를 방해할 수 있으므로 최소 2시간 간격을 두고 복용하는 것이 권장됩니다.",
+        "expectedResults": "1주 내 수면의 질 개선 및 근육 경련 감소. 2-4주 내 스트레스 감소 및 전반적인 심신 안정 체감으로 인지 기능 환경 조성.",
+        "recommendationId": "1756442796858",
+        "savedAt": "2025-08-29T04:46:36.866Z"
+      }
+    ]
+  },
+  {
+    "id": "2b485125-8bd8-41f9-9d04-1cd2956add80",
+    "googleId": "104756626431783286036",
+    "email": "gudwns999999@gmail.com",
+    "name": "김형준",
+    "picture": "https://lh3.googleusercontent.com/a/ACg8ocKEPGgdQixlAeKCS5tRMkHSEp_Mrk8bkjUDCpWRRXmQatZrtw=s96-c",
+    "authType": "google",
+    "createdAt": "2025-08-12T05:36:44.133Z",
+    "gamePoints": {
+      "totalPoints": 42,
+      "dailyEarned": 0,
+      "dailyLimit": 100,
+      "lastEarnedDate": "2025-08-29",
+      "history": [
+        {
+          "id": "1754977248434",
+          "type": "earn",
+          "amount": 4,
+          "source": "mini-game",
+          "timestamp": "2025-08-12T05:40:48.434Z",
+          "description": "스네이크 게임에서 110점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754977332592",
+          "type": "earn",
+          "amount": 14,
+          "source": "mini-game",
+          "timestamp": "2025-08-12T05:42:12.592Z",
+          "description": "스네이크 게임에서 350점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754977375524",
+          "type": "earn",
+          "amount": 6,
+          "source": "mini-game",
+          "timestamp": "2025-08-12T05:42:55.524Z",
+          "description": "스네이크 게임에서 160점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1754977482953",
+          "type": "earn",
+          "amount": 18,
+          "source": "mini-game",
+          "timestamp": "2025-08-12T05:44:42.953Z",
+          "description": "스네이크 게임에서 460점 획득",
+          "bypassedDailyLimit": false
+        }
+      ]
+    },
+    "serviceUsage": {
+      "mealPlan": 0,
+      "restaurantRecommendation": 0,
+      "supplementRecommendation": 0,
+      "ingredientAnalysis": 0,
+      "mini-game": 4,
+      "lastUpdated": "2025-08-12T05:44:42.958Z"
+    }
+  }
+]

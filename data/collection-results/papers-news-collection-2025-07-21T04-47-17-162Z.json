@@ -1,0 +1,153 @@
+{
+  "timestamp": "2025-07-21T04:47:17.162Z",
+  "collectionType": "papers-and-news",
+  "results": {
+    "pubmed": {
+      "collected": 5,
+      "processed": 0,
+      "saved": 0,
+      "errors": [
+        {
+          "item": "Mock Research Paper 1: nutrition diet supplements health vitamins minerals Study",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.151Z"
+        },
+        {
+          "item": "Mock Research Paper 2: nutrition diet supplements health vitamins minerals Study",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.152Z"
+        },
+        {
+          "item": "Mock Research Paper 3: nutrition diet supplements health vitamins minerals Study",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.152Z"
+        },
+        {
+          "item": "Mock Research Paper 4: nutrition diet supplements health vitamins minerals Study",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.152Z"
+        },
+        {
+          "item": "Mock Research Paper 5: nutrition diet supplements health vitamins minerals Study",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.153Z"
+        }
+      ]
+    },
+    "news": {
+      "collected": 5,
+      "processed": 0,
+      "saved": 0,
+      "errors": [
+        {
+          "item": "Mock Health Article 1: nutrition health diet supplements vitamins",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.156Z"
+        },
+        {
+          "item": "Mock Health Article 2: nutrition health diet supplements vitamins",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.156Z"
+        },
+        {
+          "item": "Mock Health Article 3: nutrition health diet supplements vitamins",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.157Z"
+        },
+        {
+          "item": "Mock Health Article 4: nutrition health diet supplements vitamins",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.157Z"
+        },
+        {
+          "item": "Mock Health Article 5: nutrition health diet supplements vitamins",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.157Z"
+        }
+      ]
+    },
+    "total": {
+      "collected": 10,
+      "processed": 0,
+      "saved": 0,
+      "errors": [
+        {
+          "item": "Mock Research Paper 1: nutrition diet supplements health vitamins minerals Study",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.151Z"
+        },
+        {
+          "item": "Mock Research Paper 2: nutrition diet supplements health vitamins minerals Study",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.152Z"
+        },
+        {
+          "item": "Mock Research Paper 3: nutrition diet supplements health vitamins minerals Study",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.152Z"
+        },
+        {
+          "item": "Mock Research Paper 4: nutrition diet supplements health vitamins minerals Study",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.152Z"
+        },
+        {
+          "item": "Mock Research Paper 5: nutrition diet supplements health vitamins minerals Study",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.153Z"
+        },
+        {
+          "item": "Mock Health Article 1: nutrition health diet supplements vitamins",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.156Z"
+        },
+        {
+          "item": "Mock Health Article 2: nutrition health diet supplements vitamins",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.156Z"
+        },
+        {
+          "item": "Mock Health Article 3: nutrition health diet supplements vitamins",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.157Z"
+        },
+        {
+          "item": "Mock Health Article 4: nutrition health diet supplements vitamins",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.157Z"
+        },
+        {
+          "item": "Mock Health Article 5: nutrition health diet supplements vitamins",
+          "error": "this.contentProcessor.processItem is not a function",
+          "timestamp": "2025-07-21T04:47:17.157Z"
+        }
+      ]
+    }
+  },
+  "config": {
+    "pubmed": {
+      "keywords": [
+        "nutrition",
+        "diet",
+        "supplements",
+        "health",
+        "vitamins",
+        "minerals"
+      ],
+      "maxResults": 30,
+      "dateRange": "30d"
+    },
+    "news": {
+      "keywords": [
+        "nutrition",
+        "health",
+        "diet",
+        "supplements",
+        "vitamins"
+      ],
+      "sources": [],
+      "maxResults": 40,
+      "fromDate": null
+    }
+  }
+}

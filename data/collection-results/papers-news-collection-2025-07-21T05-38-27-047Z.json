@@ -1,0 +1,75 @@
+{
+  "timestamp": "2025-07-21T05:38:27.047Z",
+  "collectionType": "papers-and-news",
+  "results": {
+    "pubmed": {
+      "collected": 3,
+      "processed": 3,
+      "saved": 3,
+      "errors": []
+    },
+    "news": {
+      "collected": 3,
+      "processed": 0,
+      "saved": 0,
+      "errors": [
+        {
+          "item": "RFK 주니어가 미국 식단을 MAHA할 수 있는 큰 기회",
+          "error": "데이터 유효성 검증 실패: 카테고리는 diet, supplements, research, trends 중 하나여야 합니다.",
+          "timestamp": "2025-07-21T05:34:27.019Z"
+        },
+        {
+          "item": "미국 어린이의 '매우 심각한' 비만이 급증하고 있다는 연구 결과가 발표되었습니다",
+          "error": "데이터 유효성 검증 실패: 카테고리는 diet, supplements, research, trends 중 하나여야 합니다.",
+          "timestamp": "2025-07-21T05:36:27.031Z"
+        },
+        {
+          "item": "씨앗 기름이 실제로 건강에 해롭나요? 논란의 배경이 된 과학은 다음과 같습니다",
+          "error": "데이터 유효성 검증 실패: 카테고리는 diet, supplements, research, trends 중 하나여야 합니다.",
+          "timestamp": "2025-07-21T05:38:27.044Z"
+        }
+      ]
+    },
+    "total": {
+      "collected": 6,
+      "processed": 3,
+      "saved": 3,
+      "errors": [
+        {
+          "item": "RFK 주니어가 미국 식단을 MAHA할 수 있는 큰 기회",
+          "error": "데이터 유효성 검증 실패: 카테고리는 diet, supplements, research, trends 중 하나여야 합니다.",
+          "timestamp": "2025-07-21T05:34:27.019Z"
+        },
+        {
+          "item": "미국 어린이의 '매우 심각한' 비만이 급증하고 있다는 연구 결과가 발표되었습니다",
+          "error": "데이터 유효성 검증 실패: 카테고리는 diet, supplements, research, trends 중 하나여야 합니다.",
+          "timestamp": "2025-07-21T05:36:27.031Z"
+        },
+        {
+          "item": "씨앗 기름이 실제로 건강에 해롭나요? 논란의 배경이 된 과학은 다음과 같습니다",
+          "error": "데이터 유효성 검증 실패: 카테고리는 diet, supplements, research, trends 중 하나여야 합니다.",
+          "timestamp": "2025-07-21T05:38:27.044Z"
+        }
+      ]
+    }
+  },
+  "config": {
+    "pubmed": {
+      "keywords": [
+        "nutrition",
+        "diet"
+      ],
+      "maxResults": 3,
+      "dateRange": "7d"
+    },
+    "news": {
+      "keywords": [
+        "nutrition",
+        "health"
+      ],
+      "sources": [],
+      "maxResults": 3,
+      "fromDate": null
+    }
+  }
+}

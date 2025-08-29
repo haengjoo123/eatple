@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>이벤트 - 잇플 스토어</title>
+    <link rel="stylesheet" href="store.css" />
+    <link rel="stylesheet" href="category.css" />
+    <link rel="stylesheet" href="collection-groups.css" />
+    <link rel="stylesheet" href="event.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- 헤더 상단 -->
+    <div class="header-top" id="headerTop">
+      <div class="container">
+        <div class="header-top-content">
+          <div class="header-left">
+            <a href="store.html" class="logo">잇플</a>
+          </div>
+
+          <div class="header-center">
+            <div class="search-container">
+              <input
+                type="text"
+                class="search-input"
+                placeholder="검색어를 입력해주세요"
+              />
+              <button class="search-btn">
+                <svg
+                  class="search-icon"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="header-right">
+            <div class="header-right-section">
+              <div class="header-links">
+                <a href="login.html" class="header-link">로그인</a>
+                <a href="signup.html" class="header-link">회원가입</a>
+                <a href="#support" class="header-link">고객센터</a>
+              </div>
+              <div class="header-actions">
+                <button class="action-btn user-btn">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </button>
+
+                <button class="action-btn cart-btn">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path
+                      d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                    ></path>
+                  </svg>
+                  <span class="cart-count">0</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 헤더 네비게이션 -->
+    <nav class="header-nav" id="headerNav">
+      <div class="container">
+        <div class="nav-container">
+          <div class="nav-left-group">
+            <div class="category-dropdown">
+              <button class="category-btn">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+                카테고리
+              </button>
+              <div class="category-dropdown-menu">
+                <div class="category-dropdown-section">
+                  <h4 class="category-dropdown-header">건강식품</h4>
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=health_functional_food"
+                    >건강기능식품</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=protein_food"
+                    >단백질 식품</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=healthy_snack"
+                    >건강 간식</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=healthy_juice"
+                    >건강 주스</a
+                  >
+                </div>
+                <div class="category-dropdown-section">
+                  <h4 class="category-dropdown-header">간편식/반찬</h4>
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=home_meal_replacement"
+                    >가정간편식</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=side_dish"
+                    >반찬</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=salad"
+                    >샐러드</a
+                  >
+                </div>
+                <div class="category-dropdown-section">
+                  <h4 class="category-dropdown-header">신선식품</h4>
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=fruit"
+                    >과일</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=meat"
+                    >정육/계란</a
+                  >
+                  <a
+                    class="category-dropdown-item"
+                    href="category.html?category=seafood"
+                    >수산/해산</a
+                  >
+                </div>
+              </div>
+            </div>
+            <ul class="nav-menu">
+              <li class="nav-item">
+                <a class="nav-link" href="collection-groups.html?group=best">베스트</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="collection-groups.html?group=new">신상품</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="collection-groups.html?group=sale">특가상품</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="event.html">이벤트</a>
+              </li>
+            </ul>
+            <div class="search-container-nav">
+              <input
+                type="text"
+                class="search-input-nav"
+                placeholder="검색어를 입력해주세요"
+              />
+              <button class="search-btn-nav">
+                <svg
+                  class="search-icon"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="main-content">
+      <div class="container">
+        <!-- 이벤트 배너 섹션 -->
+        <div class="event-banner-section">
+          <div class="event-banner">
+            <div class="event-banner-content">
+              <h2 class="event-banner-title">현재 진행 중인 혜택 가득 이벤트 한눈에 보기</h2>
+              <p class="event-banner-subtitle">이벤트 참여하고 혜택 받기</p>
+            </div>
+            <div class="event-banner-icons">
+              <div class="event-icon coupon-icon">
+                <span class="event-icon-text">W</span>
+                <span class="event-icon-label">COUPON</span>
+              </div>
+              <div class="event-icon benefit-icon">
+                <span class="event-icon-text">🎁</span>
+                <span class="event-icon-label">BENEFIT</span>
+              </div>
+              <div class="event-icon today-icon">
+                <span class="event-icon-text">📅</span>
+                <span class="event-icon-label">TODAY</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 필터 섹션 -->
+        <div class="filter-section">
+          <div class="filter-container">
+            <div class="filter-buttons">
+              <button class="filter-btn active" data-filter="all">전체</button>
+              <button class="filter-btn" data-filter="ongoing">진행중</button>
+              <button class="filter-btn" data-filter="upcoming">예정</button>
+              <button class="filter-btn" data-filter="ended">종료</button>
+            </div>
+            <div class="sort-container">
+              <select class="sort-select" id="sortSelect">
+                <option value="latest">최신순</option>
+                <option value="popular">인기순</option>
+                <option value="ending">마감임박순</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 이벤트 상품 그리드 -->
+        <div class="products-grid" id="productsGrid">
+          <!-- 이벤트 상품들이 여기에 동적으로 로드됩니다 -->
+        </div>
+
+        <!-- 로딩 상태 -->
+        <div class="loading-state" id="loadingState">
+          <div class="loading-spinner"></div>
+          <p>이벤트 상품을 불러오는 중...</p>
+        </div>
+
+        <!-- 빈 상태 -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+          <div class="empty-state-icon">🎉</div>
+          <div class="empty-state-text">현재 진행 중인 이벤트가 없습니다</div>
+          <div class="empty-state-subtext">곧 새로운 이벤트를 준비할 예정입니다</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 상품 상세 모달 -->
+    <div class="modal" id="productDetailModal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <div class="product-detail-content" id="productDetailContent">
+          <!-- 상품 상세 내용이 여기에 로드됩니다 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 구매 모달 -->
+    <div class="modal" id="purchaseModal">
+      <div class="modal-content purchase-modal">
+        <span class="close">&times;</span>
+        <div class="purchase-content">
+          <h3>상품 구매</h3>
+          <div class="product-info" id="purchaseProductInfo">
+            <!-- 구매할 상품 정보가 여기에 표시됩니다 -->
+          </div>
+          <div class="purchase-form">
+            <div class="form-group">
+              <label for="quantity">수량</label>
+              <input type="number" id="quantity" min="1" value="1" />
+            </div>
+            <div class="form-group">
+              <label for="pointsToUse">사용할 포인트</label>
+              <input type="number" id="pointsToUse" min="0" value="0" />
+              <button id="maxPointsBtn">최대 사용</button>
+            </div>
+            <div class="total-info">
+              <span>총 결제 금액: </span>
+              <span id="totalPrice">0원</span>
+            </div>
+            <div class="purchase-buttons">
+              <button id="cancelBtn">취소</button>
+              <button id="confirmBtn">구매하기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 마이페이지 모달 -->
+    <div class="modal" id="mypageModal">
+      <div class="modal-content mypage-modal">
+        <span class="close">&times;</span>
+        <div class="mypage-content">
+          <div class="mypage-header">
+            <h3>마이페이지</h3>
+          </div>
+          <div class="mypage-tabs">
+            <button class="tab-btn active" data-tab="profile">프로필</button>
+            <button class="tab-btn" data-tab="orders">주문내역</button>
+            <button class="tab-btn" data-tab="points">포인트</button>
+            <button class="tab-btn" data-tab="settings">설정</button>
+          </div>
+          <div class="tab-content" id="profileTab">
+            <div class="profile-info">
+              <div class="profile-avatar">
+                <img src="images/default-avatar.png" alt="프로필" />
+              </div>
+              <div class="profile-details">
+                <h4 id="userName">사용자</h4>
+                <p id="userEmail">이메일</p>
+                <p>보유 포인트: <span id="userPoints">0</span>P</p>
+              </div>
+            </div>
+          </div>
+          <div class="tab-content" id="ordersTab" style="display: none;">
+            <div class="orders-list">
+              <p>주문 내역이 없습니다.</p>
+            </div>
+          </div>
+          <div class="tab-content" id="pointsTab" style="display: none;">
+            <div class="points-info">
+              <h4>포인트 내역</h4>
+              <p>현재 포인트: <span id="currentPoints">0</span>P</p>
+              <div class="points-history">
+                <p>포인트 내역이 없습니다.</p>
+              </div>
+            </div>
+          </div>
+          <div class="tab-content" id="settingsTab" style="display: none;">
+            <div class="settings-options">
+              <button class="settings-btn" onclick="location.href='profile.html'">프로필 수정</button>
+              <button class="settings-btn" onclick="location.href='change-password.html'">비밀번호 변경</button>
+              <button class="settings-btn logout-btn">로그아웃</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 스크립트 -->
+    <script src="header-auth.js"></script>
+    <script src="event.js"></script>
+  </body>
+</html>

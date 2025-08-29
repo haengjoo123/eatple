@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제품 관리 - 잇플 스토어 관리자</title>
+    <link rel="stylesheet" href="admin-product-management.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 헤더 -->
+    <nav class="admin-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>잇플 스토어 관리자</h1>
+            </div>
+            <button class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-menu" id="navMenu">
+                <a href="store.html" class="nav-link">스토어 보기</a>
+                <a href="#" class="nav-link active">제품 관리</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="admin-container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+            <h2>제품 관리</h2>
+            <div class="header-actions">
+                <button class="btn btn-primary" id="addProductBtn">
+                    <span>➕</span> 새 제품 추가
+                </button>
+            </div>
+        </div>
+
+        <!-- 통계 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📦</div>
+                <div class="stat-content">
+                    <h3 data-stat="total">0</h3>
+                    <p>전체 제품</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <h3 data-stat="active">0</h3>
+                    <p>판매중</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏸️</div>
+                <div class="stat-content">
+                    <h3 data-stat="inactive">0</h3>
+                    <p>판매중지</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">❌</div>
+                <div class="stat-content">
+                    <h3 data-stat="out_of_stock">0</h3>
+                    <p>품절</p>
+                </div>
+            </div>
+            <div class="stat-card inquiry-card" id="inquiryCard">
+                <div class="stat-icon">💬</div>
+                <div class="stat-content">
+                    <h3 data-stat="pending_inquiries">0</h3>
+                    <p>미답변 문의</p>
+                </div>
+                <div class="inquiry-badge" data-stat="total_inquiries">0</div>
+            </div>
+        </div>
+
+        <!-- 검색 및 필터 -->
+        <div class="controls-section">
+            <div class="search-filter-bar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" class="search-input" placeholder="제품명 또는 설명으로 검색...">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <div class="filter-controls">
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">모든 카테고리</option>
+                        <option value="health_functional_food">건강기능식품</option>
+                        <option value="protein_food">단백질 식품</option>
+                        <option value="healthy_snack">건강 간식</option>
+                        <option value="healthy_juice">건강 주스</option>
+                        <option value="home_meal_replacement">가정간편식</option>
+                        <option value="side_dish">반찬</option>
+                        <option value="salad">샐러드</option>
+                        <option value="fruit">과일</option>
+                        <option value="meat">정육/계란</option>
+                        <option value="seafood">수산/해산</option>
+                    </select>
+                    <select id="statusFilter" class="filter-select">
+                        <option value="">모든 상태</option>
+                        <option value="active">판매중</option>
+                        <option value="inactive">판매중지</option>
+                        <option value="out_of_stock">품절</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 일괄 작업 -->
+            <div class="bulk-actions" style="display: none;">
+                <div class="bulk-info">0개 제품 선택됨</div>
+                <div class="bulk-buttons">
+                    <button class="btn btn-success" id="bulkActivate">일괄 활성화</button>
+                    <button class="btn btn-warning" id="bulkDeactivate">일괄 비활성화</button>
+                    <button class="btn btn-danger" id="bulkDelete">일괄 삭제</button>
+                </div>
+            </div>
+
+            <!-- 뷰 컨트롤 -->
+            <div class="view-controls">
+                <div class="view-toggle-group">
+                    <button class="view-btn active" data-view="grid">
+                        <span class="view-icon">⊞</span> 그리드
+                    </button>
+                    <button class="view-btn" data-view="table">
+                        <span class="view-icon">☰</span> 테이블
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 제품 컨테이너 -->
+        <div class="products-container">
+            <div class="products-grid" id="productsGrid">
+                <!-- 제품 목록이 여기에 동적으로 생성됩니다 -->
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>제품을 불러오는 중입니다<span class="loading-dots"><span></span><span></span><span></span></span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 페이지네이션 -->
+        <div class="pagination-container">
+            <!-- 페이지네이션이 여기에 동적으로 생성됩니다 -->
+        </div>
+    </main>
+
+    <!-- 상품 문의 관리 모달 -->
+    <div id="inquiryModal" class="modal-overlay">
+        <div class="modal-content inquiry-modal-content">
+            <div class="modal-header">
+                <h3>상품 문의 관리</h3>
+                <button class="modal-close" id="inquiryModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- 문의 필터 -->
+                <div class="inquiry-filters">
+                    <select id="inquiryStatusFilter" class="filter-select">
+                        <option value="">모든 문의</option>
+                        <option value="pending">미답변</option>
+                        <option value="answered">답변완료</option>
+                    </select>
+                    <input type="text" id="inquirySearchInput" class="search-input" placeholder="제품명 또는 고객명으로 검색...">
+                </div>
+                
+                <!-- 문의 목록 -->
+                <div class="inquiry-list" id="inquiryList">
+                    <!-- 문의 목록이 여기에 동적으로 생성됩니다 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 문의 답변 모달 -->
+    <div id="answerModal" class="modal-overlay">
+        <div class="modal-content answer-modal-content">
+            <div class="modal-header">
+                <h3>문의 답변</h3>
+                <button class="modal-close" id="answerModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="inquiry-details" id="inquiryDetails">
+                    <!-- 문의 상세 정보가 여기에 표시됩니다 -->
+                </div>
+                <div class="answer-form">
+                    <label for="answerText">답변 내용</label>
+                    <textarea id="answerText" rows="6" placeholder="고객에게 전달할 답변을 작성해주세요..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="answerCancel">취소</button>
+                <button type="button" class="btn-primary" id="answerSubmit">답변 등록</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- 이미지 삽입 모달 -->
+    <div id="imageInsertModal" class="modal-overlay">
+        <div class="modal-content confirm-modal-content">
+            <div class="modal-header">
+                <h3>이미지 삽입</h3>
+                <button class="modal-close" id="imageInsertClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="imageUrl">이미지 URL</label>
+                    <input type="url" id="imageUrl" placeholder="https://example.com/image.jpg">
+                </div>
+                <div class="form-group">
+                    <label for="imageAlt">대체 텍스트</label>
+                    <input type="text" id="imageAlt" placeholder="이미지 설명">
+                </div>
+                <div class="form-group">
+                    <label>또는 파일 업로드</label>
+                    <input type="file" id="descriptionImageInput" accept="image/*">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="imageInsertCancel">취소</button>
+                <button type="button" class="btn-primary" id="imageInsertConfirm">삽입</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 표 삽입 모달 -->
+    <div id="tableInsertModal" class="modal-overlay">
+        <div class="modal-content confirm-modal-content">
+            <div class="modal-header">
+                <h3>표 삽입</h3>
+                <button class="modal-close" id="tableInsertClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tableRows">행 수</label>
+                        <input type="number" id="tableRows" value="3" min="1" max="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="tableCols">열 수</label>
+                        <input type="number" id="tableCols" value="2" min="1" max="6">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="tableHeader" checked>
+                        첫 번째 행을 헤더로 사용
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="tableInsertCancel">취소</button>
+                <button type="button" class="btn-primary" id="tableInsertConfirm">삽입</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 삭제 확인 모달 -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-content confirm-modal-content">
+            <div class="modal-header">
+                <h3>제품 삭제</h3>
+                <button class="modal-close" id="deleteModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>정말로 이 제품을 삭제하시겠습니까?</p>
+                <p class="delete-warning">삭제된 제품은 복구할 수 없습니다.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="deleteCancel">취소</button>
+                <button type="button" class="btn-danger" id="deleteConfirm">삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin-product-management.js"></script>
+</body>
+</html>

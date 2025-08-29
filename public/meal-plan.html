@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 맞춤 식단 플래너</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="meal-plan-page">
+    <!-- 데스크탑용 브랜드 및 인증 링크 -->
+    <div class="site-brand-fixed"><a href="index.html">잇플</a></div>
+    <div class="auth-links">
+        <!-- 동적으로 채워짐 -->
+    </div>
+
+    <!-- 모바일용 메인 네비게이션 -->
+    <nav class="main-nav">
+      <div class="container">
+        <div class="nav-content">
+          <div class="nav-brand">
+            <a href="index.html">잇플</a>
+          </div>
+          <div class="nav-menu">
+            <a href="meal-plan.html">뭐해먹지?</a>
+            <a href="supplements.html">나만의 영양제</a>
+            <a href="restaurant-recommendation.html">오늘의 맛집</a>
+            <div class="dropdown">
+              <a href="#" class="dropdown-toggle">AI 성분 분석</a>
+              <div class="dropdown-menu">
+                <a href="ingredient-analyzer.html">식재료 분석</a>
+                <a href="food-nutrition-search.html">음식 정보 검색</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <a href="store.html" class="dropdown-toggle nav-shop-link"
+                >잇플스토어</a
+              >
+              <div class="dropdown-menu">
+                <a href="mini-games.html">🎮 게임포인트</a>
+              </div>
+            </div>
+          </div>
+          <div class="nav-auth" id="navAuth">
+            <a href="login.html" class="nav-btn">로그인</a>
+            <a href="signup.html" class="nav-btn primary">회원가입</a>
+          </div>
+          <div class="nav-toggle" id="navToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+        <div id="home" class="section">
+            <h1 class="main-title">AI 맞춤 식단 플래너</h1>
+            <p class="subtitle">나에게 꼭 맞는 식단을 찾아보세요!</p>
+
+            <!-- 카테고리 탭 -->
+            <div class="purpose-category-tabs">
+                <button class="category-tab active" data-category="general" onclick="switchPurposeCategory('general')">
+                    <span class="tab-icon">🎯</span>
+                    <span class="tab-text">일반 목적</span>
+                </button>
+                <button class="category-tab" data-category="health" onclick="switchPurposeCategory('health')">
+                    <span class="tab-icon">🏥</span>
+                    <span class="tab-text">건강 관리</span>
+                </button>
+                <button class="category-tab" data-category="special" onclick="switchPurposeCategory('special')">
+                    <span class="tab-icon">⭐</span>
+                    <span class="tab-text">특수 목적</span>
+                </button>
+            </div>
+
+            <!-- 식단 목적 선택 -->
+            <div class="meal-type-selection">
+                <!-- 일반 목적 -->
+                <div class="purpose-group active" data-category="general">
+                    <div class="meal-type-card" data-purpose="weight_loss"
+                        onclick="selectMealPurpose(this, 'weight_loss')">
+                        <div class="icon">📉</div>
+                        <h3>체중 감량</h3>
+                        <p>건강하게 체중을 줄이고 싶을 때</p>
+                    </div>
+                    <div class="meal-type-card" data-purpose="weight_gain"
+                        onclick="selectMealPurpose(this, 'weight_gain')">
+                        <div class="icon">📈</div>
+                        <h3>체중 증량</h3>
+                        <p>건강하게 체중을 늘리고 싶을 때</p>
+                    </div>
+                    <div class="meal-type-card" data-purpose="muscle_gain"
+                        onclick="selectMealPurpose(this, 'muscle_gain')">
+                        <div class="icon">💪</div>
+                        <h3>근육 증진</h3>
+                        <p>효율적으로 근육량을 증가시키고 싶을 때</p>
+                    </div>
+                    <div class="meal-type-card" data-purpose="maintenance"
+                        onclick="selectMealPurpose(this, 'maintenance')">
+                        <div class="icon">🥦</div>
+                        <h3>일상 식단</h3>
+                        <p>건강한 식습관을 유지하고 싶을 때</p>
+                    </div>
+                </div>
+
+                <!-- 건강 관리 -->
+                <div class="purpose-group" data-category="health">
+                    <div class="meal-type-card" data-purpose="diabetes" onclick="selectMealPurpose(this, 'diabetes')">
+                        <div class="icon">🩸</div>
+                        <h3>혈당 관리</h3>
+                        <p>식사 전, 후 혈당 수치 조절이 필요할 때</p>
+                    </div>
+                    <div class="meal-type-card" data-purpose="blood_pressure"
+                        onclick="selectMealPurpose(this, 'blood_pressure')">
+                        <div class="icon">💓</div>
+                        <h3>혈압 관리</h3>
+                        <p>안정적인 혈압 유지가 필요할 때</p>
+                    </div>
+                    <div class="meal-type-card" data-purpose="cholesterol"
+                        onclick="selectMealPurpose(this, 'cholesterol')">
+                        <div class="icon">🥑</div>
+                        <h3>콜레스테롤 관리</h3>
+                        <p>콜레스테롤 수치 개선이 필요할 때</p>
+                    </div>
+                    <div class="meal-type-card" data-purpose="triglycerides"
+                        onclick="selectMealPurpose(this, 'triglycerides')">
+                        <div class="icon">🐟</div>
+                        <h3>중성지방 관리</h3>
+                        <p>중성지방 수치 개선이 필요할 때</p>
+                    </div>
+                </div>
+
+                <!-- 특수 목적 -->
+                <div class="purpose-group" data-category="special">
+                    <div class="meal-type-card" data-purpose="keto" onclick="selectMealPurpose(this, 'keto')">
+                        <div class="icon">🧈</div>
+                        <h3>키토 식단</h3>
+                        <p>키토제닉 식단을 시작하고 싶을 때</p>
+                    </div>
+                    <div class="meal-type-card" data-purpose="pregnant" onclick="selectMealPurpose(this, 'pregnant')">
+                        <div class="icon">🤰</div>
+                        <h3>임산부 식단</h3>
+                        <p>산모와 태아를 위한 영양 가득 식단</p>
+                    </div>
+                    <div class="meal-type-card" data-purpose="student" onclick="selectMealPurpose(this, 'student')">
+                        <div class="icon">🧠</div>
+                        <h3>수험생 식단</h3>
+                        <p>집중력과 체력 증진이 필요할 때</p>
+                    </div>
+                    <div class="meal-type-card" data-purpose="senior" onclick="selectMealPurpose(this, 'senior')">
+                        <div class="icon">👴</div>
+                        <h3>시니어 식단</h3>
+                        <p>건강한 노년을 위한 영양 관리가 필요할 때</p>
+                    </div>
+                </div>
+            </div>
+
+            <button id="startProfileBtn" class="cta-button" onclick="showSection('profile')" disabled>
+                프로필 입력하기
+            </button>
+        </div>
+
+        <div id="profile" class="section">
+            <h1>내 정보 입력</h1>
+            <div class="progress-container">
+                <div id="profileProgressBar" class="progress-bar"></div>
+                <div class="progress-step active" data-step="1" data-text="기본정보"></div>
+                <div class="progress-step" data-step="2" data-text="건강정보"></div>
+                <div class="progress-step" data-step="3" data-text="추가정보"></div>
+            </div>
+            <form id="profileForm" onsubmit="saveProfile(event); return false;" action="javascript:void(0)">
+                <div id="profileSection1" class="profile-section active">
+                    <div class="section-guide required">
+                        기본 신체 정보를 정확히 입력해주세요. 정확한 정보일수록 더 나은 맞춤 식단을 제공할 수 있습니다.
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group-item">
+                            <label for="age">나이:</label>
+                            <span id="age-error" class="error-message"></span>
+                            <input type="number" id="age" name="age" min="1" max="120" required>
+                        </div>
+                        <div class="input-group-item">
+                            <label for="height">키 (cm):</label>
+                            <span id="height-error" class="error-message"></span>
+                            <input type="number" id="height" name="height" min="100" max="250" step="0.1" required>
+                        </div>
+                        <div class="input-group-item">
+                            <label for="weight">체중 (kg):</label>
+                            <span id="weight-error" class="error-message"></span>
+                            <input type="number" id="weight" name="weight" min="20" max="200" step="0.1" required>
+                        </div>
+                    </div>
+
+                    <label>성별:</label>
+                    <div class="option-group" data-name="gender">
+                        <div class="option" data-value="male" role="button" tabindex="0">남성</div>
+                        <div class="option" data-value="female" role="button" tabindex="0">여성</div>
+                    </div>
+                    <label>활동량:</label>
+                    <div class="option-group" data-name="activity_level">
+                        <div class="option" data-value="sedentary" role="button" tabindex="0">좌식 생활 (운동 거의 안함)</div>
+                        <div class="option" data-value="light" role="button" tabindex="0">가벼운 활동 (주 1-3회 운동)</div>
+                        <div class="option" data-value="moderate" role="button" tabindex="0">보통 활동 (주 3-5회 운동)</div>
+                        <div class="option" data-value="active" role="button" tabindex="0">활발한 활동 (주 6-7회 운동)</div>
+                        <div class="option" data-value="very_active" role="button" tabindex="0">매우 활발함 (하루 2회 이상 운동)
+                        </div>
+                    </div>
+                    <label>식사 패턴:</label>
+                    <div class="option-group" data-name="eating_patterns">
+                        <div class="option" data-value="regular" role="button" tabindex="0">규칙적 (정해진 시간에 식사)</div>
+                        <div class="option" data-value="irregular" role="button" tabindex="0">불규칙적</div>
+                        <div class="option" data-value="intermittent_fasting" role="button" tabindex="0">간헐적 단식</div>
+                    </div>
+                    <label>수면 패턴:</label>
+                    <div class="option-group" data-name="sleep_patterns">
+                        <div class="option" data-value="less_than_6" role="button" tabindex="0">6시간 미만</div>
+                        <div class="option" data-value="6_to_8" role="button" tabindex="0">6-8시간</div>
+                        <div class="option" data-value="more_than_8" role="button" tabindex="0">8시간 이상</div>
+                    </div>
+                    <label>하루 식사 횟수:</label>
+                    <div class="option-group" data-name="meals_per_day">
+                        <div class="option" data-value="1" role="button" tabindex="0">1회</div>
+                        <div class="option" data-value="2" role="button" tabindex="0">2회</div>
+                        <div class="option" data-value="3" role="button" tabindex="0">3회</div>
+                        <div class="option" data-value="4" role="button" tabindex="0">4회</div>
+                    </div>
+                    <label>음주 여부:</label>
+                    <div class="option-group" data-name="alcohol_consumption">
+                        <div class="option" data-value="none" role="button" tabindex="0">없음</div>
+                        <div class="option" data-value="socially" role="button" tabindex="0">사회적 음주 (월 1~2회)</div>
+                        <div class="option" data-value="weekly_light" role="button" tabindex="0">주 1회 가볍게 (1병 이내)</div>
+                        <div class="option" data-value="weekly_moderate" role="button" tabindex="0">주 1~2회 적당히 (1병 이상)
+                        </div>
+                        <div class="option" data-value="frequent" role="button" tabindex="0">잦은 음주 (주 3회 이상)</div>
+                    </div>
+                    <label>흡연 여부:</label>
+                    <div class="option-group" data-name="smoking_status">
+                        <div class="option" data-value="smoker" role="button" tabindex="0">흡연</div>
+                        <div class="option" data-value="non_smoker" role="button" tabindex="0">비흡연</div>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" onclick="nextProfileSection(1)" class="next-button">다음</button>
+                    </div>
+                </div>
+
+                <div id="profileSection2" class="profile-section">
+                    <div class="section-guide optional">
+                        건강 관련 정보를 입력해주세요. 이 정보는 더 정확한 식단 추천을 위해 사용됩니다.
+                    </div>
+                    <div class="accordion">
+                        <div class="accordion-header">알레르기 (중복 선택 가능)</div>
+                        <div class="accordion-content">
+                            <div class="option-group" data-name="allergies">
+                                <div class="option" data-value="none" role="button" tabindex="0">없음</div>
+                                <div class="option" data-value="peanuts" role="button" tabindex="0">땅콩</div>
+                                <div class="option" data-value="tree_nuts" role="button" tabindex="0">견과류</div>
+                                <div class="option" data-value="milk" role="button" tabindex="0">우유</div>
+                                <div class="option" data-value="eggs" role="button" tabindex="0">계란</div>
+                                <div class="option" data-value="fish" role="button" tabindex="0">생선</div>
+                                <div class="option" data-value="shellfish" role="button" tabindex="0">갑각류</div>
+                                <div class="option" data-value="soy" role="button" tabindex="0">콩</div>
+                                <div class="option" data-value="wheat" role="button" tabindex="0">밀</div>
+                                <div class="option" data-value="sesame" role="button" tabindex="0">참깨</div>
+                                <div class="option" data-value="other_allergy_toggle" role="button" tabindex="0">기타 (직접
+                                    입력)</div>
+                            </div>
+                            <div id="otherAllergyInput" class="hidden-input-container">
+                                <label for="other_allergies_text">기타 알레르기 식품을 입력해주세요:</label>
+                                <input type="text" id="other_allergies_text" name="other_allergies_text"
+                                    placeholder="예: 키위, 토마토 등">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion">
+                        <div class="accordion-header">현재 앓고 있는 질병 (중복 선택 가능)</div>
+                        <div class="accordion-content">
+                            <div class="option-group" data-name="illnesses">
+                                <div class="option" data-value="none" role="button" tabindex="0">없음</div>
+                                <div class="option" data-value="diabetes" role="button" tabindex="0">당뇨병</div>
+                                <div class="option" data-value="hypertension" role="button" tabindex="0">고혈압</div>
+                                <div class="option" data-value="heart_disease" role="button" tabindex="0">심장병</div>
+                                <div class="option" data-value="kidney_disease" role="button" tabindex="0">신장병</div>
+                                <div class="option" data-value="liver_disease" role="button" tabindex="0">간 질환</div>
+                                <div class="option" data-value="osteoporosis" role="button" tabindex="0">골다공증</div>
+                                <div class="option" data-value="anemia" role="button" tabindex="0">빈혈</div>
+                                <div class="option" data-value="thyroid_disorder" role="button" tabindex="0">갑상선 질환
+                                </div>
+                                <div class="option" data-value="gastritis" role="button" tabindex="0">위염</div>
+                                <div class="option" data-value="ibs" role="button" tabindex="0">과민성 대장 증후군</div>
+                                <div class="option" data-value="other_illness_toggle" role="button" tabindex="0">기타 (직접
+                                    입력)</div>
+                            </div>
+                            <div id="otherIllnessInput" class="hidden-input-container">
+                                <label for="other_illnesses_text">기타 질병을 입력해주세요:</label>
+                                <input type="text" id="other_illnesses_text" name="other_illnesses_text"
+                                    placeholder="예: 고지혈증, 관절염 등">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" onclick="prevProfileSection(2)" class="prev-button">이전</button>
+                        <button type="button" onclick="nextProfileSection(2)" class="next-button">다음</button>
+                    </div>
+                </div>
+
+                <div id="profileSection3" class="profile-section">
+                    <div class="section-guide optional">
+                        더 정확한 식단 추천을 위한 추가 정보를 입력해주세요. (선택사항)
+                    </div>
+                    <div class="accordion">
+                        <div class="accordion-header">최근 건강검진 수치 (중복 선택 가능)</div>
+                        <div class="accordion-content">
+                            <div class="option-group" data-name="biomarkers">
+                                <div class="option" data-value="none" role="button" tabindex="0">없음</div>
+                                <div class="option" data-value="blood_glucose" role="button" tabindex="0">
+                                    혈당 <span class="unit">(mg/dL)</span>
+                                    <input type="number" name="blood_glucose_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="hba1c" role="button" tabindex="0">
+                                    당화혈색소 <span class="unit">(%)</span>
+                                    <input type="number" name="hba1c_value" placeholder="수치" class="value-input hidden"
+                                        min="0" step="0.1">
+                                </div>
+                                <div class="option" data-value="total_cholesterol" role="button" tabindex="0">
+                                    총 콜레스테롤 <span class="unit">(mg/dL)</span>
+                                    <input type="number" name="total_cholesterol_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="ldl_cholesterol" role="button" tabindex="0">
+                                    LDL 콜레스테롤 <span class="unit">(mg/dL)</span>
+                                    <input type="number" name="ldl_cholesterol_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="hdl_cholesterol" role="button" tabindex="0">
+                                    HDL 콜레스테롤 <span class="unit">(mg/dL)</span>
+                                    <input type="number" name="hdl_cholesterol_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="triglycerides" role="button" tabindex="0">
+                                    중성지방 <span class="unit">(mg/dL)</span>
+                                    <input type="number" name="triglycerides_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="blood_pressure_systolic" role="button" tabindex="0">
+                                    수축기 혈압 <span class="unit">(mmHg)</span>
+                                    <input type="number" name="blood_pressure_systolic_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="blood_pressure_diastolic" role="button" tabindex="0">
+                                    이완기 혈압 <span class="unit">(mmHg)</span>
+                                    <input type="number" name="blood_pressure_diastolic_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="bmi" role="button" tabindex="0">
+                                    BMI <span class="unit">(kg/m²)</span>
+                                    <input type="number" name="bmi_value" placeholder="수치" class="value-input hidden"
+                                        min="0" step="0.1">
+                                </div>
+                                <div class="option" data-value="other_biomarker_toggle" role="button" tabindex="0">기타
+                                    (직접 입력)</div>
+                            </div>
+                            <div id="otherBiomarkerInput" class="hidden-input-container">
+                                <label for="other_biomarkers_text">기타 건강검진 수치를 입력해주세요:</label>
+                                <input type="text" id="other_biomarkers_text" name="other_biomarkers_text"
+                                    placeholder="예: 요산, 크레아티닌 등">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion">
+                        <div class="accordion-header">섭취 중인 건강기능식품 (중복 선택 가능)</div>
+                        <div class="accordion-content">
+                            <div class="option-group" data-name="supplements">
+                                <div class="option" data-value="none" role="button" tabindex="0">없음</div>
+                                <div class="option" data-value="vitamin_a" role="button" tabindex="0">
+                                    비타민 A <span class="unit">(μg)</span>
+                                    <input type="number" name="vitamin_a_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="vitamin_d" role="button" tabindex="0">
+                                    비타민 D <span class="unit">(IU)</span>
+                                    <input type="number" name="vitamin_d_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="vitamin_e" role="button" tabindex="0">
+                                    비타민 E <span class="unit">(mg)</span>
+                                    <input type="number" name="vitamin_e_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="vitamin_k" role="button" tabindex="0">
+                                    비타민 K <span class="unit">(μg)</span>
+                                    <input type="number" name="vitamin_k_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="iron" role="button" tabindex="0">
+                                    철분 <span class="unit">(mg)</span>
+                                    <input type="number" name="iron_value" placeholder="수치" class="value-input hidden"
+                                        min="0">
+                                </div>
+                                <div class="option" data-value="calcium" role="button" tabindex="0">
+                                    칼슘 <span class="unit">(mg)</span>
+                                    <input type="number" name="calcium_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="magnesium" role="button" tabindex="0">
+                                    마그네슘 <span class="unit">(mg)</span>
+                                    <input type="number" name="magnesium_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="potassium" role="button" tabindex="0">
+                                    칼륨 <span class="unit">(mg)</span>
+                                    <input type="number" name="potassium_value" placeholder="수치"
+                                        class="value-input hidden" min="0">
+                                </div>
+                                <div class="option" data-value="zinc" role="button" tabindex="0">
+                                    아연 <span class="unit">(mg)</span>
+                                    <input type="number" name="zinc_value" placeholder="수치" class="value-input hidden"
+                                        min="0">
+                                </div>
+                                <div class="option" data-value="other_supplement_toggle" role="button" tabindex="0">기타
+                                    (직접 입력)</div>
+                            </div>
+                            <div id="otherSupplementInput" class="hidden-input-container">
+                                <label for="other_supplements_text">기타 건강기능식품을 입력해주세요:</label>
+                                <input type="text" id="other_supplements_text" name="other_supplements_text"
+                                    placeholder="예: 콜라겐, 밀크씨슬">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" onclick="prevProfileSection(3)" class="prev-button">이전</button>
+                        <button type="submit" class="save-button">저장</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div id="meal_form" class="section">
+            <h1>식단 구성</h1>
+            <button onclick="showSection('profile')" class="profile-edit-btn">프로필 수정하기</button>
+            <div id="dynamicMealForm"></div>
+        </div>
+
+        <div id="meal_plan" class="section">
+            <h1>당신의 맞춤 식단</h1>
+            <div id="meal_plan_content"></div>
+            <button onclick="showSection('home')" class="back-button">홈으로 돌아가기</button>
+        </div>
+    </div>
+
+    <!-- 프로필 저장 선택 모달 -->
+    <div id="profileSaveModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <button type="button" class="modal-close" onclick="closeProfileSaveModal()">&times;</button>
+            <h3>프로필 저장 방법을 선택하세요</h3>
+            <div class="modal-btn-row">
+                <button id="tempSaveBtn" class="modal-btn">비로그인 상태로 임시저장</button>
+                <button id="saveAfterLoginBtn" class="modal-btn alt">로그인 후 프로필에 저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모바일 하단 네비게이션 바 -->
+    <nav class="footer-nav-mobile">
+      <ul>
+        <li class="footer-nav-item" id="footerNavHome">
+          <a href="index.html">
+            <span class="footer-nav-icon">🏠</span>
+            <span class="footer-nav-label">홈</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavNutrition">
+          <a href="nutrition-info.html">
+            <span class="footer-nav-icon">📰</span>
+            <span class="footer-nav-label">영양정보</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavAI">
+          <button type="button" class="footer-nav-ai-btn">
+            <span class="footer-nav-icon">🤖</span>
+            <span class="footer-nav-label">AI기능</span>
+          </button>
+        </li>
+        <li class="footer-nav-item" id="footerNavStore">
+          <a href="store.html">
+            <span class="footer-nav-icon">🛒</span>
+            <span class="footer-nav-label">스토어</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavMy">
+          <a href="mypage.html">
+            <span class="footer-nav-icon">👤</span>
+            <span class="footer-nav-label">마이</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- AI 기능 모달 -->
+    <div id="aiFeatureModal" class="ai-feature-modal">
+      <div class="ai-feature-modal-content">
+        <ul>
+          <li><a href="meal-plan.html">뭐해먹지?</a></li>
+          <li><a href="supplements.html">나만의 영양제</a></li>
+          <li><a href="restaurant-recommendation.html">오늘의 맛집</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+      // 비로그인 상태에서 일주일 식단 클릭 차단 및 메뉴 개수 제한
+      function applyMealPlanRestrictions() {
+        // 로그인 상태 확인
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        const isLoggedIn = !!user;
+        
+        if (!isLoggedIn) {
+          // 일주일 옵션 클릭 차단
+          const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+              mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) {
+                  // 일주일 옵션 버튼 찾기
+                  const weekOptions = node.querySelectorAll ? node.querySelectorAll('.meal-block-btn[data-value="week"]') : [];
+                  const isWeekOption = node.classList && node.classList.contains('meal-block-btn') && node.getAttribute('data-value') === 'week';
+                  
+                  const optionsToDisable = isWeekOption ? [node] : Array.from(weekOptions);
+                  
+                  optionsToDisable.forEach(function(option) {
+                    if (!option.classList.contains('login-restricted')) {
+                      option.classList.add('login-restricted');
+                      option.style.position = 'relative';
+                      option.style.opacity = '0.6';
+                      option.style.pointerEvents = 'none';
+                      
+                      // 클릭 이벤트 차단
+                      option.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // 로그인 안내 토스트 메시지
+                        showToast('🔑 일주일 식단은 로그인 후 이용할 수 있습니다');
+                      });
+                      
+                      // 오버레이 메시지 추가
+                      const overlay = document.createElement('div');
+                      overlay.className = 'login-required-overlay';
+                      overlay.style.position = 'absolute';
+                      overlay.style.top = '0';
+                      overlay.style.left = '0';
+                      overlay.style.right = '0';
+                      overlay.style.bottom = '0';
+                      overlay.style.background = 'rgba(255, 255, 255, 0.8)';
+                      overlay.style.display = 'flex';
+                      overlay.style.alignItems = 'center';
+                      overlay.style.justifyContent = 'center';
+                      overlay.style.fontSize = '12px';
+                      overlay.style.fontWeight = '600';
+                      overlay.style.color = '#666';
+                      overlay.innerHTML = '🔒 로그인 필요';
+                      
+                      option.appendChild(overlay);
+                    }
+                  });
+                }
+              });
+            });
+          });
+          
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true
+          });
+          
+          // 이미 존재하는 일주일 옵션 처리
+          document.querySelectorAll('.meal-block-btn[data-value="week"]').forEach(function(option) {
+            if (!option.classList.contains('login-restricted')) {
+              option.classList.add('login-restricted');
+              option.style.position = 'relative';
+              option.style.opacity = '0.6';
+              option.style.pointerEvents = 'none';
+              
+              const overlay = document.createElement('div');
+              overlay.className = 'login-required-overlay';
+              overlay.style.position = 'absolute';
+              overlay.style.top = '0';
+              overlay.style.left = '0';
+              overlay.style.right = '0';
+              overlay.style.bottom = '0';
+              overlay.style.background = 'rgba(255, 255, 255, 0.8)';
+              overlay.style.display = 'flex';
+              overlay.style.alignItems = 'center';
+              overlay.style.justifyContent = 'center';
+              overlay.style.fontSize = '12px';
+              overlay.style.fontWeight = '600';
+              overlay.style.color = '#666';
+              overlay.innerHTML = '🔒 로그인 필요';
+              
+              option.appendChild(overlay);
+            }
+          });
+        }
+      }
+      
+      // 토스트 메시지 표시 함수
+      function showToast(message) {
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 15px 25px;
+          border-radius: 10px;
+          font-weight: 600;
+          z-index: 10000;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        `;
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.remove();
+        }, 3000);
+      }
+
+      // 모바일 네비게이션 토글
+      document
+        .getElementById("navToggle")
+        .addEventListener("click", function () {
+          const navMenu = document.querySelector(".nav-menu");
+          const navAuth = document.querySelector(".nav-auth");
+          navMenu.classList.toggle("active");
+          navAuth.classList.toggle("active");
+          this.classList.toggle("active");
+        });
+
+      // 모바일 환경에서 드롭다운 메뉴 처리
+      document.addEventListener("DOMContentLoaded", function () {
+        // 로그인 제한 적용
+        applyMealPlanRestrictions();
+        
+        // 모바일 환경에서 드롭다운 토글 처리
+        if ("ontouchstart" in window) {
+          document.querySelectorAll(".dropdown-toggle").forEach((toggle) => {
+            toggle.addEventListener("click", function (e) {
+              // 링크 이동 방지 (잇플스토어는 예외)
+              if (!this.classList.contains("nav-shop-link")) {
+                e.preventDefault();
+              }
+            });
+          });
+        }
+      });
+
+      // 로그인 상태 확인 (서버 세션 기반)
+      async function checkAuthStatus() {
+        const navAuth = document.getElementById("navAuth");
+
+        try {
+          const response = await fetch("/api/auth/me", {
+            credentials: "include",
+          });
+          const data = await response.json();
+
+          if (data.loggedIn && data.user) {
+            // 로그인된 상태
+            localStorage.setItem("user", JSON.stringify(data.user));
+            
+            // 관리자 권한 확인
+            let adminButton = '';
+            if (data.user.isAdmin === true || data.user.role === 'admin') {
+              adminButton = '<a href="admin.html" class="main-nav-button" style="background-color: #dc3545; color: white;">관리자</a>';
+            }
+            
+            navAuth.innerHTML = `
+                    <a href="mypage.html" class="main-nav-button">마이페이지</a>
+                    ${adminButton}
+                    <button class="main-nav-button" onclick="logout()">로그아웃</button>
+                `;
+          } else {
+            // 로그아웃된 상태
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navAuth.innerHTML = `
+                        <a href="login.html" class="main-nav-button">로그인</a>
+                        <a href="signup.html" class="main-nav-button primary">회원가입</a>
+                    `;
+          }
+        } catch (error) {
+          console.error("Auth status check failed:", error);
+          // 에러 시 로그아웃 상태로 표시
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navAuth.innerHTML = `
+                      <a href="login.html" class="main-nav-button">로그인</a>
+                      <a href="signup.html" class="main-nav-button primary">회원가입</a>
+                  `;
+        }
+      }
+
+      // 로그아웃 함수
+      async function logout() {
+        try {
+          const response = await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+          });
+          
+          if (response.ok) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            window.location.reload();
+          }
+        } catch (error) {
+          console.error("Logout failed:", error);
+        }
+      }
+
+      // 페이지 로드 시 인증 상태 확인
+      document.addEventListener("DOMContentLoaded", function () {
+        checkAuthStatus();
+      });
+    </script>
+</body>
+
+</html>

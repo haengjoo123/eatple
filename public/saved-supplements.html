@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>저장된 영양제 - 잇플</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .back-to-mypage {
+            display: inline-block;
+            margin: 20px 0;
+            padding: 8px 16px;
+            background: #f8faff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            color: #4a69bd;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .back-to-mypage:hover {
+            background: #4a69bd;
+            color: white;
+        }
+        
+        /* 모바일 반응형 스타일 */
+        @media (max-width: 768px) {
+            .back-to-mypage {
+                margin: 15px 0;
+                padding: 10px 14px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="site-brand-fixed"><a href="index.html">잇플</a></div>
+    <div class="auth-links">
+        <!-- 동적으로 채워짐 -->
+    </div>
+    
+    <div class="container" style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
+        <a href="mypage.html" class="back-to-mypage">← 마이페이지로 돌아가기</a>
+        
+        <div class="page-header">
+            <h1>저장된 영양제</h1>
+        </div>
+        
+        <div id="savedSupplementsContainer">
+            <div class="loading-spinner" style="display: none;"></div>
+            <div id="savedSupplementsList"></div>
+        </div>
+    </div>
+    
+    <script>
+        let savedSupplements = [];
+        
+        // 페이지 로드 시 저장된 영양제 불러오기
+        document.addEventListener('DOMContentLoaded', async function() {
+            await updateAuthLinks();
+            await loadSavedSupplements();
+        });
+        
+        // 인증 링크 업데이트
+        async function updateAuthLinks() {
+            const authLinksContainer = document.querySelector('.auth-links');
+            try {
+                const response = await fetch('/api/auth/me', { credentials: 'include' });
+                const data = await response.json();
+                
+                if (data.loggedIn) {
+                    authLinksContainer.innerHTML = `
+                        <a href="mypage.html">마이페이지</a>
+                        <a href="#" onclick="logout()">로그아웃</a>
+                    `;
+                } else {
+                    authLinksContainer.innerHTML = `
+                        <a href="login.html">로그인</a>
+                        <a href="signup.html">회원가입</a>
+                    `;
+                }
+            } catch (error) {
+                console.error('인증 상태 확인 오류:', error);
+                authLinksContainer.innerHTML = `
+                    <a href="login.html">로그인</a>
+                    <a href="signup.html">회원가입</a>
+                `;
+            }
+        }
+        
+        // 로그아웃 함수
+        async function logout() {
+            try {
+                const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    localStorage.removeItem('user');
+                    alert('로그아웃되었습니다.');
+                    window.location.href = 'index.html';
+                } else {
+                    alert('로그아웃 중 오류가 발생했습니다.');
+                }
+            } catch (error) {
+                console.error('로그아웃 오류:', error);
+                alert('로그아웃 중 오류가 발생했습니다.');
+            }
+        }
+        
+        // 저장된 영양제 불러오기
+        async function loadSavedSupplements() {
+            const container = document.getElementById('savedSupplementsContainer');
+            const loadingSpinner = container.querySelector('.loading-spinner');
+            const supplementsList = document.getElementById('savedSupplementsList');
+            
+            try {
+                loadingSpinner.style.display = 'block';
+                supplementsList.innerHTML = '';
+                
+                const response = await fetch('/api/supplements/saved-supplements', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('저장된 영양제를 불러올 수 없습니다.');
+                }
+                
+                savedSupplements = await response.json();
+                displaySavedSupplements();
+                
+            } catch (error) {
+                console.error('저장된 영양제 불러오기 오류:', error);
+                supplementsList.innerHTML = `
+                    <div class="network-error-message">
+                        <h3>저장된 영양제를 불러올 수 없습니다</h3>
+                        <p>네트워크 연결을 확인하고 다시 시도해주세요.</p>
+                        <button onclick="loadSavedSupplements()">다시 시도</button>
+                    </div>
+                `;
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        }
+        
+        // 저장된 영양제 표시
+        function displaySavedSupplements() {
+            const container = document.getElementById('savedSupplementsList');
+            
+            if (savedSupplements.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">💊</div>
+                        <h3>저장된 영양제가 없습니다</h3>
+                        <p>영양제 추천 페이지에서 관심 있는 영양제를 저장해보세요.</p>
+                        <a href="supplements.html" class="btn-primary">영양제 추천 받기</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            const categoryEmoji = {
+                '비타민': '🟡',
+                '미네랄': '🟢',
+                '오메가': '🔵',
+                '프로바이오틱스': '🟣',
+                '허브': '🟤',
+                '기타': '⚪'
+            };
+            
+            const priorityText = {
+                'essential': '필수',
+                'recommended': '권장',
+                'optional': '선택'
+            };
+            
+            let html = '<div class="saved-supplements-grid">';
+            
+            savedSupplements.forEach(supplement => {
+                const emoji = categoryEmoji[supplement.category] || '💊';
+                const priorityClass = supplement.priority || 'recommended';
+                const priorityTextValue = priorityText[priorityClass] || '권장';
+                const savedDate = new Date(supplement.savedAt).toLocaleDateString('ko-KR');
+                
+                html += `
+                    <div class="supplement-card-modern ${priorityClass}">
+                        <div class="card-header">
+                            <div class="supplement-info">
+                                <div class="supplement-icon">${emoji}</div>
+                                <div class="supplement-details">
+                                    <h4 class="supplement-name">${supplement.name}</h4>
+                                    <span class="supplement-category">${supplement.category}</span>
+                                </div>
+                            </div>
+                            <div class="priority-badge ${priorityClass}">${priorityTextValue}</div>
+                        </div>
+                        
+                        <div class="dosage-info">
+                            <div class="dosage-amount">
+                                <strong>${supplement.dosage}</strong>
+                            </div>
+                            <div class="timing-info">
+                                ${supplement.timing?.when || '식후'} | ${supplement.timing?.frequency || '1일 1회'}
+                                ${supplement.timing?.duration ? ` | ${supplement.timing.duration}` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="benefits-section">
+                            <h5>🎯 주요 효능</h5>
+                            <ul class="benefits-list">
+                                ${supplement.benefits ? supplement.benefits.map(benefit => `<li>${benefit}</li>`).join('') : ''}
+                            </ul>
+                        </div>
+                        
+                        <div class="rationale-section">
+                            <h5>🧠 과학적 근거</h5>
+                            <p class="rationale-text">${supplement.scientificRationale}</p>
+                        </div>
+                        
+                        <div class="results-section">
+                            <h5>📈 예상 효과</h5>
+                            <p class="results-text">${supplement.expectedResults}</p>
+                        </div>
+                        
+                        ${supplement.safetyNotes ? `
+                            <div class="safety-warning">
+                                <h5>⚠️ 주의사항</h5>
+                                <p>${supplement.safetyNotes}</p>
+                            </div>
+                        ` : ''}
+                        
+                        ${supplement.interactions ? `
+                            <div class="interactions-info">
+                                <h5>🔄 상호작용</h5>
+                                <p>${supplement.interactions}</p>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="supplement-actions">
+                            <button class="action-btn primary" onclick="buyProduct('${supplement.name}')">
+                                <span>🛒</span> 구매하기
+                            </button>
+                            <button class="action-btn danger" onclick="deleteSupplement('${supplement.id}')">
+                                <span>🗑️</span> 삭제
+                            </button>
+                        </div>
+                        
+                        <div class="saved-date">
+                            저장일: ${savedDate}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // 영양제 삭제
+        async function deleteSupplement(supplementId) {
+            if (!confirm('이 영양제를 삭제하시겠습니까?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/supplements/saved-supplements/${supplementId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    // 목록에서 제거
+                    savedSupplements = savedSupplements.filter(s => s.id !== supplementId);
+                    displaySavedSupplements();
+                    alert('영양제가 삭제되었습니다.');
+                } else {
+                    throw new Error('삭제 실패');
+                }
+            } catch (error) {
+                console.error('영양제 삭제 오류:', error);
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        }
+        
+        // 구매하기 함수
+        function buyProduct(supplementName) {
+            const searchKeyword = encodeURIComponent(supplementName);
+            const coupangSearchUrl = `https://www.coupang.com/np/search?q=${searchKeyword}`;
+            window.open(coupangSearchUrl, '_blank');
+        }
+    </script>
+</body>
+</html> 

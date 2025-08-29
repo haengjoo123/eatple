@@ -1,0 +1,41 @@
+{
+    "name": "meal-planner",
+    "version": "1.0.0",
+    "description": "AI 맞춤 식단 플래너",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "test": "jest"
+    },
+    "dependencies": {
+        "@google/generative-ai": "^0.24.1",
+        "@supabase/supabase-js": "^2.54.0",
+        "axios": "^1.6.0",
+        "bcrypt": "^6.0.0",
+        "body-parser": "^1.20.2",
+        "cheerio": "^1.1.0",
+        "cors": "^2.8.5",
+        "csv-parser": "^3.2.0",
+        "dotenv": "^16.6.1",
+        "express": "^4.18.2",
+        "express-rate-limit": "^8.0.0",
+        "express-session": "^1.18.1",
+        "google-auth-library": "^9.15.1",
+        "helmet": "^8.1.0",
+        "multer": "^2.0.2",
+        "node-cache": "^5.1.2",
+        "node-cron": "^4.2.1",
+        "node-fetch": "^3.3.2",
+        "pg": "^8.16.3",
+        "sharp": "^0.34.3",
+        "uuid": "^11.1.0",
+        "ws": "^8.18.3",
+        "xml2js": "^0.6.2"
+    },
+    "devDependencies": {
+        "@types/node-fetch": "^2.6.13",
+        "jest": "^30.0.4",
+        "purgecss": "^7.0.2",
+        "supertest": "^7.1.3"
+    }
+}

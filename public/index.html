@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>잇플 - 건강한 식생활을 위한 종합 플랫폼</title>
+    
+    <!-- 파비콘 설정 -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" href="images/eatple_logo.png" />
+    <link rel="apple-touch-icon" href="images/eatple_logo.png" />
+    <meta name="msapplication-TileColor" content="#4a69bd" />
+    
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* 모달 공통 스타일 */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        overflow-y: auto;
+      }
+      
+      .modal-content {
+        background-color: #fff;
+        margin: 50px auto;
+        width: 90%;
+        max-width: 800px;
+        border-radius: 15px;
+        box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+        animation: modalFadeIn 0.3s ease;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      @keyframes modalFadeIn {
+        from { opacity: 0; transform: translateY(-30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 30px;
+        background-color: #4a69bd;
+        color: white;
+        border-radius: 15px 15px 0 0;
+      }
+      
+      .modal-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: white;
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      
+      .close-modal {
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+      
+      .close-modal:hover {
+        color: #e0e6ed;
+      }
+      
+      .modal-body {
+        padding: 20px 30px 30px;
+        overflow-y: auto;
+      }
+      
+      /* FAQ 아코디언 스타일 */
+      .faq-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .faq-item {
+        border: 1px solid #e0e6ed;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+      
+      .faq-item:hover {
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      }
+      
+      /* 모바일 터치 피드백 */
+      .faq-question:active {
+        background-color: #e8f0fe;
+        transform: scale(0.98);
+      }
+      
+      .faq-question {
+        padding: 18px 20px;
+        background-color: #f8fafc;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background-color 0.2s;
+        -webkit-tap-highlight-color: transparent; /* 모바일 터치 하이라이트 제거 */
+        user-select: none; /* 텍스트 선택 방지 */
+      }
+      
+      .faq-question h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #4a69bd;
+        font-weight: 600;
+      }
+      
+      .faq-toggle {
+        font-size: 1.5rem;
+        color: #4a69bd;
+        font-weight: bold;
+        transition: transform 0.3s;
+      }
+      
+      .faq-item.active .faq-question {
+        background-color: #eaf0fb;
+      }
+      
+      .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        padding: 0 20px;
+      }
+      
+      .faq-item.active .faq-answer {
+        max-height: 300px;
+        padding: 5px 20px 20px;
+      }
+      
+      .faq-answer p {
+        margin-top: 10px;
+        line-height: 1.6;
+        color: #555;
+      }
+      
+      /* 개인정보처리방침 모달 스타일 */
+      .privacy-content {
+        line-height: 1.6;
+        color: #333;
+      }
+      
+      .privacy-content h4 {
+        color: #4a69bd;
+        margin-top: 25px;
+        margin-bottom: 10px;
+        font-size: 1.2rem;
+      }
+      
+      .privacy-content h5 {
+        color: #2451a6;
+        margin-top: 15px;
+        margin-bottom: 8px;
+        font-size: 1.05rem;
+      }
+      
+      .privacy-content p {
+        margin-bottom: 10px;
+      }
+      
+      .privacy-content ul {
+        margin-bottom: 15px;
+        padding-left: 20px;
+      }
+      
+      .privacy-content li {
+        margin-bottom: 5px;
+      }
+      
+      /* 문의하기 모달 스타일 */
+      .contact-content {
+        line-height: 1.6;
+        color: #333;
+      }
+      
+      .form-group {
+        margin-bottom: 20px;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+      }
+      
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: border-color 0.3s;
+        box-sizing: border-box; /* 패딩과 보더를 너비에 포함 */
+        max-width: 100%; /* 최대 너비 제한 */
+      }
+      
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        border-color: #4a69bd;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.2);
+      }
+      
+      .form-hint {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 5px;
+        margin-bottom: 0;
+      }
+      
+      .submit-btn {
+        background-color: #4a69bd;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: background-color 0.3s;
+        width: 100%;
+      }
+      
+      .submit-btn:hover {
+        background-color: #3b5093;
+      }
+      
+      .form-message {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 5px;
+        display: none;
+      }
+      
+      .form-message.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        display: block;
+      }
+      
+      .form-message.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        display: block;
+      }
+      
+      .login-required-message {
+        text-align: center;
+        padding: 30px 20px;
+      }
+      
+      .login-required-message p {
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+        color: #555;
+      }
+      
+      .login-btn {
+        background-color: #4a69bd;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: background-color 0.3s;
+      }
+      
+      .login-btn:hover {
+        background-color: #3b5093;
+      }
+      
+      /* 모바일 반응형 */
+      @media (max-width: 768px) {
+        .modal-content {
+          margin: 15px auto;
+          width: 90%;
+          max-height: calc(100vh - 120px); /* footer-nav-mobile 공간 확보 */
+        }
+        
+        .modal-header {
+          padding: 15px 18px;
+        }
+        
+        .modal-header h2 {
+          font-size: 1.3rem;
+        }
+        
+        .modal-body {
+          padding: 15px 18px 20px;
+          max-height: calc(100vh - 180px); /* header + footer-nav-mobile 공간 확보 */
+          overflow-y: auto;
+        }
+        
+        .faq-container {
+          gap: 10px;
+        }
+        
+        .faq-item {
+          border-radius: 8px;
+        }
+        
+        .faq-question {
+          padding: 14px 16px;
+        }
+        
+        .faq-question h3 {
+          font-size: 0.95rem;
+          line-height: 1.4;
+        }
+        
+        .faq-toggle {
+          font-size: 1.2rem;
+        }
+        
+        .faq-item.active .faq-answer {
+          padding: 5px 16px 12px;
+        }
+        
+        .faq-answer p {
+          font-size: 0.9rem;
+          line-height: 1.5;
+        }
+        
+        .privacy-content h4 {
+          font-size: 1.1rem;
+        }
+        
+        .privacy-content h5 {
+          font-size: 1rem;
+        }
+        
+        /* 문의하기 모달 입력 필드 모바일 최적화 */
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+          padding: 10px;
+          font-size: 0.95rem;
+        }
+        
+        .form-group textarea {
+          min-height: 80px;
+        }
+
+        .main-features,
+        .nutrition-info,
+        .cta-section {
+          display: none;
+        }
+      }
+      
+      /* 작은 모바일 화면 (480px 이하) */
+      @media (max-width: 480px) {
+        .modal-content {
+          margin: 8px auto;
+          width: 90%;
+          max-height: calc(100vh - 100px); /* footer-nav-mobile 공간 확보 */
+        }
+        
+        .modal-header {
+          padding: 12px 14px;
+        }
+        
+        .modal-header h2 {
+          font-size: 1.2rem;
+        }
+        
+        .modal-body {
+          padding: 12px 14px 18px;
+          max-height: calc(100vh - 160px); /* header + footer-nav-mobile 공간 확보 */
+        }
+        
+        .faq-container {
+          gap: 8px;
+        }
+        
+        .faq-question {
+          padding: 11px 13px;
+        }
+        
+        .faq-question h3 {
+          font-size: 0.9rem;
+        }
+        
+        .faq-toggle {
+          font-size: 1.1rem;
+        }
+        
+        .faq-item.active .faq-answer {
+          padding: 5px 13px 10px;
+        }
+        
+        .faq-answer p {
+          font-size: 0.85rem;
+        }
+        
+        .privacy-content h4 {
+          font-size: 1rem;
+        }
+        
+        .privacy-content h5 {
+          font-size: 0.95rem;
+        }
+        
+        /* 문의하기 모달 입력 필드 작은 모바일 최적화 */
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+          padding: 8px;
+          font-size: 0.9rem;
+        }
+        
+        .form-group textarea {
+          min-height: 70px;
+        }
+      }
+      
+      /* 매우 작은 모바일 화면 (360px 이하) */
+      @media (max-width: 360px) {
+        .modal-content {
+          margin: 5px auto;
+          width: 90%;
+          max-height: calc(100vh - 90px); /* footer-nav-mobile 공간 확보 */
+        }
+        
+        .modal-header {
+          padding: 10px 12px;
+        }
+        
+        .modal-header h2 {
+          font-size: 1.1rem;
+        }
+        
+        .modal-body {
+          padding: 10px 12px 15px;
+          max-height: calc(100vh - 150px); /* header + footer-nav-mobile 공간 확보 */
+        }
+        
+        .faq-container {
+          gap: 6px;
+        }
+        
+        .faq-question {
+          padding: 9px 11px;
+        }
+        
+        .faq-question h3 {
+          font-size: 0.85rem;
+        }
+        
+        .faq-toggle {
+          font-size: 1rem;
+        }
+        
+        .faq-item.active .faq-answer {
+          padding: 5px 11px 8px;
+        }
+        
+        .faq-answer p {
+          font-size: 0.8rem;
+        }
+        
+        /* 문의하기 모달 입력 필드 매우 작은 모바일 최적화 */
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+          padding: 6px;
+          font-size: 0.85rem;
+        }
+        
+        .form-group textarea {
+          min-height: 60px;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="home-page">
+    <!-- 메인 네비게이션 -->
+    <nav class="main-nav">
+      <div class="container">
+        <div class="nav-content">
+          <div class="nav-brand">
+            <a href="index.html">잇플</a>
+          </div>
+          <div class="nav-menu">
+            <a href="meal-plan.html">뭐해먹지?</a>
+            <a href="supplements.html">나만의 영양제</a>
+            <a href="restaurant-recommendation.html">오늘의 맛집</a>
+            <div class="dropdown">
+              <a href="#" class="dropdown-toggle">AI 성분 분석</a>
+              <div class="dropdown-menu">
+                <a href="ingredient-analyzer.html">식재료 분석</a>
+                <a href="food-nutrition-search.html">음식 정보 검색</a>
+              </div>
+            </div>
+            <div class="dropdown">
+              <a href="store.html" target="_blank" class="dropdown-toggle nav-shop-link"
+                >잇플스토어</a
+              >
+              <div class="dropdown-menu">
+                <a href="mini-games.html">🎮 게임포인트</a>
+              </div>
+            </div>
+          </div>
+          <div class="nav-auth" id="navAuth">
+            <a href="login.html" class="nav-btn">로그인</a>
+            <a href="signup.html" class="nav-btn primary">회원가입</a>
+          </div>
+          <div class="nav-toggle" id="navToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 히어로 섹션 -->
+    <section class="hero-section">
+      <div class="container">
+        <div class="hero-content-center">
+          <h1 class="hero-title">
+            <span class="highlight">건강한 식생활</span>을 위한<br />
+            올인원 플랫폼
+          </h1>
+          <p class="hero-description">
+            AI 기반 개인 맞춤 식단부터 영양제 추천, 맛집 정보까지<br />
+            건강한 라이프스타일을 위한 모든 것을 한 곳에서
+          </p>
+        </div>
+        <div class="hero-cards">
+          <div class="hero-card" onclick="navigateToFeature('meal-plan')">
+            <div class="card-icon">🥗</div>
+            <div class="card-title">뭐해먹지?</div>
+            <div class="card-description">내 건강·입맛에 맞춘 AI 식단</div>
+          </div>
+          <div
+            class="hero-card"
+            onclick="navigateToFeature('restaurant-recommendation')"
+          >
+            <div class="card-icon">🍴</div>
+            <div class="card-title">오늘의 맛집</div>
+            <div class="card-description">AI픽 내 근처 점메추·저메추</div>
+          </div>
+          <div class="hero-card" onclick="navigateToFeature('supplements')">
+            <div class="card-icon">💊</div>
+            <div class="card-title">나만의 영양제</div>
+            <div class="card-description">내 몸 맞춤 AI 영양제</div>
+          </div>
+          <div class="hero-card" onclick="window.location.href='ingredient-analyzer.html'">
+            <div class="card-icon">🔍</div>
+            <div class="card-title">AI 성분 분석</div>
+            <div class="card-description">식재료 및 음식 영양성분</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 잇플의 특별함 섹션 -->
+    <section class="main-features">
+      <div class="container">
+        <h2 class="section-title">잇플이 특별한 이유</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🤖</div>
+            <h3 class="feature-title">AI 기반 분석</h3>
+            <p class="feature-description">
+              최신 AI 기술로 개인의 건강 상태와 선호도를 정확히 분석합니다
+            </p>
+            <div class="feature-badge">AI</div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3 class="feature-title">빠른 결과</h3>
+            <p class="feature-description">
+              단 3분만에 개인 맞춤 식단과 영양제 추천을 받아보세요
+            </p>
+            <div class="feature-badge">빠름</div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3 class="feature-title">안전한 개인정보</h3>
+            <p class="feature-description">
+              철저한 보안으로 개인 건강 정보를 안전하게 보호합니다
+            </p>
+            <div class="feature-badge">보안</div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">📱</div>
+            <h3 class="feature-title">모바일 최적화</h3>
+            <p class="feature-description">
+              언제 어디서든 편리하게 사용할 수 있는 모바일 친화적 디자인
+            </p>
+            <div class="feature-badge">편리</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 리워드 혜택 섹션 -->
+    <section class="quick-actions">
+      <div class="container">
+        <h2 class="section-title">더 많은 혜택을 누리세요</h2>
+        <div class="actions-grid">
+          <div class="action-card" onclick="navigateToFeature('profile')">
+            <div class="quick-action-icon">🎁</div>
+            <div class="action-text">
+              <h4>프로필 완성하고 포인트 받기</h4>
+              <p>500포인트 즉시 적립</p>
+            </div>
+          </div>
+
+          <div class="action-card" onclick="navigateToFeature('mini-games')">
+            <div class="quick-action-icon">🎮</div>
+            <div class="action-text">
+              <h4>미니게임으로 포인트 획득</h4>
+              <p>게임을 즐기며 포인트 모으기</p>
+            </div>
+          </div>
+
+          <div class="action-card" onclick="navigateToFeature('shop')">
+            <div class="quick-action-icon">🛒</div>
+            <div class="action-text">
+              <h4>포인트로 제품 할인 구매</h4>
+              <p>건강식품을 더 저렴하게</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 영양정보 섹션 -->
+    <section class="nutrition-info" id="nutrition-info">
+      <div class="container">
+        <h2 class="section-title">잇플 인사이트</h2>
+        <p class="section-subtitle">
+          건강한 라이프스타일을 위한 최신 영양학 정보를 확인해보세요
+        </p>
+        <div class="nutrition-grid" id="nutritionGrid">
+          <!-- 동적으로 로드되는 영양 정보 콘텐츠 -->
+          <div class="nutrition-loading">
+            <div class="loading-spinner"></div>
+            <p>최신 영양 정보를 불러오는 중...</p>
+          </div>
+        </div>
+        <div class="nutrition-more">
+          <button
+            class="nutrition-more-btn"
+            onclick="window.location.href='nutrition-info.html'"
+          >
+            더 많은 영양 정보 보기
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA 섹션 -->
+    <section class="cta-section">
+      <div class="container">
+        <h2 class="cta-title">지금 바로 시작하세요</h2>
+        <p class="cta-description">
+          건강한 라이프스타일의 첫걸음을 내딛어보세요
+        </p>
+        <div class="cta-buttons">
+          <button
+            class="cta-btn primary"
+            onclick="navigateToFeature('meal-plan')"
+          >
+            AI 맞춤 식단 구성 하기
+          </button>
+          <button
+            class="cta-btn secondary"
+            onclick="navigateToFeature('supplements')"
+          >
+            나에게 맞는 영양제 추천받기
+          </button>
+          <button
+            class="cta-btn secondary"
+            onclick="navigateToFeature('restaurant-recommendation')"
+          >
+            AI 추천 식당 찾기
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scroll to Top 버튼 -->
+    <button id="scrollToTop" class="scroll-to-top" onclick="scrollToTop()">
+      <span>↑</span>
+    </button>
+
+    <!-- 푸터 -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <div class="brand-logo">잇플</div>
+            <p>건강한 식생활을 위한 종합 플랫폼</p>
+          </div>
+          <div class="footer-links">
+            <div class="footer-section">
+              <h4>서비스</h4>
+              <ul>
+                <li><a href="meal-plan.html">뭐해먹지?</a></li>
+                <li><a href="supplements.html">나만의 영양제</a></li>
+                <li><a href="restaurant-recommendation.html">오늘의 맛집</a></li>
+                <li><a href="ingredient-analyzer.html">식재료 분석</a></li>
+                <li><a href="food-nutrition-search.html">음식 영양성분 검색</a></li>
+              </ul>
+            </div>
+            <div class="footer-section">
+              <h4>고객지원</h4>
+              <ul>
+                <li><a href="#" id="faqLink">자주묻는질문</a></li>
+                <li><a href="#" id="contactLink">문의하기</a></li>
+                <li><a href="#" id="privacyLink">개인정보처리방침</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2025 잇플. All rights reserved.</p>
+          <p class="footer-copyright">본 사이트에 게시된 모든 콘텐츠, 게시물의 저작권은 잇플에게 있습니다.<br>본 사이트의 모든 콘텐츠 및 게시물에 대한 무단적인 수집, 전재, 복사, 배포를 엄격히 금합니다.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- FAQ 모달 -->
+    <div id="faqModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>자주 묻는 질문</h2>
+          <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="faq-container">
+            <div class="faq-item">
+              <div class="faq-question">
+                <h3>잇플은 어떤 서비스인가요?</h3>
+                <span class="faq-toggle">+</span>
+              </div>
+              <div class="faq-answer">
+                <p>잇플은 AI 기반 건강 관리 플랫폼으로, 개인 맞춤형 식단 추천, 영양제 추천, 식당 추천 등 건강한 식생활을 위한 종합적인 서비스를 제공합니다. 사용자의 건강 상태와 목표에 맞는 맞춤형 솔루션을 AI가 분석하여 제공합니다.</p>
+              </div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question">
+                <h3>서비스 이용은 무료인가요?</h3>
+                <span class="faq-toggle">+</span>
+              </div>
+              <div class="faq-answer">
+                <p>잇플은 기본적으로 무료로 이용 가능한 서비스입니다. 다만 일부 프리미엄 기능은 포인트를 사용하거나 유료 구독이 필요할 수 있습니다. 포인트는 미니게임 참여나 프로필 완성 등을 통해 무료로 획득할 수 있습니다.</p>
+              </div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question">
+                <h3>AI 맞춤 식단은 어떻게 생성되나요?</h3>
+                <span class="faq-toggle">+</span>
+              </div>
+              <div class="faq-answer">
+                <p>사용자의 나이, 성별, 키, 체중, 활동량, 건강 목표, 식이 제한 등 다양한 정보를 바탕으로 AI가 분석하여 최적의 식단을 구성합니다. 최신 영양학 연구와 데이터를 기반으로 개인에게 가장 적합한 식단을 추천해 드립니다.</p>
+              </div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question">
+                <h3>개인정보는 안전하게 보호되나요?</h3>
+                <span class="faq-toggle">+</span>
+              </div>
+              <div class="faq-answer">
+                <p>네, 잇플은 사용자의 개인정보 보호를 최우선으로 생각합니다. 모든 개인정보는 암호화되어 안전하게 저장되며, 서비스 개선 목적 외에는 사용되지 않습니다. 자세한 내용은 개인정보처리방침을 참고해 주세요.</p>
+              </div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question">
+                <h3>포인트는 어떻게 사용할 수 있나요?</h3>
+                <span class="faq-toggle">+</span>
+              </div>
+              <div class="faq-answer">
+                <p>잇플에서 획득한 포인트는 프리미엄 기능 이용, 건강식품 할인 구매, 추가 AI 분석 서비스 등에 사용할 수 있습니다. 포인트는 미니게임 참여, 프로필 완성, 일일 로그인 등 다양한 활동을 통해 획득할 수 있습니다.</p>
+              </div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question">
+                <h3>식당 추천 서비스는 어떻게 이용하나요?</h3>
+                <span class="faq-toggle">+</span>
+              </div>
+              <div class="faq-answer">
+                <p>식당 추천 페이지에서 현재 위치를 허용하거나 원하는 지역을 입력하면, 사용자의 건강 목표와 식이 제한에 맞는 주변 식당을 AI가 추천해 드립니다. 각 식당의 메뉴, 영양 정보, 위치 등 상세 정보도 함께 제공됩니다.</p>
+              </div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question">
+                <h3>AI 성분 분석은 어떤 기능인가요?</h3>
+                <span class="faq-toggle">+</span>
+              </div>
+              <div class="faq-answer">
+                <p>AI 성분 분석은 식재료나 음식의 영양 성분을 분석해주는 기능입니다. 식재료 분석에서는 신선한 식재료의 영양 성분과 효능을 알려드리고, 음식 검색에서는 제품명으로 음식의 영양 정보를 확인할 수 있습니다.</p>
+              </div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question">
+                <h3>미니게임은 어떻게 이용하나요?</h3>
+                <span class="faq-toggle">+</span>
+              </div>
+              <div class="faq-answer">
+                <p>미니게임 페이지에서 다양한 게임을 즐길 수 있습니다. 메모리 게임, 퍼즐 게임, 스네이크 게임 등이 제공되며, 게임 성공 시 포인트를 획득할 수 있습니다. 단, 포인트 획득은 일일 한도가 있으니 참고해 주세요.</p>
+              </div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question">
+                <h3>회원가입 없이도 서비스를 이용할 수 있나요?</h3>
+                <span class="faq-toggle">+</span>
+              </div>
+              <div class="faq-answer">
+                <p>일부 기본 기능은 회원가입 없이도 이용 가능하지만, 개인 맞춤형 서비스와 포인트 적립, 식단 저장 등의 기능은 회원가입 후 이용 가능합니다. 회원가입은 이메일이나 구글 계정으로 간편하게 진행할 수 있습니다.</p>
+              </div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question">
+                <h3>모바일에서도 서비스 이용이 가능한가요?</h3>
+                <span class="faq-toggle">+</span>
+              </div>
+              <div class="faq-answer">
+                <p>네, 잇플은 모바일 환경에 최적화되어 있어 스마트폰이나 태블릿에서도 편리하게 이용할 수 있습니다. 별도의 앱 설치 없이 웹 브라우저를 통해 모든 기능을 이용할 수 있습니다.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 문의하기 모달 -->
+    <div id="contactModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>문의하기</h2>
+          <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="contact-content">
+            <div id="contactLoginRequired" style="display: none;">
+              <div class="login-required-message">
+                <p>문의하기 기능은 로그인 후 이용 가능합니다.</p>
+                <button class="login-btn" onclick="window.location.href='login.html'">로그인하기</button>
+              </div>
+            </div>
+            <div id="contactFormContainer">
+              <form id="contactForm">
+                <div class="form-group">
+                  <label for="contactCategory">문의 유형</label>
+                  <select id="contactCategory" name="category" required>
+                    <option value="">문의 유형을 선택해주세요</option>
+                    <option value="service">서비스 이용 문의</option>
+                    <option value="account">계정 관련 문의</option>
+                    <option value="payment">결제 관련 문의</option>
+                    <option value="suggestion">기능 제안</option>
+                    <option value="bug">오류 신고</option>
+                    <option value="other">기타 문의</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="contactSubject">제목</label>
+                  <input type="text" id="contactSubject" name="subject" placeholder="문의 제목을 입력해주세요" required>
+                </div>
+                <div class="form-group">
+                  <label for="contactMessage">내용</label>
+                  <textarea id="contactMessage" name="message" rows="6" placeholder="문의 내용을 상세히 입력해주세요" required></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="contactEmail">이메일</label>
+                  <input type="email" id="contactEmail" name="email" placeholder="답변 받을 이메일 주소" required>
+                  <p class="form-hint">* 회원 정보의 이메일과 다른 주소로 답변을 받고 싶으신 경우 입력해주세요.</p>
+                </div>
+                <div class="form-group">
+                  <button type="submit" id="contactSubmitBtn" class="submit-btn">문의하기</button>
+                </div>
+                <div id="contactFormMessage" class="form-message"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 개인정보처리방침 모달 -->
+    <div id="privacyModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>개인정보처리방침</h2>
+          <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="privacy-content">
+            <p>
+              잇플은 개인정보보호법에 따라 이용자의 개인정보 보호 및 권익을
+              보호하고 개인정보와 관련한 이용자의 고충을 원활하게 처리할 수
+              있도록 다음과 같은 처리방침을 두고 있습니다.
+            </p>
+
+            <h4>1. 개인정보의 수집 및 이용목적</h4>
+            <p>
+              잇플은 다음의 목적을 위하여 개인정보를 처리합니다. 처리하고 있는
+              개인정보는 다음의 목적 이외의 용도로는 이용되지 않으며, 이용
+              목적이 변경되는 경우에는 개인정보보호법 제18조에 따라 별도의
+              동의를 받는 등 필요한 조치를 이행할 예정입니다.
+            </p>
+
+            <h5>① 회원가입 및 관리</h5>
+            <ul>
+              <li>
+                회원 가입의사 확인, 회원제 서비스 제공에 따른 본인 식별·인증,
+                회원자격 유지·관리, 서비스 부정이용 방지, 만14세 미만 아동
+                개인정보 수집 시 법정 대리인 동의여부 확인, 각종 고지·통지,
+                고충처리 목적으로 개인정보를 처리합니다.
+              </li>
+            </ul>
+
+            <h5>② 맞춤형 식단 관리 서비스 제공</h5>
+            <ul>
+              <li>
+                개인 맞춤형 식단 추천, 영양 분석, 건강 관리 정보 제공, 식단 기록
+                및 관리 서비스 제공 목적으로 개인정보를 처리합니다.
+              </li>
+            </ul>
+
+            <h4>2. 개인정보의 처리 및 보유기간</h4>
+            <p>
+              ① 잇플은 법령에 따른 개인정보 보유·이용기간 또는 정보주체로부터
+              개인정보를 수집 시에 동의받은 개인정보 보유·이용기간 내에서
+              개인정보를 처리·보유합니다.
+            </p>
+            <p>② 각각의 개인정보 처리 및 보유 기간은 다음과 같습니다.</p>
+
+            <h5>회원가입 및 관리</h5>
+            <ul>
+              <li>회원 탈퇴 시까지</li>
+              <li>
+                단, 관계법령의 규정에 의하여 보존할 필요가 있는 경우 잇플은
+                아래와 같이 관계법령에서 정한 일정한 기간 동안 회원정보를
+                보관합니다.
+              </li>
+              <li>
+                계약 또는 청약철회 등에 관한 기록: 5년 (전자상거래 등에서의
+                소비자보호에 관한 법률)
+              </li>
+              <li>
+                대금결제 및 재화 등의 공급에 관한 기록: 5년 (전자상거래 등에서의
+                소비자보호에 관한 법률)
+              </li>
+              <li>
+                소비자의 불만 또는 분쟁처리에 관한 기록: 3년 (전자상거래
+                등에서의 소비자보호에 관한 법률)
+              </li>
+              <li>웹사이트 방문기록: 3개월 (통신비밀보호법)</li>
+            </ul>
+
+            <h4>3. 개인정보의 제3자 제공</h4>
+            <p>
+              ① 잇플은 정보주체의 개인정보를 제1조(개인정보의 처리 목적)에서
+              명시한 범위 내에서만 처리하며, 정보주체의 동의, 법률의 특별한 규정
+              등 개인정보보호법 제17조 및 제18조에 해당하는 경우에만 개인정보를
+              제3자에게 제공합니다.
+            </p>
+            <p>
+              ② 잇플은 다음과 같은 경우에 개인정보를 제3자에게 제공할 수
+              있습니다.
+            </p>
+            <ul>
+              <li>정보주체로부터 별도의 동의를 받은 경우</li>
+              <li>법령에 근거하여 정부기관으로부터 요청받은 경우</li>
+              <li>
+                통계작성 및 학술연구 등의 목적을 위하여 특정 개인을 알아볼 수
+                없는 형태로 가공하여 제공하는 경우
+              </li>
+            </ul>
+
+            <h4>4. 개인정보처리의 위탁</h4>
+            <p>
+              ① 잇플은 원활한 개인정보 업무처리를 위하여 다음과 같이 개인정보
+              처리업무를 위탁하고 있습니다.
+            </p>
+            <ul>
+              <li>위탁받는 자 (수탁자): 서버 호스팅 업체</li>
+              <li>위탁하는 업무의 내용: 서버 운영 및 관리</li>
+            </ul>
+            <p>
+              ② 잇플은 위탁계약 체결시 개인정보보호법 제26조에 따라 위탁업무
+              수행목적 외 개인정보 처리금지, 기술적·관리적 보호조치, 재위탁
+              제한, 수탁자에 대한 관리·감독, 손해배상 등 책임에 관한 사항을
+              계약서 등 문서에 명시하고, 수탁자가 개인정보를 안전하게
+              처리하는지를 감독하고 있습니다.
+            </p>
+            <p>
+              ③ 위탁업무의 내용이나 수탁자가 변경될 경우에는 지체없이 본
+              개인정보 처리방침을 통하여 공개하겠습니다.
+            </p>
+
+            <h4>5. 정보주체의 권리·의무 및 그 행사방법</h4>
+            <p>
+              이용자는 개인정보주체로서 다음과 같은 권리를 행사할 수 있습니다.
+            </p>
+
+            <h5>① 개인정보 열람요구</h5>
+            <p>
+              개인정보보호법 제35조에 따른 개인정보의 열람을 요구할 수 있습니다.
+            </p>
+
+            <h5>② 개인정보에 오류 등이 있을 경우 정정·삭제 요구</h5>
+            <p>
+              개인정보보호법 제36조에 따른 개인정보의 정정·삭제를 요구할 수
+              있습니다.
+            </p>
+
+            <h5>③ 개인정보 처리정지 요구</h5>
+            <p>
+              개인정보보호법 제37조에 따른 개인정보의 처리정지를 요구할 수
+              있습니다.
+            </p>
+
+            <h5>④ 개인정보 처리방침에 대한 동의 철회</h5>
+            <p>
+              회원 탈퇴를 통해 개인정보 처리에 대한 동의를 철회할 수 있습니다.
+            </p>
+
+            <h4>6. 개인정보의 안전성 확보 조치</h4>
+            <p>
+              잇플은 개인정보보호법 제29조에 따라 다음과 같은 안전성 확보 조치를
+              취하고 있습니다.
+            </p>
+
+            <h5>① 개인정보의 암호화</h5>
+            <p>
+              이용자의 개인정보는 비밀번호는 암호화되어 저장 및 관리되고 있어,
+              본인만이 알 수 있으며 중요한 데이터는 파일 및 전송 데이터를
+              암호화하여 사용하는 등의 별도 보안기능을 사용하고 있습니다.
+            </p>
+
+            <h5>② 해킹 등에 대비한 기술적 대책</h5>
+            <p>
+              잇플은 해킹이나 컴퓨터 바이러스 등에 의한 개인정보 유출 및 훼손을
+              막기 위하여 보안프로그램을 설치하고 주기적인 갱신·점검을 하며
+              외부로부터 접근이 통제된 구역에 시스템을 설치하고
+              기술적/물리적으로 감시 및 차단하고 있습니다.
+            </p>
+
+            <h5>③ 개인정보에 대한 접근 제한</h5>
+            <p>
+              개인정보를 처리하는 데이터베이스시스템에 대한 접근권한의 부여,
+              변경, 말소를 통하여 개인정보에 대한 접근통제를 위하여 필요한
+              조치를 하고 있으며 침입차단시스템을 이용하여 외부로부터의 무단
+              접근을 통제하고 있습니다.
+            </p>
+
+            <h4>7. 개인정보 보호책임자</h4>
+            <p>
+              ① 잇플은 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보
+              처리와 관련한 정보주체의 불만처리 및 피해구제 등을 위하여 아래와
+              같이 개인정보 보호책임자를 지정하고 있습니다.
+            </p>
+
+            <h5>▶ 개인정보 보호책임자</h5>
+            <ul>
+              <li>성명: 김형준</li>
+              <li>연락처: support@eatple.com</li>
+            </ul>
+
+            <h4>8. 개인정보 처리방침 변경</h4>
+            <p>
+              ① 이 개인정보처리방침은 시행일로부터 적용되며, 법령 및 방침에 따른
+              변경내용의 추가, 삭제 및 정정이 있는 경우에는 변경사항의 시행 7일
+              전부터 공지사항을 통하여 고지할 것입니다.
+            </p>
+
+            <h4>9. 개인정보의 열람청구를 접수·처리하는 부서</h4>
+            <p>
+              정보주체는 개인정보보호법 제35조에 따른 개인정보의 열람 청구를
+              아래의 부서에 할 수 있습니다. 잇플은 정보주체의 개인정보
+              열람청구가 신속하게 처리되도록 노력하겠습니다.
+            </p>
+
+            <h5>▶ 개인정보 열람청구 접수·처리 부서</h5>
+            <ul>
+              <li>부서명: 고객지원팀</li>
+              <li>담당자: 김형준</li>
+              <li>연락처: support@eatple.com</li>
+            </ul>
+
+            <h4>10. 정보주체의 권익침해에 대한 구제방법</h4>
+            <p>
+              아래의 기관에 대해 개인정보 침해에 대한 신고나 상담이 가능합니다.
+            </p>
+
+            <h5>▶ 개인정보 침해신고센터 (한국인터넷진흥원 운영)</h5>
+            <ul>
+              <li>소관업무: 개인정보 침해사실 신고, 상담 신청</li>
+              <li>홈페이지: privacy.kisa.or.kr</li>
+              <li>전화: (국번없이) 118</li>
+              <li>주소: (58324) 전남 나주시 진흥길 9(빛가람동 218-41)</li>
+            </ul>
+
+            <h5>▶ 개인정보 분쟁조정위원회</h5>
+            <ul>
+              <li>
+                소관업무: 개인정보 분쟁조정신청, 집단분쟁조정 (민사적 해결)
+              </li>
+              <li>홈페이지: www.privacy.go.kr</li>
+              <li>전화: 1833-6972</li>
+              <li>
+                주소: (03171)서울특별시 종로구 세종대로 209 정부서울청사 4층
+              </li>
+            </ul>
+
+            <h5>▶ 대검찰청 사이버범죄수사단</h5>
+            <ul>
+              <li>전화: 02-3480-3573</li>
+              <li>홈페이지: www.spo.go.kr</li>
+            </ul>
+
+            <h5>▶ 경찰청 사이버안전국</h5>
+            <ul>
+              <li>전화: 182</li>
+              <li>홈페이지: cyberbureau.police.go.kr</li>
+            </ul>
+
+            <h4>11. 개인정보 수집·이용 동의 거부권</h4>
+            <p>
+              개인정보보호법 제15조에 따라 본 개인정보 수집·이용에 대한 동의를
+              거부할 수 있으나, 이 경우 회원가입이 제한됩니다.
+            </p>
+
+            <h4>[부 칙]</h4>
+            <p>이 개인정보처리방침은 2025년 8월 1일부터 적용됩니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 모바일 하단 네비게이션 바 -->
+    <nav class="footer-nav-mobile">
+      <ul>
+        <li class="footer-nav-item" id="footerNavHome">
+          <a href="index.html">
+            <span class="footer-nav-icon">🏠</span>
+            <span class="footer-nav-label">홈</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavNutrition">
+          <a href="nutrition-info.html">
+            <span class="footer-nav-icon">📰</span>
+            <span class="footer-nav-label">영양정보</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavAI">
+          <button type="button" class="footer-nav-ai-btn">
+            <span class="footer-nav-icon">🤖</span>
+            <span class="footer-nav-label">AI기능</span>
+          </button>
+        </li>
+        <li class="footer-nav-item" id="footerNavStore">
+          <a href="store.html">
+            <span class="footer-nav-icon">🛒</span>
+            <span class="footer-nav-label">스토어</span>
+          </a>
+        </li>
+        <li class="footer-nav-item" id="footerNavMy">
+          <a href="mypage.html">
+            <span class="footer-nav-icon">👤</span>
+            <span class="footer-nav-label">마이</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- AI 기능 모달 -->
+    <div id="aiFeatureModal" class="ai-feature-modal">
+      <div class="ai-feature-modal-content">
+        <ul>
+          <li><a href="meal-plan.html">뭐해먹지?</a></li>
+          <li><a href="supplements.html">나만의 영양제</a></li>
+          <li><a href="restaurant-recommendation.html">오늘의 맛집</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="script.js"></script>
+    <script src="contact-form.js"></script>
+    <script>
+      // 모달 기능 (FAQ, 개인정보처리방침, 문의하기)
+      const faqModal = document.getElementById("faqModal");
+      const privacyModal = document.getElementById("privacyModal");
+      const contactModal = document.getElementById("contactModal");
+      const faqLink = document.getElementById("faqLink");
+      const privacyLink = document.getElementById("privacyLink");
+      const contactLink = document.getElementById("contactLink");
+      const faqCloseBtn = document.querySelector("#faqModal .close-modal");
+      const privacyCloseBtn = document.querySelector("#privacyModal .close-modal");
+      const contactCloseBtn = document.querySelector("#contactModal .close-modal");
+      
+      // FAQ 모달 열기
+      faqLink.addEventListener("click", function(e) {
+        e.preventDefault();
+        faqModal.style.display = "block";
+        document.body.style.overflow = "hidden"; // 배경 스크롤 방지
+      });
+      
+      // 개인정보처리방침 모달 열기
+      privacyLink.addEventListener("click", function(e) {
+        e.preventDefault();
+        privacyModal.style.display = "block";
+        document.body.style.overflow = "hidden"; // 배경 스크롤 방지
+      });
+      
+      // 문의하기 모달 열기
+      contactLink.addEventListener("click", function(e) {
+        e.preventDefault();
+        contactModal.style.display = "block";
+        document.body.style.overflow = "hidden"; // 배경 스크롤 방지
+        
+        // 로그인 상태 확인
+        checkLoginForContact();
+      });
+      
+      // FAQ 모달 닫기
+      faqCloseBtn.addEventListener("click", function() {
+        faqModal.style.display = "none";
+        document.body.style.overflow = ""; // 배경 스크롤 복원
+      });
+      
+      // 개인정보처리방침 모달 닫기
+      privacyCloseBtn.addEventListener("click", function() {
+        privacyModal.style.display = "none";
+        document.body.style.overflow = ""; // 배경 스크롤 복원
+      });
+      
+      // 문의하기 모달 닫기
+      contactCloseBtn.addEventListener("click", function() {
+        contactModal.style.display = "none";
+        document.body.style.overflow = ""; // 배경 스크롤 복원
+        resetContactForm();
+      });
+      
+      // 모달 외부 클릭 시 닫기
+      window.addEventListener("click", function(e) {
+        if (e.target === faqModal) {
+          faqModal.style.display = "none";
+          document.body.style.overflow = "";
+        }
+        if (e.target === privacyModal) {
+          privacyModal.style.display = "none";
+          document.body.style.overflow = "";
+        }
+        if (e.target === contactModal) {
+          contactModal.style.display = "none";
+          document.body.style.overflow = "";
+          resetContactForm();
+        }
+      });
+      
+      // ESC 키로 모달 닫기
+      document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") {
+          if (faqModal.style.display === "block") {
+            faqModal.style.display = "none";
+            document.body.style.overflow = "";
+          }
+          if (privacyModal.style.display === "block") {
+            privacyModal.style.display = "none";
+            document.body.style.overflow = "";
+          }
+          if (contactModal.style.display === "block") {
+            contactModal.style.display = "none";
+            document.body.style.overflow = "";
+            resetContactForm();
+          }
+        }
+      });
+      
+      // 모바일에서 모달 스크롤 최적화
+      function optimizeModalScroll(modal) {
+        const modalBody = modal.querySelector('.modal-body');
+        if (modalBody) {
+          modalBody.addEventListener('touchstart', function(e) {
+            // 터치 시작 시 스크롤 위치 저장
+            this.touchStartY = e.touches[0].clientY;
+          }, { passive: true });
+          
+          modalBody.addEventListener('touchmove', function(e) {
+            const touchY = e.touches[0].clientY;
+            const scrollTop = this.scrollTop;
+            const scrollHeight = this.scrollHeight;
+            const clientHeight = this.clientHeight;
+            
+            // 스크롤이 맨 위나 맨 아래에 있을 때만 기본 동작 방지
+            if ((scrollTop === 0 && touchY > this.touchStartY) || 
+                (scrollTop + clientHeight >= scrollHeight && touchY < this.touchStartY)) {
+              e.preventDefault();
+            }
+          }, { passive: false });
+        }
+      }
+      
+      // 모달들이 로드된 후 스크롤 최적화 적용
+      document.addEventListener('DOMContentLoaded', function() {
+        optimizeModalScroll(faqModal);
+        optimizeModalScroll(privacyModal);
+        optimizeModalScroll(contactModal);
+      });
+      
+      // 문의하기 폼 제출 처리는 contact-form.js에서 처리합니다.
+      const contactFormMessage = document.getElementById("contactFormMessage");
+      
+      // 로그인 상태에 따라 문의하기 폼 표시 여부 결정
+      function checkLoginForContact() {
+        const contactLoginRequired = document.getElementById("contactLoginRequired");
+        const contactFormContainer = document.getElementById("contactFormContainer");
+        
+        // 로컬 스토리지에서 사용자 정보 확인
+        const user = JSON.parse(localStorage.getItem("user"));
+        
+        if (user) {
+          // 로그인 상태
+          contactLoginRequired.style.display = "none";
+          contactFormContainer.style.display = "block";
+          
+          // 이메일 필드에 사용자 이메일 자동 입력
+          if (user.email) {
+            document.getElementById("contactEmail").value = user.email;
+          }
+        } else {
+          // 비로그인 상태
+          contactLoginRequired.style.display = "block";
+          contactFormContainer.style.display = "none";
+        }
+      }
+      
+      // 현재 로그인한 사용자 ID 가져오기
+      function getUserId() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        return user ? user.id : null;
+      }
+      
+      // 문의하기 폼 초기화
+      function resetContactForm() {
+        const contactForm = document.getElementById("contactForm");
+        if (contactForm) {
+          contactForm.reset();
+        }
+        if (contactFormMessage) {
+          contactFormMessage.textContent = "";
+          contactFormMessage.className = "form-message";
+        }
+      }
+      
+      // FAQ 아코디언 기능 (클릭 및 터치 이벤트 지원)
+      document.querySelectorAll(".faq-question").forEach(question => {
+        // 클릭 이벤트
+        question.addEventListener("click", handleFaqToggle);
+        
+        // 터치 이벤트 (모바일 최적화)
+        question.addEventListener("touchstart", function(e) {
+          e.preventDefault(); // 기본 터치 동작 방지
+        }, { passive: false });
+        
+        question.addEventListener("touchend", function(e) {
+          e.preventDefault();
+          handleFaqToggle(e);
+        }, { passive: false });
+      });
+      
+      function handleFaqToggle(e) {
+        const faqItem = e.currentTarget.parentElement;
+        const isOpen = faqItem.classList.contains("active");
+        
+        // 모든 FAQ 항목 닫기
+        document.querySelectorAll(".faq-item").forEach(item => {
+          item.classList.remove("active");
+          const toggle = item.querySelector(".faq-toggle");
+          toggle.textContent = "+";
+        });
+        
+        // 클릭한 항목만 열기 (이미 열려있던 항목은 닫힘)
+        if (!isOpen) {
+          faqItem.classList.add("active");
+          const toggle = e.currentTarget.querySelector(".faq-toggle");
+          toggle.textContent = "−";
+          
+          // 모바일에서 열린 항목이 화면에 보이도록 스크롤 조정
+          if (window.innerWidth <= 768) {
+            setTimeout(() => {
+              faqItem.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'nearest' 
+              });
+            }, 300);
+          }
+        }
+      }
+
+      // 모바일 환경 감지 함수
+      function isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+               window.innerWidth <= 768;
+      }
+
+      // 네비게이션 함수
+      async function navigateToFeature(feature) {
+        // 인증이 필요한 기능들
+        const authRequiredFeatures = ['profile', 'mini-games', 'shop'];
+        
+        if (authRequiredFeatures.includes(feature)) {
+          try {
+            const response = await fetch("/api/auth/me", { credentials: "include" });
+            const data = await response.json();
+            
+            if (!data.loggedIn) {
+              // 비로그인 상태일 때 로그인 페이지로 리다이렉트
+              alert("로그인이 필요한 기능입니다. 로그인 페이지로 이동합니다.");
+              window.location.href = "login.html";
+              return;
+            }
+          } catch (error) {
+            console.error("인증 확인 중 오류 발생:", error);
+            alert("로그인이 필요한 기능입니다. 로그인 페이지로 이동합니다.");
+            window.location.href = "login.html";
+            return;
+          }
+        }
+        
+        switch (feature) {
+          case "meal-plan":
+            window.location.href = "meal-plan.html";
+            break;
+          case "supplements":
+            window.location.href = "supplements.html";
+            break;
+          case "ingredient-analyzer":
+            window.location.href = "ingredient-analyzer.html";
+            break;
+          case "food-nutrition-search":
+            window.location.href = "food-nutrition-search.html";
+            break;
+          case "ai-analysis":
+            showAnalysisOptions();
+            break;
+          case "restaurants":
+            window.location.href = "restaurant-recommendation.html";
+            break;
+          case "restaurant-recommendation":
+            window.location.href = "restaurant-recommendation.html";
+            break;
+          case "nutrition-info":
+            window.location.href = "nutrition-info.html";
+            break;
+          case "mini-games":
+            window.location.href = "mini-games.html";
+            break;
+          case "profile":
+            window.location.href = "profile.html";
+            break;
+          case "shop":
+            // 모바일 환경에서는 같은 창에서 열고, 데스크톱에서는 새창에서 열기
+            if (isMobileDevice()) {
+              window.location.href = "store.html";
+            } else {
+              window.open("store.html", "_blank");
+            }
+            break;
+          default:
+            console.log("알 수 없는 기능:", feature);
+        }
+      }
+
+      // 영양정보 콘텐츠 열기 함수
+      function openNutritionContent(type, url) {
+        // 실제 구현에서는 해당 URL로 이동하거나 모달을 열 수 있습니다
+        if (url && url !== "#") {
+          window.open(url, "_blank");
+        } else {
+          // 임시 메시지 (실제 구현에서는 해당 콘텐츠 페이지로 이동)
+          switch (type) {
+            case "news":
+              alert("뉴스 기사 페이지로 이동합니다.");
+              break;
+            case "youtube":
+              alert("유튜브 영상으로 이동합니다.");
+              break;
+            case "paper":
+              alert("논문 페이지로 이동합니다.");
+              break;
+            default:
+              alert("영양정보 콘텐츠를 확인합니다.");
+          }
+        }
+      }
+
+      // 모바일 네비게이션 토글
+      document
+        .getElementById("navToggle")
+        .addEventListener("click", function () {
+          const navMenu = document.querySelector(".nav-menu");
+          const navAuth = document.querySelector(".nav-auth");
+          navMenu.classList.toggle("active");
+          navAuth.classList.toggle("active");
+          this.classList.toggle("active");
+        });
+
+      // 모바일 환경에서 드롭다운 메뉴 처리
+      document.addEventListener("DOMContentLoaded", function () {
+        // 모바일 환경에서 드롭다운 토글 처리
+        if ("ontouchstart" in window) {
+          document.querySelectorAll(".dropdown-toggle").forEach((toggle) => {
+            toggle.addEventListener("click", function (e) {
+              // 링크 이동 방지 (잇플스토어는 예외)
+              if (!this.classList.contains("nav-shop-link")) {
+                e.preventDefault();
+              }
+            });
+          });
+        }
+      });
+
+      // 스크롤 애니메이션
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: "0px 0px -50px 0px",
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = "1";
+            entry.target.style.transform = "translateY(0)";
+          }
+        });
+      }, observerOptions);
+
+      // 애니메이션 대상 요소들
+      document
+        .querySelectorAll(".feature-card, .action-card, .testimonial-card")
+        .forEach((el) => {
+          el.style.opacity = "0";
+          el.style.transform = "translateY(20px)";
+          el.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+          observer.observe(el);
+        });
+
+      // 로그인 상태 확인 (서버 세션 기반)
+      async function checkAuthStatus() {
+        const navAuth = document.getElementById("navAuth");
+
+        try {
+          const response = await fetch("/api/auth/me", {
+            credentials: "include",
+          });
+          const data = await response.json();
+
+          if (data.loggedIn && data.user) {
+            // 로그인된 상태
+            localStorage.setItem("user", JSON.stringify(data.user));
+            
+            // 디버깅: 사용자 정보 출력
+            console.log("사용자 정보:", data.user);
+            console.log("isAdmin:", data.user.isAdmin);
+            console.log("role:", data.user.role);
+            
+            // 관리자 권한 확인
+            let adminButton = '';
+            if (data.user.isAdmin === true || data.user.role === 'admin') {
+              adminButton = '<a href="admin.html" class="main-nav-button" style="background-color: #dc3545; color: white;">관리자</a>';
+              console.log("관리자 버튼 추가됨");
+            } else {
+              console.log("관리자 권한 없음");
+            }
+            
+            navAuth.innerHTML = `
+                    <a href="mypage.html" class="main-nav-button">마이페이지</a>
+                    ${adminButton}
+                    <button class="main-nav-button" onclick="logout()">로그아웃</button>
+                `;
+          } else {
+            // 로그아웃된 상태
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navAuth.innerHTML = `
+                        <a href="login.html" class="main-nav-button">로그인</a>
+                        <a href="signup.html" class="main-nav-button primary">회원가입</a>
+                    `;
+          }
+        } catch (error) {
+          console.error("Auth status check failed:", error);
+          // 에러 시 로그아웃 상태로 표시
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navAuth.innerHTML = `
+                    <a href="login.html" class="main-nav-button">로그인</a>
+                    <a href="signup.html" class="main-nav-button primary">회원가입</a>
+                `;
+        }
+      }
+
+      async function logout() {
+        try {
+          await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+          });
+        } catch (error) {
+          console.error("Logout failed:", error);
+        }
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        location.reload();
+      }
+
+      // 페이지 로드 시 로그인 상태 확인
+      checkAuthStatus();
+
+      // 페이지에 포커스가 돌아올 때마다 로그인 상태 재확인
+      window.addEventListener("focus", checkAuthStatus);
+      window.addEventListener("storage", function (e) {
+        if (e.key === "token" || e.key === "user") {
+          checkAuthStatus();
+        }
+      });
+
+      // Scroll to Top 기능
+      function scrollToTop() {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }
+
+      // 스크롤 위치에 따라 버튼 표시/숨김
+      function handleScrollToTopButton() {
+        const scrollToTopBtn = document.getElementById("scrollToTop");
+        const scrollY = window.scrollY;
+
+        if (scrollY > 300) {
+          scrollToTopBtn.classList.add("visible");
+        } else {
+          scrollToTopBtn.classList.remove("visible");
+        }
+      }
+
+      // 스크롤 이벤트 리스너
+      window.addEventListener("scroll", handleScrollToTopButton);
+
+      // 페이지 로드 시 버튼 상태 초기화
+      handleScrollToTopButton();
+
+      // 최신 영양 정보 로드 함수
+      async function loadNutritionInfo() {
+        const nutritionGrid = document.getElementById("nutritionGrid");
+
+        try {
+          console.log("최신 영양 정보 로드 시작...");
+
+          // 최신 영양 정보 3개 조회
+          const response = await fetch(
+            "/api/nutrition-info?limit=3&sortBy=collectedDate&sortOrder=desc",
+            {
+              credentials: "include",
+            }
+          );
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data.length > 0) {
+              renderLatestNutritionInfo(result.data);
+            } else {
+              showNutritionInfoError("영양 정보를 불러올 수 없습니다.");
+            }
+          } else {
+            showNutritionInfoError(
+              "영양 정보를 불러오는 중 오류가 발생했습니다."
+            );
+          }
+        } catch (error) {
+          console.error("영양 정보 로드 오류:", error);
+          showNutritionInfoError(
+            "영양 정보를 불러오는 중 오류가 발생했습니다."
+          );
+        }
+      }
+
+      // 최신 영양 정보 렌더링
+      function renderLatestNutritionInfo(nutritionItems) {
+        const nutritionGrid = document.getElementById("nutritionGrid");
+
+        if (!nutritionGrid) return;
+
+        nutritionGrid.innerHTML = "";
+
+        nutritionItems.forEach((item) => {
+          const nutritionCard = document.createElement("div");
+          nutritionCard.className = "nutrition-card";
+          nutritionCard.onclick = () => {
+            window.location.href = `nutrition-info-detail.html?id=${item.id}`;
+          };
+
+          nutritionCard.innerHTML = `
+                    <div class="nutrition-thumbnail">
+                        <img src="${
+                          item.thumbnailUrl ||
+                          item.imageUrl ||
+                          getDefaultImage(item.sourceType)
+                        }" 
+                             alt="${item.title}" 
+                             onerror="this.src='${getDefaultImage(
+                               item.sourceType
+                             )}'">
+
+
+                    </div>
+                    <div class="nutrition-content">
+                        <h3 class="nutrition-title">${truncateText(
+                          item.title,
+                          50
+                        )}</h3>
+                        <p class="nutrition-summary">${truncateText(
+                          item.summary,
+                          100
+                        )}</p>
+                        <div class="nutrition-meta">
+                            <span class="nutrition-source">${
+                              item.sourceName
+                            }</span>
+                            <span class="nutrition-date">${formatDate(
+                              item.collectedDate
+                            )}</span>
+                        </div>
+                        <div class="nutrition-tags">
+                            ${
+                              item.tags
+                                ? item.tags
+                                    .slice(0, 3)
+                                    .map(
+                                      (tag) =>
+                                        `<span class="nutrition-tag">#${tag}</span>`
+                                    )
+                                    .join("")
+                                : ""
+                            }
+                        </div>
+                    </div>
+                `;
+
+          nutritionGrid.appendChild(nutritionCard);
+        });
+      }
+
+      // 유틸리티 함수들
+      function getDefaultImage(sourceType) {
+        const imageMap = {
+          paper: "/images/nutrition/research-default.svg",
+          youtube: "/images/nutrition/exercise-nutrition.svg",
+          news: "/images/nutrition/trends-default.svg",
+        };
+        return (
+          imageMap[sourceType] || "/images/nutrition/nutrition-default.svg"
+        );
+      }
+
+      function getSourceTypeLabel(sourceType) {
+        const labelMap = {
+          paper: "연구논문",
+          youtube: "영상",
+          news: "뉴스",
+        };
+        return labelMap[sourceType] || "기타";
+      }
+
+      function truncateText(text, maxLength) {
+        if (!text) return "";
+        return text.length > maxLength
+          ? text.substring(0, maxLength) + "..."
+          : text;
+      }
+
+      function formatDate(dateString) {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        return date.toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+      }
+
+      function showNutritionInfoError(message) {
+        const nutritionGrid = document.getElementById("nutritionGrid");
+        if (nutritionGrid) {
+          nutritionGrid.innerHTML = `
+                    <div class="nutrition-error">
+                        <p>${message}</p>
+                        <button onclick="loadNutritionInfo()" class="retry-btn">다시 시도</button>
+                    </div>
+                `;
+        }
+      }
+
+      // AI 성분 분석 옵션 표시 함수
+      function showAnalysisOptions() {
+        const options = [
+          {
+            name: "식재료 분석",
+            url: "ingredient-analyzer.html",
+            description: "신선한 식재료의 영양 성분을 분석합니다.",
+          },
+          {
+            name: "음식 영양성분 검색",
+            url: "food-nutrition-search.html",
+            description: "음식의 영양 정보를 검색합니다.",
+          },
+        ];
+
+        // 모달 생성
+        const modal = document.createElement("div");
+        modal.className = "analysis-modal";
+        modal.innerHTML = `
+                <div class="analysis-modal-content">
+                    <div class="analysis-modal-header">
+                        <h3>AI 성분 분석 선택</h3>
+                        <button class="close-modal">&times;</button>
+                    </div>
+                    <div class="analysis-options">
+                        ${options
+                          .map(
+                            (option) => `
+                            <div class="analysis-option" onclick="window.location.href='${option.url}'">
+                                <h4>${option.name}</h4>
+                                <p>${option.description}</p>
+                            </div>
+                        `
+                          )
+                          .join("")}
+                    </div>
+                </div>
+            `;
+
+        document.body.appendChild(modal);
+
+        // 모달 닫기 버튼 이벤트
+        modal
+          .querySelector(".close-modal")
+          .addEventListener("click", function () {
+            document.body.removeChild(modal);
+          });
+
+        // 모달 외부 클릭 시 닫기
+        modal.addEventListener("click", function (e) {
+          if (e.target === modal) {
+            document.body.removeChild(modal);
+          }
+        });
+
+        // 모달 스타일 추가
+        const style = document.createElement("style");
+        style.textContent = `
+                .analysis-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1001;
+                }
+                
+                .analysis-modal-content {
+                    background-color: white;
+                    border-radius: 10px;
+                    width: 90%;
+                    max-width: 500px;
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                    overflow: hidden;
+                }
+                
+                .analysis-modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 15px 20px;
+                    background-color: #4a69bd;
+                    color: white;
+                }
+                
+                .analysis-modal-header h3 {
+                    margin: 0;
+                    font-size: 1.2rem;
+                }
+                
+                .close-modal {
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 1.5rem;
+                    cursor: pointer;
+                    padding: 0;
+                }
+                
+                .analysis-options {
+                    padding: 20px;
+                }
+                
+                .analysis-option {
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin-bottom: 10px;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                    border: 1px solid #e0e6ed;
+                }
+                
+                .analysis-option:hover {
+                    background-color: #f5f8ff;
+                }
+                
+                .analysis-option h4 {
+                    margin: 0 0 5px 0;
+                    color: #4a69bd;
+                }
+                
+                .analysis-option p {
+                    margin: 0;
+                    font-size: 0.9rem;
+                    color: #666;
+                }
+            `;
+        document.head.appendChild(style);
+      }
+
+      // 페이지 로드 시 영양 정보 로드
+      document.addEventListener("DOMContentLoaded", function () {
+        loadNutritionInfo();
+      });
+    </script>
+  </body>
+</html>

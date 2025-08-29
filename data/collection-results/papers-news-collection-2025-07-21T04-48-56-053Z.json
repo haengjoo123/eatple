@@ -1,0 +1,50 @@
+{
+  "timestamp": "2025-07-21T04:48:56.053Z",
+  "collectionType": "papers-and-news",
+  "results": {
+    "pubmed": {
+      "collected": 5,
+      "processed": 5,
+      "saved": 0,
+      "errors": []
+    },
+    "news": {
+      "collected": 5,
+      "processed": 5,
+      "saved": 0,
+      "errors": []
+    },
+    "total": {
+      "collected": 10,
+      "processed": 10,
+      "saved": 0,
+      "errors": []
+    }
+  },
+  "config": {
+    "pubmed": {
+      "keywords": [
+        "nutrition",
+        "diet",
+        "supplements",
+        "health",
+        "vitamins",
+        "minerals"
+      ],
+      "maxResults": 30,
+      "dateRange": "30d"
+    },
+    "news": {
+      "keywords": [
+        "nutrition",
+        "health",
+        "diet",
+        "supplements",
+        "vitamins"
+      ],
+      "sources": [],
+      "maxResults": 40,
+      "fromDate": null
+    }
+  }
+}
