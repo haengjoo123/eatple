@@ -185,6 +185,11 @@ class RestaurantRecommendation {
 
     // 지도 로드 에러 처리
     handleMapLoadError() {
+        console.error('🗺️ 카카오맵 로드 실패 - 상세 정보:');
+        console.error('- 현재 도메인:', window.location.origin);
+        console.error('- 프로토콜:', window.location.protocol);
+        console.error('- 카카오 객체 상태:', typeof kakao);
+        
         const mapContainer = document.getElementById('map');
         if (mapContainer) {
             mapContainer.innerHTML = `
@@ -192,6 +197,10 @@ class RestaurantRecommendation {
                     <div style="font-size: 16px; color: #666; margin-bottom: 10px;">지도를 불러올 수 없습니다</div>
                     <div style="font-size: 14px; color: #999; text-align: center;">
                         네트워크 연결을 확인하거나<br>잠시 후 다시 시도해주세요
+                    </div>
+                    <div style="font-size: 12px; color: #ccc; margin-top: 10px; text-align: center;">
+                        도메인: ${window.location.origin}<br>
+                        프로토콜: ${window.location.protocol}
                     </div>
                     <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
                         새로고침

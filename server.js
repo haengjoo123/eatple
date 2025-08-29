@@ -473,6 +473,18 @@ app.post("/api/analyze-ingredient", validateInput.aiApi, async (req, res) => {
 
 // 카카오 지도 API 키 제공 엔드포인트
 app.get("/api/kakao-map-key", (req, res) => {
+  console.log("🔑 카카오맵 API 키 요청 받음");
+  console.log("📡 요청 도메인:", req.get('origin') || req.get('host'));
+  console.log("🔑 API 키 상태:", KAKAO_MAP_API_KEY ? "설정됨" : "설정되지 않음");
+  
+  if (!KAKAO_MAP_API_KEY) {
+    console.error("❌ 카카오맵 API 키가 설정되지 않았습니다!");
+    return res.status(500).json({ 
+      error: "카카오맵 API 키가 설정되지 않았습니다.",
+      apiKey: null 
+    });
+  }
+  
   res.json({ apiKey: KAKAO_MAP_API_KEY });
 });
 
@@ -484,6 +496,17 @@ app.get("/api/kakao-js-key", (req, res) => {
 // 카카오 REST API 키 제공 엔드포인트
 app.get("/api/kakao-rest-key", (req, res) => {
   res.json({ apiKey: process.env.KAKAO_REST_API_KEY });
+});
+
+// 환경변수 상태 확인 엔드포인트 (디버깅용)
+app.get("/api/env-status", (req, res) => {
+  res.json({
+    KAKAO_MAP_API_KEY: KAKAO_MAP_API_KEY ? "설정됨" : "설정되지 않음",
+    KAKAO_REST_API_KEY: process.env.KAKAO_REST_API_KEY ? "설정됨" : "설정되지 않음",
+    KAKAO_JAVASCRIPT_KEY: process.env.KAKAO_JAVASCRIPT_KEY ? "설정됨" : "설정되지 않음",
+    NODE_ENV: process.env.NODE_ENV || "설정되지 않음",
+    PORT: process.env.PORT || "설정되지 않음"
+  });
 });
 
 // Multer 설정 (메모리 저장)

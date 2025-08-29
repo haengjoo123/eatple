@@ -679,11 +679,10 @@ button:disabled {
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 25px;
-  background: #f8fafc;
+  margin-bottom: 10px;
+  background: transparent;
   padding: 8px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .category-tab {
@@ -694,7 +693,7 @@ button:disabled {
   margin: 10px 0;
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: 8px 8px 0 0;
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 1rem;
@@ -702,17 +701,17 @@ button:disabled {
   color: #666;
   min-width: 120px;
   justify-content: center;
+  box-shadow: none;
 }
 
 .category-tab:hover {
+  background-color: transparent !important;
   background: #e3f2fd;
   color: #1976d2;
 }
 
 .category-tab.active {
-  background: #4a69bd;
-  color: white;
-  box-shadow: 0 2px 8px rgba(74, 105, 189, 0.3);
+  border-bottom: 4px solid #103290;
 }
 
 .tab-icon {
@@ -5354,6 +5353,11 @@ body.supplement-page.step-4 .container {
   .supplements-grid {
     padding: 0 30px;
     gap: 20px;
+  }
+  
+  /* 태블릿에서 건강 고민 설명 텍스트 줄바꿈 숨김 */
+  .supplement-wizard .step-header p .mobile-break {
+    display: none;
   }
 }
 
@@ -11649,6 +11653,8 @@ input[type="email"]:focus:invalid {
     overflow-x: auto;
     justify-content: flex-start;
     margin-bottom: 15px;
+    box-shadow: none;
+    background: transparent;
   }
 
   .category-tab {
@@ -11656,6 +11662,7 @@ input[type="email"]:focus:invalid {
     padding: 8px 12px;
     font-size: 0.85rem;
     flex-shrink: 1;
+    box-shadow: none;
   }
 
   .cta-button {
@@ -11693,6 +11700,7 @@ input[type="email"]:focus:invalid {
 
   .subtitle {
     font-size: 1rem;
+    margin-bottom: 10px;
   }
 
   .option {
@@ -13083,6 +13091,15 @@ input[type="email"]:focus:invalid {
   .supplement-wizard {
     padding: 0;
     background: #f8f9fa;
+  }
+  
+  /* 모바일에서 건강 고민 설명 텍스트 줄바꿈 */
+  .supplement-wizard .step-header p {
+    line-height: 1.6;
+  }
+  
+  .supplement-wizard .step-header p .mobile-break {
+    display: inline;
   }
   .wizard-navigation .nav-btn {
     padding: 0.7rem 1.5rem;
@@ -15070,24 +15087,24 @@ input[type="email"]:focus:invalid {
 
   .category-tab {
     min-width: auto;
-    padding: 4px 8px;
-    font-size: 0.75rem;
+    padding: 5px;
+    font-size: 1rem;
     flex-shrink: 1;
   }
 
   .cta-button {
     padding: 8px 16px;
-    font-size: 0.9rem;
+    font-size: 1.1rem;
   }
 
   .purpose-group {
     grid-template-columns: repeat(2, 1fr);
-    gap: 5px;
+    gap: 14px;
   }
 
   .meal-type-card {
-    min-height: 80px;
-    padding: 6px 4px;
+    min-height: 130px;
+    padding: 10px;
     font-size: 0.8em;
   }
 
@@ -15097,12 +15114,12 @@ input[type="email"]:focus:invalid {
   }
 
   .meal-type-card h3 {
-    font-size: 0.8rem;
+    font-size: 1rem;
     margin-bottom: 2px;
   }
 
   .meal-type-card p {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     line-height: 1.1;
   }
 
@@ -15912,8 +15929,8 @@ input[type="email"]:focus:invalid {
   }
   .supplement-type-card {
     width: 120px;
-    height: 75px;
-    padding: 10px;
+    height: 85px;
+    padding: 15px;
     font-size: 0.8em;
   }
 
@@ -16405,5 +16422,13 @@ input[type="email"]:focus:invalid {
 
   .nutrition-search-input {
     padding: 10px 20px 10px 50px !important;
+  }
+}
+
+/* 데스크톱 환경 (1025px 이상) */
+@media (min-width: 1025px) {
+  /* 데스크톱에서 건강 고민 설명 텍스트 줄바꿈 숨김 */
+  .supplement-wizard .step-header p .mobile-break {
+    display: none;
   }
 }
