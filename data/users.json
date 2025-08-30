@@ -1196,5 +1196,60 @@
       "mini-game": 4,
       "lastUpdated": "2025-08-12T05:44:42.958Z"
     }
+  },
+  {
+    "id": "b6b6ac28-793c-4692-b472-a0204e8a929a",
+    "kakaoId": "4360321928",
+    "name": "김형준",
+    "authType": "kakao",
+    "createdAt": "2025-08-30T05:33:40.725Z",
+    "profile": {
+      "age": "32",
+      "height": "176",
+      "weight": "76",
+      "other_allergies_text": "",
+      "other_illnesses_text": "",
+      "blood_glucose_value": "",
+      "hba1c_value": "",
+      "total_cholesterol_value": "",
+      "ldl_cholesterol_value": "",
+      "hdl_cholesterol_value": "",
+      "triglycerides_value": "",
+      "blood_pressure_systolic_value": "",
+      "blood_pressure_diastolic_value": "",
+      "bmi_value": "",
+      "other_biomarkers_text": "",
+      "vitamin_a_value": "",
+      "vitamin_d_value": "",
+      "vitamin_e_value": "",
+      "vitamin_k_value": "",
+      "iron_value": "",
+      "calcium_value": "",
+      "magnesium_value": "",
+      "potassium_value": "",
+      "zinc_value": "",
+      "other_supplements_text": "",
+      "gender": "male",
+      "activity_level": "sedentary",
+      "eating_patterns": "regular",
+      "sleep_patterns": "less_than_6",
+      "meals_per_day": "2",
+      "alcohol_consumption": "none",
+      "smoking_status": "non_smoker",
+      "allergies": [
+        "none"
+      ],
+      "illnesses": [
+        "none"
+      ],
+      "biomarkers": [
+        "none"
+      ],
+      "supplements": [
+        "none"
+      ]
+    },
+    "profileCompletionReward": true,
+    "profileCompletionDate": "2025-08-30T06:53:01.601Z"
   }
 ]

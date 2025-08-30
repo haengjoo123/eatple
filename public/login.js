@@ -168,9 +168,12 @@ async function handleForgotPassword(e) {
 async function handleKakaoLogin() {
   const msg = document.getElementById("loginMsg");
   msg.textContent = "";
+  
+  console.log("카카오 로그인 버튼 클릭됨");
 
   try {
     const kakaoRestApiKey = await getKakaoRestApiKey();
+    console.log("카카오 REST API 키 가져옴:", kakaoRestApiKey ? "성공" : "실패");
 
     if (!kakaoRestApiKey) {
       msg.style.color = "red";
@@ -182,12 +185,22 @@ async function handleKakaoLogin() {
       window.location.origin + "/api/auth/kakao/callback"
     );
     const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoRestApiKey}&redirect_uri=${redirectUri}&response_type=code&scope=profile_nickname`;
+    
+    console.log("카카오 인증 URL:", kakaoAuthUrl);
 
-    window.open(
+    const popup = window.open(
       kakaoAuthUrl,
       'kakaoLoginPopup',
       'width=500,height=700,menubar=no,toolbar=no,location=no,status=no'
     );
+    
+    if (!popup) {
+      msg.style.color = "red";
+      msg.textContent = "팝업이 차단되었습니다. 팝업 차단을 해제해주세요.";
+      return;
+    }
+    
+    console.log("카카오 로그인 팝업 열림");
   } catch (error) {
     console.error("카카오 로그인 오류:", error);
     msg.style.color = "red";
@@ -375,7 +388,32 @@ async function handlePendingProfileAsync(pending) {
 
 // 팝업에서 로그인 성공 메시지 수신 시 메인 페이지로 이동
 window.addEventListener('message', function(event) {
-  if (event.data === 'social_login_success') {
-    window.location.href = 'index.html';
+  console.log('Received message from popup:', event.data);
+  
+  if (event.data && event.data.type === 'social_login_success') {
+    // 사용자 정보를 localStorage에 저장
+    if (event.data.user) {
+      localStorage.setItem("user", JSON.stringify(event.data.user));
+      console.log('User data saved to localStorage:', event.data.user);
+    }
+    
+    // 성공 메시지 표시
+    const msg = document.getElementById("loginMsg");
+    if (msg) {
+      msg.style.color = "green";
+      msg.textContent = "카카오 로그인 성공!";
+    }
+    
+    // 잠시 후 메인 페이지로 이동
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 1000);
+  } else if (event.data === 'social_login_failed') {
+    // 로그인 실패 처리
+    const msg = document.getElementById("loginMsg");
+    if (msg) {
+      msg.style.color = "red";
+      msg.textContent = "소셜 로그인에 실패했습니다.";
+    }
   }
 });

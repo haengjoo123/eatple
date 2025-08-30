@@ -89,9 +89,9 @@ function writeUsers(users) {
 
 // 사용자 데이터 처리를 비동기로 수행하는 함수
 async function processUserDataAsync(user) {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
     // 백그라운드에서 사용자 데이터 처리
-    setImmediate(() => {
+    setImmediate(async () => {
       try {
         const users = readUsers();
         let existingUser = users.find(u => u.email === user.email);
@@ -108,6 +108,28 @@ async function processUserDataAsync(user) {
             isAdmin: false,
             role: null
           };
+          
+          // Supabase users 테이블에 사용자 정보 저장
+          try {
+            const { error: tableError } = await supabase
+              .from('users')
+              .insert({
+                id: user.id,
+                email: user.email,
+                auth_type: 'email',
+                profile: {},
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+            
+            if (tableError) {
+              console.error("Supabase users 테이블 저장 오류:", tableError);
+            } else {
+              console.log("Supabase users 테이블 저장 성공");
+            }
+          } catch (supabaseErr) {
+            console.error("Supabase 연동 오류:", supabaseErr);
+          }
           
           users.push(newUser);
           writeUsers(users);
@@ -421,27 +443,49 @@ router.post("/sync-email-user", async (req, res) => {
     const users = readUsers();
     let existingUser = users.find(u => u.email === user.email && u.authType === "email");
     
-    if (!existingUser) {
-      // 새 사용자 생성
-      const newUser = {
-        id: user.id,
-        email: user.email,
-        authType: "email",
-        emailConfirmed: true,
-        createdAt: new Date().toISOString(),
-        supabaseId: user.id
-      };
-      
-      users.push(newUser);
-      writeUsers(users);
-      
-      console.log("이메일 인증 완료된 새 사용자 저장:", newUser.id);
-      
-      res.json({ 
-        success: true, 
-        message: "사용자 정보가 동기화되었습니다.",
-        user: newUser
-      });
+         if (!existingUser) {
+       // 새 사용자 생성
+       const newUser = {
+         id: user.id,
+         email: user.email,
+         authType: "email",
+         emailConfirmed: true,
+         createdAt: new Date().toISOString(),
+         supabaseId: user.id
+       };
+       
+       // Supabase users 테이블에 사용자 정보 저장
+       try {
+         const { error: tableError } = await supabase
+           .from('users')
+           .insert({
+             id: user.id,
+             email: user.email,
+             auth_type: 'email',
+             profile: {},
+             created_at: new Date().toISOString(),
+             updated_at: new Date().toISOString()
+           });
+         
+         if (tableError) {
+           console.error("Supabase users 테이블 저장 오류:", tableError);
+         } else {
+           console.log("Supabase users 테이블 저장 성공");
+         }
+       } catch (supabaseErr) {
+         console.error("Supabase 연동 오류:", supabaseErr);
+       }
+       
+       users.push(newUser);
+       writeUsers(users);
+       
+       console.log("이메일 인증 완료된 새 사용자 저장:", newUser.id);
+       
+       res.json({ 
+         success: true, 
+         message: "사용자 정보가 동기화되었습니다.",
+         user: newUser
+       });
     } else {
       // 기존 사용자 업데이트
       existingUser.emailConfirmed = true;
@@ -597,9 +641,104 @@ router.post("/google", async (req, res) => {
         authType: "google", // 인증 타입 구분
         createdAt: new Date().toISOString(),
       };
+      
+      // Supabase에 사용자 정보 저장
+      try {
+        // 1. Supabase Auth에 사용자 생성
+        const { data: supabaseUser, error: supabaseError } = await supabase.auth.admin.createUser({
+          email: email,
+          email_confirm: true,
+          user_metadata: {
+            googleId: googleId,
+            name: name,
+            picture: picture,
+            authType: "google"
+          }
+        });
+        
+        if (supabaseError) {
+          console.error("Supabase Auth 사용자 생성 오류:", supabaseError);
+        } else {
+          user.supabaseId = supabaseUser.user.id;
+          console.log("Supabase Auth 사용자 생성 성공:", supabaseUser.user.id);
+          
+          // 2. Supabase users 테이블에 사용자 정보 저장
+          const { error: tableError } = await supabase
+            .from('users')
+            .insert({
+              id: supabaseUser.user.id,
+              email: email,
+              name: name,
+              picture: picture,
+              auth_type: 'google',
+              google_id: googleId,
+              profile: {},
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+          
+          if (tableError) {
+            console.error("Supabase users 테이블 저장 오류:", tableError);
+          } else {
+            console.log("Supabase users 테이블 저장 성공");
+          }
+        }
+      } catch (supabaseErr) {
+        console.error("Supabase 연동 오류:", supabaseErr);
+      }
+      
       users.push(user);
       writeUsers(users);
       console.log("새 구글 사용자 생성 (UUID):", user.id);
+    } else {
+      // 기존 사용자 정보 업데이트
+      user.name = name || user.name;
+      user.email = email || user.email;
+      user.picture = picture || user.picture;
+      
+      // Supabase 사용자 정보 업데이트
+      if (user.supabaseId) {
+        try {
+          // 1. Supabase Auth 사용자 메타데이터 업데이트
+          const { error: updateError } = await supabase.auth.admin.updateUserById(
+            user.supabaseId,
+            {
+              user_metadata: {
+                googleId: googleId,
+                name: name,
+                picture: picture,
+                authType: "google"
+              }
+            }
+          );
+          
+          if (updateError) {
+            console.error("Supabase Auth 사용자 업데이트 오류:", updateError);
+          } else {
+            console.log("Supabase Auth 사용자 정보 업데이트 성공");
+          }
+          
+          // 2. Supabase users 테이블 업데이트
+          const { error: tableUpdateError } = await supabase
+            .from('users')
+            .update({
+              name: name,
+              picture: picture,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', user.supabaseId);
+          
+          if (tableUpdateError) {
+            console.error("Supabase users 테이블 업데이트 오류:", tableUpdateError);
+          } else {
+            console.log("Supabase users 테이블 업데이트 성공");
+          }
+        } catch (updateErr) {
+          console.error("Supabase 업데이트 연동 오류:", updateErr);
+        }
+      }
+      
+      writeUsers(users);
     }
 
     // 세션에 사용자 정보 저장
@@ -826,6 +965,10 @@ router.get("/kakao/callback", async (req, res) => {
     // 3. 사용자 데이터 처리
     const users = readUsers();
     let user = users.find((u) => u.kakaoId === kakaoId);
+    
+    // 디버깅: 사용자 검색 로그
+    console.log("카카오 ID로 사용자 검색:", kakaoId);
+    console.log("기존 사용자들:", users.map(u => ({ id: u.id, kakaoId: u.kakaoId, email: u.email })));
 
     if (!user) {
       // 새 사용자 생성 - UUID 할당
@@ -838,6 +981,52 @@ router.get("/kakao/callback", async (req, res) => {
         authType: "kakao",
         createdAt: new Date().toISOString(),
       };
+      
+             // Supabase에 사용자 정보 저장
+       try {
+         // 1. Supabase Auth에 사용자 생성
+         const { data: supabaseUser, error: supabaseError } = await supabase.auth.admin.createUser({
+           email: email,
+           email_confirm: true,
+           user_metadata: {
+             kakaoId: kakaoId,
+             name: nickname,
+             picture: profileImage,
+             authType: "kakao"
+           }
+         });
+         
+         if (supabaseError) {
+           console.error("Supabase Auth 사용자 생성 오류:", supabaseError);
+         } else {
+           user.supabaseId = supabaseUser.user.id;
+           console.log("Supabase Auth 사용자 생성 성공:", supabaseUser.user.id);
+           
+           // 2. Supabase users 테이블에 사용자 정보 저장
+           const { error: tableError } = await supabase
+             .from('users')
+             .insert({
+               id: supabaseUser.user.id,
+               email: email,
+               name: nickname,
+               picture: profileImage,
+               auth_type: 'kakao',
+               kakao_id: kakaoId,
+               profile: {},
+               created_at: new Date().toISOString(),
+               updated_at: new Date().toISOString()
+             });
+           
+           if (tableError) {
+             console.error("Supabase users 테이블 저장 오류:", tableError);
+           } else {
+             console.log("Supabase users 테이블 저장 성공");
+           }
+         }
+       } catch (supabaseErr) {
+         console.error("Supabase 연동 오류:", supabaseErr);
+       }
+      
       users.push(user);
       writeUsers(users);
       console.log("Created new kakao user (UUID):", user.id);
@@ -846,6 +1035,49 @@ router.get("/kakao/callback", async (req, res) => {
       user.name = nickname || user.name;
       user.email = email || user.email;
       user.picture = profileImage || user.picture;
+      
+             // Supabase 사용자 정보 업데이트
+       if (user.supabaseId) {
+         try {
+           // 1. Supabase Auth 사용자 메타데이터 업데이트
+           const { error: updateError } = await supabase.auth.admin.updateUserById(
+             user.supabaseId,
+             {
+               user_metadata: {
+                 kakaoId: kakaoId,
+                 name: nickname,
+                 picture: profileImage,
+                 authType: "kakao"
+               }
+             }
+           );
+           
+           if (updateError) {
+             console.error("Supabase Auth 사용자 업데이트 오류:", updateError);
+           } else {
+             console.log("Supabase Auth 사용자 정보 업데이트 성공");
+           }
+           
+           // 2. Supabase users 테이블 업데이트
+           const { error: tableUpdateError } = await supabase
+             .from('users')
+             .update({
+               name: nickname,
+               picture: profileImage,
+               updated_at: new Date().toISOString()
+             })
+             .eq('id', user.supabaseId);
+           
+           if (tableUpdateError) {
+             console.error("Supabase users 테이블 업데이트 오류:", tableUpdateError);
+           } else {
+             console.log("Supabase users 테이블 업데이트 성공");
+           }
+         } catch (updateErr) {
+           console.error("Supabase 업데이트 연동 오류:", updateErr);
+         }
+       }
+      
       writeUsers(users);
       console.log("Updated existing kakao user:", user.id);
     }
@@ -856,6 +1088,7 @@ router.get("/kakao/callback", async (req, res) => {
       name: user.name,
       email: user.email,
       authType: "kakao",
+      kakaoId: user.kakaoId, // 카카오 ID 추가
       isAdmin: user.isAdmin || false,
       role: user.role || null
     };
@@ -866,7 +1099,19 @@ router.get("/kakao/callback", async (req, res) => {
     res.send(`
       <script>
         if (window.opener) {
-          window.opener.postMessage('social_login_success', '*');
+          // 사용자 정보를 포함한 메시지 전송
+          window.opener.postMessage({
+            type: 'social_login_success',
+            user: {
+              id: '${user.id}',
+              name: '${user.name || ''}',
+              email: '${user.email || ''}',
+              authType: 'kakao',
+              kakaoId: '${user.kakaoId}',
+              isAdmin: ${user.isAdmin || false},
+              role: '${user.role || ''}'
+            }
+          }, '*');
           window.close();
         } else {
           window.location.href = '/index.html?login=success';
@@ -1297,6 +1542,52 @@ router.get("/naver/callback", async (req, res) => {
         authType: "naver",
         createdAt: new Date().toISOString(),
       };
+      
+             // Supabase에 사용자 정보 저장
+       try {
+         // 1. Supabase Auth에 사용자 생성
+         const { data: supabaseUser, error: supabaseError } = await supabase.auth.admin.createUser({
+           email: email,
+           email_confirm: true,
+           user_metadata: {
+             naverId: naverId,
+             name: nickname,
+             picture: profileImage,
+             authType: "naver"
+           }
+         });
+         
+         if (supabaseError) {
+           console.error("Supabase Auth 사용자 생성 오류:", supabaseError);
+         } else {
+           user.supabaseId = supabaseUser.user.id;
+           console.log("Supabase Auth 사용자 생성 성공:", supabaseUser.user.id);
+           
+           // 2. Supabase users 테이블에 사용자 정보 저장
+           const { error: tableError } = await supabase
+             .from('users')
+             .insert({
+               id: supabaseUser.user.id,
+               email: email,
+               name: nickname,
+               picture: profileImage,
+               auth_type: 'naver',
+               naver_id: naverId,
+               profile: {},
+               created_at: new Date().toISOString(),
+               updated_at: new Date().toISOString()
+             });
+           
+           if (tableError) {
+             console.error("Supabase users 테이블 저장 오류:", tableError);
+           } else {
+             console.log("Supabase users 테이블 저장 성공");
+           }
+         }
+       } catch (supabaseErr) {
+         console.error("Supabase 연동 오류:", supabaseErr);
+       }
+      
       users.push(user);
       writeUsers(users);
       console.log("Created new naver user (UUID):", user.id);
@@ -1305,6 +1596,49 @@ router.get("/naver/callback", async (req, res) => {
       user.name = nickname || user.name;
       user.email = email || user.email;
       user.picture = profileImage || user.picture;
+      
+             // Supabase 사용자 정보 업데이트
+       if (user.supabaseId) {
+         try {
+           // 1. Supabase Auth 사용자 메타데이터 업데이트
+           const { error: updateError } = await supabase.auth.admin.updateUserById(
+             user.supabaseId,
+             {
+               user_metadata: {
+                 naverId: naverId,
+                 name: nickname,
+                 picture: profileImage,
+                 authType: "naver"
+               }
+             }
+           );
+           
+           if (updateError) {
+             console.error("Supabase Auth 사용자 업데이트 오류:", updateError);
+           } else {
+             console.log("Supabase Auth 사용자 정보 업데이트 성공");
+           }
+           
+           // 2. Supabase users 테이블 업데이트
+           const { error: tableUpdateError } = await supabase
+             .from('users')
+             .update({
+               name: nickname,
+               picture: profileImage,
+               updated_at: new Date().toISOString()
+             })
+             .eq('id', user.supabaseId);
+           
+           if (tableUpdateError) {
+             console.error("Supabase users 테이블 업데이트 오류:", tableUpdateError);
+           } else {
+             console.log("Supabase users 테이블 업데이트 성공");
+           }
+         } catch (updateErr) {
+           console.error("Supabase 업데이트 연동 오류:", updateErr);
+         }
+       }
+      
       writeUsers(users);
       console.log("Updated existing naver user:", user.id);
     }
@@ -1315,6 +1649,7 @@ router.get("/naver/callback", async (req, res) => {
       name: user.name,
       email: user.email,
       authType: "naver",
+      naverId: user.naverId, // 네이버 ID 추가
       isAdmin: user.isAdmin || false,
       role: user.role || null
     };
@@ -1325,7 +1660,19 @@ router.get("/naver/callback", async (req, res) => {
     res.send(`
       <script>
         if (window.opener) {
-          window.opener.postMessage('social_login_success', '*');
+          // 사용자 정보를 포함한 메시지 전송
+          window.opener.postMessage({
+            type: 'social_login_success',
+            user: {
+              id: '${user.id}',
+              name: '${user.name || ''}',
+              email: '${user.email || ''}',
+              authType: 'naver',
+              naverId: '${user.naverId}',
+              isAdmin: ${user.isAdmin || false},
+              role: '${user.role || ''}'
+            }
+          }, '*');
           window.close();
         } else {
           window.location.href = '/index.html?login=success';
