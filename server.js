@@ -39,10 +39,13 @@ app.use("/api/generate-meal-plan", contentFilter.preventXSS);
 // 전역 레이트 리미팅 적용 (강화)
 app.use(generalLimiter);
 
-// CORS 설정: 특정 오리진만 허용
+// CORS 설정: 개발 및 프로덕션 환경 모두 허용
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: [
+      "http://localhost:3000",
+      "https://eatple.onrender.com"
+    ],
     methods: ["GET", "POST", "DELETE"],
     credentials: true,
   })

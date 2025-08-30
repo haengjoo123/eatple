@@ -38,7 +38,7 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 // Google OAuth 설정
 const GOOGLE_CLIENT_ID =
   process.env.GOOGLE_CLIENT_ID ||
-  "920406793234-56jnhhjsg1fvc938pl79khb79f6jn6fe.apps.googleusercontent.com";
+  "1026465295959-1mlmha91v7osfg3ihuiti4v9dgcaa10i.apps.googleusercontent.com";
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // 네이버 OAuth 설정 (로그인용)
