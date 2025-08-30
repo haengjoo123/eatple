@@ -12822,6 +12822,13 @@ input[type="email"]:focus:invalid {
     margin-bottom: 4px;
   }
 
+  .footer-nav-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+  }
+
   .footer-nav-label {
     font-size: 0.75rem;
     font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -14192,13 +14199,30 @@ input[type="email"]:focus:invalid {
   }
 
   .footer-nav-icon {
-    font-size: 1.5rem;
-    margin-bottom: 3px;
+    font-size: 1.7rem;
+    margin-bottom: 4px;
+  }
+
+  .footer-nav-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
   }
 
   .footer-nav-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, sans-serif;
+    font-weight: 500;
+    margin-top: 2px;
   }
+  .footer-nav-item.active .footer-nav-icon,
+  .footer-nav-item.active .footer-nav-label {
+    color: #2451a6;
+    font-weight: bold;
+  }
+
   .diagnosis.status-section {
     padding: 0.5em 0.7em;
     margin-bottom: 1em;
@@ -14874,7 +14898,7 @@ input[type="email"]:focus:invalid {
 
   .card-icon {
     font-size: 1.7rem;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.9rem;
   }
 
   .card-title {
