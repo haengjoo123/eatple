@@ -1627,47 +1627,6 @@ body {
   }
 }
 
-/* 다크 모드 지원 */
-@media (prefers-color-scheme: dark) {
-  .header-top,
-  .header-nav {
-    background: rgba(33, 37, 41, 0.95);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .modal-content {
-    background-color: #212529;
-    color: #f8f9fa;
-  }
-
-  .search-input,
-  .search-input-nav {
-    background-color: #495057;
-    border-color: #6c757d;
-    color: #f8f9fa;
-  }
-
-  .search-input::placeholder,
-  .search-input-nav::placeholder {
-    color: #adb5bd;
-  }
-
-  .product-card,
-  .promotion-card {
-    background-color: #343a40;
-    border-color: #495057;
-  }
-
-  .nav-link {
-    background: #495057;
-    color: #f8f9fa;
-  }
-
-  .header-link {
-    background: #495057;
-    color: #adb5bd;
-  }
-}
 
 /* 애니메이션 감소 모드 지원 */
 @media (prefers-reduced-motion: reduce) {

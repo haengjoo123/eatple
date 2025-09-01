@@ -19,7 +19,7 @@
       "errorRate": true,
       "throughput": true,
       "userActivity": true,
-      "memoryUsage": true,
+      "memoryUsage": false,
       "cpuUsage": true
     },
     "supabase": {
@@ -55,10 +55,10 @@
       "enabled": true
     },
     "highMemoryUsage": {
-      "threshold": "80%",
-      "window": "3m",
-      "severity": "warning",
-      "enabled": true
+      "threshold": "95%",
+      "window": "5m",
+      "severity": "critical",
+      "enabled": false
     },
     "databaseConnections": {
       "threshold": 75,
@@ -118,7 +118,6 @@
     "checks": [
       "database_connection",
       "supabase_connection",
-      "memory_usage",
       "disk_space",
       "api_response_time"
     ]

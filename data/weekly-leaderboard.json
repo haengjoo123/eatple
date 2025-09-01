@@ -1,50 +1,15 @@
 {
   "currentWeek": {
-    "weekNumber": 33,
+    "weekNumber": 36,
     "year": 2025,
-    "startDate": "2025-08-10T15:00:00.000Z",
-    "endDate": "2025-08-17T15:00:00.000Z",
-    "displayText": "2025년 8월 11일 주차"
+    "startDate": "2025-08-31T15:00:00.000Z",
+    "endDate": "2025-09-07T15:00:00.000Z",
+    "displayText": "2025년 9월 1일 주차"
   },
   "leaderboards": {
-    "snake-game": [
-      {
-        "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
-        "playerName": "gudw****",
-        "score": 590,
-        "gameId": "snake-game",
-        "firstRecorded": "2025-08-11T01:48:38.110Z",
-        "lastUpdated": "2025-08-23T11:26:13.447Z"
-      },
-      {
-        "userId": "2b485125-8bd8-41f9-9d04-1cd2956add80",
-        "playerName": "김형준",
-        "score": 460,
-        "gameId": "snake-game",
-        "firstRecorded": "2025-08-12T05:40:48.448Z",
-        "lastUpdated": "2025-08-12T05:44:42.966Z"
-      }
-    ],
-    "memory-game": [
-      {
-        "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
-        "playerName": "관리자",
-        "score": 856,
-        "gameId": "memory-game",
-        "firstRecorded": "2025-08-13T05:43:34.420Z",
-        "lastUpdated": "2025-08-13T05:43:34.420Z"
-      }
-    ],
-    "puzzle-game": [
-      {
-        "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
-        "playerName": "관리자",
-        "score": 389,
-        "gameId": "puzzle-game",
-        "firstRecorded": "2025-08-17T06:20:55.170Z",
-        "lastUpdated": "2025-08-17T06:20:55.170Z"
-      }
-    ]
+    "snake-game": [],
+    "memory-game": [],
+    "puzzle-game": []
   },
   "history": [
     {
@@ -146,8 +111,117 @@
         }
       },
       "resetDate": "2025-08-11T01:41:58.192Z"
+    },
+    {
+      "week": {
+        "weekNumber": 33,
+        "year": 2025,
+        "startDate": "2025-08-10T15:00:00.000Z",
+        "endDate": "2025-08-17T15:00:00.000Z",
+        "displayText": "2025년 8월 11일 주차"
+      },
+      "leaderboards": {
+        "snake-game": [
+          {
+            "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+            "playerName": "gudw****",
+            "score": 590,
+            "gameId": "snake-game",
+            "firstRecorded": "2025-08-11T01:48:38.110Z",
+            "lastUpdated": "2025-08-23T11:26:13.447Z"
+          },
+          {
+            "userId": "2b485125-8bd8-41f9-9d04-1cd2956add80",
+            "playerName": "김형준",
+            "score": 460,
+            "gameId": "snake-game",
+            "firstRecorded": "2025-08-12T05:40:48.448Z",
+            "lastUpdated": "2025-08-12T05:44:42.966Z"
+          },
+          {
+            "userId": "b6b6ac28-793c-4692-b472-a0204e8a929a",
+            "playerName": "김형준",
+            "score": 220,
+            "gameId": "snake-game",
+            "firstRecorded": "2025-08-30T07:05:39.670Z",
+            "lastUpdated": "2025-08-30T07:05:39.670Z"
+          }
+        ],
+        "memory-game": [
+          {
+            "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+            "playerName": "관리자",
+            "score": 856,
+            "gameId": "memory-game",
+            "firstRecorded": "2025-08-13T05:43:34.420Z",
+            "lastUpdated": "2025-08-13T05:43:34.420Z"
+          }
+        ],
+        "puzzle-game": [
+          {
+            "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+            "playerName": "관리자",
+            "score": 389,
+            "gameId": "puzzle-game",
+            "firstRecorded": "2025-08-17T06:20:55.170Z",
+            "lastUpdated": "2025-08-17T06:20:55.170Z"
+          }
+        ]
+      },
+      "rewards": {
+        "totalRewardsGiven": 2000,
+        "gameRewards": {
+          "snake-game": [
+            {
+              "rank": 1,
+              "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+              "playerName": "gudw****",
+              "score": 590,
+              "rewardPoints": 500,
+              "success": true
+            },
+            {
+              "rank": 2,
+              "userId": "2b485125-8bd8-41f9-9d04-1cd2956add80",
+              "playerName": "김형준",
+              "score": 460,
+              "rewardPoints": 300,
+              "success": true
+            },
+            {
+              "rank": 3,
+              "userId": "b6b6ac28-793c-4692-b472-a0204e8a929a",
+              "playerName": "김형준",
+              "score": 220,
+              "rewardPoints": 200,
+              "success": true
+            }
+          ],
+          "memory-game": [
+            {
+              "rank": 1,
+              "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+              "playerName": "관리자",
+              "score": 856,
+              "rewardPoints": 500,
+              "success": true
+            }
+          ],
+          "puzzle-game": [
+            {
+              "rank": 1,
+              "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+              "playerName": "관리자",
+              "score": 389,
+              "rewardPoints": 500,
+              "success": true
+            }
+          ]
+        }
+      },
+      "resetDate": "2025-09-01T00:29:48.102Z"
     }
   ],
-  "lastResetDate": "2025-08-11T01:41:58.192Z",
-  "nextResetDate": "2025-08-17T15:00:00.000Z"
+  "lastResetDate": "2025-09-01T00:29:48.102Z",
+  "nextResetDate": "2025-09-07T15:00:00.000Z"
 }

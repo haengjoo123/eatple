@@ -44,7 +44,7 @@ class SnakeGame extends GameEngine {
             maxScale: 1.2
         };
 
-        this.wallCollisionTime = null;
+
         
         this.setupGameCallbacks();
         this.setupUI();
@@ -286,18 +286,8 @@ class SnakeGame extends GameEngine {
                             head.y < 0 || head.y >= this.gridHeight;
 
         if (isColliding) {
-            if (this.wallCollisionTime === null) {
-                // First impact
-                this.wallCollisionTime = Date.now();
-            } else {
-                // Still colliding, check if grace period is over
-                if (Date.now() - this.wallCollisionTime > this.wallCollisionGracePeriod) {
-                    this.gameOver();
-                }
-            }
-        } else {
-            // Not colliding, so reset the grace period timer
-            this.wallCollisionTime = null;
+            // 벽에 부딪히면 즉시 게임 종료
+            this.gameOver();
         }
     }
     

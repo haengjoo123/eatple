@@ -2537,9 +2537,6 @@ html {
   width: 100%;
 }
 
-body.dark-mode .mypage-card {
-  background: #232a36;
-}
 
 .mypage-profile-card {
   grid-column: span 1;
@@ -2586,9 +2583,6 @@ body.dark-mode .mypage-card {
   margin-left: 10px;
 }
 
-body.dark-mode .mypage-profile-avatar {
-  background: #3a4150;
-}
 
 .mypage-profile-info {
   flex: 1;
@@ -2611,9 +2605,6 @@ body.dark-mode .mypage-profile-avatar {
   margin-bottom: 10px;
 }
 
-body.dark-mode .mypage-health-bar {
-  background: #232a36;
-}
 
 .mypage-supplement-label {
   font-size: 0.97rem;
@@ -2665,13 +2656,6 @@ body.dark-mode .mypage-health-bar {
   background: #3b5093;
 }
 
-body.dark-mode {
-  --bg-color: #181c24;
-  --text-color: #e0e6ed;
-  --card-bg: #232a36;
-  --primary: #7faaff;
-  --btn-text: #222;
-}
 
 .mypage-dashboard-row1 {
   display: grid;
@@ -2933,6 +2917,16 @@ body.mypage-page .main-nav {
   align-items: center;
   justify-content: center;
   flex-wrap: nowrap;
+}
+
+/* 데스크탑에서 모바일 네비게이션 컨테이너 숨김 */
+.mobile-nav-container {
+  display: none;
+}
+
+/* 데스크탑에서 nav-toggle 숨김 */
+.nav-toggle {
+  display: none;
 }
 
 /* nav-btn 클래스 스타일 정의 */
@@ -11929,6 +11923,19 @@ input[type="email"]:focus:invalid {
     min-width: 100px;
   }
 
+  /* 한끼 식사 예산 질문의 옵션들을 세로로 배치 */
+  .meal-question-block[data-question-key="budget"] .meal-options {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .meal-question-block[data-question-key="budget"] .meal-options .meal-block-btn {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 300px;
+    margin-bottom: 8px;
+  }
+
   .option .unit {
     font-size: 0.75em;
   }
@@ -12005,36 +12012,76 @@ input[type="email"]:focus:invalid {
   .main-nav {
     display: flex !important; /* 모바일에서만 표시 - 모든 페이지에서 강제 표시 */
   }
-  /* 네비게이션 */
-  .nav-menu {
+
+  /* 모바일에서 기존 네비게이션 숨김 (nav-content의 직접적인 자식만) */
+  .nav-content > .nav-menu,
+  .nav-content > .nav-auth {
+    display: none;
+  }
+
+  /* 모바일 네비게이션 컨테이너 표시 */
+  .mobile-nav-container {
+    display: block;
+  }
+  /* 모바일 네비게이션 컨테이너 */
+  .mobile-nav-container {
     position: fixed;
-    top: 100%;
+    top: 54.4px; /* main-nav 높이만큼 아래로 */
     left: 0;
     right: 0;
     background: white;
-    flex-direction: column;
-    padding: 2rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     transform: translateY(-100vh);
     transition: transform 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
   }
 
-  .nav-menu.active {
+  .mobile-nav-container.active {
     transform: translateY(0);
   }
 
-  .nav-auth {
-    position: fixed;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
+  /* 네비게이션 */
+  .nav-menu {
     flex-direction: column;
+    padding: 2rem 2rem 1rem;
+    border-bottom: 1px solid #e0e6ed;
+  }
+
+  /* 모바일 드롭다운 메뉴 스타일 */
+  .mobile-nav-container .dropdown {
+    position: relative;
+  }
+
+  .mobile-nav-container .dropdown-menu {
+    position: static;
+    display: none;
+    background: #f8f9fa;
+    margin: 0.5rem 0;
+    padding: 0.5rem 0;
+    border-radius: 8px;
+    box-shadow: none;
+    border: 1px solid #e0e6ed;
+  }
+
+  .mobile-nav-container .dropdown.active .dropdown-menu {
+    display: block;
+  }
+
+  .mobile-nav-container .dropdown-menu a {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: #333;
+    text-decoration: none;
+    border-bottom: 1px solid #e0e6ed;
+  }
+
+  .mobile-nav-container .dropdown-menu a:last-child {
+    border-bottom: none;
+  }
+
+  .nav-auth {
     padding: 1rem 2rem 2rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    transform: translateY(-100vh);
-    transition: transform 0.3s ease;
-    margin-top: 200px;
+    background: white;
   }
 
   .main-nav-button {
@@ -12046,12 +12093,15 @@ input[type="email"]:focus:invalid {
     font-size: 16px;
   }
 
-  .nav-auth.active {
-    transform: translateY(0);
-  }
-
   .nav-toggle {
     display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: none;
+    cursor: pointer;
     padding: 0.3rem;
   }
 
@@ -13706,8 +13756,8 @@ input[type="email"]:focus:invalid {
   }
 
   .meal-question-label {
-    font-size: 1rem;
-    margin-bottom: 10px;
+    font-size: 1.4rem;
+    margin-bottom: 25px;
     margin-top: 10px;
   }
 
@@ -13750,36 +13800,13 @@ input[type="email"]:focus:invalid {
 
   #other_allergies_text {
     font-size: 0.9rem;
-    padding: 6px 8px;
+    padding: 10px;
     width: 100%;
     max-width: 300px;
     display: block;
-    margin-left: auto;
-    margin-right: auto;
     text-align: left;
   }
 
-  #other_illnesses_text {
-    font-size: 0.9rem;
-    padding: 6px 8px;
-    width: 100%;
-    max-width: 300px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: left;
-  }
-
-  #other_allergies_text {
-    font-size: 0.95rem;
-    padding: 7px 8px;
-    width: 100%;
-    max-width: 320px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: left;
-  }
 
   #other_illnesses_text {
     font-size: 0.95rem;
@@ -13787,8 +13814,6 @@ input[type="email"]:focus:invalid {
     width: 100%;
     max-width: 320px;
     display: block;
-    margin-left: auto;
-    margin-right: auto;
     text-align: left;
   }
 
@@ -14670,7 +14695,7 @@ input[type="email"]:focus:invalid {
   }
 
   .meal-nav-btns-fixed button {
-    padding: 0.6em 0;
+    padding: 0.8em 0;
     font-size: 0.9rem;
     border-radius: 5px;
   }
@@ -14693,6 +14718,19 @@ input[type="email"]:focus:invalid {
   .meal-options .meal-block-btn {
     flex: 0 1 calc(50% - 4.5em);
     min-width: 60px;
+  }
+
+  /* 모바일에서 한끼 식사 예산 질문의 옵션들을 세로로 배치 */
+  .meal-question-block[data-question-key="budget"] .meal-options {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .meal-question-block[data-question-key="budget"] .meal-options .meal-block-btn {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 280px;
+    margin-bottom: 6px;
   }
 
   /* 성별, 흡연, 식사횟수 옵션 - 480px에서는 가로배열 강제 */
@@ -14755,7 +14793,7 @@ input[type="email"]:focus:invalid {
 
   /* 프로필 편집 버튼 */
   .profile-edit-btn {
-    padding: 8px 16px;
+    padding: 12px 16px;
     font-size: 0.85rem;
     margin-bottom: 15px;
   }
@@ -14771,23 +14809,19 @@ input[type="email"]:focus:invalid {
 
   #other_allergies_text {
     font-size: 0.85rem;
-    padding: 5px 8px;
+    padding: 10px;
     width: 100%;
     max-width: 280px;
     display: block;
-    margin-left: auto;
-    margin-right: auto;
     text-align: left;
   }
 
   #other_illnesses_text {
     font-size: 0.85rem;
-    padding: 5px 8px;
+    padding: 10px;
     width: 100%;
     max-width: 280px;
     display: block;
-    margin-left: auto;
-    margin-right: auto;
     text-align: left;
   }
 
@@ -14836,7 +14870,7 @@ input[type="email"]:focus:invalid {
   }
 
   .nav-content {
-    padding: 0.8rem 0;
+    padding: 0.3rem 0;
     position: relative;
   }
 
@@ -15617,8 +15651,8 @@ input[type="email"]:focus:invalid {
 
   /* 옵션 - 크기 조정 */
   .option {
-    padding: 6px 10px;
-    font-size: 0.75rem;
+    padding: 10px;
+    font-size: 0.85rem;
     margin-bottom: 4px;
     flex: 0 1 auto;
     min-width: 60px;
@@ -16451,6 +16485,104 @@ input[type="email"]:focus:invalid {
 
   .nutrition-search-input {
     padding: 10px 20px 10px 50px !important;
+  }
+
+  /* 모바일 네비게이션 컨테이너 하위 항목 스타일 */
+  .mobile-nav-container .nav-menu {
+    flex-direction: column;
+    padding: 1.5rem 1rem 1rem;
+    border-bottom: 1px solid #e0e6ed;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .mobile-nav-container .nav-menu a {
+    display: block;
+    padding: 0.75rem 0;
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 1rem;
+  }
+
+  .mobile-nav-container .nav-menu a:last-child {
+    border-bottom: none;
+  }
+
+  .mobile-nav-container .nav-auth {
+    padding: 1rem;
+    background: white;
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .mobile-nav-container .nav-auth .main-nav-button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    justify-content: center;
+    min-height: 44px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  .mobile-nav-container .dropdown {
+    position: relative;
+  }
+
+  .mobile-nav-container .dropdown-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0.75rem 0;
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .mobile-nav-container .dropdown-toggle::after {
+    content: '▼';
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+  }
+
+  .mobile-nav-container .dropdown.active .dropdown-toggle::after {
+    transform: rotate(180deg);
+  }
+
+  .mobile-nav-container .dropdown-menu {
+    position: static;
+    display: none;
+    background: #f8f9fa;
+    margin: 0.5rem 0;
+    padding: 0.5rem 0;
+    border-radius: 8px;
+    box-shadow: none;
+    border: 1px solid #e0e6ed;
+  }
+
+  .mobile-nav-container .dropdown.active .dropdown-menu {
+    display: block;
+  }
+
+  .mobile-nav-container .dropdown-menu a {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: #333;
+    text-decoration: none;
+    border-bottom: 1px solid #e0e6ed;
+    font-size: 0.9rem;
+  }
+
+  .mobile-nav-container .dropdown-menu a:last-child {
+    border-bottom: none;
   }
 }
 

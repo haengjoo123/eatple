@@ -1059,46 +1059,6 @@
   }
 }
 
-/* 다크 모드 지원 */
-@media (prefers-color-scheme: dark) {
-  .cart-main {
-    background-color: #1a1a1a;
-  }
-
-  .cart-items-section,
-  .points-section,
-  .order-summary {
-    background: #2d2d2d;
-    color: #e0e0e0;
-  }
-
-  .cart-item-name,
-  .cart-item-price,
-  .summary-value,
-  .points-value {
-    color: #e0e0e0;
-  }
-
-  .summary-label,
-  .points-label {
-    color: #b0b0b0;
-  }
-
-  .points-input {
-    background-color: #3d3d3d;
-    border-color: #555;
-    color: #e0e0e0;
-  }
-
-  .quantity-input {
-    background-color: #3d3d3d;
-    color: #e0e0e0;
-  }
-
-  .cart-item-clickable:hover {
-    background-color: #3d3d3d;
-  }
-}
 /* 배송비 정보 스타일 */
 .shipping-info {
   margin-top: 0.5rem;

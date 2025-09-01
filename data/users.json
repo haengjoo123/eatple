@@ -10,10 +10,10 @@
     "isAdmin": true,
     "role": "admin",
     "gamePoints": {
-      "totalPoints": 2849,
+      "totalPoints": 4349,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-08-30",
+      "lastEarnedDate": "2025-09-01",
       "history": [
         {
           "id": "1753341193454",
@@ -1057,6 +1057,33 @@
           "timestamp": "2025-08-25T05:39:15.410Z",
           "description": "스네이크 게임에서 40점 획득",
           "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756686588058",
+          "type": "earn",
+          "amount": 500,
+          "source": "weekly-leaderboard",
+          "timestamp": "2025-09-01T00:29:48.058Z",
+          "description": "스네이크 게임 주간 리더보드 1등 보상",
+          "bypassedDailyLimit": true
+        },
+        {
+          "id": "1756686588088",
+          "type": "earn",
+          "amount": 500,
+          "source": "weekly-leaderboard",
+          "timestamp": "2025-09-01T00:29:48.088Z",
+          "description": "기억력 게임 주간 리더보드 1등 보상",
+          "bypassedDailyLimit": true
+        },
+        {
+          "id": "1756686588096",
+          "type": "earn",
+          "amount": 500,
+          "source": "weekly-leaderboard",
+          "timestamp": "2025-09-01T00:29:48.096Z",
+          "description": "퍼즐 게임 주간 리더보드 1등 보상",
+          "bypassedDailyLimit": true
         }
       ]
     },
@@ -1145,10 +1172,10 @@
     "authType": "google",
     "createdAt": "2025-08-12T05:36:44.133Z",
     "gamePoints": {
-      "totalPoints": 42,
+      "totalPoints": 342,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-08-30",
+      "lastEarnedDate": "2025-09-01",
       "history": [
         {
           "id": "1754977248434",
@@ -1185,6 +1212,15 @@
           "timestamp": "2025-08-12T05:44:42.953Z",
           "description": "스네이크 게임에서 460점 획득",
           "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756686588067",
+          "type": "earn",
+          "amount": 300,
+          "source": "weekly-leaderboard",
+          "timestamp": "2025-09-01T00:29:48.067Z",
+          "description": "스네이크 게임 주간 리더보드 2등 보상",
+          "bypassedDailyLimit": true
         }
       ]
     },
@@ -1204,52 +1240,76 @@
     "authType": "kakao",
     "createdAt": "2025-08-30T05:33:40.725Z",
     "profile": {
+      "meal_purpose": "weight_loss",
       "age": "32",
       "height": "176",
       "weight": "76",
+      "meals_per_day": "2",
       "other_allergies_text": "",
       "other_illnesses_text": "",
-      "blood_glucose_value": "",
-      "hba1c_value": "",
-      "total_cholesterol_value": "",
-      "ldl_cholesterol_value": "",
-      "hdl_cholesterol_value": "",
-      "triglycerides_value": "",
-      "blood_pressure_systolic_value": "",
-      "blood_pressure_diastolic_value": "",
-      "bmi_value": "",
       "other_biomarkers_text": "",
-      "vitamin_a_value": "",
-      "vitamin_d_value": "",
-      "vitamin_e_value": "",
-      "vitamin_k_value": "",
-      "iron_value": "",
-      "calcium_value": "",
-      "magnesium_value": "",
-      "potassium_value": "",
-      "zinc_value": "",
       "other_supplements_text": "",
       "gender": "male",
       "activity_level": "sedentary",
       "eating_patterns": "regular",
       "sleep_patterns": "less_than_6",
-      "meals_per_day": "2",
       "alcohol_consumption": "none",
       "smoking_status": "non_smoker",
-      "allergies": [
-        "none"
-      ],
-      "illnesses": [
-        "none"
-      ],
+      "allergies": "none",
+      "illnesses": "none",
       "biomarkers": [
         "none"
       ],
       "supplements": [
         "none"
-      ]
+      ],
+      "specific_biomarkers": {},
+      "specific_supplements": {}
     },
     "profileCompletionReward": true,
-    "profileCompletionDate": "2025-08-30T06:53:01.601Z"
+    "profileCompletionDate": "2025-08-30T06:53:01.601Z",
+    "gamePoints": {
+      "totalPoints": 216,
+      "dailyEarned": 0,
+      "dailyLimit": 100,
+      "lastEarnedDate": "2025-09-01",
+      "history": [
+        {
+          "id": "1756537539645",
+          "type": "earn",
+          "amount": 8,
+          "source": "mini-game",
+          "timestamp": "2025-08-30T07:05:39.645Z",
+          "description": "스네이크 게임에서 220점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756537584281",
+          "type": "earn",
+          "amount": 8,
+          "source": "mini-game",
+          "timestamp": "2025-08-30T07:06:24.281Z",
+          "description": "스네이크 게임에서 220점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756686588075",
+          "type": "earn",
+          "amount": 200,
+          "source": "weekly-leaderboard",
+          "timestamp": "2025-09-01T00:29:48.075Z",
+          "description": "스네이크 게임 주간 리더보드 3등 보상",
+          "bypassedDailyLimit": true
+        }
+      ]
+    },
+    "serviceUsage": {
+      "mealPlan": 0,
+      "restaurantRecommendation": 0,
+      "supplementRecommendation": 0,
+      "ingredientAnalysis": 0,
+      "mini-game": 2,
+      "lastUpdated": "2025-08-30T07:06:24.285Z"
+    }
   }
 ]

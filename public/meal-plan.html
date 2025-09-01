@@ -46,6 +46,22 @@
             <a href="login.html" class="nav-btn">로그인</a>
             <a href="signup.html" class="nav-btn primary">회원가입</a>
           </div>
+          <!-- 모바일 네비게이션 컨테이너 -->
+          <div class="mobile-nav-container" id="mobileNavContainer">
+            <div class="nav-menu">
+              <a href="meal-plan.html">뭐해먹지?</a>
+              <a href="supplements.html">나만의 영양제</a>
+              <a href="restaurant-recommendation.html">오늘의 맛집</a>
+              <a href="ingredient-analyzer.html">AI 식재료 분석</a>
+              <a href="food-nutrition-search.html">음식 영양 검색</a>
+              <a href="store.html" target="_blank">잇플스토어</a>
+              <a href="mini-games.html">미니게임</a>
+            </div>
+            <div class="nav-auth" id="mobileNavAuth">
+              <a href="login.html" class="nav-btn">로그인</a>
+              <a href="signup.html" class="nav-btn primary">회원가입</a>
+            </div>
+          </div>
           <div class="nav-toggle" id="navToggle">
             <span></span>
             <span></span>
@@ -668,10 +684,8 @@
       document
         .getElementById("navToggle")
         .addEventListener("click", function () {
-          const navMenu = document.querySelector(".nav-menu");
-          const navAuth = document.querySelector(".nav-auth");
-          navMenu.classList.toggle("active");
-          navAuth.classList.toggle("active");
+          const mobileNavContainer = document.getElementById("mobileNavContainer");
+          mobileNavContainer.classList.toggle("active");
           this.classList.toggle("active");
         });
 
@@ -688,6 +702,12 @@
               if (!this.classList.contains("nav-shop-link")) {
                 e.preventDefault();
               }
+              
+              // 모바일에서 드롭다운 토글
+              const dropdown = this.closest('.dropdown');
+              if (dropdown) {
+                dropdown.classList.toggle('active');
+              }
             });
           });
         }
@@ -696,6 +716,7 @@
       // 로그인 상태 확인 (서버 세션 기반)
       async function checkAuthStatus() {
         const navAuth = document.getElementById("navAuth");
+        const mobileNavAuth = document.getElementById("mobileNavAuth");
 
         try {
           const response = await fetch("/api/auth/me", {
@@ -713,19 +734,24 @@
               adminButton = '<a href="admin.html" class="main-nav-button" style="background-color: #dc3545; color: white;">관리자</a>';
             }
             
-            navAuth.innerHTML = `
+            const authHTML = `
                     <a href="mypage.html" class="main-nav-button">마이페이지</a>
                     ${adminButton}
                     <button class="main-nav-button" onclick="logout()">로그아웃</button>
                 `;
+            
+            navAuth.innerHTML = authHTML;
+            mobileNavAuth.innerHTML = authHTML;
           } else {
             // 로그아웃된 상태
             localStorage.removeItem("token");
             localStorage.removeItem("user");
-            navAuth.innerHTML = `
+            const authHTML = `
                         <a href="login.html" class="main-nav-button">로그인</a>
                         <a href="signup.html" class="main-nav-button primary">회원가입</a>
                     `;
+            navAuth.innerHTML = authHTML;
+            mobileNavAuth.innerHTML = authHTML;
           }
         } catch (error) {
           console.error("Auth status check failed:", error);

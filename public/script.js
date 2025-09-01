@@ -517,7 +517,7 @@ function renderMealQuestion() {
   const isLoggedIn = !!user;
 
   // 문항만 렌더링
-  let html = `<div class="meal-question-block meal-question-slide slide-current"><div class="meal-question-label">${q.label}</div><div class="meal-options">`;
+  let html = `<div class="meal-question-block meal-question-slide slide-current" data-question-key="${q.key}"><div class="meal-question-label">${q.label}</div><div class="meal-options">`;
   q.options.forEach((opt) => {
     const selected = (
       q.type === "multi"
@@ -2360,23 +2360,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // ... existing code ...
-function setDarkMode() {
-  document.body.classList.add("dark-mode");
-  localStorage.setItem("theme", "dark");
-}
-function setLightMode() {
-  document.body.classList.remove("dark-mode");
-  localStorage.setItem("theme", "light");
-}
-// 페이지 로드시 테마 적용
-(function () {
-  const theme = localStorage.getItem("theme");
-  if (theme === "dark") {
-    document.body.classList.add("dark-mode");
-  } else {
-    document.body.classList.remove("dark-mode");
-  }
-})();
+
 // ... existing code ...
 
 // 마크다운 볼드(**텍스트**)를 <strong>텍스트</strong>로 변환하는 함수

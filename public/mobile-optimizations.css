@@ -192,47 +192,6 @@ textarea {
     }
 }
 
-/* Dark mode optimizations */
-@media (prefers-color-scheme: dark) {
-    .game-container,
-    .mini-games-container {
-        background: #2c3e50;
-        color: #ecf0f1;
-    }
-    
-    .game-card {
-        background: #34495e;
-        border-color: #4a5f7a;
-        color: #ecf0f1;
-    }
-    
-    .game-info,
-    .points-status,
-    .difficulty-selector {
-        background: #34495e;
-    }
-    
-    .memory-card {
-        background: linear-gradient(135deg, #34495e, #2c3e50);
-        border-color: #4a5f7a;
-    }
-    
-    .memory-card.flipped {
-        background: #ecf0f1;
-        color: #2c3e50;
-    }
-    
-    .puzzle-piece {
-        background: #ecf0f1;
-        color: #2c3e50;
-    }
-    
-    .instructions {
-        background: #34495e;
-        color: #bdc3c7;
-    }
-}
-
 /* Print styles (hide interactive elements) */
 @media print {
     .game-controls,
