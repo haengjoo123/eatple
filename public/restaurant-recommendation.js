@@ -853,7 +853,7 @@ class RestaurantRecommendation {
         const isMobile = window.innerWidth <= 768;
         const isSmallMobile = window.innerWidth <= 480;
         
-        const fontSize = isSmallMobile ? '9px' : isMobile ? '10px' : '12px';
+        const fontSize = isSmallMobile ? '13px' : isMobile ? '13px' : '13px';
         const marginBottom = isSmallMobile ? '2px' : isMobile ? '2px' : '4px';
         
         if (!phone || phone === '전화번호 없음' || phone === '정보 없음') {
@@ -890,10 +890,10 @@ class RestaurantRecommendation {
         const isMobile = window.innerWidth <= 768;
         const isSmallMobile = window.innerWidth <= 480;
         
-        const fontSize = isSmallMobile ? '9px' : isMobile ? '10px' : '11px';
+        const fontSize = isSmallMobile ? '13px' : isMobile ? '13px' : '13px';
         const marginBottom = isSmallMobile ? '2px' : isMobile ? '2px' : '4px';
-        const buttonFontSize = isSmallMobile ? '8px' : isMobile ? '9px' : '10px';
-        const buttonPadding = isSmallMobile ? '1px 4px' : isMobile ? '2px 5px' : '2px 6px';
+        const buttonFontSize = isSmallMobile ? '12px' : isMobile ? '12px' : '12px';
+        const buttonPadding = isSmallMobile ? '4px' : isMobile ? '4px 5px' : '4px 6px';
         
         // Google Places API에서 상세 영업시간이 있는 경우
         if (googleHours && Array.isArray(googleHours) && googleHours.length > 0) {

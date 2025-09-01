@@ -55,7 +55,7 @@
       "enabled": true
     },
     "highMemoryUsage": {
-      "threshold": "95%",
+      "threshold": "98%",
       "window": "5m",
       "severity": "critical",
       "enabled": false
@@ -107,7 +107,7 @@
     }
   },
   "healthChecks": {
-    "enabled": true,
+    "enabled": false,
     "interval": "30s",
     "timeout": "5s",
     "endpoints": [

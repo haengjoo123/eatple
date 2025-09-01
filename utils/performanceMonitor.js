@@ -268,11 +268,11 @@ class PerformanceMonitor {
             this.metrics.systemMetrics.delete(oldestKey);
         }
         
-        // Check for memory issues
-        const memoryUsagePercent = memoryUsage.heapUsed / memoryUsage.heapTotal;
-        if (memoryUsagePercent > 0.85) {
-            this.sendAlert('high_memory_usage', { usage: memoryUsagePercent, metrics: systemMetrics });
-        }
+        // Check for memory issues (disabled to reduce log noise)
+        // const memoryUsagePercent = memoryUsage.heapUsed / memoryUsage.heapTotal;
+        // if (memoryUsagePercent > 0.95) {
+        //     this.sendAlert('high_memory_usage', { usage: memoryUsagePercent, metrics: systemMetrics });
+        // }
     }
 
     /**

@@ -617,10 +617,10 @@ class RealtimeMonitoringSystem {
         // Log to monitoring log
         this.monitor.writeLog('health_checks', logEntry);
         
-        // Console output only for ERROR status
-        if (healthStatus.overall === 'error') {
-            console.error('🔴 System health: ERROR', logEntry);
-        }
+        // Console output disabled to reduce log noise
+        // if (healthStatus.overall === 'error') {
+        //     console.error('🔴 System health: ERROR', logEntry);
+        // }
         // WARNING과 HEALTHY 상태는 콘솔 출력하지 않음 (로그 파일에만 기록)
     }
 

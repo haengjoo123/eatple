@@ -1088,35 +1088,39 @@
       ]
     },
     "serviceUsage": {
-      "mealPlan": 31,
-      "restaurantRecommendation": 28,
+      "mealPlan": 32,
+      "restaurantRecommendation": 30,
       "supplementRecommendation": 167,
       "ingredientAnalysis": 24,
       "mini-game": 112,
-      "lastUpdated": "2025-08-29T07:29:50.251Z"
+      "lastUpdated": "2025-09-01T05:25:50.885Z"
     },
     "profile": {
       "age": "31",
       "height": "175",
       "weight": "75",
-      "blood_glucose_value": null,
-      "hba1c_value": null,
-      "total_cholesterol_value": null,
-      "ldl_cholesterol_value": null,
-      "hdl_cholesterol_value": null,
-      "triglycerides_value": null,
-      "blood_pressure_systolic_value": null,
-      "blood_pressure_diastolic_value": null,
-      "bmi_value": null,
-      "vitamin_a_value": null,
-      "vitamin_d_value": null,
-      "vitamin_e_value": null,
-      "vitamin_k_value": null,
-      "iron_value": null,
-      "calcium_value": null,
-      "magnesium_value": null,
-      "potassium_value": null,
-      "zinc_value": null,
+      "other_allergies_text": "",
+      "other_illnesses_text": "",
+      "blood_glucose_value": "",
+      "hba1c_value": "",
+      "total_cholesterol_value": "",
+      "ldl_cholesterol_value": "",
+      "hdl_cholesterol_value": "",
+      "triglycerides_value": "",
+      "blood_pressure_systolic_value": "",
+      "blood_pressure_diastolic_value": "",
+      "bmi_value": "",
+      "other_biomarkers_text": "",
+      "vitamin_a_value": "",
+      "vitamin_d_value": "",
+      "vitamin_e_value": "",
+      "vitamin_k_value": "",
+      "iron_value": "",
+      "calcium_value": "",
+      "magnesium_value": "",
+      "potassium_value": "",
+      "zinc_value": "",
+      "other_supplements_text": "",
       "gender": "male",
       "activity_level": "light",
       "eating_patterns": "regular",
@@ -1124,14 +1128,36 @@
       "meals_per_day": "2",
       "alcohol_consumption": "socially",
       "smoking_status": "non_smoker",
-      "allergies": "none",
-      "illnesses": "none",
-      "biomarkers": "none",
-      "supplements": "none"
+      "allergies": [
+        "none"
+      ],
+      "illnesses": [
+        "none"
+      ],
+      "biomarkers": [
+        "none"
+      ],
+      "supplements": [
+        "none"
+      ]
     },
     "profileCompletionReward": true,
     "profileCompletionDate": "2025-07-25T05:25:20.553Z",
-    "savedMeals": [],
+    "savedMeals": [
+      {
+        "id": "1756703316214",
+        "title": "돼지고기 양배추 볶음",
+        "content": "<div class=\"menu-block\">\n    <div class=\"menu-section-title\">메뉴2</div>\n    <div class=\"menu-name\">돼지고기 양배추 볶음</div>\n    <div class=\"nutrition-title\">영양정보</div>\n    <ul class=\"nutrition-list\">\n      <li>칼로리: 340kcal</li>\n      <li>탄수화물: 16g</li>\n      <li>단백질: 34g</li>\n      <li>지방: 15g</li>\n    </ul>\n    <div class=\"ingredient-title\">재료</div>\n    <div class=\"main-ingredient-title\">주재료</div>\n    <ul class=\"ingredient-list\">\n      <li class=\"ingredient-item\"><span class=\"ingredient-name\">돼지고기(등심, 150g)</span><a class=\"buy-btn\" href=\"https://www.coupang.com/np/search?component=&amp;q=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0\" target=\"_blank\">구매하기</a></li>\n      <li class=\"ingredient-item\"><span class=\"ingredient-name\">양배추(200g)</span><a class=\"buy-btn\" href=\"https://www.coupang.com/np/search?component=&amp;q=%EC%96%91%EB%B0%B0%EC%B6%94\" target=\"_blank\">구매하기</a></li>\n    </ul>\n    <div class=\"sauce-title\">소스</div>\n    <ul class=\"ingredient-list\">\n      <li class=\"ingredient-item\"><span class=\"ingredient-name\">식용유(5ml)</span><a class=\"buy-btn\" href=\"https://www.coupang.com/np/search?component=&amp;q=%EC%8B%9D%EC%9A%A9%EC%9C%A0\" target=\"_blank\">구매하기</a></li>\n      <li class=\"ingredient-item\"><span class=\"ingredient-name\">굴소스(1/2큰술)</span><a class=\"buy-btn\" href=\"https://www.coupang.com/np/search?component=&amp;q=%EA%B5%B4%EC%86%8C%EC%8A%A4\" target=\"_blank\">구매하기</a></li>\n      <li class=\"ingredient-item\"><span class=\"ingredient-name\">간장(1/2큰술)</span><a class=\"buy-btn\" href=\"https://www.coupang.com/np/search?component=&amp;q=%EA%B0%84%EC%9E%A5\" target=\"_blank\">구매하기</a></li>\n      <li class=\"ingredient-item\"><span class=\"ingredient-name\">다진 마늘(1/2작은술)</span><a class=\"buy-btn\" href=\"https://www.coupang.com/np/search?component=&amp;q=%EB%8B%A4%EC%A7%84%20%EB%A7%88%EB%8A%98\" target=\"_blank\">구매하기</a></li>\n    </ul>\n    <div class=\"etc-title\">기타</div>\n    <ul class=\"ingredient-list\">\n      <li class=\"ingredient-item\"><span class=\"ingredient-name\">양파(1/4개)</span><a class=\"buy-btn\" href=\"https://www.coupang.com/np/search?component=&amp;q=%EC%96%91%ED%8C%8C\" target=\"_blank\">구매하기</a></li>\n      <li class=\"ingredient-item\"><span class=\"ingredient-name\">후추(약간)</span><a class=\"buy-btn\" href=\"https://www.coupang.com/np/search?component=&amp;q=%ED%9B%84%EC%B6%94\" target=\"_blank\">구매하기</a></li>\n    </ul>\n    <div class=\"recipe-title\">레시피</div>\n    <ol class=\"recipe-list\">\n      <li>돼지고기와 양배추, 양파는 먹기 좋은 크기로 썹니다.</li>\n      <li>팬에 식용유를 두르고 다진 마늘과 양파를 볶아 향을 냅니다.</li>\n      <li>돼지고기를 넣고 볶다가 표면이 익으면 양배추를 넣고 함께 볶습니다.</li>\n      <li>양배추의 숨이 죽으면 간장, 굴소스를 넣고 빠르게 볶아줍니다.</li>\n      <li>마지막으로 후추를 뿌려 마무리합니다.</li>\n    </ol>\n    <div class=\"tip-title\">추가팁</div>\n    <ul class=\"tip-content\">\n      <li>돼지고기를 미리 맛술이나 생강즙에 재워두면 잡내를 제거하고 풍미를 더할 수 있습니다.</li>\n    </ul>\n    <div class=\"reason-title\">메뉴 추천 이유</div>\n    <ul class=\"reason-content\">\n      <li>볶음밥만으로는 부족할 수 있는 단백질을 보충하고, 양배추를 통해 포만감과 비타민, 식이섬유를 더해 영양 균형을 맞춰주는 반찬입니다.</li>\n    </ul>\n  </div>",
+        "savedAt": "2025-09-01T05:08:36.214Z",
+        "mealType": "lunch",
+        "nutrition": {
+          "calories": "340kcal",
+          "carbs": "16g",
+          "protein": "34g",
+          "fat": "15g"
+        }
+      }
+    ],
     "savedSupplements": [
       {
         "id": "1756442796866",
