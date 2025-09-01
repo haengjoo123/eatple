@@ -9844,12 +9844,14 @@ body.nutrition-info-page .container {
   width: 100%;
   height: auto;
   background: none;
-  z-index: 22000;
+  z-index: 99999; /* 매우 높은 z-index로 설정 */
   justify-content: center;
   align-items: flex-end;
+  pointer-events: none; /* 모달 배경은 클릭 이벤트 무시 */
 }
 .ai-feature-modal.active {
   display: flex;
+  pointer-events: auto; /* 활성화 시 클릭 이벤트 허용 */
 }
 .ai-feature-modal-content {
   background: #fff;

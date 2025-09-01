@@ -622,10 +622,45 @@
             }
         }
 
+        // AI 기능 모달 제어
+        function initializeAIModal() {
+            const aiFeatureBtn = document.getElementById("footerNavAI");
+            const aiFeatureModal = document.getElementById("aiFeatureModal");
+            
+            if (aiFeatureBtn && aiFeatureModal) {
+                // AI 버튼 클릭 이벤트
+                aiFeatureBtn.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('AI 버튼 클릭됨'); // 디버깅용
+                    aiFeatureModal.classList.toggle("active");
+                });
+                
+                // 모달 외부 클릭 시 닫기
+                document.addEventListener("click", function(e) {
+                    if (aiFeatureModal.classList.contains("active") && 
+                        !aiFeatureModal.contains(e.target) && 
+                        !aiFeatureBtn.contains(e.target)) {
+                        aiFeatureModal.classList.remove("active");
+                    }
+                });
+                
+                // 모달 내부 링크 클릭 시 모달 닫기
+                aiFeatureModal.addEventListener("click", function(e) {
+                    if (e.target.tagName === "A") {
+                        aiFeatureModal.classList.remove("active");
+                    }
+                });
+            }
+        }
+
         // 페이지 로드 시 식당 추천 시스템 초기화
         document.addEventListener('DOMContentLoaded', function() {
             // 로그인 제한 적용
             applyLoginRestrictions();
+            
+            // AI 모달 초기화
+            initializeAIModal();
             
             // 카카오맵 API 로딩 상태 확인 후 초기화
             function initializeWhenReady() {
