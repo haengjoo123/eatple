@@ -542,6 +542,10 @@ router.get('/', async (req, res) => {
     router.get('/:id/interaction-status', async (req, res) => {
         try {
             const nutritionInfoId = req.params.id;
+            // 사용자별 데이터는 캐시 금지 (세션/쿠키에 의존)
+            try {
+                res.setHeader('Cache-Control', 'private, no-store');
+            } catch (_) {}
 
             // 영양 정보 존재 여부 확인
             const nutritionInfo = await supabaseDataManager.getNutritionInfoById(nutritionInfoId);
@@ -669,6 +673,21 @@ router.get('/', async (req, res) => {
             } catch (recommendError) {
                 console.error('추천 기능 오류:', recommendError);
                 // 추천 실패해도 메인 응답은 계속 진행
+            }
+
+            // HTTP 캐시 헤더 설정: 상세 데이터는 공개 캐시 가능, 단 개인화 아님
+            // 5분 CDN/MSA 캐시 + stale-while-revalidate 1분 (프론트는 SWR로 즉시 갱신)
+            try {
+                const etag = `W/"ni-${responseData.id}-${new Date(responseData.collectedDate || responseData.publishedDate || 0).getTime()}-${responseData.viewCount}-${responseData.likeCount}-${responseData.bookmarkCount}"`;
+                res.setHeader('ETag', etag);
+                res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+                // If-None-Match 지원: 변경 없으면 304
+                const ifNoneMatch = req.headers['if-none-match'];
+                if (ifNoneMatch && ifNoneMatch === etag) {
+                    return res.status(304).end();
+                }
+            } catch (e) {
+                // 헤더 설정 실패는 무시하고 계속 진행
             }
 
             res.json({

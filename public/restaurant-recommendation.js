@@ -570,8 +570,10 @@ class RestaurantRecommendation {
             return;
         }
 
-        this.nextStep();
         this.showMessage('위치가 설정되었습니다.', 'success');
+
+        // 위치 확인 이후에만 프로필 재사용 여부 제안 (선택 결과에 따라 다음 단계 결정)
+        this.offerProfileReuseAfterLocation();
     }
 
     // 주소 검색 기능
@@ -635,6 +637,72 @@ class RestaurantRecommendation {
             console.error('주소 검색 중 오류 발생:', error);
             this.isSearching = false;
             this.showMessage('주소 검색 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+        }
+    }
+
+    // 위치 확인 이후 프로필 재사용 제안
+    async offerProfileReuseAfterLocation() {
+        try {
+            const authRes = await fetch('/api/auth/me', { credentials: 'include' });
+            const auth = await authRes.json();
+            if (!auth.loggedIn) {
+                // 비로그인: 곧바로 프로필 입력 단계로 이동
+                this.currentStep = 2;
+                this.showStep(2);
+                return;
+            }
+            const statusRes = await fetch('/api/profile/completion-status', { credentials: 'include' });
+            if (!statusRes.ok) {
+                this.currentStep = 2;
+                this.showStep(2);
+                return;
+            }
+            const status = await statusRes.json();
+            const isComplete = !!status?.completionInfo?.isComplete;
+            if (!isComplete) {
+                // 미완성: 프로필 입력 단계로 이동
+                this.currentStep = 2;
+                this.showStep(2);
+                return;
+            }
+
+            const modal = document.getElementById('profileReuseModal');
+            if (!modal) {
+                // 모달 없으면 기본적으로 프로필 단계로
+                this.currentStep = 2;
+                this.showStep(2);
+                return;
+            }
+            modal.style.display = 'flex';
+            const useBtn = document.getElementById('useExistingProfileBtn');
+            const newBtn = document.getElementById('enterNewProfileBtn');
+            if (useBtn) {
+                useBtn.onclick = async () => {
+                    try {
+                        const profileRes = await fetch('/api/profile', { credentials: 'include' });
+                        if (profileRes.ok) {
+                            const profile = await profileRes.json();
+                            this.loadedProfile = profile || {};
+                        }
+                    } catch (e) {}
+                    if (typeof closeProfileReuseModal === 'function') closeProfileReuseModal();
+                    // 프로필 입력(2)을 건너뛰고 요구사항(3)으로 이동
+                    this.currentStep = 3;
+                    this.showStep(3);
+                };
+            }
+            if (newBtn) {
+                newBtn.onclick = () => {
+                    if (typeof closeProfileReuseModal === 'function') closeProfileReuseModal();
+                    // 프로필 입력 단계로 진입
+                    this.currentStep = 2;
+                    this.showStep(2);
+                };
+            }
+        } catch (err) {
+            // 에러 시에도 기본 흐름(프로필 단계)으로 이동
+            this.currentStep = 2;
+            this.showStep(2);
         }
     }
 

@@ -1197,38 +1197,34 @@
     },
     "serviceUsage": {
       "mealPlan": 32,
-      "restaurantRecommendation": 31,
+      "restaurantRecommendation": 32,
       "supplementRecommendation": 167,
       "ingredientAnalysis": 24,
       "mini-game": 124,
-      "lastUpdated": "2025-09-02T06:39:00.276Z"
+      "lastUpdated": "2025-09-02T13:51:34.582Z"
     },
     "profile": {
       "age": "31",
       "height": "175",
       "weight": "75",
-      "other_allergies_text": "",
-      "other_illnesses_text": "",
-      "blood_glucose_value": "",
-      "hba1c_value": "",
-      "total_cholesterol_value": "",
-      "ldl_cholesterol_value": "",
-      "hdl_cholesterol_value": "",
-      "triglycerides_value": "",
-      "blood_pressure_systolic_value": "",
-      "blood_pressure_diastolic_value": "",
-      "bmi_value": "",
-      "other_biomarkers_text": "",
-      "vitamin_a_value": "",
-      "vitamin_d_value": "",
-      "vitamin_e_value": "",
-      "vitamin_k_value": "",
-      "iron_value": "",
-      "calcium_value": "",
-      "magnesium_value": "",
-      "potassium_value": "",
-      "zinc_value": "",
-      "other_supplements_text": "",
+      "blood_glucose_value": null,
+      "hba1c_value": null,
+      "total_cholesterol_value": null,
+      "ldl_cholesterol_value": null,
+      "hdl_cholesterol_value": null,
+      "triglycerides_value": null,
+      "blood_pressure_systolic_value": null,
+      "blood_pressure_diastolic_value": null,
+      "bmi_value": null,
+      "vitamin_a_value": null,
+      "vitamin_d_value": null,
+      "vitamin_e_value": null,
+      "vitamin_k_value": null,
+      "iron_value": null,
+      "calcium_value": null,
+      "magnesium_value": null,
+      "potassium_value": null,
+      "zinc_value": null,
       "gender": "male",
       "activity_level": "light",
       "eating_patterns": "regular",
@@ -1236,18 +1232,10 @@
       "meals_per_day": "2",
       "alcohol_consumption": "socially",
       "smoking_status": "non_smoker",
-      "allergies": [
-        "none"
-      ],
-      "illnesses": [
-        "none"
-      ],
-      "biomarkers": [
-        "none"
-      ],
-      "supplements": [
-        "none"
-      ]
+      "allergies": "none",
+      "illnesses": "none",
+      "biomarkers": "none",
+      "supplements": "none"
     },
     "profileCompletionReward": true,
     "profileCompletionDate": "2025-07-25T05:25:20.553Z",

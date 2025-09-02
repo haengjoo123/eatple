@@ -174,7 +174,7 @@
                 </div>
             </div>
 
-            <button id="startProfileBtn" class="cta-button" onclick="showSection('profile')" disabled>
+            <button id="startProfileBtn" class="cta-button" onclick="startProfileFlow()" disabled>
                 프로필 입력하기
             </button>
         </div>
@@ -479,6 +479,18 @@
         </div>
     </div>
 
+    <!-- 기존 프로필 사용 여부 모달 -->
+    <div id="profileReuseModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <button type="button" class="modal-close" onclick="closeProfileReuseModal()">&times;</button>
+            <h3>기존 프로필을 이용하시겠습니까?</h3>
+            <div class="modal-btn-row">
+                <button id="useExistingProfileBtn" class="modal-btn">네, 기존 프로필 사용</button>
+                <button id="enterNewProfileBtn" class="modal-btn alt">아니오, 새로 입력</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 모바일 하단 네비게이션 바 -->
     <nav class="footer-nav-mobile">
       <ul>
@@ -561,6 +573,94 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="script.js"></script>
     <script>
+      // 프로필 진입 전 완성 여부 확인 후 분기
+      async function startProfileFlow() {
+        try {
+          const authRes = await fetch('/api/auth/me', { credentials: 'include' });
+          const auth = await authRes.json();
+          if (!auth.loggedIn) {
+            // 비로그인: 기존 흐름 유지
+            if (typeof autofillProfileForm === 'function') {
+              await autofillProfileForm();
+            }
+            showSection('profile');
+            return;
+          }
+
+          const statusRes = await fetch('/api/profile/completion-status', { credentials: 'include' });
+          if (!statusRes.ok) {
+            // 실패 시 기존 흐름
+            if (typeof autofillProfileForm === 'function') {
+              await autofillProfileForm();
+            }
+            showSection('profile');
+            return;
+          }
+          const status = await statusRes.json();
+          const isComplete = !!status?.completionInfo?.isComplete;
+
+          if (isComplete) {
+            // 모달 표시 및 선택 분기
+            const modal = document.getElementById('profileReuseModal');
+            if (modal) {
+              modal.style.display = 'flex';
+              // 배경 클릭 닫기 방지 없이 처리
+              const useBtn = document.getElementById('useExistingProfileBtn');
+              const newBtn = document.getElementById('enterNewProfileBtn');
+
+              if (useBtn) {
+                useBtn.onclick = async function () {
+                  try {
+                    const profileRes = await fetch('/api/profile', { credentials: 'include' });
+                    if (profileRes.ok) {
+                      const profile = await profileRes.json();
+                      // 전역 프로필 데이터에 주입하여 이후 프롬프트에 반영
+                      if (typeof profileData !== 'undefined') {
+                        profileData = profile || {};
+                      }
+                    }
+                  } catch (e) {}
+                  closeProfileReuseModal();
+                  showSection('meal_form');
+                };
+              }
+              if (newBtn) {
+                newBtn.onclick = async function () {
+                  closeProfileReuseModal();
+                  if (typeof autofillProfileForm === 'function') {
+                    await autofillProfileForm();
+                  }
+                  showSection('profile');
+                };
+              }
+            } else {
+              // 모달이 없으면 기본 흐름
+              if (typeof autofillProfileForm === 'function') {
+                await autofillProfileForm();
+              }
+              showSection('profile');
+            }
+          } else {
+            // 미완성: 기존대로 프로필 입력으로 이동
+            if (typeof autofillProfileForm === 'function') {
+              await autofillProfileForm();
+            }
+            showSection('profile');
+          }
+        } catch (err) {
+          // 오류 시에도 기존 흐름 유지
+          if (typeof autofillProfileForm === 'function') {
+            await autofillProfileForm();
+          }
+          showSection('profile');
+        }
+      }
+
+      function closeProfileReuseModal() {
+        const modal = document.getElementById('profileReuseModal');
+        if (modal) modal.style.display = 'none';
+      }
+
       // 비로그인 상태에서 일주일 식단 클릭 차단 및 메뉴 개수 제한
       function applyMealPlanRestrictions() {
         // 로그인 상태 확인

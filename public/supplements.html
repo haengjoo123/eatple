@@ -1318,6 +1318,18 @@
       </div>
     </div>
 
+    <!-- 기존 프로필 사용 여부 모달 -->
+    <div id="profileReuseModal" class="modal" style="display: none">
+      <div class="modal-content">
+        <button type="button" class="modal-close" onclick="closeProfileReuseModal()">&times;</button>
+        <h3>기존 프로필을 이용하시겠습니까?</h3>
+        <div class="modal-btn-row">
+          <button id="useExistingProfileBtn" class="modal-btn">네, 기존 프로필 사용</button>
+          <button id="enterNewProfileBtn" class="modal-btn alt">아니오, 새로 입력</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 토스트 메시지 컨테이너 -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -1505,6 +1517,11 @@
         updateSupplementProfileProgress(1);
         updateStep();
       });
+
+      function closeProfileReuseModal() {
+        const modal = document.getElementById('profileReuseModal');
+        if (modal) modal.style.display = 'none';
+      }
 
       // 이벤트 리스너가 이미 등록되었는지 확인하는 플래그
       let eventsSetup = false;
@@ -2700,6 +2717,12 @@
             return;
           }
 
+          // Step 1(건강고민 선택) → Step 2 진입 시점에 재사용 모달 제안
+          if (currentStep === 1) {
+            maybeOfferProfileReuseForSupplements();
+            return; // 모달 선택에서 단계 전환을 처리
+          }
+
           if (currentStep === 2) {
             // Step 2에서 Step 3으로 이동할 때 질문 시스템 시작
             currentStep++;
@@ -2880,6 +2903,71 @@
       function updateNextButton() {
         const nextBtn = document.getElementById("nextBtn");
         nextBtn.disabled = !validateStep(currentStep);
+      }
+
+      // 건강고민 선택 후 프로필 단계 진입 전에 재사용 모달 표시
+      async function maybeOfferProfileReuseForSupplements() {
+        try {
+          const authRes = await fetch('/api/auth/me', { credentials: 'include' });
+          const auth = await authRes.json();
+          if (!auth.loggedIn) {
+            // 비로그인: 바로 프로필 입력 단계로 이동
+            currentStep = 2;
+            updateStep();
+            return;
+          }
+
+          const statusRes = await fetch('/api/profile/completion-status', { credentials: 'include' });
+          if (!statusRes.ok) {
+            currentStep = 2;
+            updateStep();
+            return;
+          }
+          const status = await statusRes.json();
+          const isComplete = !!status?.completionInfo?.isComplete;
+          if (!isComplete) {
+            currentStep = 2;
+            updateStep();
+            return;
+          }
+
+          const modal = document.getElementById('profileReuseModal');
+          if (!modal) {
+            currentStep = 2;
+            updateStep();
+            return;
+          }
+          modal.style.display = 'flex';
+          const useBtn = document.getElementById('useExistingProfileBtn');
+          const newBtn = document.getElementById('enterNewProfileBtn');
+          if (useBtn) {
+            useBtn.onclick = async function () {
+              try {
+                const profileRes = await fetch('/api/profile', { credentials: 'include' });
+                if (profileRes.ok) {
+                  const profile = await profileRes.json();
+                  userProfile = profile || {};
+                }
+              } catch (e) {}
+              closeProfileReuseModal();
+              // 재사용 선택 시 프로필 단계(2) 건너뛰고 질문 단계(3)로 이동
+              currentStep = 3;
+              updateStep();
+              renderSupplementQuestion();
+            };
+          }
+          if (newBtn) {
+            newBtn.onclick = function () {
+              closeProfileReuseModal();
+              currentStep = 2;
+              updateStep();
+            };
+          }
+        } catch (err) {
+          // 오류 시 기본 흐름 유지
+          currentStep = 2;
+          updateStep();
+        }
       }
 
       async function generateAIRecommendations() {

@@ -11,6 +11,9 @@ class NutritionInfoDetailManager {
             isBookmarked: false,
             isLiked: false
         };
+        // 클라이언트 캐시 설정 (SWR 전략)
+        // 왜: Supabase 응답 지연 시 사용자에게 즉시 콘텐츠를 보여주고, 백그라운드에서 최신화하기 위함
+        this.CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12시간 TTL
         
         this.initializeElements();
         this.bindEvents();
@@ -77,11 +80,25 @@ class NutritionInfoDetailManager {
 
         this.showLoading();
 
+        // 1) 캐시가 있으면 즉시 렌더 (SWR의 stale 단계). 이후 백그라운드 재검증
+        const cacheKey = this.getCacheKey(this.nutritionInfoId);
+        const cached = this.readCache(cacheKey);
+        if (cached && cached.data) {
+            this.nutritionInfo = cached.data;
+            await this.loadUserInteractionState(); // 개인화 상태는 캐시하지 않음
+            this.renderNutritionInfoDetail();
+            await this.loadRecommendedInfo();
+            this.showContent();
+        }
+
         try {
             // 영양 정보 상세 데이터 로드
-            const response = await fetch(`/api/nutrition-info/${this.nutritionInfoId}`, {
-                credentials: 'include'
-            });
+            const fetchOptions = { credentials: 'include', headers: {} };
+            if (cached && cached.etag) {
+                // 왜: 서버 ETag와 비교하여 변경 없으면 304 수신
+                fetchOptions.headers['If-None-Match'] = cached.etag;
+            }
+            const response = await fetch(`/api/nutrition-info/${this.nutritionInfoId}`, fetchOptions);
 
             if (!response.ok) {
                 if (response.status === 404) {
@@ -90,10 +107,23 @@ class NutritionInfoDetailManager {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
+            // 2) 서버가 304를 주면 캐시 유지, 아니면 최신 데이터로 갱신
+            if (response.status === 304 && cached && cached.data) {
+                // 변경 없음: 이미 위에서 캐시로 렌더됨 → 조용히 종료
+                return;
+            }
+
             const result = await response.json();
             
             if (result.success) {
                 this.nutritionInfo = result.data;
+                // 응답 ETag 저장 (없으면 생략)
+                const etag = response.headers.get('ETag');
+                this.writeCache(cacheKey, {
+                    data: this.nutritionInfo,
+                    etag: etag || null,
+                    cachedAt: Date.now()
+                });
                 await this.loadUserInteractionState();
                 this.renderNutritionInfoDetail();
                 await this.loadRecommendedInfo();
@@ -103,7 +133,39 @@ class NutritionInfoDetailManager {
             }
         } catch (error) {
             console.error('영양 정보 상세 로딩 오류:', error);
-            this.showError(error.message);
+            if (!(cached && cached.data)) {
+                // 캐시도 없고 네트워크도 실패
+                this.showError(error.message);
+            } else {
+                // 캐시로 이미 보여주고 있는 상태라면 사용자 경험 방해 없이 토스트만
+                this.showToast('네트워크 문제로 캐시 데이터를 표시 중입니다', 'warning');
+            }
+        }
+    }
+
+    // ----- 캐시 유틸 -----
+    getCacheKey(id) {
+        return `nutritionInfoDetail:${id}`;
+    }
+
+    readCache(key) {
+        try {
+            const raw = localStorage.getItem(key);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            // 왜: TTL 초과 시에도 SWR 특성상 우선 표시 후 재검증 위해 반환은 유지
+            return parsed;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    writeCache(key, value) {
+        try {
+            // 저장 데이터는 { data, etag, cachedAt }
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch (_) {
+            // 저장 실패 시 조용히 무시 (quota 등)
         }
     }
 
@@ -296,6 +358,12 @@ class NutritionInfoDetailManager {
     async loadRecommendedInfo() {
         try {
             // 카테고리와 태그 기반 추천 시도
+            // 간단 캐시: 상세 ID별 추천 리스트 캐시 (30분)
+            const recKey = `nutritionInfoDetail:rec:${this.nutritionInfoId}`;
+            const cached = this.readCache(recKey);
+            if (cached && cached.data && cached.cachedAt && Date.now() - cached.cachedAt < 30 * 60 * 1000) {
+                this.renderRecommendedInfo(cached.data);
+            }
             await this.loadCategoryAndTagBasedRecommendations();
         } catch (error) {
             console.log('추천 정보 로드 실패:', error);
@@ -362,7 +430,10 @@ class NutritionInfoDetailManager {
             }
 
             // 최대 4개까지만 표시
-            this.renderRecommendedInfo(recommendedItems.slice(0, 4));
+            const top = recommendedItems.slice(0, 4);
+            this.renderRecommendedInfo(top);
+            // 캐시 저장
+            this.writeCache(`nutritionInfoDetail:rec:${this.nutritionInfoId}`, { data: top, cachedAt: Date.now() });
         } catch (error) {
             console.log('카테고리/태그 기반 추천 실패:', error);
             await this.loadFallbackRecommendations();
@@ -379,7 +450,9 @@ class NutritionInfoDetailManager {
                 const result = await response.json();
                 if (result.success && result.data.length > 0) {
                     const recommendedItems = result.data.filter(item => item.id !== this.nutritionInfoId);
-                    this.renderRecommendedInfo(recommendedItems.slice(0, 4));
+                    const top = recommendedItems.slice(0, 4);
+                    this.renderRecommendedInfo(top);
+                    this.writeCache(`nutritionInfoDetail:rec:${this.nutritionInfoId}`, { data: top, cachedAt: Date.now() });
                 }
             }
         } catch (error) {
@@ -399,7 +472,9 @@ class NutritionInfoDetailManager {
                 if (result.success && result.data.length > 0) {
                     // 현재 정보 제외
                     const recommendedItems = result.data.filter(item => item.id !== this.nutritionInfoId);
-                    this.renderRecommendedInfo(recommendedItems.slice(0, 4));
+                    const top = recommendedItems.slice(0, 4);
+                    this.renderRecommendedInfo(top);
+                    this.writeCache(`nutritionInfoDetail:rec:${this.nutritionInfoId}`, { data: top, cachedAt: Date.now() });
                 } else {
                     // 데이터가 없는 경우 빈 추천 섹션 표시
                     this.renderRecommendedInfo([]);

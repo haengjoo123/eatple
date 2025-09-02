@@ -535,6 +535,18 @@
         </div>
     </div>
 
+    <!-- 기존 프로필 사용 여부 모달 -->
+    <div id="profileReuseModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <button type="button" class="modal-close" onclick="closeProfileReuseModal()">&times;</button>
+            <h3>기존 프로필을 이용하시겠습니까?</h3>
+            <div class="modal-btn-row">
+                <button id="useExistingProfileBtn" class="modal-btn">네, 기존 프로필 사용</button>
+                <button id="enterNewProfileBtn" class="modal-btn alt">아니오, 새로 입력</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
     <script src="restaurant-recommendation.js"></script>
     <script>
@@ -654,7 +666,7 @@
             }
         }
 
-        // 페이지 로드 시 식당 추천 시스템 초기화
+        // 페이지 로드 시 식당 추천 시스템 초기화 및 프로필 완성 여부 확인 모달
         document.addEventListener('DOMContentLoaded', function() {
             // 로그인 제한 적용
             applyLoginRestrictions();
@@ -675,6 +687,11 @@
             // 초기화 시작
             initializeWhenReady();
         });
+
+        function closeProfileReuseModal() {
+          const modal = document.getElementById('profileReuseModal');
+          if (modal) modal.style.display = 'none';
+        }
     </script>
 
     <!-- 모바일 하단 네비게이션 바 -->
