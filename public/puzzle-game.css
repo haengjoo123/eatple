@@ -1,0 +1,9 @@
+.puzzle-board {
+    touch-action: none;
+}
+
+.puzzle-piece.dragging {
+    opacity: 0.85;
+    transform: scale(0.98);
+}
+

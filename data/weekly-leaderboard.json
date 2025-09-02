@@ -17,8 +17,26 @@
         "lastUpdated": "2025-09-01T06:02:18.088Z"
       }
     ],
-    "memory-game": [],
-    "puzzle-game": []
+    "memory-game": [
+      {
+        "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+        "playerName": "관리자",
+        "score": 370,
+        "gameId": "memory-game",
+        "firstRecorded": "2025-09-02T06:39:00.284Z",
+        "lastUpdated": "2025-09-02T06:39:00.284Z"
+      }
+    ],
+    "puzzle-game": [
+      {
+        "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+        "playerName": "관리자",
+        "score": 415,
+        "gameId": "puzzle-game",
+        "firstRecorded": "2025-09-02T06:25:20.393Z",
+        "lastUpdated": "2025-09-02T06:33:47.886Z"
+      }
+    ]
   },
   "history": [
     {

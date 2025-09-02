@@ -56,8 +56,19 @@ class PuzzleGame {
         this.updateUI();
     }
     
-    startGame() {
+    async startGame() {
         if (this.gameState === 'PLAYING') return;
+        
+        // 실제 시작 시점에 세션을 새로 발급하여 서버의 세션 시작 시간과 동기화
+        try {
+            if (window.gameResultUI && typeof window.gameResultUI.fetchNewGameSession === 'function') {
+                // 로컬스토리지의 gameId가 존재해야 함 (mini-games에서 설정됨)
+                await window.gameResultUI.fetchNewGameSession();
+                this.gameSessionId = localStorage.getItem('gameSessionId');
+            }
+        } catch (e) {
+            console.warn('세션 동기화 실패(게임은 계속 진행):', e);
+        }
         
         // 이미 섞인 상태가 아니라면 섞기
         if (!this.isShuffled) {
@@ -212,6 +223,8 @@ class PuzzleGame {
     createPuzzleElements() {
         const puzzleBoard = document.getElementById('puzzleBoard');
         puzzleBoard.innerHTML = '';
+        // 포인터 제스처와 스크롤 충돌 방지
+        puzzleBoard.style.touchAction = 'none';
         
         // 모든 위치를 순회하면서 조각이나 빈 공간 생성
         for (let row = 0; row < this.puzzleSize; row++) {
@@ -281,43 +294,69 @@ class PuzzleGame {
     }
     
     addPieceEventListeners(element, piece) {
-        if (this.isTouchDevice) {
-            // 터치 이벤트
-            element.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                if (!piece.isEmpty && this.gameState === 'PLAYING') {
-                    element.style.transform = 'scale(0.95)';
-                    element.style.opacity = '0.8';
+        // 공통: 포인터 이벤트 기반 드래그(모바일/PC 동일 동작)
+        let pointerDragging = false;
+        let startRow = 0;
+        let startCol = 0;
+        
+        element.addEventListener('pointerdown', (e) => {
+            if (this.gameState !== 'PLAYING') return;
+            // 마우스 오른쪽 등은 무시
+            if (e.button && e.button !== 0) return;
+            pointerDragging = true;
+            element.setPointerCapture?.(e.pointerId);
+            startRow = piece.currentRow;
+            startCol = piece.currentCol;
+            element.classList.add('dragging');
+        });
+        
+        element.addEventListener('pointermove', (e) => {
+            if (!pointerDragging) return;
+            // 빈칸 위에만 드롭 허용: 이동 중에는 시각적 피드백만
+        });
+        
+        element.addEventListener('pointerup', (e) => {
+            if (!pointerDragging) return;
+            pointerDragging = false;
+            element.releasePointerCapture?.(e.pointerId);
+            element.classList.remove('dragging');
+            
+            // 포인터가 놓인 좌표의 셀을 계산하여 빈칸인지 판단
+            const board = document.getElementById('puzzleBoard');
+            const rect = board.getBoundingClientRect();
+            const cellWidth = rect.width / this.puzzleSize;
+            const cellHeight = rect.height / this.puzzleSize;
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const dropCol = Math.floor(x / cellWidth);
+            const dropRow = Math.floor(y / cellHeight);
+            
+            if (dropRow === this.emptyPosition.row && dropCol === this.emptyPosition.col) {
+                // 조각이 실제로 빈칸과 인접한지 검증 후 이동
+                if (this.canMovePiece(piece)) {
+                    this.movePiece(piece);
                 }
-                this.handlePieceTouch(piece);
-            });
-            
-            element.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                element.style.transform = '';
-                element.style.opacity = '';
-            });
-        } else {
-            // 마우스 이벤트 (드래그 앤 드롭)
-            element.draggable = true;
-            
-            element.addEventListener('dragstart', (e) => {
-                this.handleDragStart(e, piece);
-            });
-            
-            element.addEventListener('dragover', (e) => {
-                e.preventDefault();
-            });
-            
-            element.addEventListener('drop', (e) => {
-                e.preventDefault();
-                this.handleDrop(e, piece);
-            });
-            
-            element.addEventListener('click', () => {
-                this.handlePieceClick(piece);
-            });
-        }
+            } else {
+                // 보조: 클릭으로도 이동 가능(인접 시)
+                if (this.canMovePiece(piece)) {
+                    // 포인터업 위치가 빈칸이 아니면 이동하지 않음
+                }
+            }
+        });
+        
+        // 키보드/클릭 보조 동작 유지
+        element.addEventListener('click', () => {
+            if (this.gameState !== 'PLAYING') return;
+            if (this.canMovePiece(piece)) {
+                this.movePiece(piece);
+            }
+        });
+        
+        // 기존 마우스 D&D는 유지하되 포인터와 중복되지 않도록 최소화
+        element.draggable = true;
+        element.addEventListener('dragstart', (e) => { this.handleDragStart(e, piece); });
+        element.addEventListener('dragover', (e) => { e.preventDefault(); });
+        element.addEventListener('drop', (e) => { e.preventDefault(); this.handleDrop(e, piece); });
     }
     
     createReferenceElements() {
@@ -832,7 +871,8 @@ class PuzzleGame {
         // 결과 화면 표시
         await window.gameResultUI.showResult(gameResult, {
             title: '퍼즐 완성!',
-            successTitle: '🧩 퍼즐 게임 완료!'
+            successTitle: '🧩 퍼즐 게임 완료!',
+            showLeaderboard: true
         });
         
         // 버튼 상태 초기화

@@ -61,6 +61,27 @@ body {
   color: #4a7c59;
 }
 
+/* 로고 오른쪽 '잇플 메인' 링크 스타일 - 로고와 간격 부여 */
+.home-link {
+  display: inline-block;
+  margin-left: 14px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #747272;
+  text-decoration: underline;
+  text-decoration-color: #b0b0b0;
+  text-underline-offset: 3px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+  vertical-align: middle;
+}
+
+.home-link:hover {
+  color: #732d91;
+}
+
 /* 카테고리 드롭다운 스타일 */
 .category-dropdown {
   position: relative;
@@ -521,7 +542,6 @@ body {
 
 .action-btn:hover {
   color: #4a7c59;
-  background-color: rgba(74, 124, 89, 0.1);
 }
 
 .cart-count {
@@ -1674,18 +1694,6 @@ body {
   scroll-behavior: smooth;
 }
 
-/* 포커스 접근성 개선 */
-.nav-link:focus,
-.category-btn:focus,
-.action-btn:focus,
-.hero-btn:focus,
-.buy-button:focus,
-.cart-add-button:focus,
-.modal-btn:focus {
-  outline: 2px solid #4a7c59;
-  outline-offset: 2px;
-}
-
 .product-card:focus,
 .promotion-card:focus {
   outline: 3px solid #4a7c59;
@@ -1887,6 +1895,7 @@ textarea {
   text-align: center;
   padding: 60px 20px;
   color: #666;
+  flex-direction: column;
 }
 
 .empty-state-icon {
@@ -2840,7 +2849,7 @@ textarea {
   }
   
   .store-hamburger-modal.active {
-    display: flex;
+    display: flex; /* 모바일에서만 토글로 노출 */
   }
   
   .store-hamburger-modal-content {
@@ -3087,6 +3096,12 @@ textarea {
     width: auto;
   }
 
+  /* 모바일에서 home-link를 아래 정렬 */
+  .home-link {
+    align-self: flex-end;
+    line-height: 1;
+  }
+
   .logo {
     font-size: 24px;
   }
@@ -3156,10 +3171,6 @@ textarea {
     min-width: 48px;
     min-height: 0px;
     position: relative;
-  }
-
-  .action-btn.cart-btn:hover {
-    background: #e9ecef;
   }
 
   .action-btn.cart-btn svg {
@@ -3713,6 +3724,17 @@ textarea {
     font-size: 13px;
   }
 
+  /* products-section 내 empty-state 세로 정렬 및 전체 열 차지 */
+  .products-section .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 220px;
+  }
+
   .product-cart-section {
     padding: 0px;
   }
@@ -3730,7 +3752,137 @@ textarea {
   }
 }
 
+/* ----------------------------
+   스토어 푸터 스타일
+   - index.html 푸터 스타일을 참고하여 스토어 전용 클래스로 구성
+   - 클래스명 충돌 방지: 접두사 store- 사용
+----------------------------- */
+.store-footer-nav-mobile { /* 기본: 모든 해상도에서 숨김 (모바일 미디어쿼리에서만 보임) */
+  display: none;
+}
+.store-hamburger-modal { /* 기본: 모든 해상도에서 숨김 */
+  display: none;
+}
+
+.store-hamburger-modal.active { /* 데스크톱 가드: 모바일 전용 토글이므로 기본은 숨김 */
+  display: none;
+}
+.store-footer {
+  background: #333;
+  color: #fff;
+  padding: 3rem 0 2rem;
+}
+
+.store-footer-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+}
+
+.store-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.store-brand-logo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.store-footer-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.2rem 2rem;
+}
+
+.store-footer-section h4 {
+  margin-bottom: 1rem;
+  color: #ffd700;
+}
+
+.store-footer-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.store-footer-section li { margin-bottom: 0.5rem; }
+
+.store-footer-section a {
+  color: #ccc;
+  text-decoration: none;
+}
+
+.store-footer-section a:hover { color: #ffd700; }
+
+.store-business-info {
+  border-top: 1px solid rgba(255,255,255,0.15);
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+}
+
+.store-business-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem 1.5rem;
+}
+
+.store-business-info .label {
+  display: inline-block;
+  min-width: 120px;
+  color: #bbb;
+}
+
+.store-business-info .value { color: #fff; }
+
+.store-footer-bottom {
+  text-align: center;
+  padding-top: 1.5rem;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+/* 반응형: 모바일 */
+@media (max-width: 768px) {
+  .store-footer {
+    padding: 2.5rem 0 1.5rem;
+  }
+
+  .store-footer-content { grid-template-columns: 1fr; }
+
+  .store-footer-brand { margin-bottom: 1.2rem; }
+
+  .store-brand-logo { font-size: 1.4rem; }
+
+  .store-footer-links { grid-template-columns: repeat(2, 1fr); }
+
+  .store-footer-section h4 { font-size: 1.1rem; }
+
+  .store-business-info ul { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 480px) {
+  /* store-footer 480px typography and spacing */
+  .store-footer { padding: 2rem 0 1rem; }
+  .store-brand-logo { font-size: 1.2rem; }
+  .store-footer-links { grid-template-columns: 1fr; gap: 0.8rem; }
+  .store-footer-section h4 { font-size: 0.95rem; margin-bottom: 0.5rem; }
+  .store-footer-section a { font-size: 0.85rem; }
+  .store-business-info { padding-top: 0.8rem; }
+  .store-business-info ul { gap: 0.35rem 0.8rem; }
+  .store-business-info .label { min-width: 84px; font-size: 0.8rem; }
+  .store-business-info .value { font-size: 0.85rem; }
+  .store-footer-bottom { font-size: 0.75rem; padding-top: 0.8rem; }
+
+
+  .store-footer-content {
+    gap: 0rem;
+  }
   .featured-slider-wrapper {
     margin: 0 5px;
   }
@@ -4359,5 +4511,12 @@ textarea {
   
   .search-history {
     padding: 15px;
+  }
+}
+
+/* 모바일 하단 네비 강제 표시 (전역 숨김 규칙 이후 우선 적용) */
+@media (max-width: 768px) {
+  .store-footer-nav-mobile {
+    display: block;
   }
 }

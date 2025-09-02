@@ -10,8 +10,8 @@
     "isAdmin": true,
     "role": "admin",
     "gamePoints": {
-      "totalPoints": 4383,
-      "dailyEarned": 0,
+      "totalPoints": 4439,
+      "dailyEarned": 56,
       "dailyLimit": 100,
       "lastEarnedDate": "2025-09-02",
       "history": [
@@ -1138,16 +1138,70 @@
           "timestamp": "2025-09-01T06:02:18.073Z",
           "description": "스네이크 게임에서 300점 획득",
           "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756788749419",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-09-02T04:52:29.419Z",
+          "description": "스네이크 게임에서 20점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756788866008",
+          "type": "earn",
+          "amount": 3,
+          "source": "mini-game",
+          "timestamp": "2025-09-02T04:54:26.008Z",
+          "description": "스네이크 게임에서 90점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756794320381",
+          "type": "earn",
+          "amount": 13,
+          "source": "mini-game",
+          "timestamp": "2025-09-02T06:25:20.381Z",
+          "description": "퍼즐 게임에서 329점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756794600329",
+          "type": "earn",
+          "amount": 12,
+          "source": "mini-game",
+          "timestamp": "2025-09-02T06:30:00.329Z",
+          "description": "퍼즐 게임에서 315점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756794827878",
+          "type": "earn",
+          "amount": 16,
+          "source": "mini-game",
+          "timestamp": "2025-09-02T06:33:47.878Z",
+          "description": "퍼즐 게임에서 415점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756795140266",
+          "type": "earn",
+          "amount": 11,
+          "source": "mini-game",
+          "timestamp": "2025-09-02T06:39:00.266Z",
+          "description": "기억력 게임에서 370점 획득",
+          "bypassedDailyLimit": false
         }
       ]
     },
     "serviceUsage": {
       "mealPlan": 32,
-      "restaurantRecommendation": 30,
+      "restaurantRecommendation": 31,
       "supplementRecommendation": 167,
       "ingredientAnalysis": 24,
-      "mini-game": 118,
-      "lastUpdated": "2025-09-01T06:02:18.079Z"
+      "mini-game": 124,
+      "lastUpdated": "2025-09-02T06:39:00.276Z"
     },
     "profile": {
       "age": "31",

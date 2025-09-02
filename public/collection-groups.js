@@ -90,6 +90,9 @@ class CollectionGroupsPage {
         
         // PC용 필터 기능 초기화 (category.html과 동일)
         this.initPCFilters();
+
+        // 헤더 장바구니 버튼 이벤트 설정
+        this.setupCartButtonEvents();
     }
 
     // 현재 그룹에 맞게 헤더 네비게이션 active 처리
@@ -375,6 +378,21 @@ class CollectionGroupsPage {
         
         // 상품 상세 모달 이벤트
         this.setupProductDetailModal();
+    }
+
+    // 헤더의 장바구니 버튼 클릭 시 cart.html로 이동
+    setupCartButtonEvents() {
+        try {
+            const cartButtons = document.querySelectorAll('.cart-btn');
+            cartButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = 'cart.html';
+                });
+            });
+        } catch (error) {
+            console.warn('장바구니 버튼 이벤트 설정 오류:', error);
+        }
     }
     
 

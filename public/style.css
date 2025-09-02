@@ -1941,7 +1941,6 @@ button.save-button:focus {
 
 .tip-content {
   background: #f7f3fd;
-  border-left: 3px solid #7d2ae1;
   padding: 0.5em 1em;
   margin-bottom: 1em;
 }
@@ -1957,7 +1956,6 @@ button.save-button:focus {
 
 .reason-content {
   background: #f3fdf7;
-  border-left: 3px solid #2a7d3a;
   padding: 0.5em 1em;
   margin-bottom: 1em;
 }
