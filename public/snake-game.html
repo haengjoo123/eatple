@@ -82,6 +82,7 @@
             max-height: 525px;
             width: 595px;
             height: 525px;
+            box-sizing: border-box;
         }
 
         .game-controls {
@@ -181,6 +182,10 @@
             .game-container {
                 padding: 1rem;
                 max-width: 95vw;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                box-sizing: border-box;
             }
 
             .game-title {
@@ -210,9 +215,12 @@
             }
 
             #gameCanvas {
-                max-width: 100%;
-                width: 100%;
+                max-width: calc(100% - 2rem);
+                width: calc(100% - 2rem);
                 height: auto;
+                margin: 0 auto;
+                display: block;
+                box-sizing: border-box;
             }
 
             .direction-btn {
@@ -239,6 +247,10 @@
                 max-width: 98vw;
                 max-height: none;
                 margin: 0.5rem auto;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                box-sizing: border-box;
             }
 
             .game-title {
@@ -264,16 +276,18 @@
             }
 
             #gameCanvas {
-                width: 100%;
-                max-width: 476px;
-                height: 420px;
+                width: calc(100% - 1.5rem);
+                max-width: calc(410px - 1.5rem);
+                max-height: 360px;
+                margin: 0 auto;
+                display: block;
+                box-sizing: border-box;
             }
 
             .game-controls {
-                flex-direction: column;
+                width: 100%;
                 align-items: center;
                 gap: 0.5rem;
-                margin-top: 0.75rem;
             }
 
             .control-btn {
@@ -281,6 +295,7 @@
                 max-width: 200px;
                 padding: 0.6rem 1rem;
                 font-size: 0.9rem;
+                margin-top: 10px;
             }
 
             .direction-pad {
@@ -304,6 +319,10 @@
         @media (max-width: 360px) {
             .game-container {
                 padding: 0.5rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                box-sizing: border-box;
             }
 
             .game-title {
@@ -311,8 +330,12 @@
             }
 
             #gameCanvas {
-                max-width: 442px;
+                width: calc(100% - 1rem);
+                max-width: calc(442px - 1rem);
                 height: 390px;
+                margin: 0 auto;
+                display: block;
+                box-sizing: border-box;
             }
 
             .direction-btn {

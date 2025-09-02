@@ -7,7 +7,16 @@
     "displayText": "2025년 9월 1일 주차"
   },
   "leaderboards": {
-    "snake-game": [],
+    "snake-game": [
+      {
+        "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+        "playerName": "관리자",
+        "score": 300,
+        "gameId": "snake-game",
+        "firstRecorded": "2025-09-01T05:58:43.036Z",
+        "lastUpdated": "2025-09-01T06:02:18.088Z"
+      }
+    ],
     "memory-game": [],
     "puzzle-game": []
   },

@@ -10,10 +10,10 @@
     "isAdmin": true,
     "role": "admin",
     "gamePoints": {
-      "totalPoints": 4349,
+      "totalPoints": 4383,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-09-01",
+      "lastEarnedDate": "2025-09-02",
       "history": [
         {
           "id": "1753341193454",
@@ -1084,6 +1084,60 @@
           "timestamp": "2025-09-01T00:29:48.096Z",
           "description": "퍼즐 게임 주간 리더보드 1등 보상",
           "bypassedDailyLimit": true
+        },
+        {
+          "id": "1756706323018",
+          "type": "earn",
+          "amount": 7,
+          "source": "mini-game",
+          "timestamp": "2025-09-01T05:58:43.018Z",
+          "description": "스네이크 게임에서 190점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756706344503",
+          "type": "earn",
+          "amount": 2,
+          "source": "mini-game",
+          "timestamp": "2025-09-01T05:59:04.503Z",
+          "description": "스네이크 게임에서 60점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756706362989",
+          "type": "earn",
+          "amount": 4,
+          "source": "mini-game",
+          "timestamp": "2025-09-01T05:59:22.989Z",
+          "description": "스네이크 게임에서 100점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756706396790",
+          "type": "earn",
+          "amount": 6,
+          "source": "mini-game",
+          "timestamp": "2025-09-01T05:59:56.790Z",
+          "description": "스네이크 게임에서 150점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756706420611",
+          "type": "earn",
+          "amount": 3,
+          "source": "mini-game",
+          "timestamp": "2025-09-01T06:00:20.611Z",
+          "description": "스네이크 게임에서 90점 획득",
+          "bypassedDailyLimit": false
+        },
+        {
+          "id": "1756706538073",
+          "type": "earn",
+          "amount": 12,
+          "source": "mini-game",
+          "timestamp": "2025-09-01T06:02:18.073Z",
+          "description": "스네이크 게임에서 300점 획득",
+          "bypassedDailyLimit": false
         }
       ]
     },
@@ -1092,8 +1146,8 @@
       "restaurantRecommendation": 30,
       "supplementRecommendation": 167,
       "ingredientAnalysis": 24,
-      "mini-game": 112,
-      "lastUpdated": "2025-09-01T05:25:50.885Z"
+      "mini-game": 118,
+      "lastUpdated": "2025-09-01T06:02:18.079Z"
     },
     "profile": {
       "age": "31",
@@ -1201,7 +1255,7 @@
       "totalPoints": 342,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-09-01",
+      "lastEarnedDate": "2025-09-02",
       "history": [
         {
           "id": "1754977248434",
@@ -1298,7 +1352,7 @@
       "totalPoints": 216,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-09-01",
+      "lastEarnedDate": "2025-09-02",
       "history": [
         {
           "id": "1756537539645",

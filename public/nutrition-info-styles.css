@@ -1086,9 +1086,9 @@ body.nutrition-detail-page .container {
 .product-name {
   font-weight: 600;
   color: #1f2937;
-  margin-bottom: 8px;
   font-size: 1rem;
   line-height: 1.4;
+  text-align: center;
 }
 
 .product-description {
@@ -1129,6 +1129,44 @@ body.nutrition-detail-page .container {
   font-size: 0.8rem;
 }
 
+/* iframe 상품 링크 스타일 */
+.product-iframe-container {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+.product-iframe {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.product-iframe:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* 링크 없는 경우 스타일 */
+.product-no-link {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 20px;
+  background: #9ca3af;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.no-link-text {
+  opacity: 0.8;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 1024px) {
   .nutrition-grid {
@@ -1140,6 +1178,11 @@ body.nutrition-detail-page .container {
   }
   .detail-products {
     grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .product-iframe {
+    width: 100px;
+    height: 200px;
   }
 }
 
@@ -1155,6 +1198,20 @@ body.nutrition-detail-page .container {
   .breadcrumb {
     font-size: 0.85rem;
     gap: 6px;
+  }
+  
+  .detail-products {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .product-iframe {
+    width: 120px;
+    height: 240px;
+  }
+  
+  .product-iframe-container {
+    padding: 6px;
   }
 
   /* 추천 섹션 - 모바일 스타일 */

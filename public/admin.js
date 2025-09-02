@@ -2046,6 +2046,15 @@ function resetForm() {
     const field = document.getElementById(fieldId);
     if (field) {
       field.value = '';
+      // iframe 링크 입력칸 스타일 초기화
+      if (field.classList.contains('iframe-link-input')) {
+        field.style.borderColor = '#d1d5db';
+        const helpText = field.parentNode.querySelector('.iframe-link-help small');
+        if (helpText) {
+          helpText.textContent = '쿠팡 파트너스 iframe의 src 속성 값만 입력하세요';
+          helpText.style.color = '#6b7280';
+        }
+      }
     }
   });
 }
@@ -2582,6 +2591,9 @@ function getThumbnailData() {
       setupThumbnailUpload();
     }
 
+    // iframe 링크 입력 검증 설정
+    setupIframeLinkValidation();
+
     // 폼 제출 리스너 연결(중복 방지 위해 once 형태로 연결)
     const nutritionPostingForm = document.getElementById('nutritionPostingForm');
     if (nutritionPostingForm && !nutritionPostingForm.__boundSubmit) {
@@ -2591,11 +2603,64 @@ function getThumbnailData() {
   };
 })();
 
+// iframe 링크 입력 검증 설정
+function setupIframeLinkValidation() {
+  const iframeInputs = document.querySelectorAll('.iframe-link-input');
+  
+  iframeInputs.forEach(input => {
+    input.addEventListener('input', function() {
+      const value = this.value.trim();
+      const helpText = this.parentNode.querySelector('.iframe-link-help small');
+      
+      if (value) {
+        // iframe src 형식 검증
+        if (value.includes('coupa.ng') || value.includes('iframe') || value.startsWith('http')) {
+          this.style.borderColor = '#10b981';
+          if (helpText) {
+            helpText.textContent = '✅ 올바른 iframe 링크 형식입니다';
+            helpText.style.color = '#10b981';
+          }
+        } else {
+          this.style.borderColor = '#ef4444';
+          if (helpText) {
+            helpText.textContent = '⚠️ iframe src 링크를 입력해주세요 (예: https://coupa.ng/cjIiFf)';
+            helpText.style.color = '#ef4444';
+          }
+        }
+      } else {
+        this.style.borderColor = '#d1d5db';
+        if (helpText) {
+          helpText.textContent = '쿠팡 파트너스 iframe의 src 속성 값만 입력하세요';
+          helpText.style.color = '#6b7280';
+        }
+      }
+    });
+  });
+}
+
 // 영양정보 포스팅 폼 제출 처리
 async function handleNutritionPostingSubmit(event) {
   event.preventDefault();
   
   const form = event.target;
+  
+  // iframe 링크 검증
+  const iframeInputs = document.querySelectorAll('.iframe-link-input');
+  let hasInvalidLink = false;
+  
+  iframeInputs.forEach(input => {
+    const value = input.value.trim();
+    if (value && !(value.includes('coupa.ng') || value.includes('iframe') || value.startsWith('http'))) {
+      hasInvalidLink = true;
+      input.style.borderColor = '#ef4444';
+      input.focus();
+    }
+  });
+  
+  if (hasInvalidLink) {
+    alert('올바른 iframe 링크 형식을 입력해주세요.\n예시: https://coupa.ng/cjIiFf');
+    return;
+  }
   
   // JSON 데이터로 구성
   const postData = {

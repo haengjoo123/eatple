@@ -124,6 +124,12 @@ class SnakeGame extends GameEngine {
             });
         });
         
+        // 모바일 온스크린 패드 숨김 (스와이프만 사용)
+        const mobileControls = document.querySelector('.mobile-controls');
+        if (mobileControls) {
+            mobileControls.style.display = 'none';
+        }
+        
         // 캔버스 스와이프 제스처 추가
         this.setupSwipeControls();
     }

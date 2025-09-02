@@ -10849,13 +10849,6 @@ input[type="email"]:focus:invalid {
   margin-bottom: 20px;
 }
 
-.detail-item {
-  display: flex;
-  margin-bottom: 8px;
-  align-items: flex-start;
-  gap: 8px;
-}
-
 .detail-item:last-child {
   margin-bottom: 0;
 }

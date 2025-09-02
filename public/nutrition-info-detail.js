@@ -260,21 +260,22 @@ class NutritionInfoDetailManager {
             <div class="product-item">
                 <div class="product-info">
                     <div class="product-name">${this.escapeHtml(product.product_name)}</div>
-                    <div class="product-description">관련 상품</div>
                 </div>
                 ${product.product_link ? `
-                    <a href="${this.escapeHtml(product.product_link)}" 
-                       target="_blank" 
-                       rel="noopener noreferrer" 
-                       class="product-link-btn"
-                       onclick="this.blur();">
-                        <span class="product-link-icon">🛒</span>
-                        구매하기
-                    </a>
+                    <div class="product-iframe-container">
+                        <iframe src="${this.escapeHtml(product.product_link)}" 
+                                width="120" 
+                                height="240" 
+                                frameborder="0" 
+                                scrolling="no" 
+                                referrerpolicy="unsafe-url" 
+                                class="product-iframe">
+                        </iframe>
+                    </div>
                 ` : `
-                    <span class="product-link-btn" style="background: #9ca3af; cursor: not-allowed;">
-                        링크 없음
-                    </span>
+                    <div class="product-no-link">
+                        <span class="no-link-text">링크 없음</span>
+                    </div>
                 `}
             </div>
         `).join('');
