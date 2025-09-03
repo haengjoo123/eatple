@@ -2849,7 +2849,7 @@ textarea {
   }
   
   .store-hamburger-modal.active {
-    display: flex; /* 모바일에서만 토글로 노출 */
+    display: flex !important; /* 모바일에서만 토글로 노출 */
   }
   
   .store-hamburger-modal-content {
@@ -3764,8 +3764,11 @@ textarea {
   display: none;
 }
 
-.store-hamburger-modal.active { /* 데스크톱 가드: 모바일 전용 토글이므로 기본은 숨김 */
-  display: none;
+/* 데스크톱에서는 햄버거 모달 비활성화, 모바일에서만 활성화 */
+@media (min-width: 769px) {
+  .store-hamburger-modal.active {
+    display: none !important;
+  }
 }
 .store-footer {
   background: #333;
@@ -4295,7 +4298,7 @@ textarea {
 
   /* 햄버거 메뉴 모달 480px 최적화 */
   .store-hamburger-modal {
-    bottom: 40px;
+    bottom: 50px;
   }
 
   .store-hamburger-modal-content {
