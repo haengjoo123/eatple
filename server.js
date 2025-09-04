@@ -131,10 +131,11 @@ app.use("/api/nutrition-info", nutritionInfoRouter);
 app.use("/api/admin/nutrition-info", require("./routes/admin-nutrition-info"));
 app.use("/api/admin/manual-posting", require("./routes/admin-manual-posting"));
 app.use("/api/admin/monitoring", require("./routes/monitoring"));
-app.use("/api/admin/products", require("./routes/admin-products"));
-app.use("/api/admin/product-categories", require("./routes/admin-categories"));
-app.use("/api/promotions", require("./routes/promotions"));
-app.use("/api/shop", require("./routes/shop"));
+// 잇플스토어 일시 비활성화 - 재활성화시 주석 해제
+// app.use("/api/admin/products", require("./routes/admin-products"));
+// app.use("/api/admin/product-categories", require("./routes/admin-categories"));
+// app.use("/api/promotions", require("./routes/promotions"));
+// app.use("/api/shop", require("./routes/shop"));
 // YouTube API와 News API 라우터는 현재 비활성화
 // app.use("/api/youtube", require("./routes/youtube"));
 // app.use("/api/news", require("./routes/news"));
@@ -603,7 +604,8 @@ app.get("/api/naver-client-id", (req, res) => {
   res.json({ clientId: process.env.NAVER_CLOUD_CLIENT_ID });
 });
 
-// 상품 문의 API 엔드포인트 (Supabase 사용)
+// 잇플스토어 일시 비활성화 - 상품 문의 API 엔드포인트 (Supabase 사용)
+/*
 app.get("/api/product-inquiries", async (req, res) => {
   try {
     const inquiries = await supabaseService.getProductInquiries();
@@ -629,7 +631,9 @@ app.get("/api/product-inquiries", async (req, res) => {
     });
   }
 });
+*/
 
+/*
 app.put("/api/product-inquiries/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -650,8 +654,10 @@ app.put("/api/product-inquiries/:id", async (req, res) => {
     res.status(500).json({ error: "문의 업데이트에 실패했습니다." });
   }
 });
+*/
 
-// 특정 상품의 문의 조회
+// 잇플스토어 일시 비활성화 - 특정 상품의 문의 조회
+/*
 app.get("/api/products/:productId/inquiries", async (req, res) => {
   try {
     const { productId } = req.params;
@@ -664,8 +670,10 @@ app.get("/api/products/:productId/inquiries", async (req, res) => {
     res.status(500).json({ error: "상품 문의를 불러올 수 없습니다." });
   }
 });
+*/
 
-// Supabase 제품 API 엔드포인트
+// 잇플스토어 일시 비활성화 - Supabase 제품 API 엔드포인트
+/*
 app.get("/api/products", async (req, res) => {
   try {
     const products = await supabaseService.getProducts();
@@ -675,7 +683,9 @@ app.get("/api/products", async (req, res) => {
     res.status(500).json({ error: "제품 데이터를 불러오는데 실패했습니다." });
   }
 });
+*/
 
+/*
 app.post("/api/products", async (req, res) => {
   try {
     const {
@@ -730,7 +740,9 @@ app.post("/api/products", async (req, res) => {
     res.status(500).json({ error: "제품 추가에 실패했습니다." });
   }
 });
+*/
 
+/*
 app.put("/api/products/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -786,7 +798,9 @@ app.put("/api/products/:id", async (req, res) => {
     res.status(500).json({ error: "제품 업데이트에 실패했습니다." });
   }
 });
+*/
 
+/*
 app.delete("/api/products/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -799,8 +813,10 @@ app.delete("/api/products/:id", async (req, res) => {
     res.status(500).json({ error: "제품 삭제에 실패했습니다." });
   }
 });
+*/
 
-// 제품 이미지 업데이트 엔드포인트
+// 잇플스토어 일시 비활성화 - 제품 이미지 업데이트 엔드포인트
+/*
 app.put("/api/products/:id/images", async (req, res) => {
   try {
     const { id } = req.params;
@@ -821,6 +837,7 @@ app.put("/api/products/:id/images", async (req, res) => {
     res.status(500).json({ error: "제품 이미지 업데이트에 실패했습니다." });
   }
 });
+*/
 
 // 루트 경로에서 index.html 제공
 app.get("/", (req, res) => {

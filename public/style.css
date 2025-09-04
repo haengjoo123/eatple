@@ -26,6 +26,22 @@
   transition: color 0.3s ease;
 }
 
+/* 로고 이미지 스타일 */
+.logo-image {
+  height: 32px;
+  width: auto;
+  transition: opacity 0.3s ease;
+}
+
+.site-brand-fixed .logo-image {
+  height: 28px;
+}
+
+.brand-logo .logo-image {
+  height: 32px;
+  width: auto;
+}
+
 .site-brand-fixed a:hover {
   color: var(--secondary);
 }
@@ -2870,6 +2886,10 @@ body.mypage-page .main-nav {
   color: #667eea;
   text-decoration: none;
   transition: color 0.3s ease;
+}
+
+.nav-brand .logo-image {
+  height: 36px;
 }
 
 .nav-brand a:hover {

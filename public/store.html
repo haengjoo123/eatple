@@ -15,6 +15,14 @@
     <link rel="prefetch" as="image" href="images/hero-background_02.png" />
     <link rel="prefetch" as="image" href="images/hero-background_03.png" />
     <link rel="prefetch" as="image" href="images/hero-background_04.png" />
+    <!-- 잇플스토어 일시 비활성화 스크립트 -->
+    <script>
+      // 스토어 접근 차단 - 재활성화시 이 스크립트 블록 전체 삭제
+      document.addEventListener('DOMContentLoaded', function() {
+        alert('잇플스토어는 현재 일시적으로 이용할 수 없습니다.\n빠른 시일 내에 재오픈하겠습니다.\n\n잇플 메인 페이지로 이동합니다.');
+        window.location.href = 'index.html';
+      });
+    </script>
   </head>
   <body>
     <!-- 헤더 상단 -->
@@ -22,7 +30,9 @@
       <div class="container">
         <div class="header-top-content">
           <div class="header-left">
-            <a href="store.html" class="logo">잇플</a>
+            <a href="store.html" class="logo">
+              <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+            </a>
             <a href="index.html" class="home-link" aria-label="잇플 메인으로 이동">잇플 메인으로 이동</a>
           </div>
 
@@ -678,7 +688,9 @@
       <div class="container">
         <div class="store-footer-content">
           <div class="store-footer-brand">
-            <div class="store-brand-logo">잇플</div>
+            <div class="store-brand-logo">
+              <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+            </div>
             <p>건강한 식생활을 위한 종합 플랫폼</p>
           </div>
           <div class="store-footer-links">

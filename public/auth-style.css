@@ -46,6 +46,11 @@ body {
   transition: var(--transition);
 }
 
+.site-brand-fixed .logo-image {
+  height: 28px;
+  width: auto;
+}
+
 .site-brand-fixed a:hover {
   color: var(--primary-dark);
 }

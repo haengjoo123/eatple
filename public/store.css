@@ -57,6 +57,16 @@ body {
   transition: color 0.3s ease;
 }
 
+.logo .logo-image {
+  height: 32px;
+  width: auto;
+}
+
+.store-brand-logo .logo-image {
+  height: 32px;
+  width: auto;
+}
+
 .logo:hover {
   color: #4a7c59;
 }

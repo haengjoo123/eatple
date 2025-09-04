@@ -510,7 +510,9 @@
       <div class="container">
         <div class="nav-content">
           <div class="nav-brand">
-            <a href="index.html">잇플</a>
+            <a href="index.html">
+              <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+            </a>
           </div>
           <div class="nav-menu">
             <a href="meal-plan.html">뭐 해먹지?</a>
@@ -523,6 +525,8 @@
                 <a href="food-nutrition-search.html">음식 정보 검색</a>
               </div>
             </div>
+            <!-- 잇플스토어 일시 비활성화 - 재활성화시 주석 해제 -->
+            <!--
             <div class="dropdown">
               <a href="store.html" target="_blank" class="dropdown-toggle nav-shop-link"
                 >잇플스토어</a
@@ -530,6 +534,10 @@
               <div class="dropdown-menu">
                 <a href="mini-games.html">🎮 게임포인트</a>
               </div>
+            </div>
+            -->
+            <div class="dropdown">
+              <a href="mini-games.html" class="dropdown-toggle">🎮 게임포인트</a>
             </div>
           </div>
           <div class="nav-auth" id="navAuth">
@@ -743,7 +751,9 @@
       <div class="container">
         <div class="footer-content">
           <div class="footer-brand">
-            <div class="brand-logo">잇플</div>
+            <div class="brand-logo">
+              <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+            </div>
             <p>건강한 식생활을 위한 종합 플랫폼</p>
           </div>
           <div class="footer-links">
@@ -1235,6 +1245,8 @@
             <span class="footer-nav-label">AI기능</span>
           </button>
         </li>
+        <!-- 잇플스토어 일시 비활성화 - 재활성화시 주석 해제 -->
+        <!--
         <li class="footer-nav-item" id="footerNavStore">
           <a href="store.html">
             <span class="footer-nav-icon">
@@ -1247,6 +1259,7 @@
             <span class="footer-nav-label">스토어</span>
           </a>
         </li>
+        -->
         <li class="footer-nav-item" id="footerNavMy">
           <a href="mypage.html">
             <span class="footer-nav-icon">
@@ -1549,12 +1562,16 @@
             window.location.href = "profile.html";
             break;
           case "shop":
+            // 잇플스토어 일시 비활성화 - 재활성화시 주석 해제
+            /*
             // 모바일 환경에서는 같은 창에서 열고, 데스크톱에서는 새창에서 열기
             if (isMobileDevice()) {
               window.location.href = "store.html";
             } else {
               window.open("store.html", "_blank");
             }
+            */
+            alert("잇플스토어는 현재 일시적으로 이용할 수 없습니다. 빠른 시일 내에 재오픈하겠습니다.");
             break;
           default:
             console.log("알 수 없는 기능:", feature);
