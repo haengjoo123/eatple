@@ -1918,8 +1918,8 @@ router.delete('/:id', async (req, res) => {
             const cacheManager = require('../utils/fileCacheManager');
             const stats = cacheManager.getStats();
             
-            // 영양정보 관련 캐시 키 개수 확인
-            const nutritionKeys = cacheManager.getKeysMatching('nutrition:.*');
+            // 영양정보 관련 캐시 키 개수 확인 (비동기 처리)
+            const nutritionKeys = await cacheManager.getKeysMatching('nutrition:.*');
             
             res.json({
                 success: true,

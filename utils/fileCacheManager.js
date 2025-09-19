@@ -10,6 +10,7 @@ class FileCacheManager {
     constructor() {
         this.cacheDir = path.join(__dirname, '../data/cache');
         this.nutritionCacheDir = path.join(this.cacheDir, 'nutrition');
+        this.directoriesInitialized = false;
         this.ensureCacheDirectories();
         
         // 메모리 캐시도 함께 사용 (성능 향상)
@@ -38,8 +39,11 @@ class FileCacheManager {
         try {
             await fs.mkdir(this.cacheDir, { recursive: true });
             await fs.mkdir(this.nutritionCacheDir, { recursive: true });
+            this.directoriesInitialized = true;
+            console.log('[CACHE] 디렉토리 초기화 완료:', this.nutritionCacheDir);
         } catch (error) {
             console.error('캐시 디렉토리 생성 오류:', error);
+            this.directoriesInitialized = false;
         }
     }
 
@@ -188,6 +192,11 @@ class FileCacheManager {
      */
     async clearNamespace(namespace) {
         try {
+            // 디렉토리가 초기화되지 않았으면 0 반환
+            if (!this.directoriesInitialized) {
+                await this.ensureCacheDirectories();
+            }
+            
             const files = await fs.readdir(this.nutritionCacheDir);
             let deletedCount = 0;
             
@@ -221,6 +230,11 @@ class FileCacheManager {
      */
     async clearAll() {
         try {
+            // 디렉토리가 초기화되지 않았으면 0 반환
+            if (!this.directoriesInitialized) {
+                await this.ensureCacheDirectories();
+            }
+            
             const files = await fs.readdir(this.nutritionCacheDir);
             let deletedCount = 0;
             
@@ -297,6 +311,11 @@ class FileCacheManager {
      */
     async getKeysMatching(pattern) {
         try {
+            // 디렉토리가 초기화되지 않았으면 빈 배열 반환
+            if (!this.directoriesInitialized) {
+                await this.ensureCacheDirectories();
+            }
+            
             const files = await fs.readdir(this.nutritionCacheDir);
             const regex = new RegExp(pattern.replace(/\*/g, '.*'));
             
