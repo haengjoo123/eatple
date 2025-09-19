@@ -657,7 +657,7 @@ router.get('/', async (req, res) => {
         console.log('[ROUTE] GET /api/nutrition-info/:id (로컬 캐시 우선)', { params: req.params });
         try {
             const { id } = req.params;
-            const cacheManager = require('../utils/cacheManager');
+            const cacheManager = require('../utils/fileCacheManager');
             
             // 1. 로컬 캐시에서 먼저 확인
             const cacheKey = `nutrition_detail_${id}`;
@@ -878,7 +878,7 @@ router.get('/', async (req, res) => {
             }
 
             // 캐시 무효화
-            const cacheManager = require('../utils/cacheManager');
+            const cacheManager = require('../utils/fileCacheManager');
             cacheManager.delete('nutrition', `nutrition_detail_${id}`);
             cacheManager.invalidatePattern('nutrition:nutrition_list_*');
             console.log(`[CACHE INVALIDATION] 영양정보 ${id} 업데이트로 인한 캐시 무효화`);
@@ -922,7 +922,7 @@ router.get('/', async (req, res) => {
             }
 
             // 캐시 무효화
-            const cacheManager = require('../utils/cacheManager');
+            const cacheManager = require('../utils/fileCacheManager');
             cacheManager.delete('nutrition', `nutrition_detail_${id}`);
             cacheManager.invalidatePattern('nutrition:nutrition_list_*');
             console.log(`[CACHE INVALIDATION] 영양정보 ${id} 삭제로 인한 캐시 무효화`);
@@ -1913,7 +1913,7 @@ router.delete('/:id', async (req, res) => {
      */
     router.get('/cache/status', async (req, res) => {
         try {
-            const cacheManager = require('../utils/cacheManager');
+            const cacheManager = require('../utils/fileCacheManager');
             const stats = cacheManager.getStats();
             
             // 영양정보 관련 캐시 키 개수 확인
@@ -1954,7 +1954,7 @@ router.delete('/:id', async (req, res) => {
                 });
             }
 
-            const cacheManager = require('../utils/cacheManager');
+            const cacheManager = require('../utils/fileCacheManager');
             const { type } = req.query; // 'all', 'nutrition', 'detail', 'list'
             
             let clearedCount = 0;
@@ -2008,7 +2008,7 @@ router.delete('/:id', async (req, res) => {
             }
 
             const { id } = req.params;
-            const cacheManager = require('../utils/cacheManager');
+            const cacheManager = require('../utils/fileCacheManager');
             
             // 해당 영양정보의 캐시 키들 무효화
             const detailKey = `nutrition_detail_${id}`;
@@ -2055,7 +2055,7 @@ router.delete('/:id', async (req, res) => {
             }
 
             const { limit = 20, categories = [] } = req.body;
-            const cacheManager = require('../utils/cacheManager');
+            const cacheManager = require('../utils/fileCacheManager');
             
             console.log(`[CACHE WARM] 영양정보 캐시 워밍 시작 - limit: ${limit}, categories: ${categories.join(', ')}`);
             

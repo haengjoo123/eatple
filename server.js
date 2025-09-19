@@ -1093,5 +1093,44 @@ server.listen(PORT, async () => {
   // 초기 메모리 정리 실행
   setTimeout(performMemoryCleanup, 5000);
 
+  // 프로덕션 환경에서 자동 캐시 워밍
+  if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
+    console.log('🔥 프로덕션 환경 감지 - 자동 캐시 워밍 시작...');
+    setTimeout(async () => {
+      try {
+        const cacheManager = require('./utils/fileCacheManager');
+        const SupabaseNutritionDataManager = require('./utils/supabaseNutritionDataManager');
+        const supabaseDataManager = new SupabaseNutritionDataManager();
+        
+        console.log('📥 인기 영양정보 캐시 워밍 중...');
+        const result = await supabaseDataManager.getNutritionInfoList({}, { page: 1, limit: 20 });
+        const data = result && result.data ? result.data : [];
+        
+        let warmedCount = 0;
+        for (const item of data) {
+          try {
+            const itemData = item && typeof item.toJSON === 'function' ? item.toJSON() : item;
+            const cacheKey = `nutrition_detail_${itemData.id}`;
+            
+            const cacheData = {
+              data: itemData,
+              recommended: [],
+              cachedAt: Date.now()
+            };
+            
+            cacheManager.set('nutrition', cacheKey, cacheData, {}, 1800);
+            warmedCount++;
+          } catch (itemError) {
+            console.error(`캐시 워밍 실패 (ID: ${item.id}):`, itemError);
+          }
+        }
+        
+        console.log(`✅ 캐시 워밍 완료: ${warmedCount}개 영양정보 로드됨`);
+      } catch (error) {
+        console.error('❌ 자동 캐시 워밍 실패:', error);
+      }
+    }, 10000); // 10초 후 시작 (서버 완전 초기화 대기)
+  }
+
   console.log("서버 초기화 완료 - 모든 스케줄러가 시작되었습니다.");
 });
