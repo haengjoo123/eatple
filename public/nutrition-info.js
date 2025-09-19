@@ -32,6 +32,7 @@ class NutritionInfoManager {
         this.searchInput = document.getElementById('searchInput');
         
         this.loadingState = document.getElementById('loadingState');
+        this.skeletonState = document.getElementById('skeletonState');
         this.errorState = document.getElementById('errorState');
         this.emptyState = document.getElementById('emptyState');
         this.nutritionGrid = document.getElementById('nutritionGrid');
@@ -62,7 +63,7 @@ class NutritionInfoManager {
         if (this.isLoading) return;
         
         this.isLoading = true;
-        this.showLoading();
+        this.showSkeletonLoading();
 
         try {
             const response = await fetch(`/api/nutrition-info/${id}`, {
@@ -92,7 +93,7 @@ class NutritionInfoManager {
         if (this.isLoading) return;
         
         this.isLoading = true;
-        this.showLoading();
+        this.showSkeletonLoading();
 
         try {
             const params = new URLSearchParams({
@@ -140,6 +141,7 @@ class NutritionInfoManager {
         
         // 단일 영양정보 카드 생성 (일반 카드와 동일하게 사용)
         const detailCard = this.createNutritionCard(data);
+        detailCard.classList.add('progressive-fade-in');
         this.nutritionGrid.appendChild(detailCard);
         
         this.showContent();
@@ -156,8 +158,11 @@ class NutritionInfoManager {
 
         this.nutritionGrid.innerHTML = '';
         
-        data.forEach(item => {
+        data.forEach((item, index) => {
             const card = this.createNutritionCard(item);
+            // 점진적 페이드인 애니메이션을 위한 지연
+            card.style.animationDelay = `${index * 0.1}s`;
+            card.classList.add('progressive-fade-in');
             this.nutritionGrid.appendChild(card);
         });
 
@@ -440,9 +445,60 @@ class NutritionInfoManager {
         return count.toString();
     }
 
+    // 스켈레톤 카드 생성
+    createSkeletonCard() {
+        const card = document.createElement('div');
+        card.className = 'skeleton-card';
+        
+        card.innerHTML = `
+            <div class="skeleton-card-thumbnail skeleton-image"></div>
+            <div class="skeleton-card-content">
+                <div class="skeleton-card-title skeleton-text"></div>
+                <div class="skeleton-card-summary skeleton-text"></div>
+                <div class="skeleton-card-summary skeleton-text short"></div>
+                <div class="skeleton-card-tags">
+                    <div class="skeleton-tag skeleton-text"></div>
+                    <div class="skeleton-tag skeleton-text"></div>
+                    <div class="skeleton-tag skeleton-text"></div>
+                </div>
+                <div class="skeleton-card-footer">
+                    <div class="skeleton-card-meta">
+                        <div class="skeleton-source skeleton-text"></div>
+                        <div class="skeleton-date skeleton-text"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        return card;
+    }
+
+    // 스켈레톤 그리드 생성
+    createSkeletonGrid() {
+        const skeletonGrid = this.skeletonState.querySelector('.skeleton-grid');
+        skeletonGrid.innerHTML = '';
+        
+        // 12개의 스켈레톤 카드 생성 (한 페이지당 최대 아이템 수)
+        for (let i = 0; i < this.itemsPerPage; i++) {
+            const skeletonCard = this.createSkeletonCard();
+            skeletonGrid.appendChild(skeletonCard);
+        }
+    }
+
     // 상태 표시 메서드들
     showLoading() {
         this.loadingState.style.display = 'block';
+        this.skeletonState.style.display = 'none';
+        this.errorState.style.display = 'none';
+        this.emptyState.style.display = 'none';
+        this.nutritionGrid.style.display = 'none';
+        this.paginationContainer.style.display = 'none';
+    }
+
+    showSkeletonLoading() {
+        this.createSkeletonGrid();
+        this.loadingState.style.display = 'none';
+        this.skeletonState.style.display = 'block';
         this.errorState.style.display = 'none';
         this.emptyState.style.display = 'none';
         this.nutritionGrid.style.display = 'none';
@@ -452,6 +508,7 @@ class NutritionInfoManager {
     showError(message) {
         this.errorMessage.textContent = message;
         this.loadingState.style.display = 'none';
+        this.skeletonState.style.display = 'none';
         this.errorState.style.display = 'block';
         this.emptyState.style.display = 'none';
         this.nutritionGrid.style.display = 'none';
@@ -460,6 +517,7 @@ class NutritionInfoManager {
 
     showEmpty() {
         this.loadingState.style.display = 'none';
+        this.skeletonState.style.display = 'none';
         this.errorState.style.display = 'none';
         this.emptyState.style.display = 'block';
         this.nutritionGrid.style.display = 'none';
@@ -468,6 +526,7 @@ class NutritionInfoManager {
 
     showContent() {
         this.loadingState.style.display = 'none';
+        this.skeletonState.style.display = 'none';
         this.errorState.style.display = 'none';
         this.emptyState.style.display = 'none';
         this.nutritionGrid.style.display = 'grid';

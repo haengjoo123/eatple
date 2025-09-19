@@ -82,12 +82,10 @@ class CacheManager {
         
         if (value !== undefined) {
             this.stats.hits++;
-            console.log(`Cache HIT: ${key}`);
             return value;
         }
         
         this.stats.misses++;
-        console.log(`Cache MISS: ${key}`);
         return null;
     }
 

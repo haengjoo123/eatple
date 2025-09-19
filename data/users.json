@@ -10,8 +10,8 @@
     "isAdmin": true,
     "role": "admin",
     "gamePoints": {
-      "totalPoints": 4439,
-      "dailyEarned": 0,
+      "totalPoints": 4440,
+      "dailyEarned": 1,
       "dailyLimit": 100,
       "lastEarnedDate": "2025-09-19",
       "history": [
@@ -1192,6 +1192,15 @@
           "timestamp": "2025-09-02T06:39:00.266Z",
           "description": "기억력 게임에서 370점 획득",
           "bypassedDailyLimit": false
+        },
+        {
+          "id": "1758297230234",
+          "type": "earn",
+          "amount": 1,
+          "source": "mini-game",
+          "timestamp": "2025-09-19T15:53:50.234Z",
+          "description": "스네이크 게임에서 40점 획득",
+          "bypassedDailyLimit": false
         }
       ]
     },
@@ -1200,8 +1209,8 @@
       "restaurantRecommendation": 32,
       "supplementRecommendation": 167,
       "ingredientAnalysis": 24,
-      "mini-game": 124,
-      "lastUpdated": "2025-09-19T03:57:41.944Z"
+      "mini-game": 125,
+      "lastUpdated": "2025-09-19T15:53:50.244Z"
     },
     "profile": {
       "age": "31",

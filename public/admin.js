@@ -1497,7 +1497,7 @@ function resetForm() {
         field.style.borderColor = '#d1d5db';
         const helpText = field.parentNode.querySelector('.iframe-link-help small');
         if (helpText) {
-          helpText.textContent = '쿠팡 파트너스 iframe의 src 속성 값만 입력하세요';
+          helpText.textContent = '쿠팡 파트너스 iframe의 src 속성 값만 입력하세요 (전체 iframe 코드 붙여넣기 가능)';
           helpText.style.color = '#6b7280';
         }
       }
@@ -2052,15 +2052,40 @@ function getThumbnailData() {
 })();
 
 // iframe 링크 입력 검증 설정
+// iframe 코드에서 src 값을 추출하는 함수
+function extractSrcFromIframe(iframeCode) {
+  // iframe 태그에서 src 속성 값을 추출하는 정규식
+  const srcMatch = iframeCode.match(/src\s*=\s*["']([^"']+)["']/i);
+  if (srcMatch && srcMatch[1]) {
+    return srcMatch[1];
+  }
+  return null;
+}
+
 function setupIframeLinkValidation() {
   const iframeInputs = document.querySelectorAll('.iframe-link-input');
   
   iframeInputs.forEach(input => {
+    // 입력 이벤트 리스너
     input.addEventListener('input', function() {
       const value = this.value.trim();
       const helpText = this.parentNode.querySelector('.iframe-link-help small');
       
       if (value) {
+        // iframe 전체 코드가 입력된 경우 src 값 추출
+        if (value.includes('<iframe') && value.includes('src=')) {
+          const extractedSrc = extractSrcFromIframe(value);
+          if (extractedSrc) {
+            this.value = extractedSrc;
+            this.style.borderColor = '#10b981';
+            if (helpText) {
+              helpText.textContent = '✅ iframe 코드에서 src 값을 자동으로 추출했습니다';
+              helpText.style.color = '#10b981';
+            }
+            return;
+          }
+        }
+        
         // iframe src 형식 검증
         if (value.includes('coupa.ng') || value.includes('iframe') || value.startsWith('http')) {
           this.style.borderColor = '#10b981';
@@ -2078,10 +2103,32 @@ function setupIframeLinkValidation() {
       } else {
         this.style.borderColor = '#d1d5db';
         if (helpText) {
-          helpText.textContent = '쿠팡 파트너스 iframe의 src 속성 값만 입력하세요';
+          helpText.textContent = '쿠팡 파트너스 iframe의 src 속성 값만 입력하세요 (전체 iframe 코드 붙여넣기 가능)';
           helpText.style.color = '#6b7280';
         }
       }
+    });
+    
+    // 붙여넣기 이벤트 리스너 (자동 추출 기능)
+    input.addEventListener('paste', function(e) {
+      // 붙여넣기 이벤트를 약간 지연시켜서 input 이벤트가 먼저 발생하도록 함
+      setTimeout(() => {
+        const value = this.value.trim();
+        const helpText = this.parentNode.querySelector('.iframe-link-help small');
+        
+        // iframe 전체 코드가 붙여넣어진 경우 src 값 추출
+        if (value.includes('<iframe') && value.includes('src=')) {
+          const extractedSrc = extractSrcFromIframe(value);
+          if (extractedSrc) {
+            this.value = extractedSrc;
+            this.style.borderColor = '#10b981';
+            if (helpText) {
+              helpText.textContent = '✅ iframe 코드에서 src 값을 자동으로 추출했습니다';
+              helpText.style.color = '#10b981';
+            }
+          }
+        }
+      }, 10);
     });
   });
 }
