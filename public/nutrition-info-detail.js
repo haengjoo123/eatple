@@ -102,17 +102,18 @@ class NutritionInfoDetailManager {
             console.log(`[API CALL] 영양정보 ${this.nutritionInfoId} 로컬 서버 API 호출`);
             const response = await fetch(`/api/nutrition-info/${this.nutritionInfoId}`, fetchOptions);
 
+            // 304 Not Modified는 정상 응답이므로 먼저 처리
+            if (response.status === 304 && cached && cached.data) {
+                console.log(`[304 NOT MODIFIED] 영양정보 ${this.nutritionInfoId} 변경 없음`);
+                return;
+            }
+
+            // 304가 아닌 경우에만 다른 에러 상태 확인
             if (!response.ok) {
                 if (response.status === 404) {
                     throw new Error('해당 영양 정보를 찾을 수 없습니다.');
                 }
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            // 서버가 304를 주면 클라이언트 캐시 유지
-            if (response.status === 304 && cached && cached.data) {
-                console.log(`[304 NOT MODIFIED] 영양정보 ${this.nutritionInfoId} 변경 없음`);
-                return;
             }
 
             const result = await response.json();
@@ -140,11 +141,6 @@ class NutritionInfoDetailManager {
                 this.renderNutritionInfoDetail();
                 await this.loadRecommendedInfo();
                 this.showContent();
-                
-                // 서버 캐시 히트인 경우 사용자에게 알림
-                if (result.cached) {
-                    this.showToast('빠른 로딩을 위해 캐시된 데이터를 표시합니다', 'info');
-                }
             } else {
                 throw new Error(result.error || '데이터를 불러오는데 실패했습니다.');
             }
@@ -154,8 +150,8 @@ class NutritionInfoDetailManager {
                 // 클라이언트 캐시도 없고 네트워크도 실패
                 this.showError(error.message);
             } else {
-                // 클라이언트 캐시로 이미 보여주고 있는 상태라면 사용자 경험 방해 없이 토스트만
-                this.showToast('네트워크 문제로 캐시 데이터를 표시 중입니다', 'warning');
+                // 클라이언트 캐시로 이미 보여주고 있는 상태라면 조용히 처리
+                console.log('네트워크 문제로 캐시 데이터를 표시 중입니다');
             }
         }
     }
