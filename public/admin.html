@@ -199,84 +199,6 @@
     <div id="nutritionSection" class="admin-section hidden">
       <h2>영양 정보 관리</h2>
       
-      <!-- 영양 정보 콘텐츠 관리 -->
-      <div class="admin-stats-section">
-        <h3>영양 정보 콘텐츠 관리</h3>
-      
-      <!-- 검색 및 필터 -->
-      <div class="nutrition-filters">
-        <input type="text" id="searchNutritionInfo" class="nutrition-search-input" placeholder="제목 또는 내용 검색...">
-        <select id="filterCategory" class="nutrition-filter-select">
-          <option value="">모든 카테고리</option>
-          <option value="diet">식단</option>
-          <option value="supplements">보충제</option>
-          <option value="research">연구</option>
-          <option value="trends">트렌드</option>
-        </select>
-        <select id="filterSourceType" class="nutrition-filter-select">
-          <option value="">모든 소스</option>
-          <option value="paper">논문</option>
-          <option value="youtube">유튜브</option>
-          <option value="news">뉴스</option>
-        </select>
-        <select id="filterStatus" class="nutrition-filter-select">
-          <option value="">모든 상태</option>
-          <option value="active">활성</option>
-          <option value="inactive">비활성</option>
-          <option value="pending">대기</option>
-        </select>
-        <button id="searchBtn" class="admin-action-btn">검색</button>
-      </div>
-
-      <!-- 일괄 처리 도구 -->
-      <div class="bulk-actions-container">
-        <h4 class="bulk-actions-title">일괄 처리</h4>
-        <div class="bulk-actions-controls">
-          <span class="bulk-actions-label">선택된 항목:</span>
-          <span id="selectedCount" class="bulk-selected-count">0개</span>
-          <select id="bulkAction" class="bulk-action-select">
-            <option value="">작업 선택</option>
-            <option value="activate">활성화</option>
-            <option value="deactivate">비활성화</option>
-            <option value="delete">삭제</option>
-          </select>
-          <button id="executeBulkAction" class="admin-action-btn" disabled>실행</button>
-          <button id="selectAll" class="admin-action-btn gray">전체 선택</button>
-          <button id="deselectAll" class="admin-action-btn gray">선택 해제</button>
-        </div>
-      </div>
-
-      <!-- 영양 정보 목록 -->
-      <div class="nutrition-table-container">
-        <div class="nutrition-table-scroll">
-          <table id="nutritionInfoTable" class="nutrition-table">
-            <thead>
-              <tr>
-                <th class="checkbox-col">
-                  <input type="checkbox" id="selectAllCheckbox">
-                </th>
-                <th>제목</th>
-                <th class="source-col">소스</th>
-                <th class="category-col">카테고리</th>
-                <th class="reliability-col">신뢰도</th>
-                <th class="status-col">상태</th>
-                <th class="actions-col">작업</th>
-              </tr>
-            </thead>
-            <tbody id="nutritionInfoTableBody">
-              <tr>
-                <td colspan="7">로딩 중...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- 페이지네이션 -->
-      <div id="pagination" class="admin-pagination">
-        <!-- 페이지네이션 버튼들이 여기에 동적으로 추가됩니다 -->
-      </div>
-    </div>
 
       <!-- 수동 포스팅 관리 -->
       <div class="admin-stats-section">
@@ -542,17 +464,17 @@
             <table id="postsManagementTable" class="posts-table-full">
               <thead>
                 <tr>
-                  <th>제목</th>
-                  <th class="category-col-full">카테고리</th>
-                  <th class="status-col-full">상태</th>
-                  <th class="date-col-full">작성일</th>
-                  <th class="views-col-full">조회수</th>
-                  <th class="manage-col-full">관리</th>
+                  <th style="text-align: center;">제목</th>
+                  <th class="category-col-full" style="text-align: center;">카테고리</th>
+                  <th class="status-col-full" style="text-align: center;">상태</th>
+                  <th class="date-col-full" style="text-align: center;">작성일</th>
+                  <th class="views-col-full" style="text-align: center;">조회수</th>
+                  <th class="manage-col-full" style="text-align: center;">관리</th>
                 </tr>
               </thead>
               <tbody id="postsManagementTableBody">
                 <tr>
-                  <td colspan="6">포스팅을 불러오는 중...</td>
+                  <td colspan="6" style="text-align: center;">포스팅을 불러오는 중...</td>
                 </tr>
               </tbody>
             </table>

@@ -17,7 +17,6 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
  * Requirements: 6.1, 7.1
  */
 router.get('/', async (req, res) => {
-        console.log('[ROUTE] GET /api/nutrition-info (로컬 캐시 우선)', { query: req.query });
     try {
         const cacheManager = require('../utils/cacheManager');
         const filters = {};
@@ -59,7 +58,6 @@ router.get('/', async (req, res) => {
         let cachedResult = cacheManager.get('nutrition', cacheKey);
         
         if (cachedResult) {
-            console.log(`[CACHE HIT] 영양정보 목록 로컬 캐시에서 조회`);
             
             // HTTP 캐시 헤더 설정
             try {
@@ -78,7 +76,6 @@ router.get('/', async (req, res) => {
         }
         
         // 2. 캐시에 없으면 Supabase에서 조회
-        console.log(`[CACHE MISS] 영양정보 목록 Supabase에서 조회`);
         const result = await supabaseDataManager.getNutritionInfoList(filters, pagination);
         const data = result && result.data ? result.data : [];
         const paginationData = result && result.pagination ? result.pagination : {};
@@ -119,7 +116,6 @@ router.get('/', async (req, res) => {
      * Requirements: 6.1, 7.1
      */
     router.get('/list', async (req, res) => {
-        console.log('[ROUTE] GET /api/nutrition-info/list (Supabase 통합)', { query: req.query });
         try {
             const filters = {};
             const pagination = {};
@@ -171,7 +167,6 @@ router.get('/', async (req, res) => {
      * Requirements: 6.3
      */
     router.get('/search', async (req, res) => {
-        console.log('[ROUTE] GET /api/nutrition-info/search (Supabase 전문 검색)', { query: req.query });
         try {
             const { q: query, category, sourceType, minTrustScore, tags, page, limit } = req.query;
             
@@ -230,7 +225,6 @@ router.get('/', async (req, res) => {
      * Requirements: 6.3
      */
     router.post('/search', async (req, res) => {
-        console.log('[ROUTE] POST /api/nutrition-info/search (Supabase 고급 검색)', { body: req.body });
         try {
             const { 
                 query, 
@@ -315,7 +309,6 @@ router.get('/', async (req, res) => {
      * GET /api/nutrition-info/category/:category
      */
     router.get('/category/:category', async (req, res) => {
-        console.log('[ROUTE] GET /api/nutrition-info/category/:category', { params: req.params, query: req.query });
         try {
             const { category } = req.params;
             const page = parseInt(req.query.page) || 1;
@@ -346,7 +339,6 @@ router.get('/', async (req, res) => {
      * GET /api/nutrition-info/trending/topics
      */
     router.get('/trending/topics', async (req, res) => {
-        console.log('[ROUTE] GET /api/nutrition-info/trending/topics');
         try {
             // 임시로 기본 트렌딩 토픽 반환
             const trendingTopics = {
@@ -373,7 +365,6 @@ router.get('/', async (req, res) => {
      * GET /api/nutrition-info/statistics
      */
     router.get('/statistics', async (req, res) => {
-        console.log('[ROUTE] GET /api/nutrition-info/statistics');
         try {
             const statistics = await nutritionDataManager.getStatistics();
             
@@ -609,7 +600,6 @@ router.get('/', async (req, res) => {
             // 로그인한 사용자인 경우에만 실제 상호작용 상태 조회
             if (req.session && req.session.user) {
                 const userId = req.session.user.id;
-                console.log(`[INTERACTION STATUS API] 사용자 ${userId}의 영양정보 ${nutritionInfoId} 상호작용 상태 조회`);
                 
                 try {
                     const userPrefs = await recommendationService.getUserPreferences(userId);
@@ -622,7 +612,6 @@ router.get('/', async (req, res) => {
                         isViewed: false // 조회수는 별도로 관리
                     };
                     
-                    console.log(`[INTERACTION STATUS API] 조회 결과: ${JSON.stringify(status)}`);
                 } catch (prefError) {
                     console.error('[INTERACTION STATUS API] 사용자 선호도 조회 실패:', prefError);
                     // 에러가 발생해도 기본값 반환
@@ -654,7 +643,6 @@ router.get('/', async (req, res) => {
      * Requirements: 6.2, 6.4
      */
     router.get('/:id', async (req, res) => {
-        console.log('[ROUTE] GET /api/nutrition-info/:id (로컬 캐시 우선)', { params: req.params });
         try {
             const { id } = req.params;
             const cacheManager = require('../utils/fileCacheManager');
@@ -664,7 +652,6 @@ router.get('/', async (req, res) => {
             let nutritionInfo = cacheManager.get('nutrition', cacheKey);
             
             if (nutritionInfo && nutritionInfo.data) {
-                console.log(`[CACHE HIT] 영양정보 ${id} 로컬 캐시에서 조회`);
                 
                 // 캐시된 데이터로 즉시 응답
                 const responseData = nutritionInfo.data;
@@ -702,7 +689,6 @@ router.get('/', async (req, res) => {
             }
 
             // 2. 캐시에 없으면 Supabase에서 조회
-            console.log(`[CACHE MISS] 영양정보 ${id} Supabase에서 조회`);
             nutritionInfo = await supabaseDataManager.getNutritionInfoById(id);
             
             if (!nutritionInfo) {
@@ -809,7 +795,6 @@ router.get('/', async (req, res) => {
      * POST /api/nutrition-info
      */
     router.post('/', async (req, res) => {
-        console.log('[ROUTE] POST /api/nutrition-info', { body: req.body });
         try {
             // 권한 체크 (테스트를 위해 임시 주석)
             // if (!req.session.user || req.session.user.role !== 'admin') {
@@ -859,7 +844,6 @@ router.get('/', async (req, res) => {
      * PUT /api/nutrition-info/:id
      */
     router.put('/:id', async (req, res) => {
-        console.log('[ROUTE] PUT /api/nutrition-info/:id', { params: req.params, body: req.body });
         try {
             // 권한 체크 (테스트를 위해 임시 주석)
             // if (!req.session.user || req.session.user.role !== 'admin') {
@@ -883,7 +867,6 @@ router.get('/', async (req, res) => {
             const cacheManager = require('../utils/fileCacheManager');
             cacheManager.delete('nutrition', `nutrition_detail_${id}`);
             cacheManager.invalidatePattern('nutrition:nutrition_list_*');
-            console.log(`[CACHE INVALIDATION] 영양정보 ${id} 업데이트로 인한 캐시 무효화`);
 
             // 안전하게 toJSON 처리
             const responseData = updatedInfo && typeof updatedInfo.toJSON === 'function' 
@@ -905,7 +888,6 @@ router.get('/', async (req, res) => {
      * DELETE /api/nutrition-info/:id
      */
     router.delete('/:id', async (req, res) => {
-        console.log('[ROUTE] DELETE /api/nutrition-info/:id', { params: req.params });
         try {
             // 권한 체크 (테스트를 위해 임시 주석)
             // if (!req.session.user || req.session.user.role !== 'admin') {
@@ -927,7 +909,6 @@ router.get('/', async (req, res) => {
             const cacheManager = require('../utils/fileCacheManager');
             cacheManager.delete('nutrition', `nutrition_detail_${id}`);
             cacheManager.invalidatePattern('nutrition:nutrition_list_*');
-            console.log(`[CACHE INVALIDATION] 영양정보 ${id} 삭제로 인한 캐시 무효화`);
 
             res.json({
                 message: '영양 정보가 성공적으로 삭제되었습니다.'
@@ -946,7 +927,6 @@ router.get('/', async (req, res) => {
      * GET /api/nutrition-info/trending/topics
      */
     router.get('/trending/topics', async (req, res) => {
-        console.log('[ROUTE] GET /api/nutrition-info/trending/topics');
         try {
             // 임시로 기본 트렌딩 토픽 반환
             const trendingTopics = {
@@ -973,7 +953,6 @@ router.get('/', async (req, res) => {
      * GET /api/nutrition-info/statistics
      */
     router.get('/statistics', async (req, res) => {
-        console.log('[ROUTE] GET /api/nutrition-info/statistics');
         try {
             const statistics = await nutritionDataManager.getStatistics();
             
@@ -1776,7 +1755,6 @@ router.post('/likes/bulk', async (req, res) => {
  * POST /api/nutrition-info
  */
 router.post('/', async (req, res) => {
-        console.log('[ROUTE] POST /api/nutrition-info', { body: req.body });
     try {
         if (!req.session.user || !req.session.user.isAdmin) {
             return res.status(403).json({
@@ -1807,7 +1785,6 @@ router.post('/', async (req, res) => {
  * PUT /api/nutrition-info/:id
  */
 router.put('/:id', async (req, res) => {
-        console.log('[ROUTE] PUT /api/nutrition-info/:id', { params: req.params, body: req.body });
     try {
         if (!req.session.user || !req.session.user.isAdmin) {
             return res.status(403).json({
@@ -1845,7 +1822,6 @@ router.put('/:id', async (req, res) => {
  * DELETE /api/nutrition-info/:id
  */
 router.delete('/:id', async (req, res) => {
-        console.log('[ROUTE] DELETE /api/nutrition-info/:id', { params: req.params });
     try {
         if (!req.session.user || !req.session.user.isAdmin) {
             return res.status(403).json({
@@ -1883,7 +1859,6 @@ router.delete('/:id', async (req, res) => {
      * GET /api/nutrition-info/pubmed
      */
     router.get('/pubmed', async (req, res) => {
-        console.log('[ROUTE] GET /api/nutrition-info/pubmed', { query: req.query });
         try {
             const PubMedApiService = require('../utils/pubmedApiService');
             const pubmedService = new PubMedApiService();
@@ -2059,7 +2034,6 @@ router.delete('/:id', async (req, res) => {
             const { limit = 20, categories = [] } = req.body;
             const cacheManager = require('../utils/fileCacheManager');
             
-            console.log(`[CACHE WARM] 영양정보 캐시 워밍 시작 - limit: ${limit}, categories: ${categories.join(', ')}`);
             
             // 인기 영양정보들을 미리 캐시에 로드
             const filters = {};

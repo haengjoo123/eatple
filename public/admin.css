@@ -552,8 +552,10 @@ button {
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.8rem;
-  margin-right: 5px;
   transition: background-color 0.2s;
+  display: inline-block;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .post-edit-btn {

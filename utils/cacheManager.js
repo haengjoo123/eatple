@@ -40,19 +40,17 @@ class CacheManager {
     }
 
     setupEventHandlers() {
-        // Log cache events for monitoring
+        // Log cache events for monitoring (로그 제거)
         this.memoryCache.on('set', (key, value) => {
             this.stats.sets++;
-            console.log(`Cache SET: ${key}`);
         });
 
         this.memoryCache.on('del', (key, value) => {
             this.stats.deletes++;
-            console.log(`Cache DELETE: ${key}`);
         });
 
         this.memoryCache.on('expired', (key, value) => {
-            console.log(`Cache EXPIRED: ${key}`);
+            // 만료 이벤트는 조용히 처리
         });
     }
 

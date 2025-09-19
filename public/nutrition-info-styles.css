@@ -24,7 +24,7 @@ body.nutrition-info-page .container {
 /* 페이지 제목 헤더 */
 .page-title-header {
   text-align: center;
-  padding: 80px 20px 40px;
+  padding: 80px 20px 10px;
   background: var(--bg-color);
 }
 
@@ -40,7 +40,7 @@ body.nutrition-info-page .container {
 .page-title-logo {
   max-width: 300px;
   height: auto;
-  max-height: 80px;
+  max-height: 100px;
   object-fit: contain;
   margin: 0 auto;
   display: block;

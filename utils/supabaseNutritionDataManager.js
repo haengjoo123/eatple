@@ -284,12 +284,10 @@ class SupabaseNutritionDataManager {
       if (!supabaseError && supabaseData) {
         // 관련 상품 정보 처리
         const relatedProducts = supabaseData.post_related_products || [];
-        console.log('🔍 Supabase 데이터에서 관련 상품 정보:', relatedProducts);
         
         const nutritionInfo = this.convertSupabaseToNutritionInfo(supabaseData);
         nutritionInfo.related_products = relatedProducts.sort((a, b) => a.display_order - b.display_order);
         
-        console.log('🔍 최종 nutritionInfo.related_products:', nutritionInfo.related_products);
         
         return NutritionInfo.fromJSON(nutritionInfo);
       }

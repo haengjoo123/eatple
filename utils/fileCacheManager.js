@@ -40,7 +40,6 @@ class FileCacheManager {
             await fs.mkdir(this.cacheDir, { recursive: true });
             await fs.mkdir(this.nutritionCacheDir, { recursive: true });
             this.directoriesInitialized = true;
-            console.log('[CACHE] 디렉토리 초기화 완료:', this.nutritionCacheDir);
         } catch (error) {
             console.error('캐시 디렉토리 생성 오류:', error);
             this.directoriesInitialized = false;
@@ -104,7 +103,6 @@ class FileCacheManager {
                 // 만료된 캐시 파일 삭제
                 await this.delete(namespace, identifier, params);
                 this.stats.misses++;
-                console.log(`[FILE CACHE EXPIRED] ${key}`);
                 return null;
             }
             
@@ -113,7 +111,6 @@ class FileCacheManager {
             this.memoryCacheExpiry.set(key, Date.now() + ttl * 1000);
             
             this.stats.hits++;
-            console.log(`[FILE CACHE HIT] ${key}`);
             return cacheData;
             
         } catch (error) {
@@ -121,7 +118,6 @@ class FileCacheManager {
                 console.error(`캐시 파일 읽기 오류 (${key}):`, error);
             }
             this.stats.misses++;
-            console.log(`[FILE CACHE MISS] ${key}`);
             return null;
         }
     }
@@ -151,7 +147,6 @@ class FileCacheManager {
             this.memoryCacheExpiry.set(key, Date.now() + ttl * 1000);
             
             this.stats.sets++;
-            console.log(`[CACHE SET] ${key}`);
             return true;
             
         } catch (error) {
@@ -176,7 +171,6 @@ class FileCacheManager {
             this.memoryCacheExpiry.delete(key);
             
             this.stats.deletes++;
-            console.log(`[CACHE DELETE] ${key}`);
             return true;
             
         } catch (error) {
@@ -216,7 +210,6 @@ class FileCacheManager {
                 }
             }
             
-            console.log(`[CACHE CLEAR NAMESPACE] ${namespace} - ${deletedCount}개 파일 삭제`);
             return deletedCount;
             
         } catch (error) {
@@ -250,7 +243,6 @@ class FileCacheManager {
             this.memoryCache.clear();
             this.memoryCacheExpiry.clear();
             
-            console.log(`[CACHE CLEAR ALL] ${deletedCount}개 파일 삭제`);
             return deletedCount;
             
         } catch (error) {
@@ -281,7 +273,6 @@ class FileCacheManager {
                 }
             }
             
-            console.log(`[CACHE INVALIDATE PATTERN] ${pattern} - ${deletedCount}개 파일 삭제`);
             return deletedCount;
             
         } catch (error) {

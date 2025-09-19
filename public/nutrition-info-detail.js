@@ -28,13 +28,27 @@ class NutritionInfoDetailManager {
     }
 
     initializeElements() {
-        // 상태 요소들
+        // 상태 요소들 - null 체크 추가
         this.loadingState = document.getElementById('loadingState');
         this.errorState = document.getElementById('errorState');
         this.skeletonContent = document.getElementById('skeletonContent');
         this.detailContent = document.getElementById('detailContent');
         this.errorMessage = document.getElementById('errorMessage');
         this.retryBtn = document.getElementById('retryBtn');
+
+        // 필수 요소들이 없으면 오류 로그 출력
+        if (!this.skeletonContent) {
+            console.error('skeletonContent 요소를 찾을 수 없습니다');
+        }
+        if (!this.detailContent) {
+            console.error('detailContent 요소를 찾을 수 없습니다');
+        }
+        if (!this.loadingState) {
+            console.error('loadingState 요소를 찾을 수 없습니다');
+        }
+        if (!this.errorState) {
+            console.error('errorState 요소를 찾을 수 없습니다');
+        }
 
         // 상세 정보 요소들
         this.breadcrumbTitle = document.getElementById('breadcrumbTitle');
@@ -63,12 +77,18 @@ class NutritionInfoDetailManager {
     }
 
     bindEvents() {
-        // 재시도 버튼
-        this.retryBtn.addEventListener('click', () => this.loadNutritionInfoDetail());
+        // 재시도 버튼 - null 체크 추가
+        if (this.retryBtn) {
+            this.retryBtn.addEventListener('click', () => this.loadNutritionInfoDetail());
+        }
 
-        // 액션 버튼들
-        this.detailBookmarkBtn.addEventListener('click', () => this.handleBookmark());
-        this.detailShareBtn.addEventListener('click', () => this.handleShare());
+        // 액션 버튼들 - null 체크 추가
+        if (this.detailBookmarkBtn) {
+            this.detailBookmarkBtn.addEventListener('click', () => this.handleBookmark());
+        }
+        if (this.detailShareBtn) {
+            this.detailShareBtn.addEventListener('click', () => this.handleShare());
+        }
 
         // 뒤로가기 처리
         window.addEventListener('popstate', () => {
@@ -817,34 +837,34 @@ class NutritionInfoDetailManager {
         return text.substring(0, maxLength) + '...';
     }
 
-    // 상태 표시 메서드들
+    // 상태 표시 메서드들 - null 체크 추가
     showLoading() {
-        this.loadingState.style.display = 'flex';
-        this.errorState.style.display = 'none';
-        this.skeletonContent.style.display = 'none';
-        this.detailContent.style.display = 'none';
+        if (this.loadingState) this.loadingState.style.display = 'flex';
+        if (this.errorState) this.errorState.style.display = 'none';
+        if (this.skeletonContent) this.skeletonContent.style.display = 'none';
+        if (this.detailContent) this.detailContent.style.display = 'none';
     }
 
     showSkeleton() {
-        this.loadingState.style.display = 'none';
-        this.errorState.style.display = 'none';
-        this.skeletonContent.style.display = 'block';
-        this.detailContent.style.display = 'none';
+        if (this.loadingState) this.loadingState.style.display = 'none';
+        if (this.errorState) this.errorState.style.display = 'none';
+        if (this.skeletonContent) this.skeletonContent.style.display = 'block';
+        if (this.detailContent) this.detailContent.style.display = 'none';
     }
 
     showError(message) {
-        this.errorMessage.textContent = message;
-        this.loadingState.style.display = 'none';
-        this.errorState.style.display = 'flex';
-        this.skeletonContent.style.display = 'none';
-        this.detailContent.style.display = 'none';
+        if (this.errorMessage) this.errorMessage.textContent = message;
+        if (this.loadingState) this.loadingState.style.display = 'none';
+        if (this.errorState) this.errorState.style.display = 'flex';
+        if (this.skeletonContent) this.skeletonContent.style.display = 'none';
+        if (this.detailContent) this.detailContent.style.display = 'none';
     }
 
     showContent() {
-        this.loadingState.style.display = 'none';
-        this.errorState.style.display = 'none';
-        this.skeletonContent.style.display = 'none';
-        this.detailContent.style.display = 'block';
+        if (this.loadingState) this.loadingState.style.display = 'none';
+        if (this.errorState) this.errorState.style.display = 'none';
+        if (this.skeletonContent) this.skeletonContent.style.display = 'none';
+        if (this.detailContent) this.detailContent.style.display = 'block';
     }
 
     showToast(message, type = 'info') {
@@ -878,7 +898,31 @@ class NutritionInfoDetailManager {
     }
 }
 
-// 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', () => {
-    new NutritionInfoDetailManager();
-});
+// 페이지 로드 시 초기화 - 더 안전한 방법
+function initializeNutritionDetail() {
+    // DOM이 완전히 로드되었는지 확인
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeNutritionDetail);
+        return;
+    }
+    
+    // 필수 요소들이 존재하는지 확인
+    const requiredElements = [
+        'loadingState', 'errorState', 'skeletonContent', 'detailContent'
+    ];
+    
+    const missingElements = requiredElements.filter(id => !document.getElementById(id));
+    if (missingElements.length > 0) {
+        console.error('필수 DOM 요소들이 없습니다:', missingElements);
+        return;
+    }
+    
+    try {
+        new NutritionInfoDetailManager();
+    } catch (error) {
+        console.error('NutritionInfoDetailManager 초기화 실패:', error);
+    }
+}
+
+// 즉시 실행 또는 DOM 로드 완료 후 실행
+initializeNutritionDetail();
