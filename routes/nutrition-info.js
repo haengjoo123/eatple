@@ -12,15 +12,17 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
     // Supabase 기반 데이터 매니저 초기화
     const supabaseDataManager = new SupabaseNutritionDataManager();
 /**
- * 영양 정보 목록 조회 (Supabase 통합)
+ * 영양 정보 목록 조회 (로컬 캐시 우선 + Supabase 백업)
  * GET /api/nutrition-info
  * Requirements: 6.1, 7.1
  */
 router.get('/', async (req, res) => {
-        console.log('[ROUTE] GET /api/nutrition-info (Supabase 통합)', { query: req.query });
+        console.log('[ROUTE] GET /api/nutrition-info (로컬 캐시 우선)', { query: req.query });
     try {
+        const cacheManager = require('../utils/cacheManager');
         const filters = {};
         const pagination = {};
+        
         if (req.query.page) {
             pagination.page = parseInt(req.query.page);
             if (pagination.page < 1) pagination.page = 1;
@@ -50,15 +52,57 @@ router.get('/', async (req, res) => {
         if (req.query.sortBy) filters.sortBy = req.query.sortBy;
         if (req.query.sortOrder) filters.sortOrder = req.query.sortOrder;
         
-        // Supabase 통합 데이터 매니저 사용
+        // 캐시 키 생성
+        const cacheKey = `nutrition_list_${JSON.stringify(filters)}_${JSON.stringify(pagination)}`;
+        
+        // 1. 로컬 캐시에서 먼저 확인
+        let cachedResult = cacheManager.get('nutrition', cacheKey);
+        
+        if (cachedResult) {
+            console.log(`[CACHE HIT] 영양정보 목록 로컬 캐시에서 조회`);
+            
+            // HTTP 캐시 헤더 설정
+            try {
+                res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60'); // 5분 캐시
+            } catch (e) {
+                // 헤더 설정 실패는 무시
+            }
+            
+            return res.json({
+                success: true,
+                data: cachedResult.data,
+                pagination: cachedResult.pagination,
+                cached: true,
+                cacheAge: Date.now() - cachedResult.cachedAt
+            });
+        }
+        
+        // 2. 캐시에 없으면 Supabase에서 조회
+        console.log(`[CACHE MISS] 영양정보 목록 Supabase에서 조회`);
         const result = await supabaseDataManager.getNutritionInfoList(filters, pagination);
         const data = result && result.data ? result.data : [];
         const paginationData = result && result.pagination ? result.pagination : {};
         
+        // 3. 로컬 캐시에 저장 (10분 TTL)
+        const cacheData = {
+            data: data.map(item => item && typeof item.toJSON === 'function' ? item.toJSON() : item),
+            pagination: paginationData,
+            cachedAt: Date.now()
+        };
+        cacheManager.set('nutrition', cacheKey, cacheData, {}, 600); // 10분 TTL
+        
+        // HTTP 캐시 헤더 설정
+        try {
+            res.setHeader('Cache-Control', 'public, max-age=180, stale-while-revalidate=60'); // 3분 캐시
+        } catch (e) {
+            // 헤더 설정 실패는 무시
+        }
+        
         res.json({
             success: true,
             data: data.map(item => item && typeof item.toJSON === 'function' ? item.toJSON() : item),
-            pagination: paginationData
+            pagination: paginationData,
+            cached: false
         });
     } catch (error) {
         console.error('영양 정보 목록 조회 오류:', error);
@@ -605,17 +649,61 @@ router.get('/', async (req, res) => {
     });
 
     /**
-     * 특정 영양 정보 조회 (Supabase 통합 + 추천 기능)
+     * 특정 영양 정보 조회 (로컬 캐시 우선 + Supabase 백업)
      * GET /api/nutrition-info/:id
      * Requirements: 6.2, 6.4
      */
     router.get('/:id', async (req, res) => {
-        console.log('[ROUTE] GET /api/nutrition-info/:id (Supabase 통합)', { params: req.params });
+        console.log('[ROUTE] GET /api/nutrition-info/:id (로컬 캐시 우선)', { params: req.params });
         try {
             const { id } = req.params;
+            const cacheManager = require('../utils/cacheManager');
             
-            // Supabase 통합 데이터 매니저 사용
-            const nutritionInfo = await supabaseDataManager.getNutritionInfoById(id);
+            // 1. 로컬 캐시에서 먼저 확인
+            const cacheKey = `nutrition_detail_${id}`;
+            let nutritionInfo = cacheManager.get('nutrition', cacheKey);
+            
+            if (nutritionInfo) {
+                console.log(`[CACHE HIT] 영양정보 ${id} 로컬 캐시에서 조회`);
+                
+                // 캐시된 데이터로 즉시 응답
+                const responseData = nutritionInfo.data;
+                
+                // 조회수는 백그라운드에서 증가 (비동기)
+                setImmediate(async () => {
+                    try {
+                        await supabaseDataManager.incrementViewCount(id);
+                    } catch (viewError) {
+                        console.error('조회수 증가 오류:', viewError);
+                    }
+                });
+
+                // HTTP 캐시 헤더 설정
+                try {
+                    const etag = `W/"ni-${responseData.id}-${new Date(responseData.collectedDate || responseData.publishedDate || 0).getTime()}-${responseData.viewCount}-${responseData.likeCount}-${responseData.bookmarkCount}"`;
+                    res.setHeader('ETag', etag);
+                    res.setHeader('Cache-Control', 'public, max-age=600, stale-while-revalidate=300'); // 10분 캐시, 5분 stale
+                    
+                    const ifNoneMatch = req.headers['if-none-match'];
+                    if (ifNoneMatch && ifNoneMatch === etag) {
+                        return res.status(304).end();
+                    }
+                } catch (e) {
+                    // 헤더 설정 실패는 무시
+                }
+
+                return res.json({
+                    success: true,
+                    data: responseData,
+                    recommended: nutritionInfo.recommended || [],
+                    cached: true,
+                    cacheAge: Date.now() - nutritionInfo.cachedAt
+                });
+            }
+
+            // 2. 캐시에 없으면 Supabase에서 조회
+            console.log(`[CACHE MISS] 영양정보 ${id} Supabase에서 조회`);
+            nutritionInfo = await supabaseDataManager.getNutritionInfoById(id);
             
             if (!nutritionInfo) {
                 return res.status(404).json({
@@ -628,7 +716,6 @@ router.get('/', async (req, res) => {
                 await supabaseDataManager.incrementViewCount(id);
             } catch (viewError) {
                 console.error('조회수 증가 오류:', viewError);
-                // 조회수 증가 실패해도 메인 응답은 계속 진행
             }
 
             // 안전하게 toJSON 처리
@@ -672,22 +759,30 @@ router.get('/', async (req, res) => {
                 }
             } catch (recommendError) {
                 console.error('추천 기능 오류:', recommendError);
-                // 추천 실패해도 메인 응답은 계속 진행
             }
 
-            // HTTP 캐시 헤더 설정: 상세 데이터는 공개 캐시 가능, 단 개인화 아님
-            // 5분 CDN/MSA 캐시 + stale-while-revalidate 1분 (프론트는 SWR로 즉시 갱신)
+            // 3. 로컬 캐시에 저장 (30분 TTL)
+            const cacheData = {
+                data: responseData,
+                recommended: recommendedItems.map(item => 
+                    item && typeof item.toJSON === 'function' ? item.toJSON() : item
+                ),
+                cachedAt: Date.now()
+            };
+            cacheManager.set('nutrition', cacheKey, cacheData, {}, 1800); // 30분 TTL
+
+            // HTTP 캐시 헤더 설정
             try {
                 const etag = `W/"ni-${responseData.id}-${new Date(responseData.collectedDate || responseData.publishedDate || 0).getTime()}-${responseData.viewCount}-${responseData.likeCount}-${responseData.bookmarkCount}"`;
                 res.setHeader('ETag', etag);
                 res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
-                // If-None-Match 지원: 변경 없으면 304
+                
                 const ifNoneMatch = req.headers['if-none-match'];
                 if (ifNoneMatch && ifNoneMatch === etag) {
                     return res.status(304).end();
                 }
             } catch (e) {
-                // 헤더 설정 실패는 무시하고 계속 진행
+                // 헤더 설정 실패는 무시
             }
 
             res.json({
@@ -695,7 +790,8 @@ router.get('/', async (req, res) => {
                 data: responseData,
                 recommended: recommendedItems.map(item => 
                     item && typeof item.toJSON === 'function' ? item.toJSON() : item
-                )
+                ),
+                cached: false
             });
         } catch (error) {
             console.error('영양 정보 조회 오류:', error);
@@ -781,6 +877,12 @@ router.get('/', async (req, res) => {
                 });
             }
 
+            // 캐시 무효화
+            const cacheManager = require('../utils/cacheManager');
+            cacheManager.delete('nutrition', `nutrition_detail_${id}`);
+            cacheManager.invalidatePattern('nutrition:nutrition_list_*');
+            console.log(`[CACHE INVALIDATION] 영양정보 ${id} 업데이트로 인한 캐시 무효화`);
+
             // 안전하게 toJSON 처리
             const responseData = updatedInfo && typeof updatedInfo.toJSON === 'function' 
                 ? updatedInfo.toJSON() 
@@ -818,6 +920,12 @@ router.get('/', async (req, res) => {
                     error: '해당 영양 정보를 찾을 수 없습니다.'
                 });
             }
+
+            // 캐시 무효화
+            const cacheManager = require('../utils/cacheManager');
+            cacheManager.delete('nutrition', `nutrition_detail_${id}`);
+            cacheManager.invalidatePattern('nutrition:nutrition_list_*');
+            console.log(`[CACHE INVALIDATION] 영양정보 ${id} 삭제로 인한 캐시 무효화`);
 
             res.json({
                 message: '영양 정보가 성공적으로 삭제되었습니다.'
@@ -1794,6 +1902,207 @@ router.delete('/:id', async (req, res) => {
             res.status(500).json({
                 success: false,
                 error: 'PubMed 논문 검색 중 오류가 발생했습니다.',
+                details: error.message
+            });
+        }
+    });
+
+    /**
+     * 영양정보 캐시 관리 API
+     * GET /api/nutrition-info/cache/status
+     */
+    router.get('/cache/status', async (req, res) => {
+        try {
+            const cacheManager = require('../utils/cacheManager');
+            const stats = cacheManager.getStats();
+            
+            // 영양정보 관련 캐시 키 개수 확인
+            const nutritionKeys = cacheManager.getKeysMatching('nutrition:.*');
+            
+            res.json({
+                success: true,
+                data: {
+                    overall: stats,
+                    nutrition: {
+                        totalKeys: nutritionKeys.length,
+                        keys: nutritionKeys.slice(0, 10), // 최대 10개만 표시
+                        hitRate: stats.hitRate
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('캐시 상태 조회 오류:', error);
+            res.status(500).json({
+                success: false,
+                error: '캐시 상태를 조회하는 중 오류가 발생했습니다.',
+                details: error.message
+            });
+        }
+    });
+
+    /**
+     * 영양정보 캐시 초기화 API (관리자용)
+     * DELETE /api/nutrition-info/cache
+     */
+    router.delete('/cache', async (req, res) => {
+        try {
+            // 관리자 권한 확인
+            if (!req.session.user || !req.session.user.isAdmin) {
+                return res.status(403).json({
+                    success: false,
+                    error: '관리자 권한이 필요합니다.'
+                });
+            }
+
+            const cacheManager = require('../utils/cacheManager');
+            const { type } = req.query; // 'all', 'nutrition', 'detail', 'list'
+            
+            let clearedCount = 0;
+            
+            if (type === 'all') {
+                // 전체 캐시 초기화
+                clearedCount = cacheManager.clearAll();
+            } else if (type === 'nutrition') {
+                // 영양정보 관련 캐시만 초기화
+                clearedCount = cacheManager.clearNamespace('nutrition');
+            } else if (type === 'detail') {
+                // 상세 정보 캐시만 초기화
+                clearedCount = cacheManager.invalidatePattern('nutrition:nutrition_detail_*');
+            } else if (type === 'list') {
+                // 목록 캐시만 초기화
+                clearedCount = cacheManager.invalidatePattern('nutrition:nutrition_list_*');
+            } else {
+                return res.status(400).json({
+                    success: false,
+                    error: '유효하지 않은 캐시 타입입니다. (all, nutrition, detail, list 중 하나)'
+                });
+            }
+
+            res.json({
+                success: true,
+                message: `${type} 캐시가 초기화되었습니다.`,
+                clearedCount: clearedCount
+            });
+        } catch (error) {
+            console.error('캐시 초기화 오류:', error);
+            res.status(500).json({
+                success: false,
+                error: '캐시를 초기화하는 중 오류가 발생했습니다.',
+                details: error.message
+            });
+        }
+    });
+
+    /**
+     * 특정 영양정보 캐시 무효화 API (관리자용)
+     * DELETE /api/nutrition-info/:id/cache
+     */
+    router.delete('/:id/cache', async (req, res) => {
+        try {
+            // 관리자 권한 확인
+            if (!req.session.user || !req.session.user.isAdmin) {
+                return res.status(403).json({
+                    success: false,
+                    error: '관리자 권한이 필요합니다.'
+                });
+            }
+
+            const { id } = req.params;
+            const cacheManager = require('../utils/cacheManager');
+            
+            // 해당 영양정보의 캐시 키들 무효화
+            const detailKey = `nutrition_detail_${id}`;
+            const listPattern = `nutrition_list_*${id}*`;
+            
+            let clearedCount = 0;
+            
+            // 상세 정보 캐시 삭제
+            if (cacheManager.delete('nutrition', detailKey)) {
+                clearedCount++;
+            }
+            
+            // 목록 캐시에서 해당 ID가 포함된 것들 삭제 (정확한 매칭은 어려우므로 전체 목록 캐시 삭제)
+            const listCleared = cacheManager.invalidatePattern('nutrition:nutrition_list_*');
+            clearedCount += listCleared;
+
+            res.json({
+                success: true,
+                message: `영양정보 ${id}의 캐시가 무효화되었습니다.`,
+                clearedCount: clearedCount
+            });
+        } catch (error) {
+            console.error('특정 캐시 무효화 오류:', error);
+            res.status(500).json({
+                success: false,
+                error: '캐시를 무효화하는 중 오류가 발생했습니다.',
+                details: error.message
+            });
+        }
+    });
+
+    /**
+     * 영양정보 캐시 워밍 API (관리자용)
+     * POST /api/nutrition-info/cache/warm
+     */
+    router.post('/cache/warm', async (req, res) => {
+        try {
+            // 관리자 권한 확인
+            if (!req.session.user || !req.session.user.isAdmin) {
+                return res.status(403).json({
+                    success: false,
+                    error: '관리자 권한이 필요합니다.'
+                });
+            }
+
+            const { limit = 20, categories = [] } = req.body;
+            const cacheManager = require('../utils/cacheManager');
+            
+            console.log(`[CACHE WARM] 영양정보 캐시 워밍 시작 - limit: ${limit}, categories: ${categories.join(', ')}`);
+            
+            // 인기 영양정보들을 미리 캐시에 로드
+            const filters = {};
+            if (categories.length > 0) {
+                filters.category = categories;
+            }
+            
+            const result = await supabaseDataManager.getNutritionInfoList(filters, { 
+                page: 1, 
+                limit: parseInt(limit) 
+            });
+            
+            const data = result && result.data ? result.data : [];
+            let warmedCount = 0;
+            
+            // 각 영양정보를 개별적으로 캐시에 저장
+            for (const item of data) {
+                try {
+                    const itemData = item && typeof item.toJSON === 'function' ? item.toJSON() : item;
+                    const cacheKey = `nutrition_detail_${itemData.id}`;
+                    
+                    const cacheData = {
+                        data: itemData,
+                        recommended: [], // 추천 정보는 별도로 로드하지 않음
+                        cachedAt: Date.now()
+                    };
+                    
+                    cacheManager.set('nutrition', cacheKey, cacheData, {}, 1800); // 30분 TTL
+                    warmedCount++;
+                } catch (itemError) {
+                    console.error(`캐시 워밍 실패 (ID: ${item.id}):`, itemError);
+                }
+            }
+            
+            res.json({
+                success: true,
+                message: `${warmedCount}개의 영양정보가 캐시에 워밍되었습니다.`,
+                warmedCount: warmedCount,
+                totalProcessed: data.length
+            });
+        } catch (error) {
+            console.error('캐시 워밍 오류:', error);
+            res.status(500).json({
+                success: false,
+                error: '캐시 워밍 중 오류가 발생했습니다.',
                 details: error.message
             });
         }

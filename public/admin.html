@@ -47,6 +47,9 @@
           <button class="nav-btn" data-section="promotions">
             페이지 관리
           </button>
+          <button class="nav-btn" data-section="cache">
+            캐시 관리
+          </button>
         </nav>
       </div>
     </div>
@@ -2032,6 +2035,177 @@
     if (promotionsTab) {
       promotionsTab.addEventListener('click', function() {
         loadPromotions();
+      });
+    }
+
+    // 캐시 관리 섹션
+    const cacheSection = document.createElement('div');
+    cacheSection.id = 'cacheSection';
+    cacheSection.className = 'admin-section';
+    cacheSection.style.display = 'none';
+    cacheSection.innerHTML = `
+      <h2>캐시 관리</h2>
+      <div class="cache-management">
+        <div class="admin-stats-section">
+          <h3>캐시 통계</h3>
+          <div class="stats-overview" id="cacheStats">
+            <div class="loading-spinner"></div>
+            <p>캐시 통계를 불러오는 중...</p>
+          </div>
+        </div>
+        
+        <div class="admin-stats-section">
+          <h3>캐시 관리</h3>
+          <div class="cache-actions">
+            <button class="btn btn-primary" onclick="refreshCacheStats()">
+              통계 새로고침
+            </button>
+            <button class="btn btn-warning" onclick="warmCache()">
+              캐시 워밍
+            </button>
+            <button class="btn btn-danger" onclick="clearCache('nutrition')">
+              영양정보 캐시 초기화
+            </button>
+            <button class="btn btn-danger" onclick="clearCache('detail')">
+              상세 정보 캐시 초기화
+            </button>
+            <button class="btn btn-danger" onclick="clearCache('list')">
+              목록 캐시 초기화
+            </button>
+            <button class="btn btn-danger" onclick="clearCache('all')">
+              전체 캐시 초기화
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 캐시 관리 섹션을 admin-container에 추가
+    document.querySelector('.admin-container').appendChild(cacheSection);
+
+    // 캐시 통계 로드
+    async function loadCacheStats() {
+      try {
+        const response = await fetch('/api/nutrition-info/cache/status', {
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          renderCacheStats(result.data);
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        console.error('캐시 통계 로드 오류:', error);
+        document.getElementById('cacheStats').innerHTML = 
+          '<div style="color: red;">캐시 통계 로드 실패: ' + error.message + '</div>';
+      }
+    }
+    
+    // 캐시 통계 렌더링
+    function renderCacheStats(data) {
+      const statsContainer = document.getElementById('cacheStats');
+      
+      statsContainer.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-title">전체 캐시 키</div>
+          <div class="stat-number">${data.overall.totalKeys}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">캐시 히트율</div>
+          <div class="stat-number">${data.overall.hitRate}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">영양정보 캐시</div>
+          <div class="stat-number">${data.nutrition.totalKeys}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">메모리 사용량</div>
+          <div class="stat-number">${Math.round(data.overall.memoryUsage.heapUsed / 1024 / 1024)}MB</div>
+        </div>
+      `;
+    }
+    
+    // 통계 새로고침
+    async function refreshCacheStats() {
+      await loadCacheStats();
+      alert('캐시 통계가 새로고침되었습니다');
+    }
+    
+    // 캐시 워밍
+    async function warmCache() {
+      try {
+        const response = await fetch('/api/nutrition-info/cache/warm', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            limit: 20,
+            categories: []
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          alert(`${result.warmedCount}개의 영양정보가 캐시에 워밍되었습니다`);
+          await loadCacheStats();
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        console.error('캐시 워밍 오류:', error);
+        alert('캐시 워밍 실패: ' + error.message);
+      }
+    }
+    
+    // 캐시 초기화
+    async function clearCache(type) {
+      if (!confirm(`${type === 'all' ? '전체' : type} 캐시를 초기화하시겠습니까?`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/nutrition-info/cache?type=${type}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          alert(`${result.clearedCount}개의 캐시가 초기화되었습니다`);
+          await loadCacheStats();
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        console.error('캐시 초기화 오류:', error);
+        alert('캐시 초기화 실패: ' + error.message);
+      }
+    }
+
+    // 캐시 관리 탭 클릭 시 캐시 통계 로드
+    const cacheTab = document.querySelector('[data-section="cache"]');
+    if (cacheTab) {
+      cacheTab.addEventListener('click', function() {
+        loadCacheStats();
       });
     }
   </script>

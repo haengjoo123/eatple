@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>캐시 관리 - 잇플</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .cache-management-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .cache-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .cache-actions {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .cache-actions h2 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #45a049;
+        }
+        
+        .btn-warning {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #e68900;
+        }
+        
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #da190b;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .cache-keys {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .cache-keys h2 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+        
+        .key-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .key-item:last-child {
+            border-bottom: none;
+        }
+        
+        .key-name {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .toast-message {
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+        
+        .toast-message.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .toast-success {
+            background: #4CAF50;
+        }
+        
+        .toast-error {
+            background: #f44336;
+        }
+        
+        .toast-warning {
+            background: #ff9800;
+        }
+        
+        .toast-info {
+            background: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="cache-management-container">
+        <h1>캐시 관리</h1>
+        
+        <!-- 캐시 통계 -->
+        <div class="cache-stats" id="cacheStats">
+            <div class="loading">캐시 통계를 불러오는 중...</div>
+        </div>
+        
+        <!-- 캐시 관리 액션 -->
+        <div class="cache-actions">
+            <h2>캐시 관리</h2>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="refreshCacheStats()">
+                    통계 새로고침
+                </button>
+                <button class="btn btn-warning" onclick="warmCache()">
+                    캐시 워밍
+                </button>
+                <button class="btn btn-danger" onclick="clearCache('nutrition')">
+                    영양정보 캐시 초기화
+                </button>
+                <button class="btn btn-danger" onclick="clearCache('detail')">
+                    상세 정보 캐시 초기화
+                </button>
+                <button class="btn btn-danger" onclick="clearCache('list')">
+                    목록 캐시 초기화
+                </button>
+                <button class="btn btn-danger" onclick="clearCache('all')">
+                    전체 캐시 초기화
+                </button>
+            </div>
+        </div>
+        
+        <!-- 캐시 키 목록 -->
+        <div class="cache-keys">
+            <h2>영양정보 캐시 키 목록</h2>
+            <div id="cacheKeysList">
+                <div class="loading">캐시 키를 불러오는 중...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 캐시 통계 로드
+        async function loadCacheStats() {
+            try {
+                const response = await fetch('/api/nutrition-info/cache/status', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    renderCacheStats(result.data);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('캐시 통계 로드 오류:', error);
+                document.getElementById('cacheStats').innerHTML = 
+                    '<div class="loading" style="color: red;">캐시 통계 로드 실패: ' + error.message + '</div>';
+            }
+        }
+        
+        // 캐시 통계 렌더링
+        function renderCacheStats(data) {
+            const statsContainer = document.getElementById('cacheStats');
+            
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <h3>전체 캐시 키</h3>
+                    <div class="stat-value">${data.overall.totalKeys}</div>
+                    <div class="stat-label">개</div>
+                </div>
+                <div class="stat-card">
+                    <h3>캐시 히트율</h3>
+                    <div class="stat-value">${data.overall.hitRate}</div>
+                    <div class="stat-label">%</div>
+                </div>
+                <div class="stat-card">
+                    <h3>영양정보 캐시 키</h3>
+                    <div class="stat-value">${data.nutrition.totalKeys}</div>
+                    <div class="stat-label">개</div>
+                </div>
+                <div class="stat-card">
+                    <h3>메모리 사용량</h3>
+                    <div class="stat-value">${Math.round(data.overall.memoryUsage.heapUsed / 1024 / 1024)}MB</div>
+                    <div class="stat-label">힙 메모리</div>
+                </div>
+            `;
+            
+            // 캐시 키 목록 렌더링
+            renderCacheKeys(data.nutrition.keys);
+        }
+        
+        // 캐시 키 목록 렌더링
+        function renderCacheKeys(keys) {
+            const keysContainer = document.getElementById('cacheKeysList');
+            
+            if (keys.length === 0) {
+                keysContainer.innerHTML = '<div class="loading">캐시 키가 없습니다.</div>';
+                return;
+            }
+            
+            keysContainer.innerHTML = keys.map(key => `
+                <div class="key-item">
+                    <div class="key-name">${key}</div>
+                    <button class="btn btn-danger" onclick="clearSpecificCache('${key}')" style="font-size: 12px; padding: 5px 10px;">
+                        삭제
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        // 통계 새로고침
+        async function refreshCacheStats() {
+            await loadCacheStats();
+            showToast('캐시 통계가 새로고침되었습니다', 'success');
+        }
+        
+        // 캐시 워밍
+        async function warmCache() {
+            try {
+                const response = await fetch('/api/nutrition-info/cache/warm', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        limit: 20,
+                        categories: []
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`${result.warmedCount}개의 영양정보가 캐시에 워밍되었습니다`, 'success');
+                    await loadCacheStats();
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('캐시 워밍 오류:', error);
+                showToast('캐시 워밍 실패: ' + error.message, 'error');
+            }
+        }
+        
+        // 캐시 초기화
+        async function clearCache(type) {
+            if (!confirm(`${type === 'all' ? '전체' : type} 캐시를 초기화하시겠습니까?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/nutrition-info/cache?type=${type}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast(`${result.clearedCount}개의 캐시가 초기화되었습니다`, 'success');
+                    await loadCacheStats();
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('캐시 초기화 오류:', error);
+                showToast('캐시 초기화 실패: ' + error.message, 'error');
+            }
+        }
+        
+        // 특정 캐시 삭제
+        async function clearSpecificCache(key) {
+            if (!confirm(`캐시 키 "${key}"를 삭제하시겠습니까?`)) {
+                return;
+            }
+            
+            // 여기서는 전체 캐시 초기화 API를 사용 (특정 키 삭제 API는 구현하지 않음)
+            showToast('특정 키 삭제는 전체 캐시 초기화를 통해 수행됩니다', 'warning');
+        }
+        
+        // 토스트 메시지 표시
+        function showToast(message, type = 'info') {
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container';
+                document.body.appendChild(toastContainer);
+            }
+            
+            const toast = document.createElement('div');
+            toast.className = `toast-message toast-${type}`;
+            toast.textContent = message;
+            
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // 페이지 로드 시 캐시 통계 로드
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCacheStats();
+        });
+    </script>
+</body>
+</html>

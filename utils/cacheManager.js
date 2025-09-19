@@ -23,7 +23,9 @@ class CacheManager {
             analytics: { ttl: 120 }, // 2 minutes
             search: { ttl: 60 }, // 1 minute
             popular: { ttl: 900 }, // 15 minutes
-            images: { ttl: 3600 } // 1 hour
+            images: { ttl: 3600 }, // 1 hour
+            nutrition: { ttl: 1800 }, // 30 minutes for nutrition info
+            user: { ttl: 300 } // 5 minutes for user data
         };
 
         // Cache hit/miss statistics
