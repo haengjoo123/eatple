@@ -13,7 +13,7 @@
       "totalPoints": 4439,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-09-04",
+      "lastEarnedDate": "2025-09-19",
       "history": [
         {
           "id": "1753341193454",
@@ -1196,12 +1196,12 @@
       ]
     },
     "serviceUsage": {
-      "mealPlan": 32,
+      "mealPlan": 33,
       "restaurantRecommendation": 32,
       "supplementRecommendation": 167,
       "ingredientAnalysis": 24,
       "mini-game": 124,
-      "lastUpdated": "2025-09-02T13:51:34.582Z"
+      "lastUpdated": "2025-09-19T03:57:41.944Z"
     },
     "profile": {
       "age": "31",
@@ -1297,7 +1297,7 @@
       "totalPoints": 342,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-09-04",
+      "lastEarnedDate": "2025-09-19",
       "history": [
         {
           "id": "1754977248434",
@@ -1394,7 +1394,7 @@
       "totalPoints": 216,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-09-04",
+      "lastEarnedDate": "2025-09-19",
       "history": [
         {
           "id": "1756537539645",

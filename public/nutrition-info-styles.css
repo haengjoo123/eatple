@@ -37,6 +37,15 @@ body.nutrition-info-page .container {
   transition: color 0.3s ease;
 }
 
+.page-title-logo {
+  max-width: 300px;
+  height: auto;
+  max-height: 80px;
+  object-fit: contain;
+  margin: 0 auto;
+  display: block;
+}
+
 /* 필터 섹션 - style.css에서 통합 관리 */
 
 /* 검색 컨테이너 */
@@ -1344,6 +1353,11 @@ body.nutrition-detail-page .container {
   .page-title {
     font-size: 2rem;
   }
+
+  .page-title-logo {
+    max-width: 250px;
+    max-height: 60px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1400,6 +1414,11 @@ body.nutrition-detail-page .container {
 
   .page-title {
     font-size: 1.8rem;
+  }
+
+  .page-title-logo {
+    max-width: 200px;
+    max-height: 80px;
   }
 
   body.nutrition-info-page .container {
