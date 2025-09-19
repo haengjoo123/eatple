@@ -83,13 +83,17 @@ class NutritionInfoDetailManager {
         // 1) 클라이언트 캐시가 있으면 즉시 렌더 (SWR의 stale 단계)
         const cacheKey = this.getCacheKey(this.nutritionInfoId);
         const cached = this.readCache(cacheKey);
-        if (cached && cached.data) {
+        if (cached && cached.data && cached.data.title) {
             console.log(`[CLIENT CACHE HIT] 영양정보 ${this.nutritionInfoId} 클라이언트 캐시에서 조회`);
             this.nutritionInfo = cached.data;
             await this.loadUserInteractionState();
             this.renderNutritionInfoDetail();
             await this.loadRecommendedInfo();
             this.showContent();
+        } else if (cached && cached.data && !cached.data.title) {
+            console.warn(`[CLIENT CACHE INVALID] 영양정보 ${this.nutritionInfoId} 클라이언트 캐시 데이터가 유효하지 않음`);
+            // 유효하지 않은 캐시 삭제
+            this.writeCache(cacheKey, null);
         }
 
         try {
@@ -105,6 +109,7 @@ class NutritionInfoDetailManager {
             // 304 Not Modified는 정상 응답이므로 먼저 처리
             if (response.status === 304 && cached && cached.data) {
                 console.log(`[304 NOT MODIFIED] 영양정보 ${this.nutritionInfoId} 변경 없음`);
+                // 304 응답 시에는 이미 캐시된 데이터로 렌더링 완료되었으므로 종료
                 return;
             }
 
@@ -118,7 +123,7 @@ class NutritionInfoDetailManager {
 
             const result = await response.json();
             
-            if (result.success) {
+            if (result.success && result.data) {
                 this.nutritionInfo = result.data;
                 
                 // 서버에서 캐시된 데이터인지 확인
@@ -138,9 +143,16 @@ class NutritionInfoDetailManager {
                 });
                 
                 await this.loadUserInteractionState();
-                this.renderNutritionInfoDetail();
-                await this.loadRecommendedInfo();
-                this.showContent();
+                
+                // 렌더링 전 데이터 유효성 최종 확인
+                if (this.nutritionInfo && this.nutritionInfo.title) {
+                    this.renderNutritionInfoDetail();
+                    await this.loadRecommendedInfo();
+                    this.showContent();
+                } else {
+                    console.error('렌더링 실패: 영양정보 데이터가 유효하지 않음', this.nutritionInfo);
+                    this.showError('영양정보 데이터를 불러올 수 없습니다.');
+                }
             } else {
                 throw new Error(result.error || '데이터를 불러오는데 실패했습니다.');
             }
@@ -206,6 +218,13 @@ class NutritionInfoDetailManager {
 
     renderNutritionInfoDetail() {
         const info = this.nutritionInfo;
+
+        // 데이터 유효성 검사
+        if (!info || !info.title) {
+            console.error('영양정보 데이터가 유효하지 않습니다:', info);
+            this.showError('영양정보 데이터를 불러올 수 없습니다.');
+            return;
+        }
 
         // 페이지 제목 설정
         document.title = `${info.title} - 잇플`;

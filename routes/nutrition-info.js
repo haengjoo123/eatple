@@ -663,7 +663,7 @@ router.get('/', async (req, res) => {
             const cacheKey = `nutrition_detail_${id}`;
             let nutritionInfo = cacheManager.get('nutrition', cacheKey);
             
-            if (nutritionInfo) {
+            if (nutritionInfo && nutritionInfo.data) {
                 console.log(`[CACHE HIT] 영양정보 ${id} 로컬 캐시에서 조회`);
                 
                 // 캐시된 데이터로 즉시 응답
@@ -706,7 +706,9 @@ router.get('/', async (req, res) => {
             nutritionInfo = await supabaseDataManager.getNutritionInfoById(id);
             
             if (!nutritionInfo) {
+                console.error(`[ERROR] 영양정보 ${id}를 Supabase에서 찾을 수 없음`);
                 return res.status(404).json({
+                    success: false,
                     error: '해당 영양 정보를 찾을 수 없습니다.'
                 });
             }
