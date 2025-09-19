@@ -17,13 +17,21 @@ class NutritionInfoDetailManager {
         
         this.initializeElements();
         this.bindEvents();
-        this.loadNutritionInfoDetail();
+        
+        // 페이지 로드 즉시 스켈레톤 UI 표시
+        this.showSkeleton();
+        
+        // 약간의 지연 후 데이터 로드 시작 (스켈레톤 UI를 보여주기 위함)
+        setTimeout(() => {
+            this.loadNutritionInfoDetail();
+        }, 100);
     }
 
     initializeElements() {
         // 상태 요소들
         this.loadingState = document.getElementById('loadingState');
         this.errorState = document.getElementById('errorState');
+        this.skeletonContent = document.getElementById('skeletonContent');
         this.detailContent = document.getElementById('detailContent');
         this.errorMessage = document.getElementById('errorMessage');
         this.retryBtn = document.getElementById('retryBtn');
@@ -78,7 +86,7 @@ class NutritionInfoDetailManager {
             return;
         }
 
-        this.showLoading();
+        // 스켈레톤 UI는 이미 constructor에서 표시됨
 
         // 1) 클라이언트 캐시가 있으면 즉시 렌더 (SWR의 stale 단계)
         const cacheKey = this.getCacheKey(this.nutritionInfoId);
@@ -86,10 +94,9 @@ class NutritionInfoDetailManager {
         if (cached && cached.data && cached.data.title) {
             console.log(`[CLIENT CACHE HIT] 영양정보 ${this.nutritionInfoId} 클라이언트 캐시에서 조회`);
             this.nutritionInfo = cached.data;
-            await this.loadUserInteractionState();
-            this.renderNutritionInfoDetail();
-            await this.loadRecommendedInfo();
-            this.showContent();
+            
+            // 캐시된 데이터로 점진적 렌더링 시작
+            await this.renderProgressively();
         } else if (cached && cached.data && !cached.data.title) {
             console.warn(`[CLIENT CACHE INVALID] 영양정보 ${this.nutritionInfoId} 클라이언트 캐시 데이터가 유효하지 않음`);
             // 유효하지 않은 캐시 삭제
@@ -142,13 +149,10 @@ class NutritionInfoDetailManager {
                     serverCached: result.cached || false
                 });
                 
-                await this.loadUserInteractionState();
-                
                 // 렌더링 전 데이터 유효성 최종 확인
                 if (this.nutritionInfo && this.nutritionInfo.title) {
-                    this.renderNutritionInfoDetail();
-                    await this.loadRecommendedInfo();
-                    this.showContent();
+                    // 새로운 데이터로 점진적 렌더링 (캐시에서 이미 렌더링했다면 업데이트)
+                    await this.renderProgressively();
                 } else {
                     console.error('렌더링 실패: 영양정보 데이터가 유효하지 않음', this.nutritionInfo);
                     this.showError('영양정보 데이터를 불러올 수 없습니다.');
@@ -166,6 +170,156 @@ class NutritionInfoDetailManager {
                 console.log('네트워크 문제로 캐시 데이터를 표시 중입니다');
             }
         }
+    }
+
+    // 점진적 렌더링 메서드
+    async renderProgressively() {
+        // 1단계: 기본 정보 렌더링 (제목, 메타 정보)
+        await this.renderBasicInfo();
+        await this.delay(100);
+
+        // 2단계: 이미지 렌더링
+        await this.renderImage();
+        await this.delay(100);
+
+        // 3단계: 요약 정보 렌더링
+        await this.renderSummary();
+        await this.delay(100);
+
+        // 4단계: 상세 내용 렌더링
+        await this.renderDetailContent();
+        await this.delay(100);
+
+        // 5단계: 태그 및 액션 버튼 렌더링
+        await this.renderTagsAndActions();
+        await this.delay(100);
+
+        // 6단계: 사용자 상호작용 상태 로드 (백그라운드)
+        this.loadUserInteractionState().then(() => {
+            this.updateActionButtons();
+        });
+
+        // 7단계: 추천 정보 로드 (백그라운드)
+        this.loadRecommendedInfo();
+    }
+
+    // 지연 유틸리티
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // 단계별 렌더링 메서드들
+    async renderBasicInfo() {
+        if (!this.nutritionInfo) return;
+
+        const info = this.nutritionInfo;
+        
+        // 스켈레톤에서 실제 콘텐츠로 전환
+        this.showContent();
+        
+        // 페이지 제목 설정
+        document.title = `${info.title} - 잇플`;
+        
+        // 브레드크럼
+        this.breadcrumbTitle.textContent = this.truncateText(info.title, 30);
+        this.breadcrumbTitle.classList.add('progressive-fade-in');
+
+        // 헤더 정보
+        this.detailTitle.textContent = info.title;
+        this.detailSource.textContent = info.sourceName;
+        this.detailDate.textContent = this.formatDate(info.publishedDate);
+        
+        if (info.author) {
+            this.detailAuthor.textContent = info.author;
+            this.detailAuthor.style.display = 'inline';
+        } else {
+            this.detailAuthor.style.display = 'none';
+        }
+
+        // 헤더에 애니메이션 적용
+        document.querySelector('.detail-header').classList.add('progressive-fade-in');
+    }
+
+    async renderImage() {
+        if (!this.nutritionInfo) return;
+
+        const info = this.nutritionInfo;
+
+        // 이미지 설정
+        if (info.thumbnailUrl) {
+            this.detailImage.src = info.thumbnailUrl;
+        } else if (info.sourceType === 'youtube' && info.thumbnailUrl) {
+            this.detailImage.src = info.thumbnailUrl;
+        } else if (info.imageUrl) {
+            this.detailImage.src = info.imageUrl;
+        } else {
+            this.detailImage.src = this.getDefaultImage(info.sourceType);
+        }
+        this.detailImage.alt = info.title;
+
+        // 이미지 컨테이너에 애니메이션 적용
+        this.detailImage.parentElement.classList.add('progressive-fade-in');
+    }
+
+    async renderSummary() {
+        if (!this.nutritionInfo) return;
+
+        const info = this.nutritionInfo;
+
+        // 요약 내용 설정
+        this.detailSummary.innerHTML = this.formatSummary(info.summary);
+
+        // 요약 섹션에 애니메이션 적용
+        document.querySelector('.detail-summary-section').classList.add('progressive-fade-in');
+    }
+
+    async renderDetailContent() {
+        if (!this.nutritionInfo) return;
+
+        const info = this.nutritionInfo;
+
+        // 상세 내용 (admin.html에서 작성한 content)
+        if (info.content && info.content.trim()) {
+            this.detailMainContent.innerHTML = this.formatContent(info.content);
+            this.detailContentSection.style.display = 'block';
+            this.detailContentSection.classList.add('progressive-fade-in');
+        } else {
+            this.detailContentSection.style.display = 'none';
+        }
+
+        // 원본 콘텐츠 (논문의 경우만 표시)
+        if (info.sourceType === 'paper' && info.originalContent) {
+            this.detailOriginalContent.innerHTML = this.formatOriginalContent(info.originalContent);
+            this.originalSection.style.display = 'block';
+            this.originalSection.classList.add('progressive-fade-in');
+        } else {
+            this.originalSection.style.display = 'none';
+        }
+
+        // 원본 링크
+        if (info.sourceUrl) {
+            this.detailSourceLink.href = info.sourceUrl;
+            this.detailSourceLink.style.display = 'inline-block';
+            this.detailSourceLink.querySelector('.source-url-text').textContent = info.sourceUrl;
+        } else {
+            this.detailSourceLink.style.display = 'none';
+        }
+
+        // 관련 상품
+        this.renderRelatedProducts(info.related_products);
+    }
+
+    async renderTagsAndActions() {
+        if (!this.nutritionInfo) return;
+
+        const info = this.nutritionInfo;
+
+        // 태그 렌더링
+        this.renderTags(info.tags);
+        document.querySelector('.detail-tags-section').classList.add('progressive-fade-in');
+
+        // 액션 버튼 섹션에 애니메이션 적용
+        document.querySelector('.detail-actions').classList.add('progressive-fade-in');
     }
 
     // ----- 캐시 유틸 -----
@@ -216,93 +370,7 @@ class NutritionInfoDetailManager {
         }
     }
 
-    renderNutritionInfoDetail() {
-        const info = this.nutritionInfo;
-
-        // 데이터 유효성 검사
-        if (!info || !info.title) {
-            console.error('영양정보 데이터가 유효하지 않습니다:', info);
-            this.showError('영양정보 데이터를 불러올 수 없습니다.');
-            return;
-        }
-
-        // 페이지 제목 설정
-        document.title = `${info.title} - 잇플`;
-        
-        // 브레드크럼
-        this.breadcrumbTitle.textContent = this.truncateText(info.title, 30);
-
-        // 헤더 정보
-        
-        // 신뢰도 점수 숨김 (사용자에게 표시하지 않음)
-        
-        
-        this.detailTitle.textContent = info.title;
-        this.detailSource.textContent = info.sourceName;
-        this.detailDate.textContent = this.formatDate(info.publishedDate);
-        
-        if (info.author) {
-            this.detailAuthor.textContent = info.author;
-            this.detailAuthor.style.display = 'inline';
-        } else {
-            this.detailAuthor.style.display = 'none';
-        }
-
-        // 통계 정보는 더 이상 표시하지 않음 (UI에서 제거됨)
-
-        // 이미지 (썸네일 우선 표시)
-        if (info.thumbnailUrl) {
-            // 1순위: 수동 포스팅의 썸네일 이미지
-            this.detailImage.src = info.thumbnailUrl;
-        } else if (info.sourceType === 'youtube' && info.thumbnailUrl) {
-            // 2순위: YouTube의 경우 실제 썸네일 우선 사용
-            this.detailImage.src = info.thumbnailUrl;
-        } else if (info.imageUrl) {
-            // 3순위: 다른 소스의 경우 imageUrl 사용
-            this.detailImage.src = info.imageUrl;
-        } else {
-            // 4순위: 기본 이미지 사용
-            this.detailImage.src = this.getDefaultImage(info.sourceType);
-        }
-        this.detailImage.alt = info.title;
-
-        // 요약
-        this.detailSummary.innerHTML = this.formatSummary(info.summary);
-
-        // 상세 내용 (admin.html에서 작성한 content)
-        if (info.content && info.content.trim()) {
-            this.detailMainContent.innerHTML = this.formatContent(info.content);
-            this.detailContentSection.style.display = 'block';
-        } else {
-            this.detailContentSection.style.display = 'none';
-        }
-
-        // 태그
-        this.renderTags(info.tags);
-
-        // 관련 상품
-        this.renderRelatedProducts(info.related_products);
-
-        // 원본 콘텐츠 (논문의 경우만 표시)
-        if (info.sourceType === 'paper' && info.originalContent) {
-            this.detailOriginalContent.innerHTML = this.formatOriginalContent(info.originalContent);
-            this.originalSection.style.display = 'block';
-        } else {
-            this.originalSection.style.display = 'none';
-        }
-
-        // 원본 링크
-        if (info.sourceUrl) {
-            this.detailSourceLink.href = info.sourceUrl;
-            this.detailSourceLink.style.display = 'inline-block';
-            this.detailSourceLink.querySelector('.source-url-text').textContent = info.sourceUrl;
-        } else {
-            this.detailSourceLink.style.display = 'none';
-        }
-
-        // 액션 버튼 상태 업데이트
-        this.updateActionButtons();
-    }
+    // 기존 renderNutritionInfoDetail 메서드는 점진적 렌더링으로 대체됨
 
     renderTags(tags) {
         this.detailTags.innerHTML = '';
@@ -401,10 +469,14 @@ class NutritionInfoDetailManager {
             // 서버 API를 통해 추천 정보 로드 (서버에서도 캐시 처리됨)
             console.log(`[API CALL] 추천 정보 서버 API 호출`);
             await this.loadCategoryAndTagBasedRecommendations();
+            
+            // 추천 섹션에 애니메이션 적용
+            document.querySelector('.detail-recommendations').classList.add('progressive-fade-in');
         } catch (error) {
             console.log('추천 정보 로드 실패:', error);
             // 오류 발생 시 일반 목록으로 대체
             await this.loadFallbackRecommendations();
+            document.querySelector('.detail-recommendations').classList.add('progressive-fade-in');
         }
     }
 
@@ -749,6 +821,14 @@ class NutritionInfoDetailManager {
     showLoading() {
         this.loadingState.style.display = 'flex';
         this.errorState.style.display = 'none';
+        this.skeletonContent.style.display = 'none';
+        this.detailContent.style.display = 'none';
+    }
+
+    showSkeleton() {
+        this.loadingState.style.display = 'none';
+        this.errorState.style.display = 'none';
+        this.skeletonContent.style.display = 'block';
         this.detailContent.style.display = 'none';
     }
 
@@ -756,12 +836,14 @@ class NutritionInfoDetailManager {
         this.errorMessage.textContent = message;
         this.loadingState.style.display = 'none';
         this.errorState.style.display = 'flex';
+        this.skeletonContent.style.display = 'none';
         this.detailContent.style.display = 'none';
     }
 
     showContent() {
         this.loadingState.style.display = 'none';
         this.errorState.style.display = 'none';
+        this.skeletonContent.style.display = 'none';
         this.detailContent.style.display = 'block';
     }
 
