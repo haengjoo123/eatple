@@ -196,7 +196,10 @@
                     <span class="breadcrumb-separator">›</span>
                     <a href="nutrition-info.html">영양 정보</a>
                     <span class="breadcrumb-separator">›</span>
-                    <span class="skeleton-text skeleton-breadcrumb"></span>
+                    <span class="skeleton-text skeleton-breadcrumb" style="width: 60px;"></span>
+                    <span class="skeleton-text skeleton-breadcrumb" style="width: 40px; margin-left: 8px;"></span>
+                    <span class="breadcrumb-separator">›</span>
+                    <span class="skeleton-text skeleton-breadcrumb" style="width: 120px;"></span>
                 </nav>
             </div>
         </section>
@@ -260,6 +263,10 @@
                     <span class="breadcrumb-separator">›</span>
                     <a href="nutrition-info.html">영양 정보</a>
                     <span class="breadcrumb-separator">›</span>
+                    <span id="breadcrumbCategory" class="breadcrumb-category"></span>
+                    <span class="breadcrumb-separator" id="breadcrumbCategorySeparator" style="display: none;">›</span>
+                    <span id="breadcrumbSubcategory" class="breadcrumb-subcategory"></span>
+                    <span class="breadcrumb-separator" id="breadcrumbSeparator" style="display: none;">›</span>
                     <span id="breadcrumbTitle">상세 정보</span>
                 </nav>
             </div>
@@ -373,13 +380,20 @@
         </section>
     </div>
 
+    <!-- Scroll to Top 버튼 -->
+    <button id="scrollToTop" class="scroll-to-top" onclick="scrollToTop()">
+        <span>↑</span>
+    </button>
+
     <!-- 푸터 -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
                 <div class="footer-brand">
                     <div class="brand-logo">
-                      <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+                        <a href="index.html">
+                            <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+                        </a>
                     </div>
                     <p>건강한 식생활을 위한 종합 플랫폼</p>
                 </div>
@@ -390,6 +404,9 @@
                             <li><a href="meal-plan.html">뭐 해먹지?</a></li>
                             <li><a href="supplements.html">나만의 영양제</a></li>
                             <li><a href="restaurant-recommendation.html">오늘의 맛집</a></li>
+                            <li><a href="nutrition-info.html">잇플 인사이트</a></li>
+                            <li><a href="ingredient-analyzer.html">식재료 분석</a></li>
+                            <li><a href="food-nutrition-search.html">음식 영양성분 검색</a></li>
                         </ul>
                     </div>
                     <div class="footer-section">
@@ -497,6 +514,32 @@
 
         // 페이지 로드 시 로그인 상태 확인
         checkAuthStatus();
+
+        // Scroll to Top 기능
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+            });
+        }
+
+        // 스크롤 위치에 따라 버튼 표시/숨김
+        function handleScrollToTopButton() {
+            const scrollToTopBtn = document.getElementById("scrollToTop");
+            const scrollY = window.scrollY;
+
+            if (scrollY > 300) {
+                scrollToTopBtn.classList.add("visible");
+            } else {
+                scrollToTopBtn.classList.remove("visible");
+            }
+        }
+
+        // 스크롤 이벤트 리스너
+        window.addEventListener("scroll", handleScrollToTopButton);
+
+        // 페이지 로드 시 버튼 상태 초기화
+        handleScrollToTopButton();
     </script>
 </body>
 </html>

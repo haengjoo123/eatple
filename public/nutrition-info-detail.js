@@ -52,6 +52,10 @@ class NutritionInfoDetailManager {
 
         // 상세 정보 요소들
         this.breadcrumbTitle = document.getElementById('breadcrumbTitle');
+        this.breadcrumbCategory = document.getElementById('breadcrumbCategory');
+        this.breadcrumbSubcategory = document.getElementById('breadcrumbSubcategory');
+        this.breadcrumbSeparator = document.getElementById('breadcrumbSeparator');
+        this.breadcrumbCategorySeparator = document.getElementById('breadcrumbCategorySeparator');
 
         
         this.detailTitle = document.getElementById('detailTitle');
@@ -93,6 +97,13 @@ class NutritionInfoDetailManager {
         // 뒤로가기 처리
         window.addEventListener('popstate', () => {
             window.location.href = 'nutrition-info.html';
+        });
+
+        // 창 크기 변경 시 브레드 크럼 업데이트
+        window.addEventListener('resize', () => {
+            if (this.nutritionInfo) {
+                this.renderBreadcrumb(this.nutritionInfo);
+            }
         });
     }
 
@@ -228,6 +239,50 @@ class NutritionInfoDetailManager {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    // 브레드 크럼 렌더링 메서드
+    renderBreadcrumb(info) {
+        // 모바일 환경 감지
+        const isMobile = window.innerWidth <= 768;
+        
+        // 카테고리 정보가 있는 경우에만 표시
+        if (info.category) {
+            const categoryLabel = this.getCategoryLabel(info.category);
+            const subcategoryLabel = this.getSubcategoryLabel(info.category, info.subcategory);
+            
+            // 대분류 표시
+            if (categoryLabel) {
+                this.breadcrumbCategory.textContent = categoryLabel;
+                this.breadcrumbCategory.style.display = 'inline';
+            } else {
+                this.breadcrumbCategory.style.display = 'none';
+            }
+            
+            // 소분류 표시
+            if (subcategoryLabel) {
+                this.breadcrumbSubcategory.textContent = subcategoryLabel;
+                this.breadcrumbSubcategory.style.display = 'inline';
+                this.breadcrumbCategorySeparator.style.display = 'inline';
+                
+                // 모바일에서는 마지막 구분자 숨김
+                if (isMobile) {
+                    this.breadcrumbSeparator.style.display = 'none';
+                } else {
+                    this.breadcrumbSeparator.style.display = 'inline';
+                }
+            } else {
+                this.breadcrumbSubcategory.style.display = 'none';
+                this.breadcrumbCategorySeparator.style.display = 'none';
+                this.breadcrumbSeparator.style.display = 'none';
+            }
+        } else {
+            // 카테고리 정보가 없는 경우 숨김
+            this.breadcrumbCategory.style.display = 'none';
+            this.breadcrumbSubcategory.style.display = 'none';
+            this.breadcrumbCategorySeparator.style.display = 'none';
+            this.breadcrumbSeparator.style.display = 'none';
+        }
+    }
+
     // 단계별 렌더링 메서드들
     async renderBasicInfo() {
         if (!this.nutritionInfo) return;
@@ -241,6 +296,7 @@ class NutritionInfoDetailManager {
         document.title = `${info.title} - 잇플`;
         
         // 브레드크럼
+        this.renderBreadcrumb(info);
         this.breadcrumbTitle.textContent = this.truncateText(info.title, 30);
         this.breadcrumbTitle.classList.add('progressive-fade-in');
 
@@ -790,15 +846,93 @@ class NutritionInfoDetailManager {
     }
 
     getCategoryLabel(category) {
-        const labels = {
-            'diet': '식단',
-            'supplements': '보충제',
-            'research': '연구',
-            'trends': '트렌드',
-            'nutrition': '영양',
-            'health': '건강'
+        // 영양 정보 페이지의 실제 카테고리 구조에 맞는 대분류 매핑
+        const mainCategoryLabels = {
+            // 웰니스 대분류
+            'blood_sugar': '웰니스',
+            'energy_fatigue': '웰니스',
+            'sleep': '웰니스',
+            'mental_health': '웰니스',
+            'immunity': '웰니스',
+            'anti_aging': '웰니스',
+            'fat_loss': '웰니스',
+            'muscle_exercise': '웰니스',
+            
+            // 신체 부위별 건강 대분류
+            'brain_health': '신체 부위별 건강',
+            'eye_health': '신체 부위별 건강',
+            'oral_health': '신체 부위별 건강',
+            'ent': '신체 부위별 건강',
+            'lung_respiratory': '신체 부위별 건강',
+            'cardiovascular': '신체 부위별 건강',
+            'liver_health': '신체 부위별 건강',
+            'gut_health': '신체 부위별 건강',
+            'kidney_urinary': '신체 부위별 건강',
+            'bone_joint': '신체 부위별 건강',
+            'skin_hair': '신체 부위별 건강',
+            
+            // 특정 질환 및 증상 관리 대분류
+            'cancer': '특정 질환 및 증상 관리',
+            'autoimmune': '특정 질환 및 증상 관리',
+            'pain': '특정 질환 및 증상 관리',
+            
+            // 생애 주기별 건강 대분류
+            'womens_health': '생애 주기별 건강',
+            'mens_health': '생애 주기별 건강',
+            'pregnancy_parenting': '생애 주기별 건강'
         };
-        return labels[category] || category;
+        
+        return mainCategoryLabels[category] || category;
+    }
+
+    getSubcategoryLabel(category, subcategory) {
+        // 영양 정보 페이지의 실제 카테고리 구조에 맞는 소분류 매핑
+        const subcategoryLabels = {
+            // 웰니스 소분류
+            'blood_sugar': '혈당 관리',
+            'energy_fatigue': '에너지/피로',
+            'sleep': '수면',
+            'mental_health': '정신 건강',
+            'immunity': '면역력',
+            'anti_aging': '항노화',
+            'fat_loss': '체지방 감소',
+            'muscle_exercise': '근력/운동',
+            
+            // 신체 부위별 건강 소분류
+            'brain_health': '뇌 건강',
+            'eye_health': '눈 건강',
+            'oral_health': '구강 건강',
+            'ent': '이비인후과',
+            'lung_respiratory': '폐/호흡기',
+            'cardiovascular': '심혈관',
+            'liver_health': '간 건강',
+            'gut_health': '장 건강',
+            'kidney_urinary': '신장/비뇨기',
+            'bone_joint': '뼈/관절',
+            'skin_hair': '피부/모발',
+            
+            // 특정 질환 및 증상 관리 소분류
+            'cancer': '암',
+            'autoimmune': '자가면역',
+            'pain': '통증',
+            
+            // 생애 주기별 건강 소분류
+            'womens_health': '여성 건강',
+            'mens_health': '남성 건강',
+            'pregnancy_parenting': '임신/육아'
+        };
+
+        // category가 실제 소분류 키인 경우 해당 라벨 반환
+        if (subcategoryLabels[category]) {
+            return subcategoryLabels[category];
+        }
+        
+        // subcategory가 있는 경우 해당 라벨 반환
+        if (subcategory && subcategoryLabels[subcategory]) {
+            return subcategoryLabels[subcategory];
+        }
+        
+        return null;
     }
 
 

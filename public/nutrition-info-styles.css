@@ -545,6 +545,28 @@ body.nutrition-detail-page .container {
   font-weight: 300;
 }
 
+.breadcrumb-category {
+  color: #4a69bd;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.breadcrumb-category:hover {
+  color: #3b5093;
+  text-decoration: underline;
+}
+
+.breadcrumb-subcategory {
+  color: #4a69bd;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.breadcrumb-subcategory:hover {
+  color: #3b5093;
+  text-decoration: underline;
+}
+
 /* 상세 헤더 */
 .detail-header {
   color: #2c3e50;
@@ -1226,6 +1248,15 @@ body.nutrition-detail-page .container {
     gap: 6px;
   }
   
+  /* 모바일에서 마지막 제목과 그 앞의 구분자 숨김 */
+  .breadcrumb #breadcrumbTitle {
+    display: none;
+  }
+  
+  .breadcrumb #breadcrumbSeparator {
+    display: none;
+  }
+  
   .detail-products {
     grid-template-columns: 1fr;
     gap: 15px;
@@ -1388,6 +1419,15 @@ body.nutrition-detail-page .container {
   .breadcrumb {
     font-size: 0.8rem;
     gap: 12px;
+  }
+  
+  /* 작은 화면에서도 마지막 제목과 그 앞의 구분자 숨김 */
+  .breadcrumb #breadcrumbTitle {
+    display: none;
+  }
+  
+  .breadcrumb #breadcrumbSeparator {
+    display: none;
   }
 
   /* 추천 섹션 - 작은 화면 스타일 */
