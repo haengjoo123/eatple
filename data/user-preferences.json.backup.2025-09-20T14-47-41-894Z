@@ -1,0 +1,31 @@
+{
+  "87fbf905-b9a1-4dea-a921-2791f94e68cb": {
+    "userId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+    "preferences": {
+      "categories": [
+        "diet",
+        "supplements",
+        "research"
+      ],
+      "sourceTypes": [
+        "paper",
+        "news",
+        "youtube"
+      ],
+      "keywords": [],
+      "language": "ko",
+      "minTrustScore": 60
+    },
+    "interactions": {
+      "bookmarks": [
+        "cc76b5ed-ab86-4c72-8b75-f27cd3da6470",
+        "a018277e-c877-4024-a285-2cf0c211517d",
+        "d2b98c7e-7748-42bd-96ae-8d4c7501862c"
+      ],
+      "likes": [
+        "b1e8c9cc-d922-4e27-b85d-513f210921c1"
+      ],
+      "views": []
+    }
+  }
+}

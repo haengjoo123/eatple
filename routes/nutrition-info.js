@@ -32,7 +32,9 @@ router.get('/', async (req, res) => {
             if (pagination.limit > 100) pagination.limit = 100;
         }
         if (req.query.query) filters.search = req.query.query;
-        if (req.query.category) filters.category = req.query.category;
+        if (req.query.category) {
+            filters.category = req.query.category;
+        }
         if (req.query.sourceType) {
             // 프론트엔드 필터와 데이터 매핑
             const sourceTypeMapping = {

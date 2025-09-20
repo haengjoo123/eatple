@@ -17,7 +17,7 @@ class NutritionInfo {
         this.publishedDate = data.publishedDate ? new Date(data.publishedDate) : null;
         this.collectedDate = data.collectedDate ? new Date(data.collectedDate) : new Date();
         this.trustScore = data.trustScore || 0; // 0-100
-        this.category = data.category || ''; // 'diet', 'supplements', 'research', 'trends'
+        this.category = data.category || ''; // 건강 관련 카테고리: 'brain_health', 'cancer', 'cardiovascular', etc.
         this.tags = data.tags || [];
         this.imageUrl = data.imageUrl || '';
         this.thumbnailUrl = data.thumbnailUrl || '';
@@ -61,8 +61,16 @@ class NutritionInfo {
             errors.push('유효한 소스 URL이 필요합니다.');
         }
 
-        if (!['diet', 'supplements', 'research', 'trends'].includes(this.category)) {
-            errors.push('카테고리는 diet, supplements, research, trends 중 하나여야 합니다.');
+        const validCategories = [
+            'brain_health', 'cancer', 'cardiovascular', 'blood_sugar', 'ent', 'energy_fatigue',
+            'eye_health', 'fat_loss', 'gut_health', 'anti_aging', 'immunity', 'bone_joint',
+            'kidney_urinary', 'liver_health', 'lung_respiratory', 'mens_health', 'womens_health',
+            'mental_health', 'muscle_exercise', 'oral_health', 'pain', 'pregnancy_parenting',
+            'skin_hair', 'sleep'
+        ];
+        
+        if (this.category && !validCategories.includes(this.category)) {
+            errors.push('올바른 건강 카테고리를 선택해주세요.');
         }
 
         if (this.trustScore < 0 || this.trustScore > 100) {

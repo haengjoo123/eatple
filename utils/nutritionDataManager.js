@@ -79,7 +79,13 @@ class NutritionDataManager {
                 contentFilteringEnabled: true,
                 autoTranslation: true
             },
-            categories: ["diet", "supplements", "research", "trends"],
+            categories: [
+                "brain_health", "cancer", "cardiovascular", "blood_sugar", "ent", "energy_fatigue",
+                "eye_health", "fat_loss", "gut_health", "anti_aging", "immunity", "bone_joint",
+                "kidney_urinary", "liver_health", "lung_respiratory", "mens_health", "womens_health",
+                "mental_health", "muscle_exercise", "oral_health", "pain", "pregnancy_parenting",
+                "skin_hair", "sleep"
+            ],
             sourceTypes: ["paper", "youtube", "news"],
             languages: ["ko", "en"]
         };

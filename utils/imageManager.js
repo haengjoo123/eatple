@@ -7,17 +7,32 @@ class ImageManager {
         this.imageDirectory = path.join(__dirname, '..', 'public', 'images', 'nutrition');
         this.baseUrl = '/images/nutrition';
         
-        // 영양 카테고리별 기본 이미지 매핑
+        // 건강 카테고리별 기본 이미지 매핑
         this.categoryImages = {
-            'diet': 'diet-default.jpg',
-            'supplements': 'supplements-default.jpg',
-            'research': 'research-default.jpg',
-            'trends': 'trends-default.jpg',
-            'vitamins': 'vitamins-default.jpg',
-            'minerals': 'minerals-default.jpg',
-            'protein': 'protein-default.jpg',
-            'carbohydrates': 'carbs-default.jpg',
-            'fats': 'fats-default.jpg',
+            'brain_health': 'brain-health-default.jpg',
+            'cancer': 'cancer-default.jpg',
+            'cardiovascular': 'cardiovascular-default.jpg',
+            'blood_sugar': 'blood-sugar-default.jpg',
+            'ent': 'ent-default.jpg',
+            'energy_fatigue': 'energy-fatigue-default.jpg',
+            'eye_health': 'eye-health-default.jpg',
+            'fat_loss': 'fat-loss-default.jpg',
+            'gut_health': 'gut-health-default.jpg',
+            'anti_aging': 'anti-aging-default.jpg',
+            'immunity': 'immunity-default.jpg',
+            'bone_joint': 'bone-joint-default.jpg',
+            'kidney_urinary': 'kidney-urinary-default.jpg',
+            'liver_health': 'liver-health-default.jpg',
+            'lung_respiratory': 'lung-respiratory-default.jpg',
+            'mens_health': 'mens-health-default.jpg',
+            'womens_health': 'womens-health-default.jpg',
+            'mental_health': 'mental-health-default.jpg',
+            'muscle_exercise': 'muscle-exercise-default.jpg',
+            'oral_health': 'oral-health-default.jpg',
+            'pain': 'pain-default.jpg',
+            'pregnancy_parenting': 'pregnancy-parenting-default.jpg',
+            'skin_hair': 'skin-hair-default.jpg',
+            'sleep': 'sleep-default.jpg',
             'general': 'nutrition-default.jpg'
         };
 
@@ -200,18 +215,30 @@ class ImageManager {
      */
     getCategoryColors(category) {
         const colorMap = {
-            'diet': { primary: '#4CAF50', secondary: '#2E7D32' },
-            'supplements': { primary: '#FF9800', secondary: '#F57C00' },
-            'research': { primary: '#2196F3', secondary: '#1565C0' },
-            'trends': { primary: '#E91E63', secondary: '#C2185B' },
-            'vitamins': { primary: '#FFC107', secondary: '#F57F17' },
-            'minerals': { primary: '#795548', secondary: '#5D4037' },
-            'protein': { primary: '#F44336', secondary: '#D32F2F' },
-            'carbs': { primary: '#FFEB3B', secondary: '#F9A825' },
-            'fats': { primary: '#9C27B0', secondary: '#7B1FA2' },
-            'exercise': { primary: '#FF5722', secondary: '#D84315' },
+            'brain_health': { primary: '#9C27B0', secondary: '#7B1FA2' },
+            'cancer': { primary: '#F44336', secondary: '#D32F2F' },
+            'cardiovascular': { primary: '#E91E63', secondary: '#C2185B' },
+            'blood_sugar': { primary: '#FF9800', secondary: '#F57C00' },
+            'ent': { primary: '#00BCD4', secondary: '#0097A7' },
+            'energy_fatigue': { primary: '#FFEB3B', secondary: '#FBC02D' },
+            'eye_health': { primary: '#2196F3', secondary: '#1565C0' },
+            'fat_loss': { primary: '#FF5722', secondary: '#D84315' },
+            'gut_health': { primary: '#4CAF50', secondary: '#388E3C' },
+            'anti_aging': { primary: '#673AB7', secondary: '#512DA8' },
             'immunity': { primary: '#00BCD4', secondary: '#0097A7' },
-            'bone': { primary: '#607D8B', secondary: '#455A64' }
+            'bone_joint': { primary: '#607D8B', secondary: '#455A64' },
+            'kidney_urinary': { primary: '#03A9F4', secondary: '#0277BD' },
+            'liver_health': { primary: '#795548', secondary: '#5D4037' },
+            'lung_respiratory': { primary: '#009688', secondary: '#00796B' },
+            'mens_health': { primary: '#3F51B5', secondary: '#303F9F' },
+            'womens_health': { primary: '#E91E63', secondary: '#AD1457' },
+            'mental_health': { primary: '#9C27B0', secondary: '#7B1FA2' },
+            'muscle_exercise': { primary: '#FF5722', secondary: '#E64A19' },
+            'oral_health': { primary: '#CDDC39', secondary: '#AFB42B' },
+            'pain': { primary: '#F44336', secondary: '#C62828' },
+            'pregnancy_parenting': { primary: '#E91E63', secondary: '#AD1457' },
+            'skin_hair': { primary: '#FF9800', secondary: '#F57C00' },
+            'sleep': { primary: '#3F51B5', secondary: '#303F9F' }
         };
         
         return colorMap[category] || { primary: '#4CAF50', secondary: '#2E7D32' };
@@ -224,22 +251,30 @@ class ImageManager {
      */
     getCategoryIcon(category) {
         const iconMap = {
-            'diet': '🥗',
-            'supplements': '💊',
-            'research': '🔬',
-            'trends': '📈',
-            'vitamins': '🍊',
-            'minerals': '⚡',
-            'protein': '🥩',
-            'carbs': '🍞',
-            'fats': '🥑',
-            'exercise': '💪',
+            'brain_health': '🧠',
+            'cancer': '🎗️',
+            'cardiovascular': '❤️',
+            'blood_sugar': '📊',
+            'ent': '👂',
+            'energy_fatigue': '⚡',
+            'eye_health': '👁️',
+            'fat_loss': '⚖️',
+            'gut_health': '🦠',
+            'anti_aging': '✨',
             'immunity': '🛡️',
-            'bone': '🦴',
-            'calcium': '🥛',
-            'iron': '🩸',
-            'omega3': '🐟',
-            'probiotics': '🦠'
+            'bone_joint': '🦴',
+            'kidney_urinary': '🫘',
+            'liver_health': '🫀',
+            'lung_respiratory': '🫁',
+            'mens_health': '👨',
+            'womens_health': '👩',
+            'mental_health': '🧘',
+            'muscle_exercise': '💪',
+            'oral_health': '🦷',
+            'pain': '🩹',
+            'pregnancy_parenting': '🤱',
+            'skin_hair': '✨',
+            'sleep': '😴'
         };
         
         return iconMap[category] || '🍎';
@@ -252,22 +287,30 @@ class ImageManager {
      */
     getCategoryTitle(category) {
         const titleMap = {
-            'diet': '식단',
-            'supplements': '영양제',
-            'research': '연구',
-            'trends': '트렌드',
-            'vitamins': '비타민',
-            'minerals': '미네랄',
-            'protein': '단백질',
-            'carbs': '탄수화물',
-            'fats': '지방',
-            'exercise': '운동영양',
+            'brain_health': '뇌 건강',
+            'cancer': '암',
+            'cardiovascular': '심혈관',
+            'blood_sugar': '혈당 관리',
+            'ent': '이비인후과',
+            'energy_fatigue': '에너지/피로',
+            'eye_health': '눈 건강',
+            'fat_loss': '체지방 감소',
+            'gut_health': '장 건강',
+            'anti_aging': '항노화',
             'immunity': '면역력',
-            'bone': '뼈건강',
-            'calcium': '칼슘',
-            'iron': '철분',
-            'omega3': '오메가3',
-            'probiotics': '프로바이오틱스'
+            'bone_joint': '뼈/관절',
+            'kidney_urinary': '신장/비뇨기',
+            'liver_health': '간 건강',
+            'lung_respiratory': '폐/호흡기',
+            'mens_health': '남성 건강',
+            'womens_health': '여성 건강',
+            'mental_health': '정신 건강',
+            'muscle_exercise': '근력/운동',
+            'oral_health': '구강 건강',
+            'pain': '통증',
+            'pregnancy_parenting': '임신/육아',
+            'skin_hair': '피부/모발',
+            'sleep': '수면'
         };
         
         return titleMap[category] || '영양';

@@ -26,8 +26,8 @@ class SupabaseNutritionDataManager {
       pagination
     )}`;
 
-    // 캐시 확인
-    if (this.cache.has(cacheKey)) {
+    // 캐시 확인 (카테고리 필터링이 있을 때는 캐시 사용 안 함)
+    if (!filters.category && this.cache.has(cacheKey)) {
       const cached = this.cache.get(cacheKey);
       if (Date.now() - cached.timestamp < this.cacheExpiry) {
         return cached.data;
@@ -35,6 +35,31 @@ class SupabaseNutritionDataManager {
     }
 
     try {
+      // 카테고리 필터가 있는 경우, 먼저 카테고리 ID를 조회
+      let categoryIds = null;
+      if (filters.category) {
+        const categoryNames = Array.isArray(filters.category) ? filters.category : [filters.category];
+        const { data: categoryData } = await supabase
+          .from("categories")
+          .select("id")
+          .in("name", categoryNames);
+        
+        if (categoryData && categoryData.length > 0) {
+          categoryIds = categoryData.map(cat => cat.id);
+        } else {
+          // 해당 카테고리가 없으면 빈 결과 반환
+          return {
+            data: [],
+            pagination: {
+              page: pagination.page || 1,
+              limit: pagination.limit || 20,
+              total: 0,
+              totalPages: 0,
+            },
+          };
+        }
+      }
+
       // Supabase에서 수동 포스팅 데이터 조회
       let supabaseQuery = supabase
         .from("nutrition_posts")
@@ -53,13 +78,8 @@ class SupabaseNutritionDataManager {
           `title.ilike.%${filters.search}%,summary.ilike.%${filters.search}%,content.ilike.%${filters.search}%`
         );
       }
-      if (filters.category) {
-        if (Array.isArray(filters.category)) {
-          // 다중 카테고리 지원
-          supabaseQuery = supabaseQuery.in("categories.name", filters.category);
-        } else {
-          supabaseQuery = supabaseQuery.eq("categories.name", filters.category);
-        }
+      if (categoryIds) {
+        supabaseQuery = supabaseQuery.in("category_id", categoryIds);
       }
       if (filters.sourceType) {
         if (Array.isArray(filters.sourceType)) {

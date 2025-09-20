@@ -628,7 +628,7 @@ ${content}
     "recommendations": ["권장사항들"]
   },
   "tags": ["태그1", "태그2", "태그3"],
-  "category": "diet|supplements|research|trends 중 하나",
+  "category": "건강 카테고리 중 하나 (brain_health, cancer, cardiovascular, blood_sugar, ent, energy_fatigue, eye_health, fat_loss, gut_health, anti_aging, immunity, bone_joint, kidney_urinary, liver_health, lung_respiratory, mens_health, womens_health, mental_health, muscle_exercise, oral_health, pain, pregnancy_parenting, skin_hair, sleep)",
   "targetAudience": ["대상 독자층"],
   "credibilityIndicators": ["신뢰성 지표들"]
 }

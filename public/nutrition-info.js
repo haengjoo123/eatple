@@ -29,7 +29,7 @@ class NutritionInfoManager {
 
     initializeElements() {
         // DOM 요소들
-        this.searchInput = document.getElementById('searchInput');
+        this.searchInput = document.getElementById('searchInput'); // 검색창이 없을 수 있음
         
         this.loadingState = document.getElementById('loadingState');
         this.skeletonState = document.getElementById('skeletonState');
@@ -46,10 +46,15 @@ class NutritionInfoManager {
     }
 
     bindEvents() {
-        // 검색 이벤트 (Enter 키만 사용)
-        this.searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.handleSearch();
-        });
+        // 카테고리 버튼 이벤트
+        this.bindCategoryEvents();
+        
+        // 검색 이벤트 (검색창이 있을 때만)
+        if (this.searchInput) {
+            this.searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.handleSearch();
+            });
+        }
 
         // 페이지네이션 이벤트
         this.prevPageBtn.addEventListener('click', () => this.goToPreviousPage());
@@ -57,6 +62,124 @@ class NutritionInfoManager {
 
         // 재시도 이벤트
         this.retryBtn.addEventListener('click', () => this.loadNutritionInfo());
+    }
+
+    bindCategoryEvents() {
+        // 드롭다운 토글 이벤트
+        const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+        dropdownToggles.forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const dropdownId = toggle.getAttribute('data-dropdown');
+                const dropdownMenu = document.getElementById(`${dropdownId}-dropdown`);
+                
+                // 다른 드롭다운들 닫기
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    if (menu !== dropdownMenu) {
+                        menu.classList.remove('show');
+                    }
+                });
+                
+                document.querySelectorAll('.dropdown-toggle').forEach(otherToggle => {
+                    if (otherToggle !== toggle) {
+                        otherToggle.classList.remove('active');
+                    }
+                });
+                
+                // 현재 드롭다운 토글
+                toggle.classList.toggle('active');
+                dropdownMenu.classList.toggle('show');
+            });
+        });
+
+        // 카테고리 버튼 이벤트
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // 모든 카테고리 버튼에서 active 클래스 제거
+                categoryButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // 모든 드롭다운 토글에서 active 클래스 제거하고 원래 텍스트로 복원
+                document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+                    toggle.classList.remove('active');
+                    this.resetDropdownText(toggle);
+                });
+                
+                // 모든 드롭다운 메뉴 닫기
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+                
+                // 클릭된 버튼에 active 클래스 추가
+                button.classList.add('active');
+                
+                // 드롭다운 내부의 카테고리 버튼인 경우 해당 드롭다운 토글 업데이트
+                const dropdownMenu = button.closest('.dropdown-menu');
+                if (dropdownMenu) {
+                    const dropdownCategory = dropdownMenu.closest('.dropdown-category');
+                    const dropdownToggle = dropdownCategory.querySelector('.dropdown-toggle');
+                    this.updateDropdownText(dropdownToggle, button.textContent);
+                }
+                
+                // 카테고리 필터 설정
+                const category = button.getAttribute('data-category');
+                this.handleCategoryFilter(category);
+            });
+        });
+
+        // 문서 클릭 시 드롭다운 닫기
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown-category')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+                document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+                    toggle.classList.remove('active');
+                });
+            }
+        });
+    }
+
+    handleCategoryFilter(category) {
+        // 현재 필터 업데이트
+        if (category) {
+            this.currentFilters.category = category;
+        } else {
+            delete this.currentFilters.category;
+        }
+        
+        // 페이지를 1로 리셋
+        this.currentPage = 1;
+        
+        // 영양정보 다시 로드
+        this.loadNutritionInfo();
+    }
+
+    // 드롭다운 토글 텍스트 업데이트
+    updateDropdownText(toggle, selectedText) {
+        const span = toggle.querySelector('span');
+        if (span) {
+            // 원래 텍스트를 data 속성에 저장 (처음 한 번만)
+            if (!toggle.hasAttribute('data-original-text')) {
+                toggle.setAttribute('data-original-text', span.textContent);
+            }
+            span.textContent = selectedText;
+            toggle.classList.add('selected');
+        }
+    }
+
+    // 드롭다운 토글 텍스트 원래대로 복원
+    resetDropdownText(toggle) {
+        const span = toggle.querySelector('span');
+        const originalText = toggle.getAttribute('data-original-text');
+        if (span && originalText) {
+            span.textContent = originalText;
+            toggle.classList.remove('selected');
+        }
     }
 
     async loadSingleNutritionInfo(id) {
@@ -283,6 +406,8 @@ class NutritionInfoManager {
     // }
 
     handleSearch() {
+        if (!this.searchInput) return; // 검색창이 없으면 리턴
+        
         const query = this.searchInput.value.trim();
         if (query) {
             this.currentFilters.query = query;

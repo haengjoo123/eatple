@@ -10,137 +10,6 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="nutrition-info-styles.css" />
-    <style>
-      @media (max-width: 768px) {
-        .footer {
-          display: none;
-        }
-      }
-
-      /* 스켈레톤 로딩 스타일 */
-      .skeleton-content {
-        animation: skeleton-fade-in 0.3s ease-in-out;
-      }
-
-      @keyframes skeleton-fade-in {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-
-      @keyframes skeleton-shimmer {
-        0% {
-          background-position: -200px 0;
-        }
-        100% {
-          background-position: calc(200px + 100%) 0;
-        }
-      }
-
-      .skeleton-text, .skeleton-image, .skeleton-card {
-        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-        background-size: 200px 100%;
-        animation: skeleton-shimmer 1.5s infinite;
-        border-radius: 4px;
-      }
-
-      .skeleton-card {
-        height: 300px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-      }
-
-      .skeleton-card-thumbnail {
-        width: 100%;
-        height: 180px;
-        margin-bottom: 16px;
-      }
-
-      .skeleton-card-title {
-        width: 90%;
-        height: 20px;
-        margin-bottom: 12px;
-      }
-
-      .skeleton-card-summary {
-        width: 100%;
-        height: 16px;
-        margin-bottom: 8px;
-      }
-
-      .skeleton-card-summary.short {
-        width: 70%;
-      }
-
-      .skeleton-card-tags {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 16px;
-      }
-
-      .skeleton-tag {
-        width: 60px;
-        height: 24px;
-        border-radius: 12px;
-      }
-
-      .skeleton-card-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .skeleton-card-meta {
-        display: flex;
-        gap: 12px;
-      }
-
-      .skeleton-source {
-        width: 60px;
-        height: 14px;
-      }
-
-      .skeleton-date {
-        width: 80px;
-        height: 14px;
-      }
-
-      .skeleton-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-        margin-top: 20px;
-      }
-
-      /* 점진적 로딩 애니메이션 */
-      .progressive-fade-in {
-        animation: progressive-fade-in 0.5s ease-in-out;
-      }
-
-      @keyframes progressive-fade-in {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      /* 스켈레톤 카드별 지연 애니메이션 */
-      .skeleton-card:nth-child(1) { animation-delay: 0.1s; }
-      .skeleton-card:nth-child(2) { animation-delay: 0.2s; }
-      .skeleton-card:nth-child(3) { animation-delay: 0.3s; }
-      .skeleton-card:nth-child(4) { animation-delay: 0.4s; }
-      .skeleton-card:nth-child(5) { animation-delay: 0.5s; }
-      .skeleton-card:nth-child(6) { animation-delay: 0.6s; }
-      .skeleton-card:nth-child(7) { animation-delay: 0.7s; }
-      .skeleton-card:nth-child(8) { animation-delay: 0.8s; }
-      .skeleton-card:nth-child(9) { animation-delay: 0.9s; }
-      .skeleton-card:nth-child(10) { animation-delay: 1.0s; }
-      .skeleton-card:nth-child(11) { animation-delay: 1.1s; }
-      .skeleton-card:nth-child(12) { animation-delay: 1.2s; }
-    </style>
   </head>
   <body class="nutrition-info-page">
     <div class="site-brand-fixed">
@@ -157,42 +26,99 @@
       <img src="images/eatpleinsight_logo.png" alt="잇플 인사이트" class="page-title-logo">
     </div>
 
-    <!-- 영양 정보 목록 섹션 -->
-    <section class="nutrition-content">
+
+    <!-- 카테고리 섹션 -->
+    <section class="nutrition-categories">
       <div class="container">
-        <!-- 필터 및 검색 섹션 -->
-        <div class="nutrition-filters">
-          <div class="filter-container">
-            <!-- 검색 바 -->
-            <div class="nutrition-search-container">
-              <div class="nutrition-search-input-wrapper">
-                <span class="nutrition-search-icon">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </span>
-                <input
-                  type="text"
-                  id="searchInput"
-                  class="nutrition-search-input"
-                  placeholder="영양 정보 검색..."
-                />
+        <div class="categories-container">
+          <div class="categories-row">
+            <!-- 전체 버튼 -->
+            <div class="all-category">
+              <button class="category-btn active" data-category="">전체</button>
+            </div>
+            
+            <!-- 드롭다운 카테고리들 -->
+            <div class="dropdown-categories">
+            <!-- 웰니스 -->
+            <div class="dropdown-category">
+              <button class="dropdown-toggle" data-dropdown="wellness">
+                <span>웰니스</span>
+                <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12">
+                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                </svg>
+              </button>
+              <div class="dropdown-menu" id="wellness-dropdown">
+          <button class="category-btn" data-category="blood_sugar">혈당 관리</button>
+          <button class="category-btn" data-category="energy_fatigue">에너지/피로</button>
+                <button class="category-btn" data-category="sleep">수면</button>
+                <button class="category-btn" data-category="mental_health">정신 건강</button>
+                <button class="category-btn" data-category="immunity">면역력</button>
+                <button class="category-btn" data-category="anti_aging">항노화</button>
+                <button class="category-btn" data-category="fat_loss">체지방 감소</button>
+                <button class="category-btn" data-category="muscle_exercise">근력/운동</button>
+              </div>
+            </div>
+
+            <!-- 신체 부위별 건강 -->
+            <div class="dropdown-category">
+              <button class="dropdown-toggle" data-dropdown="body_parts">
+                <span>신체 부위별 건강</span>
+                <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12">
+                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                </svg>
+              </button>
+              <div class="dropdown-menu" id="body_parts-dropdown">
+                <button class="category-btn" data-category="brain_health">뇌 건강</button>
+          <button class="category-btn" data-category="eye_health">눈 건강</button>
+                <button class="category-btn" data-category="oral_health">구강 건강</button>
+                <button class="category-btn" data-category="ent">이비인후과</button>
+                <button class="category-btn" data-category="lung_respiratory">폐/호흡기</button>
+                <button class="category-btn" data-category="cardiovascular">심혈관</button>
+                <button class="category-btn" data-category="liver_health">간 건강</button>
+          <button class="category-btn" data-category="gut_health">장 건강</button>
+                <button class="category-btn" data-category="kidney_urinary">신장/비뇨기</button>
+          <button class="category-btn" data-category="bone_joint">뼈/관절</button>
+                <button class="category-btn" data-category="skin_hair">피부/모발</button>
+              </div>
+            </div>
+
+            <!-- 특정 질환 및 증상 관리 -->
+            <div class="dropdown-category">
+              <button class="dropdown-toggle" data-dropdown="conditions">
+                <span>특정 질환 및 증상 관리</span>
+                <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12">
+                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                </svg>
+              </button>
+              <div class="dropdown-menu" id="conditions-dropdown">
+                <button class="category-btn" data-category="cancer">암</button>
+                <button class="category-btn" data-category="autoimmune">자가면역</button>
+                <button class="category-btn" data-category="pain">통증</button>
+              </div>
+            </div>
+
+            <!-- 생애 주기별 건강 -->
+            <div class="dropdown-category">
+              <button class="dropdown-toggle" data-dropdown="lifecycle">
+                <span>생애 주기별 건강</span>
+                <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12">
+                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                </svg>
+              </button>
+              <div class="dropdown-menu" id="lifecycle-dropdown">
+                <button class="category-btn" data-category="womens_health">여성 건강</button>
+          <button class="category-btn" data-category="mens_health">남성 건강</button>
+          <button class="category-btn" data-category="pregnancy_parenting">임신/육아</button>
               </div>
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- 영양 정보 목록 섹션 -->
+    <section class="nutrition-content">
+      <div class="container">
 
         <!-- 로딩 상태 -->
         <div id="loadingState" class="loading-container">
