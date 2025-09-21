@@ -25,8 +25,8 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    autoRefreshToken: false, // 자동 토큰 갱신 비활성화로 성능 향상
-    persistSession: false,   // 세션 지속성 비활성화로 메모리 사용량 감소
+    autoRefreshToken: true, // 자동 토큰 갱신 활성화로 세션 지속성 향상
+    persistSession: true,   // 세션 지속성 활성화로 로그인 상태 유지
   },
   global: {
     headers: {

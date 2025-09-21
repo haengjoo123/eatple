@@ -1599,9 +1599,15 @@ function renderPostsTable(posts) {
       return `
       <tr>
         <td style="padding: 12px 8px; text-align: center;">
-          <div style="font-weight: 500; color: #1f2937;">${escapeHtml(
-            post.title
-          )}</div>
+          <div style="font-weight: 500; color: #1f2937;">
+            <a href="nutrition-info-detail.html?id=${post.id}" 
+               style="color: #1f2937; text-decoration: none; cursor: pointer;"
+               onmouseover="this.style.color='#3b82f6'; this.style.textDecoration='underline';"
+               onmouseout="this.style.color='#1f2937'; this.style.textDecoration='none';"
+               target="_blank">
+              ${escapeHtml(post.title)}
+            </a>
+          </div>
           <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">${escapeHtml(
             post.summary.substring(0, 50)
           )}...</div>

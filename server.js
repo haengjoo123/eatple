@@ -68,7 +68,7 @@ app.use(
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 2, // 2시간
+      maxAge: 1000 * 60 * 60 * 8, // 8시간 (관리자 작업을 고려하여 연장)
       sameSite: "lax",
       domain:
         process.env.NODE_ENV === "production" ? ".yourdomain.com" : undefined,
