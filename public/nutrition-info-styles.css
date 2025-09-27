@@ -546,20 +546,16 @@ body.nutrition-detail-page .container {
 }
 
 .breadcrumb-category {
-  color: #4a69bd;
+  color: #666;
   text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.breadcrumb-category:hover {
-  color: #3b5093;
-  text-decoration: underline;
+  cursor: default;
 }
 
 .breadcrumb-subcategory {
   color: #4a69bd;
   text-decoration: none;
   transition: color 0.3s ease;
+  cursor: pointer;
 }
 
 .breadcrumb-subcategory:hover {

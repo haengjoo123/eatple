@@ -19,10 +19,18 @@ class NutritionInfoManager {
         // URL 파라미터 확인
         const urlParams = new URLSearchParams(window.location.search);
         const nutritionId = urlParams.get('id');
+        const category = urlParams.get('category');
         
         if (nutritionId) {
             this.loadSingleNutritionInfo(nutritionId);
         } else {
+            // 카테고리 파라미터가 있으면 필터 적용
+            if (category) {
+                this.currentFilters.category = decodeURIComponent(category);
+                this.currentPage = 1; // 카테고리 변경 시 첫 페이지로
+                // UI에서 해당 카테고리 버튼 활성화
+                this.activateCategoryButton(decodeURIComponent(category));
+            }
             this.loadNutritionInfo();
         }
     }
@@ -157,6 +165,38 @@ class NutritionInfoManager {
         
         // 영양정보 다시 로드
         this.loadNutritionInfo();
+    }
+
+    // URL 파라미터로 전달된 카테고리에 해당하는 버튼을 활성화
+    activateCategoryButton(category) {
+        // 모든 카테고리 버튼에서 active 클래스 제거
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        categoryButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // 모든 드롭다운 토글에서 active 클래스 제거하고 원래 텍스트로 복원
+        document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+            toggle.classList.remove('active');
+            this.resetDropdownText(toggle);
+        });
+        
+        // 모든 드롭다운 메뉴 닫기
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.classList.remove('show');
+        });
+        
+        // 해당 카테고리 버튼 찾기
+        const targetButton = document.querySelector(`[data-category="${category}"]`);
+        if (targetButton) {
+            targetButton.classList.add('active');
+            
+            // 드롭다운 내부의 카테고리 버튼인 경우 해당 드롭다운 토글 업데이트
+            const dropdownMenu = targetButton.closest('.dropdown-menu');
+            if (dropdownMenu) {
+                const dropdownCategory = dropdownMenu.closest('.dropdown-category');
+                const dropdownToggle = dropdownCategory.querySelector('.dropdown-toggle');
+                this.updateDropdownText(dropdownToggle, targetButton.textContent);
+            }
+        }
     }
 
     // 드롭다운 토글 텍스트 업데이트

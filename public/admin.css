@@ -376,6 +376,7 @@ button {
   padding: 8px 12px;
   border: 1px solid #ced4da;
   background-color: white;
+  color: #6b7280;
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.2s;

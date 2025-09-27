@@ -123,7 +123,7 @@ class NutritionInfoDetailManager {
         const cacheKey = this.getCacheKey(this.nutritionInfoId);
         const cached = this.readCache(cacheKey);
         if (cached && cached.data && cached.data.title) {
-            console.log(`[CLIENT CACHE HIT] 영양정보 ${this.nutritionInfoId} 클라이언트 캐시에서 조회`);
+            // 클라이언트 캐시에서 조회
             this.nutritionInfo = cached.data;
             
             // 캐시된 데이터로 점진적 렌더링 시작
@@ -141,12 +141,12 @@ class NutritionInfoDetailManager {
                 fetchOptions.headers['If-None-Match'] = cached.etag;
             }
             
-            console.log(`[API CALL] 영양정보 ${this.nutritionInfoId} 로컬 서버 API 호출`);
+            // 로컬 서버 API 호출
             const response = await fetch(`/api/nutrition-info/${this.nutritionInfoId}`, fetchOptions);
 
             // 304 Not Modified는 정상 응답이므로 먼저 처리
             if (response.status === 304 && cached && cached.data) {
-                console.log(`[304 NOT MODIFIED] 영양정보 ${this.nutritionInfoId} 변경 없음`);
+                // 변경 없음
                 // 304 응답 시에는 이미 캐시된 데이터로 렌더링 완료되었으므로 종료
                 return;
             }
@@ -166,9 +166,9 @@ class NutritionInfoDetailManager {
                 
                 // 서버에서 캐시된 데이터인지 확인
                 if (result.cached) {
-                    console.log(`[SERVER CACHE HIT] 영양정보 ${this.nutritionInfoId} 서버 캐시에서 조회 (캐시 나이: ${result.cacheAge}ms)`);
+                    // 서버 캐시에서 조회
                 } else {
-                    console.log(`[SERVER CACHE MISS] 영양정보 ${this.nutritionInfoId} Supabase에서 직접 조회`);
+                    // Supabase에서 직접 조회
                 }
                 
                 // 클라이언트 캐시 업데이트
@@ -198,7 +198,7 @@ class NutritionInfoDetailManager {
                 this.showError(error.message);
             } else {
                 // 클라이언트 캐시로 이미 보여주고 있는 상태라면 조용히 처리
-                console.log('네트워크 문제로 캐시 데이터를 표시 중입니다');
+                // 네트워크 문제로 캐시 데이터를 표시 중
             }
         }
     }
@@ -249,19 +249,32 @@ class NutritionInfoDetailManager {
             const categoryLabel = this.getCategoryLabel(info.category);
             const subcategoryLabel = this.getSubcategoryLabel(info.category, info.subcategory);
             
-            // 대분류 표시
+            // 대분류 표시 (호버 효과 제거)
             if (categoryLabel) {
                 this.breadcrumbCategory.textContent = categoryLabel;
                 this.breadcrumbCategory.style.display = 'inline';
+                this.breadcrumbCategory.style.cursor = 'default';
+                this.breadcrumbCategory.style.color = '#666';
+                this.breadcrumbCategory.style.textDecoration = 'none';
             } else {
                 this.breadcrumbCategory.style.display = 'none';
             }
             
-            // 소분류 표시
+            // 소분류 표시 (클릭 가능하게 설정)
             if (subcategoryLabel) {
                 this.breadcrumbSubcategory.textContent = subcategoryLabel;
                 this.breadcrumbSubcategory.style.display = 'inline';
                 this.breadcrumbCategorySeparator.style.display = 'inline';
+                
+                // 소분류를 클릭 가능한 링크로 설정
+                this.breadcrumbSubcategory.style.cursor = 'pointer';
+                this.breadcrumbSubcategory.style.color = '#4a69bd';
+                this.breadcrumbSubcategory.style.textDecoration = 'none';
+                
+                // 소분류 클릭 이벤트 추가
+                this.breadcrumbSubcategory.onclick = () => {
+                    this.navigateToCategory(info.category);
+                };
                 
                 // 모바일에서는 마지막 구분자 숨김
                 if (isMobile) {
@@ -281,6 +294,13 @@ class NutritionInfoDetailManager {
             this.breadcrumbCategorySeparator.style.display = 'none';
             this.breadcrumbSeparator.style.display = 'none';
         }
+    }
+
+    // 카테고리 페이지로 이동하는 메서드
+    navigateToCategory(category) {
+        // 카테고리 필터가 적용된 영양정보 페이지로 이동
+        const categoryParam = encodeURIComponent(category);
+        window.location.href = `nutrition-info.html?category=${categoryParam}`;
     }
 
     // 단계별 렌더링 메서드들
@@ -437,12 +457,12 @@ class NutritionInfoDetailManager {
                 }
             } else if (response.status === 401) {
                 // 로그인하지 않은 경우 기본값 유지
-                console.log('로그인하지 않은 사용자 - 기본 상호작용 상태 사용');
+                // 로그인하지 않은 사용자 - 기본 상호작용 상태 사용
             } else {
-                console.log('상호작용 상태 로드 실패:', response.status);
+                // 상호작용 상태 로드 실패
             }
         } catch (error) {
-            console.log('사용자 상호작용 상태 로드 실패:', error);
+            // 사용자 상호작용 상태 로드 실패
         }
     }
 
@@ -537,19 +557,19 @@ class NutritionInfoDetailManager {
             const recKey = `nutritionInfoDetail:rec:${this.nutritionInfoId}`;
             const cached = this.readCache(recKey);
             if (cached && cached.data && cached.cachedAt && Date.now() - cached.cachedAt < 30 * 60 * 1000) {
-                console.log(`[CLIENT CACHE HIT] 추천 정보 클라이언트 캐시에서 조회`);
+                // 추천 정보 클라이언트 캐시에서 조회
                 this.renderRecommendedInfo(cached.data);
                 return;
             }
 
             // 서버 API를 통해 추천 정보 로드 (서버에서도 캐시 처리됨)
-            console.log(`[API CALL] 추천 정보 서버 API 호출`);
+            // 추천 정보 서버 API 호출
             await this.loadCategoryAndTagBasedRecommendations();
             
             // 추천 섹션에 애니메이션 적용
             document.querySelector('.detail-recommendations').classList.add('progressive-fade-in');
         } catch (error) {
-            console.log('추천 정보 로드 실패:', error);
+            // 추천 정보 로드 실패
             // 오류 발생 시 일반 목록으로 대체
             await this.loadFallbackRecommendations();
             document.querySelector('.detail-recommendations').classList.add('progressive-fade-in');
@@ -619,7 +639,7 @@ class NutritionInfoDetailManager {
             // 캐시 저장
             this.writeCache(`nutritionInfoDetail:rec:${this.nutritionInfoId}`, { data: top, cachedAt: Date.now() });
         } catch (error) {
-            console.log('카테고리/태그 기반 추천 실패:', error);
+            // 카테고리/태그 기반 추천 실패
             await this.loadFallbackRecommendations();
         }
     }
@@ -640,7 +660,7 @@ class NutritionInfoDetailManager {
                 }
             }
         } catch (error) {
-            console.log('일반 추천 정보 로드 실패:', error);
+            // 일반 추천 정보 로드 실패
         }
     }
 
@@ -668,7 +688,7 @@ class NutritionInfoDetailManager {
                 this.renderRecommendedInfo([]);
             }
         } catch (error) {
-            console.log('대체 추천 정보 로드 실패:', error);
+            // 대체 추천 정보 로드 실패
             // 완전히 실패한 경우 빈 추천 섹션 표시
             this.renderRecommendedInfo([]);
         }
@@ -682,16 +702,7 @@ class NutritionInfoDetailManager {
             return;
         }
 
-        console.log('추천 정보 아이템들:', items); // 디버깅용
-
         items.forEach(item => {
-            console.log('아이템 데이터:', {
-                id: item.id,
-                title: item.title,
-                thumbnailUrl: item.thumbnailUrl,
-                imageUrl: item.imageUrl,
-                sourceType: item.sourceType
-            }); // 디버깅용
             const recommendedCard = document.createElement('div');
             recommendedCard.className = 'recommended-card';
             
@@ -700,22 +711,19 @@ class NutritionInfoDetailManager {
             if (item.thumbnailUrl) {
                 // 1순위: 썸네일 이미지 (수동 포스팅의 썸네일, YouTube 썸네일 등)
                 imageUrl = item.thumbnailUrl;
-                console.log(`추천 카드 이미지 (썸네일): ${imageUrl} for item: ${item.title}`);
             } else if (item.imageUrl) {
                 // 2순위: 일반 이미지
                 imageUrl = item.imageUrl;
-                console.log(`추천 카드 이미지 (일반): ${imageUrl} for item: ${item.title}`);
             } else {
                 // 3순위: 기본 이미지
                 imageUrl = this.getDefaultImage(item.sourceType);
-                console.log(`추천 카드 이미지 (기본): ${imageUrl} for item: ${item.title}, sourceType: ${item.sourceType}`);
             }
             
             recommendedCard.innerHTML = `
                 <div class="recommended-card-image">
                     <img src="${imageUrl}" 
                          alt="${item.title}" 
-                         onerror="console.log('이미지 로드 실패, 기본 이미지로 대체:', this.src, '→', '${this.getDefaultImage(item.sourceType)}'); this.src='${this.getDefaultImage(item.sourceType)}'">
+                         onerror="this.src='${this.getDefaultImage(item.sourceType)}'">
                 </div>
                 <div class="recommended-card-content">
                     <h3 class="recommended-card-title">${this.truncateText(item.title, 50)}</h3>
