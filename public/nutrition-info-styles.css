@@ -339,7 +339,7 @@ body.nutrition-info-page .container {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin-top: 40px;
+  margin: 40px;
 }
 
 .pagination-arrow {
