@@ -143,8 +143,10 @@ body.nutrition-info-page .container {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 400px;
   padding: 60px 20px;
   text-align: center;
+  width: 100%;
 }
 
 .error-container .error-icon,
@@ -1066,13 +1068,13 @@ body.nutrition-detail-page .container {
 }
 /* 로딩 스피너 */
 .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #4a69bd;
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top: 4px solid var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 20px;
+  margin: 0 auto 24px auto;
 }
 
 @keyframes spin {
@@ -1083,6 +1085,15 @@ body.nutrition-detail-page .container {
   100% {
     transform: rotate(360deg);
   }
+}
+
+/* 로딩 메시지 */
+.loading-container p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.5;
 }
 /* 관련 상품 섹션 스타일 */
 .detail-products-section {
@@ -1757,6 +1768,203 @@ body.nutrition-detail-page .container {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* 스트리밍 페이드인 애니메이션 (더 빠르고 부드러운 효과) */
+@keyframes streaming-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.streaming-fade-in {
+  animation: streaming-fade-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* 스트리밍 로딩 컨테이너 */
+.streaming-loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 40px 20px;
+  text-align: center;
+  width: 100%;
+  position: relative;
+}
+
+.streaming-loading-content {
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.streaming-loading-icon {
+  margin-bottom: 24px;
+}
+
+.streaming-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: streaming-spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes streaming-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.streaming-loading-container h3 {
+  color: var(--text-color);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  line-height: 1.4;
+}
+
+.streaming-progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 20px 0;
+  position: relative;
+}
+
+.streaming-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #10b981);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.streaming-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: streaming-progress-shimmer 2s infinite;
+}
+
+@keyframes streaming-progress-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.streaming-loading-container p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* 상세 페이지 스트리밍 로딩 스타일 */
+.detail-streaming-loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 40px 20px;
+  text-align: center;
+  background: var(--bg-color);
+  width: 100%;
+  position: relative;
+}
+
+.detail-streaming-loading-content {
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-streaming-loading-icon {
+  margin-bottom: 24px;
+}
+
+.detail-streaming-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: streaming-spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+.detail-streaming-loading-container h3 {
+  color: var(--text-color);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  line-height: 1.4;
+}
+
+.detail-streaming-progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 20px 0;
+  position: relative;
+}
+
+.detail-streaming-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #10b981);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.detail-streaming-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: streaming-progress-shimmer 2s infinite;
+}
+
+.detail-streaming-loading-container p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
 }
 
 /* 스켈레톤 카드별 지연 애니메이션 */

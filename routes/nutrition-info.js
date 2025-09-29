@@ -163,6 +163,157 @@ router.get('/', async (req, res) => {
     }
 });
 
+/**
+ * 영양 정보 목록 스트리밍 조회 (실시간 로딩)
+ * GET /api/nutrition-info/stream
+ * Requirements: 6.1, 7.1
+ */
+router.get('/stream', async (req, res) => {
+    try {
+        const filters = {};
+        const pagination = {};
+        
+        // 쿼리 파라미터 파싱
+        if (req.query.page) {
+            pagination.page = parseInt(req.query.page);
+            if (pagination.page < 1) pagination.page = 1;
+        }
+        if (req.query.limit) {
+            pagination.limit = parseInt(req.query.limit);
+            if (pagination.limit < 1) pagination.limit = 20;
+            if (pagination.limit > 100) pagination.limit = 100;
+        }
+        if (req.query.search) filters.search = req.query.search;
+        if (req.query.category) filters.category = req.query.category;
+        if (req.query.sourceType) {
+            const sourceTypeMapping = {
+                'paper': ['pubmed', 'paper'],
+                'youtube': ['youtube'],
+                'news': ['news'],
+                'manual': ['manual']
+            };
+            const mappedSourceTypes = sourceTypeMapping[req.query.sourceType] || [req.query.sourceType];
+            filters.sourceType = mappedSourceTypes;
+        }
+
+        // SSE (Server-Sent Events) 헤더 설정
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Cache-Control'
+        });
+
+        // 스트리밍 데이터 전송 함수
+        const sendData = (eventType, data) => {
+            res.write(`event: ${eventType}\n`);
+            res.write(`data: ${JSON.stringify(data)}\n\n`);
+        };
+
+        // 시작 이벤트 전송
+        sendData('start', { message: '데이터 로딩을 시작합니다...' });
+
+        // 배치 크기 설정 (한번에 몇 개씩 전송할지)
+        const batchSize = 4;
+        const totalLimit = pagination.limit || 20;
+        
+        let processedCount = 0;
+        let currentBatch = 1;
+        const totalBatches = Math.ceil(totalLimit / batchSize);
+
+        // 먼저 해당 페이지의 전체 데이터를 조회
+        const fullPageResult = await supabaseDataManager.getNutritionInfoList(filters, pagination);
+        const fullPageData = fullPageResult && fullPageResult.data ? fullPageResult.data : [];
+        
+        // 전체 데이터를 배치로 나누어 전송
+        const totalItems = fullPageData.length;
+        const actualBatches = Math.ceil(totalItems / batchSize);
+        
+        for (let i = 0; i < actualBatches; i++) {
+            try {
+                const startIndex = i * batchSize;
+                const endIndex = Math.min(startIndex + batchSize, totalItems);
+                const batchData = fullPageData.slice(startIndex, endIndex);
+
+                // 진행 상황 전송
+                sendData('progress', {
+                    batch: currentBatch,
+                    totalBatches: actualBatches,
+                    processed: endIndex,
+                    total: totalItems,
+                    message: `배치 ${currentBatch}/${actualBatches} 로딩 중...`
+                });
+
+                processedCount = endIndex;
+
+                if (batchData.length > 0) {
+                    // 배치 데이터 전송
+                    sendData('batch', {
+                        batch: currentBatch,
+                        data: batchData.map(item => item && typeof item.toJSON === 'function' ? item.toJSON() : item),
+                        isLastBatch: currentBatch === actualBatches
+                    });
+                }
+
+                // 첫 번째 배치가 아닌 경우 약간의 지연을 추가하여 스트리밍 효과를 보여줌
+                if (i > 0) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                currentBatch++;
+
+            } catch (batchError) {
+                console.error(`배치 ${currentBatch} 처리 오류:`, batchError);
+                sendData('error', {
+                    batch: currentBatch,
+                    error: '일부 데이터를 불러오는 중 오류가 발생했습니다.',
+                    details: batchError.message
+                });
+                continue; // 다음 배치 계속 처리
+            }
+        }
+
+        // 완료 이벤트 전송 (페이지네이션 정보 포함)
+        // 이미 조회한 fullPageResult의 페이지네이션 정보 사용
+        const paginationData = fullPageResult && fullPageResult.pagination ? fullPageResult.pagination : {
+            page: pagination.page || 1,
+            limit: pagination.limit || 20,
+            total: 0,
+            totalPages: 0
+        };
+        
+        sendData('complete', {
+            message: '모든 데이터 로딩이 완료되었습니다.',
+            totalProcessed: processedCount,
+            pagination: paginationData
+        });
+
+        // 연결 종료
+        res.end();
+
+    } catch (error) {
+        console.error('스트리밍 영양 정보 목록 조회 오류:', error);
+        
+        // 에러 이벤트 전송
+        if (!res.headersSent) {
+            res.writeHead(200, {
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive'
+            });
+        }
+        
+        res.write(`event: error\n`);
+        res.write(`data: ${JSON.stringify({
+            error: '영양 정보 목록을 조회하는 중 오류가 발생했습니다.',
+            details: error.message
+        })}\n\n`);
+        
+        res.end();
+    }
+});
+
     /**
      * 영양 정보 검색 (Supabase 전문 검색)
      * GET /api/nutrition-info/search
@@ -636,6 +787,151 @@ router.get('/', async (req, res) => {
                 error: '상호작용 상태를 확인하는 중 오류가 발생했습니다.',
                 details: error.message
             });
+        }
+    });
+
+    /**
+     * 영양 정보 상세 조회 스트리밍 (섹션별 점진적 로딩)
+     * GET /api/nutrition-info/:id/stream
+     * Requirements: 6.2
+     */
+    router.get('/:id/stream', async (req, res) => {
+        try {
+            const nutritionInfoId = req.params.id;
+
+            // SSE (Server-Sent Events) 헤더 설정
+            res.writeHead(200, {
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Cache-Control'
+            });
+
+            // 스트리밍 데이터 전송 함수
+            const sendData = (eventType, data) => {
+                res.write(`event: ${eventType}\n`);
+                res.write(`data: ${JSON.stringify(data)}\n\n`);
+            };
+
+            // 시작 이벤트
+            sendData('start', { message: '상세 정보를 불러오는 중입니다...' });
+
+            // 전체 영양 정보 조회 (기존 방식 활용)
+            const fullData = await supabaseDataManager.getNutritionInfoById(nutritionInfoId);
+            
+            if (!fullData) {
+                throw new Error('영양 정보를 찾을 수 없습니다.');
+            }
+
+            // 1단계: 기본 정보 (제목, 요약, 메타데이터)
+            sendData('progress', { section: 'basic', message: '기본 정보 로딩 중...' });
+            
+            const basicInfo = {
+                id: fullData.id,
+                title: fullData.title,
+                summary: fullData.summary,
+                sourceType: fullData.sourceType,
+                sourceName: fullData.sourceName,
+                sourceUrl: fullData.sourceUrl,
+                publishedDate: fullData.publishedDate,
+                collectedDate: fullData.collectedDate,
+                trustScore: fullData.trustScore,
+                viewCount: fullData.viewCount,
+                thumbnailUrl: fullData.thumbnailUrl,
+                imageUrl: fullData.imageUrl,
+                category: fullData.category,
+                tags: fullData.tags
+            };
+
+            sendData('section', {
+                type: 'basic',
+                data: basicInfo,
+                message: '기본 정보 로딩 완료'
+            });
+
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // 2단계: 본문 내용
+            sendData('progress', { section: 'content', message: '본문 내용 로딩 중...' });
+            
+            const contentInfo = {
+                content: fullData.content,
+                originalContent: fullData.originalContent
+            };
+
+            sendData('section', {
+                type: 'content',
+                data: contentInfo,
+                message: '본문 내용 로딩 완료'
+            });
+
+            await new Promise(resolve => setTimeout(resolve, 150));
+
+            // 3단계: 관련 상품 (배치 처리)
+            if (fullData.related_products && fullData.related_products.length > 0) {
+                sendData('progress', { section: 'products', message: '관련 상품 로딩 중...' });
+                
+                // 관련 상품을 2개씩 배치로 나누어 전송
+                const batchSize = 2;
+                const products = fullData.related_products;
+                const batches = [];
+                
+                for (let i = 0; i < products.length; i += batchSize) {
+                    batches.push(products.slice(i, i + batchSize));
+                }
+
+                for (let i = 0; i < batches.length; i++) {
+                    sendData('section', {
+                        type: 'products_batch',
+                        data: batches[i],
+                        batch: i + 1,
+                        totalBatches: batches.length,
+                        isLastBatch: i === batches.length - 1,
+                        message: `관련 상품 배치 ${i + 1}/${batches.length} 로딩 완료`
+                    });
+
+                    // 배치 간 지연
+                    if (i < batches.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 250));
+                    }
+                }
+            } else {
+                sendData('section', {
+                    type: 'products_empty',
+                    data: [],
+                    message: '관련 상품이 없습니다'
+                });
+            }
+
+            // 완료 이벤트
+            sendData('complete', {
+                message: '모든 정보 로딩이 완료되었습니다.',
+                nutritionInfoId: nutritionInfoId
+            });
+
+            // 연결 종료
+            res.end();
+
+        } catch (error) {
+            console.error('스트리밍 영양 정보 상세 조회 오류:', error);
+            
+            // 에러 이벤트 전송
+            if (!res.headersSent) {
+                res.writeHead(200, {
+                    'Content-Type': 'text/event-stream',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive'
+                });
+            }
+            
+            res.write(`event: error\n`);
+            res.write(`data: ${JSON.stringify({
+                error: '영양 정보를 조회하는 중 오류가 발생했습니다.',
+                details: error.message
+            })}\n\n`);
+            
+            res.end();
         }
     });
 

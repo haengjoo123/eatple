@@ -19,6 +19,223 @@ class SupabaseNutritionDataManager {
   }
 
   /**
+   * 영양 정보 목록 배치 조회 (스트리밍용)
+   * Requirements: 6.1
+   */
+  async getNutritionInfoListBatch(filters = {}, pagination = {}) {
+    try {
+      // 기본값 설정
+      const page = pagination.page || 1;
+      const limit = pagination.limit || 20;
+      const offset = pagination.offset || ((page - 1) * limit);
+
+      // 카테고리 필터가 있는 경우, 먼저 카테고리 ID를 조회
+      let categoryIds = null;
+      if (filters.category) {
+        const categoryNames = Array.isArray(filters.category) ? filters.category : [filters.category];
+        const { data: categoryData } = await supabase
+          .from("categories")
+          .select("id")
+          .in("name", categoryNames);
+        
+        if (categoryData && categoryData.length > 0) {
+          categoryIds = categoryData.map(cat => cat.id);
+        } else {
+          // 해당 카테고리가 없으면 빈 결과 반환
+          return {
+            data: [],
+            pagination: {
+              page: page,
+              limit: limit,
+              offset: offset,
+              count: 0,
+              totalCount: 0,
+              totalPages: 0
+            }
+          };
+        }
+      }
+
+      // Supabase 쿼리 빌더 시작
+      let query = supabase
+        .from("nutrition_posts")
+        .select(
+          `
+                    id,
+                    title,
+                    summary,
+                    content,
+                    source_type,
+                    source_name,
+                    source_url,
+                    published_date,
+                    collected_date,
+                    trust_score,
+                    view_count,
+                    thumbnail_url,
+                    image_url,
+                    category_id,
+                    categories(name),
+                    post_tags(tags(name))
+                `
+        );
+
+      // 필터 적용
+      if (filters.search) {
+        query = query.or(
+          `title.ilike.%${filters.search}%,summary.ilike.%${filters.search}%,content.ilike.%${filters.search}%`
+        );
+      }
+
+      if (categoryIds && categoryIds.length > 0) {
+        if (categoryIds.length === 1) {
+          query = query.eq("category_id", categoryIds[0]);
+        } else {
+          query = query.in("category_id", categoryIds);
+        }
+      }
+
+      if (filters.sourceType && filters.sourceType.length > 0) {
+        if (filters.sourceType.length === 1) {
+          query = query.eq("source_type", filters.sourceType[0]);
+        } else {
+          query = query.in("source_type", filters.sourceType);
+        }
+      }
+
+      if (filters.minTrustScore) {
+        query = query.gte("trust_score", filters.minTrustScore);
+      }
+
+      if (filters.tags && filters.tags.length > 0) {
+        // 태그 필터링 (적어도 하나의 태그가 일치해야 함)
+        const tagConditions = filters.tags
+          .map((tag) => `post_tags.tags.name.eq.${tag}`)
+          .join(",");
+        query = query.or(tagConditions);
+      }
+
+      // 정렬 및 페이지네이션
+      const sortBy = pagination.sortBy || "collected_date";
+      const sortOrder = pagination.sortOrder || "desc";
+
+      query = query
+        .order(sortBy, { ascending: sortOrder === "asc" })
+        .range(offset, offset + limit - 1);
+
+      const { data: supabaseData, error: supabaseError } = await query;
+
+      if (supabaseError) {
+        console.error("Supabase 영양정보 배치 조회 오류:", supabaseError);
+        throw supabaseError;
+      }
+
+      // 데이터 변환
+      const nutritionInfoList = (supabaseData || []).map((item) => {
+        const nutritionInfo = this.convertSupabaseToNutritionInfo(item);
+        return NutritionInfo.fromJSON(nutritionInfo);
+      });
+
+      return {
+        data: nutritionInfoList,
+        pagination: {
+          page: page,
+          limit: limit,
+          offset: offset,
+          count: nutritionInfoList.length
+        }
+      };
+    } catch (error) {
+      console.error("영양 정보 배치 목록 조회 오류:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * 영양 정보 총 개수 조회 (필터링 적용)
+   * Requirements: 6.1
+   */
+  async getNutritionInfoCount(filters = {}) {
+    try {
+      // 카테고리 필터가 있는 경우, 먼저 카테고리 ID를 조회
+      let categoryIds = null;
+      if (filters.category) {
+        const categoryNames = Array.isArray(filters.category) ? filters.category : [filters.category];
+        const { data: categoryData } = await supabase
+          .from("categories")
+          .select("id")
+          .in("name", categoryNames);
+        
+        if (categoryData && categoryData.length > 0) {
+          categoryIds = categoryData.map(cat => cat.id);
+        } else {
+          // 해당 카테고리가 없으면 0 반환
+          return 0;
+        }
+      }
+
+      // Supabase 쿼리 빌더 시작 (count만)
+      let query = supabase
+        .from("nutrition_posts")
+        .select("*", { count: 'exact', head: true });
+
+      // 필터 적용
+      if (filters.search) {
+        query = query.or(
+          `title.ilike.%${filters.search}%,summary.ilike.%${filters.search}%,content.ilike.%${filters.search}%`
+        );
+      }
+
+      if (categoryIds && categoryIds.length > 0) {
+        if (categoryIds.length === 1) {
+          query = query.eq("category_id", categoryIds[0]);
+        } else {
+          query = query.in("category_id", categoryIds);
+        }
+      }
+
+      if (filters.sourceType && filters.sourceType.length > 0) {
+        if (filters.sourceType.length === 1) {
+          query = query.eq("source_type", filters.sourceType[0]);
+        } else {
+          query = query.in("source_type", filters.sourceType);
+        }
+      }
+
+      if (filters.minTrustScore) {
+        query = query.gte("trust_score", filters.minTrustScore);
+      }
+
+      if (filters.tags && filters.tags.length > 0) {
+        // 태그 필터링 (적어도 하나의 태그가 일치해야 함)
+        const tagConditions = filters.tags
+          .map((tag) => `post_tags.tags.name.eq.${tag}`)
+          .join(",");
+        query = query.or(tagConditions);
+      }
+
+      const { count, error } = await query;
+
+      if (error) {
+        console.error("Supabase 영양정보 개수 조회 오류:", error);
+        throw error;
+      }
+
+      return count || 0;
+    } catch (error) {
+      console.error("영양 정보 개수 조회 오류:", error);
+      // 에러 발생 시 레거시 데이터 개수 반환
+      try {
+        const legacyData = await this.loadLegacyData();
+        return legacyData ? legacyData.length : 0;
+      } catch (legacyError) {
+        console.error("레거시 데이터 개수 조회 실패:", legacyError);
+        return 0;
+      }
+    }
+  }
+
+  /**
    * 영양 정보 목록 조회 (자동/수동 데이터 통합)
    * Requirements: 6.1, 7.1
    */
