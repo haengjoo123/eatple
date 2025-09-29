@@ -12,9 +12,10 @@ class SupabaseNutritionDataManager {
   constructor() {
     this.legacyDataFile = path.join(__dirname, "../data/nutrition-info.json");
 
-    // 메모리 캐시
-    this.cache = new Map();
-    this.cacheExpiry = 5 * 60 * 1000; // 5분
+        // 메모리 캐시 (단축된 TTL + 크기 제한)
+        this.cache = new Map();
+        this.cacheExpiry = 2 * 60 * 1000; // 2분 (메모리 절약)
+        this.maxCacheSize = 50; // 최대 50개 캐시 항목
   }
 
   /**
@@ -268,6 +269,14 @@ class SupabaseNutritionDataManager {
         },
       };
 
+      // 캐시 크기 제한 체크
+      if (this.cache.size >= this.maxCacheSize) {
+        // 가장 오래된 캐시 항목 제거
+        const oldestKey = this.cache.keys().next().value;
+        this.cache.delete(oldestKey);
+        console.log(`영양정보 캐시 크기 제한: ${oldestKey} 제거`);
+      }
+      
       // 캐시 저장
       this.cache.set(cacheKey, {
         data: result,

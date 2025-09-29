@@ -5,8 +5,8 @@
 class MemoryMonitor {
     constructor() {
         this.alertThresholds = {
-            warning: 0.85,  // 85%
-            critical: 0.95  // 95%
+            warning: 0.75,  // 75% (더 이른 경고)
+            critical: 0.90  // 90% (더 이른 긴급 조치)
         };
         
         this.lastAlert = {
@@ -64,7 +64,9 @@ class MemoryMonitor {
             this.lastAlert.critical = now;
             
             // 긴급 메모리 정리 실행
-            this.emergencyCleanup();
+            this.emergencyCleanup().catch(error => {
+                console.error('긴급 메모리 정리 중 오류:', error);
+            });
             
         } else if (memoryInfo.status === 'warning' && 
                    now - this.lastAlert.warning > this.alertCooldown) {
@@ -138,18 +140,83 @@ class MemoryMonitor {
     /**
      * 긴급 메모리 정리
      */
-    emergencyCleanup() {
+    async emergencyCleanup() {
         console.log('🚨 긴급 메모리 정리 시작...');
         
         try {
             // 캐시 매니저 정리
-            const cacheManager = require('./cacheManager');
-            cacheManager.invalidateCache('all');
+            const { getCacheManager } = require('./cacheManager');
+            const cacheManager = getCacheManager();
+            
+            // 긴급 상황에서는 단계적 캐시 정리
+            console.log('1단계: 긴급 메모리 최적화 실행');
+            cacheManager.emergencyOptimization();
+            
+            // 메모리 사용량 재확인
+            let memoryCheck = this.getMemoryUsage();
+            console.log(`1단계 후 메모리 사용량: ${memoryCheck.usagePercent * 100}%`);
+            
+            // 여전히 높으면 전체 캐시 삭제
+            if (memoryCheck.usagePercent > 0.85) {
+                console.log('2단계: 전체 캐시 무효화 실행');
+                cacheManager.invalidateCache('all');
+            }
+            
+            // 다른 캐시 매니저들도 정리
+            try {
+                const nutritionDataManager = require('./nutritionDataManager');
+                if (nutritionDataManager && typeof nutritionDataManager.invalidateCache === 'function') {
+                    nutritionDataManager.invalidateCache();
+                }
+            } catch (error) {
+                console.log('영양 데이터 캐시 정리 건너뜀:', error.message);
+            }
+            
+            try {
+                const fileCacheManager = require('./fileCacheManager');
+                if (fileCacheManager && typeof fileCacheManager.clearAll === 'function') {
+                    await fileCacheManager.clearAll();
+                }
+                
+                // 대용량 영양정보 캐시 파일 삭제
+                const fs = require('fs').promises;
+                const path = require('path');
+                const cacheDir = path.join(__dirname, '../data/cache');
+                
+                try {
+                    const files = await fs.readdir(cacheDir);
+                    let deletedSize = 0;
+                    
+                    for (const file of files) {
+                        if (file.includes('nutrition_detail') && file.endsWith('.json')) {
+                            const filePath = path.join(cacheDir, file);
+                            const stats = await fs.stat(filePath);
+                            
+                            // 5MB 이상 파일 삭제
+                            if (stats.size > 5 * 1024 * 1024) {
+                                await fs.unlink(filePath);
+                                deletedSize += stats.size;
+                            }
+                        }
+                    }
+                    
+                    if (deletedSize > 0) {
+                        console.log(`🗑️ 대용량 영양정보 캐시 파일 정리: ${Math.round(deletedSize / 1024 / 1024)}MB 절약`);
+                    }
+                } catch (cacheError) {
+                    console.log('영양정보 캐시 파일 정리 중 오류:', cacheError.message);
+                }
+                
+            } catch (error) {
+                console.log('파일 캐시 정리 건너뜀:', error.message);
+            }
             
             // 가비지 컬렉션 강제 실행
             if (global.gc) {
                 global.gc();
                 console.log('가비지 컬렉션 강제 실행 완료');
+            } else {
+                console.log('가비지 컬렉션을 사용하려면 --expose-gc 플래그로 Node.js를 시작하세요');
             }
             
             // 메모리 사용량 재확인

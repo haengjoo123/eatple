@@ -17,11 +17,14 @@ class FileCacheManager {
         this.memoryCache = new Map();
         this.memoryCacheExpiry = new Map();
         
-        // 파일 캐시 설정
+        // 파일 캐시 설정 (메모리 절약)
         this.cacheConfig = {
-            nutrition: { ttl: 1800 }, // 30분
+            nutrition: { ttl: 600 }, // 10분 (단축)
             user: { ttl: 300 } // 5분
         };
+        
+        // 캐시 크기 제한
+        this.maxCacheSize = 100 * 1024 * 1024; // 100MB 제한
         
         // 캐시 통계
         this.stats = {

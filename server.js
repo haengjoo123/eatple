@@ -1087,8 +1087,17 @@ server.listen(PORT, async () => {
     memoryMonitor.checkMemoryUsage();
   }, 5 * 60 * 1000);
 
-  // 15분마다 메모리 정리 실행
-  setInterval(performMemoryCleanup, 15 * 60 * 1000);
+  // 5분마다 메모리 정리 실행 (더 자주 정리)
+  setInterval(performMemoryCleanup, 5 * 60 * 1000);
+  
+  // 추가: 메모리 사용량이 높을 때 더 자주 체크
+  setInterval(() => {
+    const memoryInfo = memoryMonitor.checkMemoryUsage();
+    if (memoryInfo.usagePercent > 0.8) {
+      console.log(`⚠️ 높은 메모리 사용량 감지: ${memoryInfo.usagePercent * 100}% - 추가 정리 실행`);
+      performMemoryCleanup();
+    }
+  }, 2 * 60 * 1000); // 2분마다 체크
 
   // 초기 메모리 정리 실행
   setTimeout(performMemoryCleanup, 5000);

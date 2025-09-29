@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
         if (req.query.limit) {
             pagination.limit = parseInt(req.query.limit);
             if (pagination.limit < 1) pagination.limit = 20;
-            if (pagination.limit > 100) pagination.limit = 100;
+            if (pagination.limit > 50) pagination.limit = 50; // 메모리 절약을 위해 최대 50개로 제한
         }
         if (req.query.query) filters.search = req.query.query;
         if (req.query.category) {

@@ -24,7 +24,7 @@ class CacheManager {
             search: { ttl: 60 }, // 1 minute
             popular: { ttl: 900 }, // 15 minutes
             images: { ttl: 3600 }, // 1 hour
-            nutrition: { ttl: 1800 }, // 30 minutes for nutrition info
+            nutrition: { ttl: 300 }, // 5 minutes for nutrition info (메모리 절약)
             user: { ttl: 300 } // 5 minutes for user data
         };
 
@@ -321,8 +321,57 @@ class CacheManager {
         const keysToRemove = keysWithTTL.slice(0, keys.length - maxKeys).map(item => item.key);
         this.memoryCache.del(keysToRemove);
         
-        console.log(`Memory optimization: removed ${keysToRemove.length} keys`);
+        console.log(`🧹 메모리 최적화: ${keysToRemove.length}개 키 제거 (현재: ${keys.length - keysToRemove.length}/${maxKeys})`);
         return keysToRemove.length;
+    }
+
+    /**
+     * 긴급 메모리 최적화 (더 적극적인 정리)
+     */
+    emergencyOptimization() {
+        console.log('🚨 긴급 메모리 최적화 시작...');
+        
+        const keys = this.memoryCache.keys();
+        const initialCount = keys.length;
+        
+        // 1. 단기 캐시부터 정리 (TTL 60초 이하)
+        const shortTermKeys = keys.filter(key => {
+            const ttl = this.memoryCache.getTtl(key);
+            return ttl && ttl <= 60;
+        });
+        
+        if (shortTermKeys.length > 0) {
+            this.memoryCache.del(shortTermKeys);
+            console.log(`🗑️ 단기 캐시 ${shortTermKeys.length}개 정리`);
+        }
+        
+        // 2. 검색 관련 캐시 정리
+        const searchKeys = keys.filter(key => key.includes('search:') || key.includes('query:'));
+        if (searchKeys.length > 0) {
+            this.memoryCache.del(searchKeys);
+            console.log(`🔍 검색 캐시 ${searchKeys.length}개 정리`);
+        }
+        
+        // 3. 통계 캐시 정리
+        const statsKeys = keys.filter(key => key.includes('stats:') || key.includes('analytics:'));
+        if (statsKeys.length > 0) {
+            this.memoryCache.del(statsKeys);
+            console.log(`📊 통계 캐시 ${statsKeys.length}개 정리`);
+        }
+        
+        // 4. 남은 키가 여전히 많으면 강제로 50% 제거
+        const remainingKeys = this.memoryCache.keys();
+        if (remainingKeys.length > 200) {
+            const halfKeys = remainingKeys.slice(0, Math.floor(remainingKeys.length / 2));
+            this.memoryCache.del(halfKeys);
+            console.log(`⚡ 강제 정리: ${halfKeys.length}개 추가 제거`);
+        }
+        
+        const finalCount = this.memoryCache.keys().length;
+        const removedCount = initialCount - finalCount;
+        
+        console.log(`✅ 긴급 최적화 완료: ${removedCount}개 키 제거 (${initialCount} → ${finalCount})`);
+        return removedCount;
     }
 
     /**
@@ -386,6 +435,37 @@ class CacheManager {
             currentKeys: stats.totalKeys,
             hitRate: stats.hitRate
         };
+    }
+
+    /**
+     * 캐시 무효화 (긴급 메모리 정리용)
+     */
+    invalidateCache(type = 'all') {
+        console.log(`🗑️ 캐시 무효화 시작 - 타입: ${type}`);
+        
+        if (type === 'all') {
+            // 전체 캐시 삭제
+            const keyCount = this.memoryCache.keys().length;
+            this.memoryCache.flushAll();
+            
+            // 통계 초기화
+            this.stats.deletes += keyCount;
+            
+            console.log(`✅ 전체 캐시 무효화 완료 - ${keyCount}개 키 삭제`);
+            return keyCount;
+        } else {
+            // 특정 타입 캐시만 삭제
+            const keys = this.memoryCache.keys();
+            const targetKeys = keys.filter(key => key.startsWith(`${type}:`));
+            
+            if (targetKeys.length > 0) {
+                this.memoryCache.del(targetKeys);
+                this.stats.deletes += targetKeys.length;
+            }
+            
+            console.log(`✅ ${type} 캐시 무효화 완료 - ${targetKeys.length}개 키 삭제`);
+            return targetKeys.length;
+        }
     }
 }
 
