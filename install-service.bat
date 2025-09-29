@@ -16,8 +16,8 @@ set SERVICE_NAME=MealPlanNutritionService
 set SERVICE_DISPLAY=Meal Plan Nutrition Data Collection Service
 set SERVICE_DESCRIPTION=영양 정보 자동 수집 서비스
 
-REM nssm을 사용하여 서비스 등록
-nssm install %SERVICE_NAME% "%SERVICE_PATH%node.exe" "%SERVICE_PATH%server.js"
+REM nssm을 사용하여 서비스 등록 (--expose-gc 플래그 포함)
+nssm install %SERVICE_NAME% "%SERVICE_PATH%node.exe" "--expose-gc %SERVICE_PATH%server.js"
 nssm set %SERVICE_NAME% AppDirectory "%SERVICE_PATH%"
 nssm set %SERVICE_NAME% DisplayName "%SERVICE_DISPLAY%"
 nssm set %SERVICE_NAME% Description "%SERVICE_DESCRIPTION%"

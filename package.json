@@ -4,7 +4,7 @@
     "description": "AI 맞춤 식단 플래너",
     "main": "server.js",
     "scripts": {
-        "start": "node server.js",
+        "start": "node --expose-gc server.js",
         "test": "jest"
     },
     "dependencies": {

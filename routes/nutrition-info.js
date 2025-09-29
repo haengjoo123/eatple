@@ -36,15 +36,8 @@ router.get('/', async (req, res) => {
             filters.category = req.query.category;
         }
         if (req.query.sourceType) {
-            // 프론트엔드 필터와 데이터 매핑
-            const sourceTypeMapping = {
-                'paper': ['pubmed', 'paper'],
-                'youtube': ['youtube'],
-                'news': ['news'],
-                'manual': ['manual']
-            };
-            const mappedSourceTypes = sourceTypeMapping[req.query.sourceType] || [req.query.sourceType];
-            filters.sourceType = mappedSourceTypes;
+            // 수동 포스팅만 사용하므로 단순하게 처리
+            filters.sourceType = [req.query.sourceType];
         }
         if (req.query.tags) filters.tags = req.query.tags.split(',').map(tag => tag.trim());
         if (req.query.minTrustScore) filters.minTrustScore = parseInt(req.query.minTrustScore);
@@ -112,56 +105,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-    /**
-     * 영양 정보 목록 조회 (페이지네이션, Supabase 통합)
-     * GET /api/nutrition-info/list
-     * Requirements: 6.1, 7.1
-     */
-    router.get('/list', async (req, res) => {
-        try {
-            const filters = {};
-            const pagination = {};
-            if (req.query.page) {
-                pagination.page = parseInt(req.query.page);
-                if (pagination.page < 1) pagination.page = 1;
-            }
-            if (req.query.limit) {
-                pagination.limit = parseInt(req.query.limit);
-                if (pagination.limit < 1) pagination.limit = 20;
-                if (pagination.limit > 100) pagination.limit = 100;
-            }
-            if (req.query.search) filters.search = req.query.search;
-            if (req.query.category) filters.category = req.query.category;
-            if (req.query.sourceType) {
-                // 수동 포스팅 포함 매핑
-                const sourceTypeMapping = {
-                    'paper': ['pubmed', 'paper'],
-                    'youtube': ['youtube'],
-                    'news': ['news'],
-                    'manual': ['manual']
-                };
-                const mappedSourceTypes = sourceTypeMapping[req.query.sourceType] || [req.query.sourceType];
-                filters.sourceType = mappedSourceTypes;
-            }
-            
-            // Supabase 통합 데이터 매니저 사용
-            const result = await supabaseDataManager.getNutritionInfoList(filters, pagination);
-            const data = result && result.data ? result.data : [];
-            const paginationData = result && result.pagination ? result.pagination : {};
-            
-        res.json({
-                success: true,
-                data: data.map(item => item && typeof item.toJSON === 'function' ? item.toJSON() : item),
-                pagination: paginationData
-        });
-    } catch (error) {
-        console.error('영양 정보 목록 조회 오료:', error);
-        res.status(500).json({
-            error: '영양 정보 목록을 조회하는 중 오류가 발생했습니다.',
-            details: error.message
-        });
-    }
-});
 
 /**
  * 영양 정보 목록 스트리밍 조회 (실시간 로딩)
@@ -186,14 +129,8 @@ router.get('/stream', async (req, res) => {
         if (req.query.search) filters.search = req.query.search;
         if (req.query.category) filters.category = req.query.category;
         if (req.query.sourceType) {
-            const sourceTypeMapping = {
-                'paper': ['pubmed', 'paper'],
-                'youtube': ['youtube'],
-                'news': ['news'],
-                'manual': ['manual']
-            };
-            const mappedSourceTypes = sourceTypeMapping[req.query.sourceType] || [req.query.sourceType];
-            filters.sourceType = mappedSourceTypes;
+            // 수동 포스팅만 사용하므로 단순하게 처리
+            filters.sourceType = [req.query.sourceType];
         }
 
         // SSE (Server-Sent Events) 헤더 설정
@@ -228,9 +165,21 @@ router.get('/stream', async (req, res) => {
         
         // 전체 데이터를 배치로 나누어 전송
         const totalItems = fullPageData.length;
-        const actualBatches = Math.ceil(totalItems / batchSize);
+        const actualBatches = Math.max(1, Math.ceil(totalItems / batchSize)); // 최소 1개 배치는 보장
         
-        for (let i = 0; i < actualBatches; i++) {
+        // 데이터가 없는 경우에도 진행 상황 전송
+        if (totalItems === 0) {
+            sendData('progress', {
+                batch: 1,
+                totalBatches: 1,
+                processed: 0,
+                total: 0,
+                message: '검색 결과가 없습니다.'
+            });
+        }
+        
+        const loopCount = totalItems > 0 ? Math.ceil(totalItems / batchSize) : 1;
+        for (let i = 0; i < loopCount; i++) {
             try {
                 const startIndex = i * batchSize;
                 const endIndex = Math.min(startIndex + batchSize, totalItems);
@@ -334,15 +283,8 @@ router.get('/stream', async (req, res) => {
             
             if (category) filters.category = category;
             if (sourceType) {
-                // 프론트엔드 필터와 데이터 매핑 (수동 포스팅 포함)
-                const sourceTypeMapping = {
-                    'paper': ['pubmed', 'paper'],
-                    'youtube': ['youtube'],
-                    'news': ['news'],
-                    'manual': ['manual']
-                };
-                const mappedSourceTypes = sourceTypeMapping[sourceType] || [sourceType];
-                filters.sourceType = mappedSourceTypes;
+                // 수동 포스팅만 사용하므로 단순하게 처리
+                filters.sourceType = [sourceType];
             }
             if (minTrustScore) filters.minTrustScore = parseInt(minTrustScore);
             if (tags) filters.tags = tags.split(',').map(tag => tag.trim());
@@ -408,19 +350,8 @@ router.get('/stream', async (req, res) => {
                 filters.category = categories; // 다중 카테고리 지원
             }
             if (sourceTypes && Array.isArray(sourceTypes) && sourceTypes.length > 0) {
-                // 수동 포스팅 포함한 소스 타입 매핑
-                const allSourceTypes = [];
-                sourceTypes.forEach(type => {
-                    const sourceTypeMapping = {
-                        'paper': ['pubmed', 'paper'],
-                        'youtube': ['youtube'],
-                        'news': ['news'],
-                        'manual': ['manual']
-                    };
-                    const mapped = sourceTypeMapping[type] || [type];
-                    allSourceTypes.push(...mapped);
-                });
-                filters.sourceType = [...new Set(allSourceTypes)]; // 중복 제거
+                // 수동 포스팅만 사용하므로 단순하게 처리
+                filters.sourceType = sourceTypes;
             }
             if (tags && Array.isArray(tags) && tags.length > 0) {
                 filters.tags = tags;
@@ -457,89 +388,7 @@ router.get('/stream', async (req, res) => {
         }
     });
 
-    /**
-     * 카테고리별 영양 정보 조회
-     * GET /api/nutrition-info/category/:category
-     */
-    router.get('/category/:category', async (req, res) => {
-        try {
-            const { category } = req.params;
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 20;
 
-            const result = await nutritionDataManager.getNutritionInfoList({ category }, { page, limit });
-            
-            // 안전하게 데이터 처리
-            const data = result && result.data ? result.data : [];
-            const pagination = result && result.pagination ? result.pagination : {};
-            
-            res.json({
-                success: true,
-                data: data.map(item => item && typeof item.toJSON === 'function' ? item.toJSON() : item),
-                pagination: pagination
-            });
-        } catch (error) {
-            console.error('카테고리별 영양 정보 조회 오류:', error);
-            res.status(500).json({
-                error: '카테고리별 영양 정보를 조회하는 중 오류가 발생했습니다.',
-                details: error.message
-            });
-        }
-    });
-
-    /**
-     * 트렌딩 토픽 조회
-     * GET /api/nutrition-info/trending/topics
-     */
-    router.get('/trending/topics', async (req, res) => {
-        try {
-            // 임시로 기본 트렌딩 토픽 반환
-            const trendingTopics = {
-                pubmed: ['비타민D', '오메가3'],
-                youtube: ['다이어트', '운동'],
-                news: ['건강', '영양'],
-                combined: [
-                    { topic: '비타민D', count: 2 },
-                    { topic: '다이어트', count: 1 }
-                ]
-            };
-            res.json(trendingTopics);
-        } catch (error) {
-            console.error('트렌딩 토픽 조회 오류:', error);
-            res.status(500).json({
-                error: '트렌딩 토픽을 조회하는 중 오류가 발생했습니다.',
-                details: error.message
-            });
-        }
-    });
-
-    /**
-     * 통계 정보 조회
-     * GET /api/nutrition-info/statistics
-     */
-    router.get('/statistics', async (req, res) => {
-        try {
-            const statistics = await nutritionDataManager.getStatistics();
-            
-            // 통계 데이터가 없으면 기본값 반환
-            if (!statistics) {
-                return res.json({
-                    totalItems: 0,
-                    categoryDistribution: {},
-                    averageTrustScore: 0,
-                    sourceTypeDistribution: {}
-                });
-            }
-            
-            res.json(statistics);
-        } catch (error) {
-            console.error('통계 정보 조회 오류:', error);
-            res.status(500).json({
-                error: '통계 정보를 조회하는 중 오류가 발생했습니다.',
-                details: error.message
-            });
-        }
-    });
 
     /**
      * 사용자 북마크 목록 조회
@@ -1088,163 +937,7 @@ router.get('/stream', async (req, res) => {
         }
     });
 
-    /**
-     * 새로운 영양 정보 생성
-     * POST /api/nutrition-info
-     */
-    router.post('/', async (req, res) => {
-        try {
-            // 권한 체크 (테스트를 위해 임시 주석)
-            // if (!req.session.user || req.session.user.role !== 'admin') {
-            //     return res.status(403).json({
-            //         error: '관리자 권한이 필요합니다.'
-            //     });
-            // }
 
-            const { title, content, category, sourceType, sourceUrl, trustScore } = req.body;
-            
-            // 필수 필드 검증
-            if (!title || !content) {
-                return res.status(400).json({
-                    error: '제목과 내용은 필수입니다.'
-                });
-            }
-
-            // NutritionInfo 인스턴스 생성
-            const nutritionInfo = new NutritionInfo({
-                title,
-                content,
-                category: category || 'general',
-                sourceType: sourceType || 'manual',
-                sourceUrl,
-                trustScore: trustScore || 80
-            });
-
-            const savedInfo = await nutritionDataManager.saveNutritionInfo(nutritionInfo);
-
-            // 안전하게 toJSON 처리
-            const responseData = savedInfo && typeof savedInfo.toJSON === 'function' 
-                ? savedInfo.toJSON() 
-                : (savedInfo || { id: 'temp-id', title, content });
-
-            res.status(201).json(responseData);
-        } catch (error) {
-            console.error('영양 정보 생성 오류:', error);
-            res.status(500).json({
-                error: '영양 정보를 생성하는 중 오류가 발생했습니다.',
-                details: error.message
-            });
-        }
-    });
-
-    /**
-     * 영양 정보 업데이트
-     * PUT /api/nutrition-info/:id
-     */
-    router.put('/:id', async (req, res) => {
-        try {
-            // 권한 체크 (테스트를 위해 임시 주석)
-            // if (!req.session.user || req.session.user.role !== 'admin') {
-            //     return res.status(403).json({
-            //         error: '관리자 권한이 필요합니다.'
-            //     });
-            // }
-
-            const { id } = req.params;
-            const updateData = req.body;
-
-            const updatedInfo = await nutritionDataManager.updateNutritionInfo(id, updateData);
-            
-            if (!updatedInfo) {
-                return res.status(404).json({
-                    error: '해당 영양 정보를 찾을 수 없습니다.'
-                });
-            }
-
-            // 캐시 무효화
-            const cacheManager = require('../utils/fileCacheManager');
-            cacheManager.delete('nutrition', `nutrition_detail_${id}`);
-            cacheManager.invalidatePattern('nutrition:nutrition_list_*');
-
-            // 안전하게 toJSON 처리
-            const responseData = updatedInfo && typeof updatedInfo.toJSON === 'function' 
-                ? updatedInfo.toJSON() 
-                : updatedInfo;
-
-            res.json(responseData);
-        } catch (error) {
-            console.error('영양 정보 업데이트 오류:', error);
-            res.status(500).json({
-                error: '영양 정보를 업데이트하는 중 오류가 발생했습니다.',
-                details: error.message
-            });
-        }
-    });
-
-    /**
-     * 영양 정보 삭제
-     * DELETE /api/nutrition-info/:id
-     */
-    router.delete('/:id', async (req, res) => {
-        try {
-            // 권한 체크 (테스트를 위해 임시 주석)
-            // if (!req.session.user || req.session.user.role !== 'admin') {
-            //     return res.status(403).json({
-            //         error: '관리자 권한이 필요합니다.'
-            //     });
-            // }
-
-            const { id } = req.params;
-            const deleted = await nutritionDataManager.deleteNutritionInfo(id);
-            
-            if (!deleted) {
-                return res.status(404).json({
-                    error: '해당 영양 정보를 찾을 수 없습니다.'
-                });
-            }
-
-            // 캐시 무효화
-            const cacheManager = require('../utils/fileCacheManager');
-            cacheManager.delete('nutrition', `nutrition_detail_${id}`);
-            cacheManager.invalidatePattern('nutrition:nutrition_list_*');
-
-            res.json({
-                message: '영양 정보가 성공적으로 삭제되었습니다.'
-            });
-        } catch (error) {
-            console.error('영양 정보 삭제 오류:', error);
-            res.status(500).json({
-                error: '영양 정보를 삭제하는 중 오류가 발생했습니다.',
-                details: error.message
-            });
-        }
-    });
-
-    /**
-     * 트렌딩 토픽 조회
-     * GET /api/nutrition-info/trending/topics
-     */
-    router.get('/trending/topics', async (req, res) => {
-        try {
-            // 임시로 기본 트렌딩 토픽 반환
-            const trendingTopics = {
-                pubmed: ['비타민D', '오메가3'],
-                youtube: ['다이어트', '운동'],
-                news: ['건강', '영양'],
-                combined: [
-                    { topic: '비타민D', count: 2 },
-                    { topic: '다이어트', count: 1 }
-                ]
-            };
-            res.json(trendingTopics);
-        } catch (error) {
-            console.error('트렌딩 토픽 조회 오류:', error);
-            res.status(500).json({
-                error: '트렌딩 토픽을 조회하는 중 오류가 발생했습니다.',
-                details: error.message
-            });
-        }
-    });
 
     /**
      * 통계 정보 조회
@@ -1274,168 +967,8 @@ router.get('/stream', async (req, res) => {
         }
     });
 
-    /**
-     * 콘텐츠 수집
-     * POST /api/nutrition-info/collect
-     */
-    router.post('/collect', async (req, res) => {
-        try {
-            // 권한 체크 (테스트를 위해 임시 주석)
-            // if (!req.session.user || req.session.user.role !== 'admin') {
-            //     return res.status(403).json({
-            //         error: '관리자 권한이 필요합니다.'
-            //     });
-            // }
 
-            // 콘텐츠 수집
-            const collectedContent = await contentAggregator.collectAllContent();
-            
-            // 수집된 콘텐츠를 배열로 변환
-            const allContents = [
-                ...collectedContent.papers,
-                ...collectedContent.videos,
-                ...collectedContent.articles
-            ];
-            
-            // 수집된 콘텐츠 처리
-            const processedContent = await aiContentProcessor.processBatch(allContents);
 
-            res.json({
-                message: '콘텐츠 수집이 완료되었습니다.',
-                summary: {
-                    collected: collectedContent,
-                    processed: processedContent
-                }
-            });
-        } catch (error) {
-            console.error('콘텐츠 수집 오류:', error);
-            res.status(500).json({
-                error: '콘텐츠 수집 중 오류가 발생했습니다.',
-                details: error.message
-            });
-        }
-    });
-
-/**
- * 사용자 좋아요 목록 조회
- * GET /api/nutrition-info/likes
- */
-router.get('/likes', async (req, res) => {
-    try {
-        if (!req.session.user) {
-            return res.status(401).json({
-                success: false,
-                error: '로그인이 필요합니다.'
-            });
-        }
-
-        const userId = req.session.user.id;
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 20;
-
-        const userPrefs = await recommendationService.getUserPreferences(userId);
-        const likeIds = userPrefs.interactions.likes;
-
-        const totalCount = likeIds.length;
-        const totalPages = Math.ceil(totalCount / limit);
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        const paginatedIds = likeIds.slice(startIndex, endIndex);
-
-        const likedInfo = [];
-        for (const id of paginatedIds) {
-            try {
-                const info = await nutritionDataManager.getNutritionInfoById(id);
-                if (info && info.isActive) {
-                    likedInfo.push(info.toJSON());
-                }
-            } catch (error) {
-                console.log(`좋아요한 정보 ID ${id}를 찾을 수 없습니다:`, error.message);
-            }
-        }
-
-        res.json({
-            success: true,
-            data: likedInfo,
-            pagination: {
-                currentPage: page,
-                totalPages: totalPages,
-                totalCount: totalCount,
-                hasNext: page < totalPages,
-                hasPrev: page > 1
-            }
-        });
-    } catch (error) {
-        console.error('좋아요 목록 조회 오류:', error);
-        res.status(500).json({
-            success: false,
-            error: '좋아요 목록을 조회하는 중 오류가 발생했습니다.',
-            details: error.message
-        });
-    }
-});
-
-/**
- * 사용자 상호작용 통계 조회
- * GET /api/nutrition-info/user-stats
- */
-router.get('/user-stats', async (req, res) => {
-    try {
-        if (!req.session.user) {
-            return res.status(401).json({
-                success: false,
-                error: '로그인이 필요합니다.'
-            });
-        }
-
-        const userId = req.session.user.id;
-        const userPrefs = await recommendationService.getUserPreferences(userId);
-        const interactions = userPrefs.interactions;
-
-        const stats = {
-            bookmarks: {
-                total: interactions.bookmarks.length,
-                recent: interactions.bookmarks.slice(-10)
-            },
-            likes: {
-                total: interactions.likes.length,
-                recent: interactions.likes.slice(-10)
-            },
-            views: {
-                total: interactions.views.length,
-                recent: interactions.views.slice(-20)
-            }
-        };
-
-        const categoryInterest = {};
-        const allInteractedIds = [...interactions.bookmarks, ...interactions.likes];
-        
-        for (const id of allInteractedIds) {
-            try {
-                const info = await nutritionDataManager.getNutritionInfoById(id);
-                if (info) {
-                    categoryInterest[info.category] = (categoryInterest[info.category] || 0) + 1;
-                }
-            } catch (error) {
-                console.log(`정보 ID ${id}를 찾을 수 없습니다:`, error.message);
-            }
-        }
-
-        stats.categoryInterest = categoryInterest;
-
-        res.json({
-            success: true,
-            data: stats
-        });
-    } catch (error) {
-        console.error('사용자 통계 조회 오류:', error);
-        res.status(500).json({
-            success: false,
-            error: '사용자 통계를 조회하는 중 오류가 발생했습니다.',
-            details: error.message
-        });
-    }
-});
 
 /**
  * 카테고리 목록 조회 (Supabase 통합)
@@ -1461,233 +994,11 @@ router.get('/meta/categories', async (req, res) => {
     }
 });
 
-/**
- * 소스 타입 목록 조회 (Supabase 통합)
- * GET /api/nutrition-info/meta/source-types
- * Requirements: 6.1, 6.3
- */
-router.get('/meta/source-types', async (req, res) => {
-    try {
-        // Supabase 통합 통계에서 소스 타입 정보 조회
-        const stats = await supabaseDataManager.getStatistics();
-        
-        const sourceTypes = Object.entries(stats.bySourceType).map(([name, count]) => ({
-            name,
-            count,
-            displayName: {
-                'manual': '수동 포스팅',
-                'paper': '논문',
-                'pubmed': '논문',
-                'youtube': '유튜브',
-                'news': '뉴스'
-            }[name] || name
-        }));
 
-        res.json({
-            success: true,
-            data: sourceTypes
-        });
-    } catch (error) {
-        console.error('소스 타입 목록 조회 오류:', error);
-        res.status(500).json({
-            success: false,
-            error: '소스 타입 목록을 조회하는 중 오류가 발생했습니다.',
-            details: error.message
-        });
-    }
-});
 
-/**
- * 영양 정보 통계 조회 (Supabase 통합)
- * GET /api/nutrition-info/meta/stats
- * Requirements: 6.1, 6.3
- */
-router.get('/meta/stats', async (req, res) => {
-    try {
-        // Supabase 통합 통계 조회
-        const stats = await supabaseDataManager.getStatistics();
-        
-        res.json({
-            success: true,
-            data: stats
-        });
-    } catch (error) {
-        console.error('영양 정보 통계 조회 오류:', error);
-        res.status(500).json({
-            success: false,
-            error: '영양 정보 통계를 조회하는 중 오류가 발생했습니다.',
-            details: error.message
-        });
-    }
-});
 
-/**
- * 태그 통계 및 관련 정보 조회 (Supabase 통합)
- * GET /api/nutrition-info/meta/tags
- * Requirements: 6.3
- */
-router.get('/meta/tags', async (req, res) => {
-    try {
-        const limit = parseInt(req.query.limit) || 50;
-        const minCount = parseInt(req.query.minCount) || 1;
-        
-        // Supabase 통합 태그 통계 조회
-        const tagStats = await supabaseDataManager.getTagStats();
-        
-        // 필터링 및 제한
-        const filteredTags = tagStats
-            .filter(tag => tag.count >= minCount)
-            .slice(0, limit);
-        
-        res.json({
-            success: true,
-            data: filteredTags,
-            total: tagStats.length,
-            filtered: filteredTags.length
-        });
-    } catch (error) {
-        console.error('태그 통계 조회 오류:', error);
-        res.status(500).json({
-            success: false,
-            error: '태그 통계를 조회하는 중 오류가 발생했습니다.',
-            details: error.message
-        });
-    }
-});
 
-/**
- * 개인화 추천 영양 정보 조회
- * GET /api/nutrition-info/recommended
- */
-router.get('/recommended', async (req, res) => {
-    try {
-        const limit = parseInt(req.query.limit) || 20;
-        const type = req.query.type || 'mixed';
-        let recommendations = [];
 
-        // 로그인한 사용자인 경우 개인화 추천 제공
-        if (req.session && req.session.user) {
-            const userId = req.session.user.id;
-
-            if (type === 'personal' || type === 'mixed') {
-                const personalRecs = await recommendationService.getRecommendedNutritionInfo(
-                    userId, 
-                    type === 'mixed' ? Math.ceil(limit * 0.7) : limit
-                );
-                recommendations = recommendations.concat(personalRecs);
-            }
-
-            if (type === 'collaborative' || type === 'mixed') {
-                const collaborativeRecs = await recommendationService.getCollaborativeRecommendations(
-                    userId,
-                    type === 'mixed' ? Math.floor(limit * 0.3) : limit
-                );
-                recommendations = recommendations.concat(collaborativeRecs);
-            }
-
-            // 관심사 자동 업데이트 (비동기)
-            recommendationService.updateUserInterestsFromInteractions(userId)
-                .catch(error => console.error('관심사 자동 업데이트 오류:', error));
-        } else {
-            // 로그인하지 않은 사용자에게는 일반 추천 제공 (신뢰도 높은 순)
-            const generalRecommendations = await nutritionDataManager.getNutritionInfoList({
-                limit: limit,
-                sortBy: 'trustScore',
-                sortOrder: 'desc'
-            });
-            recommendations = generalRecommendations.data || [];
-        }
-
-        const uniqueRecommendations = recommendations
-            .filter((item, index, self) => 
-                index === self.findIndex(t => t.id === item.id)
-            )
-            .slice(0, limit);
-
-        res.json({
-            success: true,
-            data: uniqueRecommendations,
-            type: req.session && req.session.user ? type : 'general',
-            count: uniqueRecommendations.length
-        });
-    } catch (error) {
-        console.error('개인화 추천 조회 오류:', error);
-        res.status(500).json({
-            success: false,
-            error: '개인화 추천을 생성하는 중 오류가 발생했습니다.',
-            details: error.message
-        });
-    }
-});
-
-/**
- * 사용자 선호도 조회
- * GET /api/nutrition-info/preferences
- */
-router.get('/preferences', async (req, res) => {
-    try {
-        if (!req.session.user) {
-            return res.status(401).json({
-                success: false,
-                error: '로그인이 필요합니다.'
-            });
-        }
-
-        const userId = req.session.user.id;
-        const preferences = await recommendationService.getUserPreferences(userId);
-
-        res.json({
-            success: true,
-            data: preferences
-        });
-    } catch (error) {
-        console.error('사용자 선호도 조회 오류:', error);
-        res.status(500).json({
-            success: false,
-            error: '사용자 선호도를 조회하는 중 오류가 발생했습니다.',
-            details: error.message
-        });
-    }
-});
-
-/**
- * 사용자 선호도 업데이트
- * PUT /api/nutrition-info/preferences
- */
-router.put('/preferences', async (req, res) => {
-    try {
-        if (!req.session.user) {
-            return res.status(401).json({
-                success: false,
-                error: '로그인이 필요합니다.'
-            });
-        }
-
-        const userId = req.session.user.id;
-        const { categories, sourceTypes, keywords, minTrustScore, language } = req.body;
-
-        const updateData = {};
-        if (categories) updateData.categories = categories;
-        if (sourceTypes) updateData.sourceTypes = sourceTypes;
-        if (keywords) updateData.keywords = keywords;
-        if (minTrustScore !== undefined) updateData.minTrustScore = minTrustScore;
-        if (language) updateData.language = language;
-
-        const updatedPreferences = await recommendationService.updateUserPreferences(userId, updateData);
-
-        res.json({
-            success: true,
-            data: updatedPreferences
-        });
-    } catch (error) {
-        console.error('사용자 선호도 업데이트 오류:', error);
-        res.status(500).json({
-            success: false,
-            error: '사용자 선호도를 업데이트하는 중 오류가 발생했습니다.',
-            details: error.message
-        });
-    }
-});
 
 /**
  * 북마크 추가/제거
@@ -1821,230 +1132,8 @@ router.post('/like', async (req, res) => {
     }
 });
 
-/**
- * 조회 기록 추가 (자동 호출)
- * POST /api/nutrition-info/view
- */
-router.post('/view', async (req, res) => {
-    try {
-        if (!req.session.user) {
-            return res.status(401).json({
-                success: false,
-                error: '로그인이 필요합니다.'
-            });
-        }
 
-        const userId = req.session.user.id;
-        const { nutritionInfoId } = req.body;
 
-        if (!nutritionInfoId) {
-            return res.status(400).json({
-                success: false,
-                error: 'nutritionInfoId가 필요합니다.'
-            });
-        }
-
-        const nutritionInfo = await nutritionDataManager.getNutritionInfoById(nutritionInfoId);
-        if (!nutritionInfo) {
-            return res.status(404).json({
-                success: false,
-                error: '해당 영양 정보를 찾을 수 없습니다.'
-            });
-        }
-
-        const result = await recommendationService.recordUserInteraction(userId, nutritionInfoId, 'views');
-
-        res.json({
-            success: true,
-            data: result
-        });
-    } catch (error) {
-        console.error('조회 기록 추가 오류:', error);
-        res.status(500).json({
-            success: false,
-            error: '조회 기록을 추가하는 중 오류가 발생했습니다.',
-            details: error.message
-        });
-    }
-});
-
-/**
- * 북마크 일괄 관리
- * POST /api/nutrition-info/bookmarks/bulk
- * Body: { nutritionInfoIds: string[], action: 'add' | 'remove' }
- */
-router.post('/bookmarks/bulk', async (req, res) => {
-    try {
-        if (!req.session.user) {
-            return res.status(401).json({
-                success: false,
-                error: '로그인이 필요합니다.'
-            });
-        }
-
-        const userId = req.session.user.id;
-        const { nutritionInfoIds, action } = req.body;
-
-        if (!nutritionInfoIds || !Array.isArray(nutritionInfoIds) || nutritionInfoIds.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'nutritionInfoIds 배열이 필요합니다.'
-            });
-        }
-
-        if (!action || !['add', 'remove'].includes(action)) {
-            return res.status(400).json({
-                success: false,
-                error: 'action은 add 또는 remove여야 합니다.'
-            });
-        }
-
-        const results = [];
-        const errorList = [];
-
-        for (const nutritionInfoId of nutritionInfoIds) {
-            try {
-                const nutritionInfo = await nutritionDataManager.getNutritionInfoById(nutritionInfoId);
-                if (!nutritionInfo) {
-                    errorList.push({
-                        id: nutritionInfoId,
-                        error: '해당 영양 정보를 찾을 수 없습니다.'
-                    });
-                    continue;
-                }
-
-                let result;
-                if (action === 'add') {
-                    result = await recommendationService.recordUserInteraction(userId, nutritionInfoId, 'bookmarks');
-                    await nutritionDataManager.updateNutritionInfo(nutritionInfoId, {
-                        bookmarkCount: nutritionInfo.bookmarkCount + 1
-                    });
-                } else {
-                    result = await recommendationService.removeUserInteraction(userId, nutritionInfoId, 'bookmarks');
-                    await nutritionDataManager.updateNutritionInfo(nutritionInfoId, {
-                        bookmarkCount: Math.max(0, nutritionInfo.bookmarkCount - 1)
-                    });
-                }
-
-                results.push({
-                    id: nutritionInfoId,
-                    success: true,
-                    data: result
-                });
-            } catch (error) {
-                errorList.push({
-                    id: nutritionInfoId,
-                    error: error.message
-                });
-            }
-        }
-
-        res.json({
-            success: true,
-            action: action,
-            processed: results.length,
-            errorCount: errorList.length,
-            results: results,
-            errors: errorList
-        });
-    } catch (error) {
-        console.error('북마크 일괄 처리 오류:', error);
-        res.status(500).json({
-            success: false,
-            error: '북마크 일괄 처리 중 오류가 발생했습니다.',
-            details: error.message
-        });
-    }
-});
-
-/**
- * 좋아요 일괄 관리
- * POST /api/nutrition-info/likes/bulk
- * Body: { nutritionInfoIds: string[], action: 'add' | 'remove' }
- */
-router.post('/likes/bulk', async (req, res) => {
-    try {
-        if (!req.session.user) {
-            return res.status(401).json({
-                success: false,
-                error: '로그인이 필요합니다.'
-            });
-        }
-
-        const userId = req.session.user.id;
-        const { nutritionInfoIds, action } = req.body;
-
-        if (!nutritionInfoIds || !Array.isArray(nutritionInfoIds) || nutritionInfoIds.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'nutritionInfoIds 배열이 필요합니다.'
-            });
-        }
-
-        if (!action || !['add', 'remove'].includes(action)) {
-            return res.status(400).json({
-                success: false,
-                error: 'action은 add 또는 remove여야 합니다.'
-            });
-        }
-
-        const results = [];
-        const errorList = [];
-
-        for (const nutritionInfoId of nutritionInfoIds) {
-            try {
-                const nutritionInfo = await nutritionDataManager.getNutritionInfoById(nutritionInfoId);
-                if (!nutritionInfo) {
-                    errorList.push({
-                        id: nutritionInfoId,
-                        error: '해당 영양 정보를 찾을 수 없습니다.'
-                    });
-                    continue;
-                }
-
-                let result;
-                if (action === 'add') {
-                    result = await recommendationService.recordUserInteraction(userId, nutritionInfoId, 'likes');
-                    await nutritionDataManager.updateNutritionInfo(nutritionInfoId, {
-                        likeCount: nutritionInfo.likeCount + 1
-                    });
-                } else {
-                    result = await recommendationService.removeUserInteraction(userId, nutritionInfoId, 'likes');
-                    await nutritionDataManager.updateNutritionInfo(nutritionInfoId, {
-                        likeCount: Math.max(0, nutritionInfo.likeCount - 1)
-                    });
-                }
-
-                results.push({
-                    id: nutritionInfoId,
-                    success: true,
-                    data: result
-                });
-            } catch (error) {
-                errorList.push({
-                    id: nutritionInfoId,
-                    error: error.message
-                });
-            }
-        }
-
-        res.json({
-            success: true,
-            action: action,
-            processed: results.length,
-            errorCount: errorList.length,
-            results: results,
-            errors: errorList
-        });
-    } catch (error) {
-        console.error('좋아요 일괄 처리 오류:', error);
-        res.status(500).json({
-            success: false,
-            error: '좋아요 일괄 처리 중 오류가 발생했습니다.',
-            details: error.message
-        });
-    }
-});
 
 // Admin routes (require admin privileges)
 
@@ -2152,35 +1241,6 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-    /**
-     * PubMed 논문 검색
-     * GET /api/nutrition-info/pubmed
-     */
-    router.get('/pubmed', async (req, res) => {
-        try {
-            const PubMedApiService = require('../utils/pubmedApiService');
-            const pubmedService = new PubMedApiService();
-            
-            const keywords = req.query.keywords ? req.query.keywords.split(',').map(k => k.trim()) : ['nutrition', 'diet'];
-            const maxResults = parseInt(req.query.maxResults) || 3;
-            const dateRange = req.query.dateRange || '30d';
-            
-            const papers = await pubmedService.searchPapers(keywords, maxResults, dateRange);
-            
-            res.json({
-                success: true,
-                count: papers.length,
-                papers: papers
-            });
-        } catch (error) {
-            console.error('PubMed 논문 검색 오류:', error);
-            res.status(500).json({
-                success: false,
-                error: 'PubMed 논문 검색 중 오류가 발생했습니다.',
-                details: error.message
-            });
-        }
-    });
 
     /**
      * 영양정보 캐시 관리 API

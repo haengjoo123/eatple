@@ -11,7 +11,6 @@ class NutritionInfoManager {
         this.currentSort = 'collectedDate';
         this.currentSortOrder = 'desc';
         this.isLoading = false;
-        this.userInteractions = new Map(); // 사용자 상호작용 상태 캐시
         
         // 성능 최적화를 위한 속성들
         this.intersectionObserver = null;
@@ -120,8 +119,6 @@ class NutritionInfoManager {
             this.intersectionObserver = null;
         }
 
-        // 캐시 정리
-        this.userInteractions.clear();
         this.cardPool = [];
     }
 
@@ -161,10 +158,13 @@ class NutritionInfoManager {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
                 
+                // 모든 카테고리 상태 초기화 (인라인으로 처리)
                 // 모든 카테고리 버튼에서 active 클래스 제거
-                categoryButtons.forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
                 
-                // 모든 드롭다운 토글에서 active 클래스 제거하고 원래 텍스트로 복원
+                // 모든 드롭다운 토글 초기화
                 document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
                     toggle.classList.remove('active');
                     this.resetDropdownText(toggle);
@@ -222,11 +222,13 @@ class NutritionInfoManager {
 
     // URL 파라미터로 전달된 카테고리에 해당하는 버튼을 활성화
     activateCategoryButton(category) {
+        // 모든 카테고리 상태 초기화 (인라인으로 처리)
         // 모든 카테고리 버튼에서 active 클래스 제거
-        const categoryButtons = document.querySelectorAll('.category-btn');
-        categoryButtons.forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
         
-        // 모든 드롭다운 토글에서 active 클래스 제거하고 원래 텍스트로 복원
+        // 모든 드롭다운 토글 초기화
         document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
             toggle.classList.remove('active');
             this.resetDropdownText(toggle);
@@ -353,6 +355,8 @@ class NutritionInfoManager {
                 reject(new Error('스트리밍 연결 타임아웃'));
             }, 30000);
 
+            let hasReceivedData = false; // 데이터 수신 여부 추적
+
             eventSource.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
@@ -374,11 +378,17 @@ class NutritionInfoManager {
                 const data = JSON.parse(event.data);
                 const progress = Math.round((data.processed / data.total) * 100);
                 this.showStreamingProgress(data.message, progress);
+                
+                // 총 데이터가 0인 경우 미리 감지
+                if (data.total === 0) {
+                    hasReceivedData = false; // 데이터가 없음을 명시적으로 표시
+                }
             });
 
             // 배치 데이터 이벤트
             eventSource.addEventListener('batch', (event) => {
                 const data = JSON.parse(event.data);
+                hasReceivedData = true; // 데이터 수신됨 표시
                 
                 // 배치 데이터를 전체 데이터에 추가
                 allData = allData.concat(data.data);
@@ -400,8 +410,13 @@ class NutritionInfoManager {
                 
                 console.log('스트리밍 완료:', data.message);
                 
-                // 페이지네이션 렌더링
-                this.renderPagination(paginationData);
+                // 데이터가 없는 경우 빈 상태 표시
+                if (!hasReceivedData || allData.length === 0) {
+                    this.showEmpty();
+                } else {
+                    // 페이지네이션 렌더링
+                    this.renderPagination(paginationData);
+                }
                 
                 eventSource.close();
                 resolve();
@@ -489,8 +504,6 @@ class NutritionInfoManager {
             return;
         }
 
-        // 사용자 상호작용 상태 로드
-        // await this.loadUserInteractions(data.map(item => item.id)); // 제거됨
 
         this.nutritionGrid.innerHTML = '';
         
@@ -522,7 +535,7 @@ class NutritionInfoManager {
         const sourceTypeLabel = this.getSourceTypeLabel(item.sourceType);
         const formattedDate = this.formatDate(item.publishedDate);
         const imageUrl = this.getImageUrl(item);
-        const defaultImage = this.getDefaultImage(item.sourceType);
+        const defaultImage = this.getDefaultImage();
 
         // 이미지 지연 로딩을 위한 플레이스홀더
         const shouldLazyLoad = this.intersectionObserver && this.renderedCardCount > 4; // 첫 4개는 즉시 로드
@@ -588,66 +601,10 @@ class NutritionInfoManager {
         return div.innerHTML;
     }
 
-    // async loadUserInteractions(itemIds) { // 제거됨
-    //     try {
-    //         const response = await fetch('/api/auth/me', { credentials: 'include' });
-    //         const authData = await response.json();
-            
-    //         if (!authData.loggedIn) return;
-
-    //         // 각 아이템의 상호작용 상태를 개별적으로 확인
-    //         for (const itemId of itemIds) {
-    //             try {
-    //                 const interactionResponse = await fetch(`/api/nutrition-info/${itemId}/interaction-status`, {
-    //                     credentials: 'include'
-    //                 });
-                    
-    //                 if (interactionResponse.ok) {
-    //                     const interactionData = await interactionResponse.json();
-    //                     if (interactionData.success) {
-    //                         this.userInteractions.set(itemId, interactionData.data);
-    //                     }
-    //                 }
-    //             } catch (error) {
-    //                 console.log(`상호작용 상태 로드 실패 (${itemId}):`, error);
-    //             }
-    //         }
-    //     } catch (error) {
-    //         console.log('사용자 인증 상태 확인 실패:', error);
-    //     }
-    // }
-
     openNutritionDetail(itemId) {
         // 상세 페이지로 이동
         window.location.href = `/nutrition-info-detail.html?id=${itemId}`;
     }
-
-    // async recordView(itemId) { // 제거됨
-    //     try {
-    //         const response = await fetch('/api/nutrition-info/view', {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json'
-    //             },
-    //             credentials: 'include',
-    //             body: JSON.stringify({
-    //                 nutritionInfoId: itemId
-    //             })
-    //         });
-            
-    //         // 401 오류는 로그인하지 않은 사용자이므로 무시
-    //         if (response.status === 401) {
-    //             console.log('로그인하지 않은 사용자 - 조회 기록을 저장하지 않습니다.');
-    //             return;
-    //         }
-            
-    //         if (!response.ok) {
-    //             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    //         }
-    //     } catch (error) {
-    //         console.log('조회 기록 추가 실패:', error);
-    //     }
-    // }
 
     handleSearch() {
         if (!this.searchInput) return; // 검색창이 없으면 리턴
@@ -661,8 +618,6 @@ class NutritionInfoManager {
         this.currentPage = 1;
         this.loadNutritionInfo();
     }
-
-
 
     renderPagination(pagination) {
         if (!pagination || pagination.totalPages <= 1) {
@@ -730,69 +685,38 @@ class NutritionInfoManager {
 
     goToPreviousPage() {
         if (this.currentPage > 1) {
-            this.currentPage--;
-            this.loadNutritionInfo();
+            this.goToPage(this.currentPage - 1);
         }
     }
 
     goToNextPage() {
-        this.currentPage++;
-        this.loadNutritionInfo();
+        this.goToPage(this.currentPage + 1);
     }
-
-
 
     // 유틸리티 메서드들
     getSourceTypeLabel(sourceType) {
-        const labels = {
-            'paper': '논문',
-            'pubmed': '논문',
-            'youtube': '영상',
-            'news': '뉴스',
-            'manual': '수동 포스팅'
-        };
-        return labels[sourceType] || sourceType;
-    }
-
-    // 소스 타입을 필터링용으로 변환
-    getFilterSourceType(sourceType) {
-        const mapping = {
-            'pubmed': 'paper',
-            'paper': 'paper',
-            'youtube': 'youtube',
-            'news': 'news'
-        };
-        return mapping[sourceType] || sourceType;
+        // 수동 포스팅만 사용하므로 간단하게 처리
+        return sourceType === 'manual' ? '수동 포스팅' : sourceType;
     }
 
     getImageUrl(item) {
-        // 1순위: 수동 포스팅의 썸네일 이미지 (nutrition-thumbnail)
+        // 1순위: 썸네일 이미지 사용
         if (item.thumbnailUrl) {
             return item.thumbnailUrl;
         }
         
-        // 2순위: YouTube의 경우 실제 썸네일 우선 사용
-        if (item.sourceType === 'youtube' && item.thumbnailUrl) {
-            return item.thumbnailUrl;
-        }
-        
-        // 3순위: 다른 소스의 경우 imageUrl 사용
+        // 2순위: 일반 이미지 URL 사용
         if (item.imageUrl) {
             return item.imageUrl;
         }
         
-        // 4순위: 기본 이미지 사용
-        return this.getDefaultImage(item.sourceType);
+        // 3순위: 기본 이미지 사용
+        return this.getDefaultImage();
     }
 
-    getDefaultImage(sourceType) {
-        const images = {
-            'paper': 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=300&h=200&fit=crop',
-            'youtube': 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300&h=200&fit=crop',
-            'news': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=200&fit=crop',
-            'manual': 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=300&h=200&fit=crop'
-        };
-        return images[sourceType] || images['news'];
+    getDefaultImage() {
+        // 수동 포스팅만 사용하므로 하나의 기본 이미지만 사용
+        return 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=300&h=200&fit=crop';
     }
 
     formatDate(dateString) {
@@ -814,45 +738,6 @@ class NutritionInfoManager {
         return count.toString();
     }
 
-    // 스켈레톤 카드 생성
-    createSkeletonCard() {
-        const card = document.createElement('div');
-        card.className = 'skeleton-card';
-        
-        card.innerHTML = `
-            <div class="skeleton-card-thumbnail skeleton-image"></div>
-            <div class="skeleton-card-content">
-                <div class="skeleton-card-title skeleton-text"></div>
-                <div class="skeleton-card-summary skeleton-text"></div>
-                <div class="skeleton-card-summary skeleton-text short"></div>
-                <div class="skeleton-card-tags">
-                    <div class="skeleton-tag skeleton-text"></div>
-                    <div class="skeleton-tag skeleton-text"></div>
-                    <div class="skeleton-tag skeleton-text"></div>
-                </div>
-                <div class="skeleton-card-footer">
-                    <div class="skeleton-card-meta">
-                        <div class="skeleton-source skeleton-text"></div>
-                        <div class="skeleton-date skeleton-text"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        return card;
-    }
-
-    // 스켈레톤 그리드 생성
-    createSkeletonGrid() {
-        const skeletonGrid = this.skeletonState.querySelector('.skeleton-grid');
-        skeletonGrid.innerHTML = '';
-        
-        // 12개의 스켈레톤 카드 생성 (한 페이지당 최대 아이템 수)
-        for (let i = 0; i < this.itemsPerPage; i++) {
-            const skeletonCard = this.createSkeletonCard();
-            skeletonGrid.appendChild(skeletonCard);
-        }
-    }
 
     // 배치 데이터 실시간 렌더링
     renderBatchData(batchData, batchNumber) {
@@ -930,12 +815,7 @@ class NutritionInfoManager {
 
     // 스트리밍 로딩 상태 표시
     showStreamingLoading() {
-        // 기존 상태 숨기기
-        this.loadingState.style.display = 'none';
-        this.skeletonState.style.display = 'none';
-        this.errorState.style.display = 'none';
-        this.emptyState.style.display = 'none';
-        this.paginationContainer.style.display = 'none';
+        this.hideAllStates();
         
         // 스트리밍 로딩 컨테이너 생성 또는 표시
         let streamingContainer = document.getElementById('streamingLoadingState');
@@ -945,7 +825,6 @@ class NutritionInfoManager {
         }
         
         streamingContainer.style.display = 'block';
-        this.nutritionGrid.style.display = 'none';
     }
 
     // 스트리밍 로딩 컨테이너 생성
@@ -981,62 +860,43 @@ class NutritionInfoManager {
         if (progressFill) progressFill.style.width = `${progress}%`;
     }
 
-    // 상태 표시 메서드들
-    showLoading() {
-        this.loadingState.style.display = 'block';
-        this.skeletonState.style.display = 'none';
-        this.errorState.style.display = 'none';
-        this.emptyState.style.display = 'none';
-        this.nutritionGrid.style.display = 'none';
-        this.paginationContainer.style.display = 'none';
-        
-        // 스트리밍 로딩 숨기기
-        const streamingContainer = document.getElementById('streamingLoadingState');
-        if (streamingContainer) streamingContainer.style.display = 'none';
+    // 상태 표시 메서드들 - 중복 제거 및 최적화
+    hideAllStates() {
+        // 모든 상태 요소를 한 번에 숨기기
+        const states = [
+            this.loadingState,
+            this.skeletonState,
+            this.errorState,
+            this.emptyState,
+            this.nutritionGrid,
+            this.paginationContainer,
+            document.getElementById('streamingLoadingState')
+        ].filter(Boolean); // null/undefined 요소 제거
+
+        states.forEach(state => {
+            state.style.display = 'none';
+        });
     }
 
-    showSkeletonLoading() {
-        // 스켈레톤 UI 대신 바로 스트리밍 로딩으로 전환
-        this.showStreamingLoading();
+    showLoading() {
+        this.hideAllStates();
+        this.loadingState.style.display = 'block';
     }
 
     showError(message) {
+        this.hideAllStates();
         this.errorMessage.textContent = message;
-        this.loadingState.style.display = 'none';
-        this.skeletonState.style.display = 'none';
         this.errorState.style.display = 'block';
-        this.emptyState.style.display = 'none';
-        this.nutritionGrid.style.display = 'none';
-        this.paginationContainer.style.display = 'none';
-        
-        // 스트리밍 로딩 숨기기
-        const streamingContainer = document.getElementById('streamingLoadingState');
-        if (streamingContainer) streamingContainer.style.display = 'none';
     }
 
     showEmpty() {
-        this.loadingState.style.display = 'none';
-        this.skeletonState.style.display = 'none';
-        this.errorState.style.display = 'none';
+        this.hideAllStates();
         this.emptyState.style.display = 'block';
-        this.nutritionGrid.style.display = 'none';
-        this.paginationContainer.style.display = 'none';
-        
-        // 스트리밍 로딩 숨기기
-        const streamingContainer = document.getElementById('streamingLoadingState');
-        if (streamingContainer) streamingContainer.style.display = 'none';
     }
 
     showContent() {
-        this.loadingState.style.display = 'none';
-        this.skeletonState.style.display = 'none';
-        this.errorState.style.display = 'none';
-        this.emptyState.style.display = 'none';
+        this.hideAllStates();
         this.nutritionGrid.style.display = 'grid';
-        
-        // 스트리밍 로딩 숨기기
-        const streamingContainer = document.getElementById('streamingLoadingState');
-        if (streamingContainer) streamingContainer.style.display = 'none';
     }
 
     showToast(message, type = 'info') {
