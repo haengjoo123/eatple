@@ -26,7 +26,7 @@ class NutritionInfoDetailManager {
         this.initializeElements();
         this.bindEvents();
         
-        // 스켈레톤 UI 건너뛰고 바로 데이터 로드 시작
+        // 바로 데이터 로드 시작
         this.loadNutritionInfoDetail();
     }
 
@@ -34,15 +34,11 @@ class NutritionInfoDetailManager {
         // 상태 요소들 - null 체크 추가
         this.loadingState = document.getElementById('loadingState');
         this.errorState = document.getElementById('errorState');
-        this.skeletonContent = document.getElementById('skeletonContent');
         this.detailContent = document.getElementById('detailContent');
         this.errorMessage = document.getElementById('errorMessage');
         this.retryBtn = document.getElementById('retryBtn');
 
         // 필수 요소들이 없으면 오류 로그 출력
-        if (!this.skeletonContent) {
-            console.error('skeletonContent 요소를 찾을 수 없습니다');
-        }
         if (!this.detailContent) {
             console.error('detailContent 요소를 찾을 수 없습니다');
         }
@@ -133,7 +129,7 @@ class NutritionInfoDetailManager {
     }
 
     async loadNutritionInfoStreaming() {
-        // 스켈레톤 UI 건너뛰고 바로 스트리밍 로딩 상태 표시
+        // 스트리밍 로딩 상태 표시
         this.showStreamingLoading();
 
         // EventSource를 사용한 SSE 연결
@@ -240,7 +236,7 @@ class NutritionInfoDetailManager {
     }
 
     async loadNutritionInfoFallback() {
-        // 폴백에서도 스켈레톤 대신 간단한 로딩 표시
+        // 간단한 로딩 표시
         this.showLoading();
 
         // 1) 클라이언트 캐시가 있으면 즉시 렌더 (SWR의 stale 단계)
@@ -433,7 +429,7 @@ class NutritionInfoDetailManager {
 
         const info = this.nutritionInfo;
         
-        // 스켈레톤에서 실제 콘텐츠로 전환
+        // 실제 콘텐츠 표시
         this.showContent();
         
         // 페이지 제목 설정
@@ -468,12 +464,10 @@ class NutritionInfoDetailManager {
         // 이미지 설정
         if (info.thumbnailUrl) {
             this.detailImage.src = info.thumbnailUrl;
-        } else if (info.sourceType === 'youtube' && info.thumbnailUrl) {
-            this.detailImage.src = info.thumbnailUrl;
         } else if (info.imageUrl) {
             this.detailImage.src = info.imageUrl;
         } else {
-            this.detailImage.src = this.getDefaultImage(info.sourceType);
+            this.detailImage.src = this.getDefaultImage();
         }
         this.detailImage.alt = info.title;
 
@@ -507,12 +501,8 @@ class NutritionInfoDetailManager {
             this.detailContentSection.style.display = 'none';
         }
 
-        // 원본 콘텐츠 (논문의 경우만 표시)
-        if (info.sourceType === 'paper' && info.originalContent) {
-            this.detailOriginalContent.innerHTML = this.formatOriginalContent(info.originalContent);
-            this.originalSection.style.display = 'block';
-            this.originalSection.classList.add('progressive-fade-in');
-        } else {
+        // 원본 섹션 숨김 (수동 포스팅만 사용)
+        if (this.originalSection) {
             this.originalSection.style.display = 'none';
         }
 
@@ -664,16 +654,6 @@ class NutritionInfoDetailManager {
 
         productsSection.style.display = 'block';
     }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-
-
-
 
     async loadRecommendedInfo() {
         try {
@@ -833,21 +813,18 @@ class NutritionInfoDetailManager {
             // 이미지 URL 결정 (썸네일 우선)
             let imageUrl;
             if (item.thumbnailUrl) {
-                // 1순위: 썸네일 이미지 (수동 포스팅의 썸네일, YouTube 썸네일 등)
                 imageUrl = item.thumbnailUrl;
             } else if (item.imageUrl) {
-                // 2순위: 일반 이미지
                 imageUrl = item.imageUrl;
             } else {
-                // 3순위: 기본 이미지
-                imageUrl = this.getDefaultImage(item.sourceType);
+                imageUrl = this.getDefaultImage();
             }
             
             recommendedCard.innerHTML = `
                 <div class="recommended-card-image">
                     <img src="${imageUrl}" 
                          alt="${item.title}" 
-                         onerror="this.src='${this.getDefaultImage(item.sourceType)}'">
+                         onerror="this.src='${this.getDefaultImage()}'">
                 </div>
                 <div class="recommended-card-content">
                     <h3 class="recommended-card-title">${this.truncateText(item.title, 50)}</h3>
@@ -953,28 +930,10 @@ class NutritionInfoDetailManager {
         return content;
     }
 
-    formatOriginalContent(content) {
-        // 원본 콘텐츠 포맷팅 (논문의 경우)
-        if (!content) return '';
-        
-        // 간단한 마크다운 스타일 변환
-        return content
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .split('\n\n')
-            .map(paragraph => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
-            .join('');
-    }
 
     getSourceTypeLabel(sourceType) {
-        const labels = {
-            'paper': '논문',
-            'pubmed': '논문',
-            'youtube': '영상',
-            'news': '뉴스',
-            'manual': '수동 포스팅'
-        };
-        return labels[sourceType] || sourceType;
+        // 수동 포스팅만 사용
+        return '수동 포스팅';
     }
 
     getCategoryLabel(category) {
@@ -1069,14 +1028,9 @@ class NutritionInfoDetailManager {
 
 
 
-    getDefaultImage(sourceType) {
-        const images = {
-            'paper': 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=400&fit=crop',
-            'youtube': 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&h=400&fit=crop',
-            'news': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=400&fit=crop',
-            'manual': 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&h=400&fit=crop'
-        };
-        return images[sourceType] || images['news'];
+    getDefaultImage() {
+        // 수동 포스팅용 기본 이미지
+        return 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&h=400&fit=crop';
     }
 
     formatDate(dateString) {
@@ -1157,8 +1111,8 @@ class NutritionInfoDetailManager {
 
         // 썸네일 이미지 렌더링
         const imageElement = document.getElementById('detailImage');
-        if (imageElement && (basicData.thumbnailUrl || basicData.imageUrl)) {
-            const imageUrl = basicData.thumbnailUrl || basicData.imageUrl;
+        if (imageElement) {
+            const imageUrl = basicData.thumbnailUrl || basicData.imageUrl || this.getDefaultImage();
             imageElement.src = imageUrl;
             imageElement.alt = basicData.title;
             imageElement.classList.add('streaming-fade-in');
@@ -1176,12 +1130,7 @@ class NutritionInfoDetailManager {
             contentElement.classList.add('streaming-fade-in');
         }
 
-        // 원본 내용 렌더링 (있는 경우)
-        const originalElement = document.getElementById('detailOriginalContent');
-        if (originalElement && contentData.originalContent) {
-            originalElement.innerHTML = contentData.originalContent;
-            originalElement.classList.add('streaming-fade-in');
-        }
+        // 원본 콘텐츠 제거 (수동 포스팅만 사용)
     }
 
     renderProductsBatch(productsData, batchNumber, isLastBatch) {
@@ -1245,7 +1194,6 @@ class NutritionInfoDetailManager {
     // 스트리밍 로딩 상태 표시
     showStreamingLoading() {
         // 기존 상태 숨기기
-        this.hideSkeleton();
         this.hideError();
         this.hideContent();
         
@@ -1337,27 +1285,20 @@ class NutritionInfoDetailManager {
     showLoading() {
         if (this.loadingState) this.loadingState.style.display = 'flex';
         if (this.errorState) this.errorState.style.display = 'none';
-        if (this.skeletonContent) this.skeletonContent.style.display = 'none';
         if (this.detailContent) this.detailContent.style.display = 'none';
     }
 
-    showSkeleton() {
-        // 스켈레톤 UI 대신 바로 스트리밍 로딩으로 전환
-        this.showStreamingLoading();
-    }
 
     showError(message) {
         if (this.errorMessage) this.errorMessage.textContent = message;
         if (this.loadingState) this.loadingState.style.display = 'none';
         if (this.errorState) this.errorState.style.display = 'flex';
-        if (this.skeletonContent) this.skeletonContent.style.display = 'none';
         if (this.detailContent) this.detailContent.style.display = 'none';
     }
 
     showContent() {
         if (this.loadingState) this.loadingState.style.display = 'none';
         if (this.errorState) this.errorState.style.display = 'none';
-        if (this.skeletonContent) this.skeletonContent.style.display = 'none';
         if (this.detailContent) this.detailContent.style.display = 'block';
     }
 
@@ -1402,7 +1343,7 @@ function initializeNutritionDetail() {
     
     // 필수 요소들이 존재하는지 확인
     const requiredElements = [
-        'loadingState', 'errorState', 'skeletonContent', 'detailContent'
+        'loadingState', 'errorState', 'detailContent'
     ];
     
     const missingElements = requiredElements.filter(id => !document.getElementById(id));

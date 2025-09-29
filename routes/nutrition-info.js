@@ -11,6 +11,63 @@ const SupabaseNutritionDataManager = require('../utils/supabaseNutritionDataMana
 module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, recommendationService) => {
     // Supabase 기반 데이터 매니저 초기화
     const supabaseDataManager = new SupabaseNutritionDataManager();
+
+    // 헬퍼 함수들
+    const parseFiltersAndPagination = (query) => {
+        const filters = {};
+        const pagination = {};
+        
+        if (query.page) {
+            pagination.page = parseInt(query.page);
+            if (pagination.page < 1) pagination.page = 1;
+        }
+        if (query.limit) {
+            pagination.limit = parseInt(query.limit);
+            if (pagination.limit < 1) pagination.limit = 20;
+            if (pagination.limit > 50) pagination.limit = 50;
+        }
+        if (query.query || query.search) filters.search = query.query || query.search;
+        if (query.category) filters.category = query.category;
+        if (query.sourceType) filters.sourceType = [query.sourceType];
+        if (query.tags) filters.tags = query.tags.split(',').map(tag => tag.trim());
+        if (query.minTrustScore) filters.minTrustScore = parseInt(query.minTrustScore);
+        if (query.dateFrom) filters.dateFrom = query.dateFrom;
+        if (query.dateTo) filters.dateTo = query.dateTo;
+        if (query.sortBy) filters.sortBy = query.sortBy;
+        if (query.sortOrder) filters.sortOrder = query.sortOrder;
+        
+        return { filters, pagination };
+    };
+
+    const safeToJSON = (item) => {
+        return item && typeof item.toJSON === 'function' ? item.toJSON() : item;
+    };
+
+    const parseBodyFiltersAndPagination = (body) => {
+        const filters = {};
+        const pagination = {};
+        
+        if (body.query) filters.search = body.query;
+        if (body.categories && Array.isArray(body.categories) && body.categories.length > 0) {
+            filters.category = body.categories;
+        }
+        if (body.sourceTypes && Array.isArray(body.sourceTypes) && body.sourceTypes.length > 0) {
+            filters.sourceType = body.sourceTypes;
+        }
+        if (body.tags && Array.isArray(body.tags) && body.tags.length > 0) {
+            filters.tags = body.tags;
+        }
+        if (body.minTrustScore !== undefined) filters.minTrustScore = parseInt(body.minTrustScore);
+        if (body.maxTrustScore !== undefined) filters.maxTrustScore = parseInt(body.maxTrustScore);
+        if (body.dateFrom) filters.dateFrom = body.dateFrom;
+        if (body.dateTo) filters.dateTo = body.dateTo;
+        if (body.sortBy) filters.sortBy = body.sortBy;
+        if (body.sortOrder) filters.sortOrder = body.sortOrder;
+        if (body.page) pagination.page = parseInt(body.page);
+        if (body.limit) pagination.limit = parseInt(body.limit);
+        
+        return { filters, pagination };
+    };
 /**
  * 영양 정보 목록 조회 (로컬 캐시 우선 + Supabase 백업)
  * GET /api/nutrition-info
@@ -19,32 +76,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
 router.get('/', async (req, res) => {
     try {
         const cacheManager = require('../utils/cacheManager');
-        const filters = {};
-        const pagination = {};
-        
-        if (req.query.page) {
-            pagination.page = parseInt(req.query.page);
-            if (pagination.page < 1) pagination.page = 1;
-        }
-        if (req.query.limit) {
-            pagination.limit = parseInt(req.query.limit);
-            if (pagination.limit < 1) pagination.limit = 20;
-            if (pagination.limit > 50) pagination.limit = 50; // 메모리 절약을 위해 최대 50개로 제한
-        }
-        if (req.query.query) filters.search = req.query.query;
-        if (req.query.category) {
-            filters.category = req.query.category;
-        }
-        if (req.query.sourceType) {
-            // 수동 포스팅만 사용하므로 단순하게 처리
-            filters.sourceType = [req.query.sourceType];
-        }
-        if (req.query.tags) filters.tags = req.query.tags.split(',').map(tag => tag.trim());
-        if (req.query.minTrustScore) filters.minTrustScore = parseInt(req.query.minTrustScore);
-        if (req.query.dateFrom) filters.dateFrom = req.query.dateFrom;
-        if (req.query.dateTo) filters.dateTo = req.query.dateTo;
-        if (req.query.sortBy) filters.sortBy = req.query.sortBy;
-        if (req.query.sortOrder) filters.sortOrder = req.query.sortOrder;
+        const { filters, pagination } = parseFiltersAndPagination(req.query);
         
         // 캐시 키 생성
         const cacheKey = `nutrition_list_${JSON.stringify(filters)}_${JSON.stringify(pagination)}`;
@@ -77,7 +109,7 @@ router.get('/', async (req, res) => {
         
         // 3. 로컬 캐시에 저장 (10분 TTL)
         const cacheData = {
-            data: data.map(item => item && typeof item.toJSON === 'function' ? item.toJSON() : item),
+            data: data.map(safeToJSON),
             pagination: paginationData,
             cachedAt: Date.now()
         };
@@ -92,7 +124,7 @@ router.get('/', async (req, res) => {
         
         res.json({
             success: true,
-            data: data.map(item => item && typeof item.toJSON === 'function' ? item.toJSON() : item),
+            data: data.map(safeToJSON),
             pagination: paginationData,
             cached: false
         });
@@ -113,25 +145,10 @@ router.get('/', async (req, res) => {
  */
 router.get('/stream', async (req, res) => {
     try {
-        const filters = {};
-        const pagination = {};
+        const { filters, pagination } = parseFiltersAndPagination(req.query);
         
-        // 쿼리 파라미터 파싱
-        if (req.query.page) {
-            pagination.page = parseInt(req.query.page);
-            if (pagination.page < 1) pagination.page = 1;
-        }
-        if (req.query.limit) {
-            pagination.limit = parseInt(req.query.limit);
-            if (pagination.limit < 1) pagination.limit = 20;
-            if (pagination.limit > 100) pagination.limit = 100;
-        }
-        if (req.query.search) filters.search = req.query.search;
-        if (req.query.category) filters.category = req.query.category;
-        if (req.query.sourceType) {
-            // 수동 포스팅만 사용하므로 단순하게 처리
-            filters.sourceType = [req.query.sourceType];
-        }
+        // 스트리밍용 limit 조정
+        if (pagination.limit > 100) pagination.limit = 100;
 
         // SSE (Server-Sent Events) 헤더 설정
         res.writeHead(200, {
@@ -200,7 +217,7 @@ router.get('/stream', async (req, res) => {
                     // 배치 데이터 전송
                     sendData('batch', {
                         batch: currentBatch,
-                        data: batchData.map(item => item && typeof item.toJSON === 'function' ? item.toJSON() : item),
+                        data: batchData.map(safeToJSON),
                         isLastBatch: currentBatch === actualBatches
                     });
                 }
@@ -270,7 +287,7 @@ router.get('/stream', async (req, res) => {
      */
     router.get('/search', async (req, res) => {
         try {
-            const { q: query, category, sourceType, minTrustScore, tags, page, limit } = req.query;
+            const { q: query } = req.query;
             
             if (!query) {
                 return res.status(400).json({
@@ -278,18 +295,7 @@ router.get('/stream', async (req, res) => {
                 });
             }
 
-            const filters = { search: query };
-            const pagination = {};
-            
-            if (category) filters.category = category;
-            if (sourceType) {
-                // 수동 포스팅만 사용하므로 단순하게 처리
-                filters.sourceType = [sourceType];
-            }
-            if (minTrustScore) filters.minTrustScore = parseInt(minTrustScore);
-            if (tags) filters.tags = tags.split(',').map(tag => tag.trim());
-            if (page) pagination.page = parseInt(page);
-            if (limit) pagination.limit = parseInt(limit);
+            const { filters, pagination } = parseFiltersAndPagination({ ...req.query, search: query });
 
             // Supabase 통합 검색 사용
             const result = await supabaseDataManager.searchNutritionInfo(query, filters);
@@ -300,7 +306,7 @@ router.get('/stream', async (req, res) => {
             
             res.json({
                 success: true,
-                data: data.map(item => item && typeof item.toJSON === 'function' ? item.toJSON() : item),
+                data: data.map(safeToJSON),
                 pagination: paginationData,
                 searchQuery: query,
                 appliedFilters: filters
@@ -321,20 +327,7 @@ router.get('/stream', async (req, res) => {
      */
     router.post('/search', async (req, res) => {
         try {
-            const { 
-                query, 
-                categories, 
-                sourceTypes, 
-                tags, 
-                minTrustScore, 
-                maxTrustScore,
-                dateFrom, 
-                dateTo,
-                sortBy,
-                sortOrder,
-                page, 
-                limit 
-            } = req.body;
+            const { query } = req.body;
             
             if (!query) {
                 return res.status(400).json({
@@ -342,28 +335,7 @@ router.get('/stream', async (req, res) => {
                 });
             }
 
-            const filters = { search: query };
-            const pagination = {};
-            
-            // 고급 필터링 옵션
-            if (categories && Array.isArray(categories) && categories.length > 0) {
-                filters.category = categories; // 다중 카테고리 지원
-            }
-            if (sourceTypes && Array.isArray(sourceTypes) && sourceTypes.length > 0) {
-                // 수동 포스팅만 사용하므로 단순하게 처리
-                filters.sourceType = sourceTypes;
-            }
-            if (tags && Array.isArray(tags) && tags.length > 0) {
-                filters.tags = tags;
-            }
-            if (minTrustScore !== undefined) filters.minTrustScore = parseInt(minTrustScore);
-            if (maxTrustScore !== undefined) filters.maxTrustScore = parseInt(maxTrustScore);
-            if (dateFrom) filters.dateFrom = dateFrom;
-            if (dateTo) filters.dateTo = dateTo;
-            if (sortBy) filters.sortBy = sortBy;
-            if (sortOrder) filters.sortOrder = sortOrder;
-            if (page) pagination.page = parseInt(page);
-            if (limit) pagination.limit = parseInt(limit);
+            const { filters, pagination } = parseBodyFiltersAndPagination(req.body);
 
             // Supabase 통합 검색 사용
             const result = await supabaseDataManager.searchNutritionInfo(query, filters);
@@ -374,7 +346,7 @@ router.get('/stream', async (req, res) => {
             
             res.json({
                 success: true,
-                data: data.map(item => item && typeof item.toJSON === 'function' ? item.toJSON() : item),
+                data: data.map(safeToJSON),
                 pagination: paginationData,
                 searchQuery: query,
                 appliedFilters: filters
@@ -854,9 +826,7 @@ router.get('/stream', async (req, res) => {
             }
 
             // 안전하게 toJSON 처리
-            const responseData = nutritionInfo && typeof nutritionInfo.toJSON === 'function' 
-                ? nutritionInfo.toJSON() 
-                : nutritionInfo;
+            const responseData = safeToJSON(nutritionInfo);
 
             // 관련 정보 추천 기능 통합 (Requirements: 6.4)
             let recommendedItems = [];
@@ -900,7 +870,7 @@ router.get('/stream', async (req, res) => {
             const cacheData = {
                 data: responseData,
                 recommended: recommendedItems.map(item => 
-                    item && typeof item.toJSON === 'function' ? item.toJSON() : item
+                    safeToJSON(item)
                 ),
                 cachedAt: Date.now()
             };
@@ -924,7 +894,7 @@ router.get('/stream', async (req, res) => {
                 success: true,
                 data: responseData,
                 recommended: recommendedItems.map(item => 
-                    item && typeof item.toJSON === 'function' ? item.toJSON() : item
+                    safeToJSON(item)
                 ),
                 cached: false
             });
@@ -1155,7 +1125,7 @@ router.post('/', async (req, res) => {
         
         res.status(201).json({
             success: true,
-            data: savedInfo.toJSON()
+            data: safeToJSON(savedInfo)
         });
     } catch (error) {
         console.error('영양 정보 생성 오류:', error);
@@ -1184,7 +1154,7 @@ router.put('/:id', async (req, res) => {
         
         res.json({
             success: true,
-            data: updatedInfo.toJSON()
+            data: safeToJSON(updatedInfo)
         });
     } catch (error) {
         console.error('영양 정보 수정 오류:', error);
@@ -1410,7 +1380,7 @@ router.delete('/:id', async (req, res) => {
             // 각 영양정보를 개별적으로 캐시에 저장
             for (const item of data) {
                 try {
-                    const itemData = item && typeof item.toJSON === 'function' ? item.toJSON() : item;
+                    const itemData = safeToJSON(item);
                     const cacheKey = `nutrition_detail_${itemData.id}`;
                     
                     const cacheData = {
