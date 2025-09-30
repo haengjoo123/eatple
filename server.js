@@ -14,7 +14,7 @@ const {
 } = require("./utils/securityMiddleware");
 const cacheManager = require("./utils/cacheManager");
 const imageOptimizer = require("./utils/imageOptimizer");
-const supabaseService = require("./utils/supabaseService");
+// const supabaseService = require("./utils/supabaseService"); // 더 이상 사용하지 않음 (로컬 데이터 사용)
 const { updateDailyLimits } = require("./utils/userDataMigration");
 
 const app = express();
@@ -110,19 +110,19 @@ app.use("/api/points", require("./routes/points"));
 app.use("/api/games", require("./routes/games"));
 // 영양 정보 관련 유틸리티들
 const NutritionDataManager = require("./utils/nutritionDataManager");
-const SupabaseNutritionDataManager = require("./utils/supabaseNutritionDataManager");
+const LocalNutritionDataManager = require("./utils/localNutritionDataManager");
 
-// 인스턴스 생성 (기존 호환성 유지)
+// 인스턴스 생성 (로컬 파일 시스템 사용)
 const nutritionDataManager = new NutritionDataManager();
-const supabaseNutritionDataManager = new SupabaseNutritionDataManager();
+const localNutritionDataManager = new LocalNutritionDataManager();
 
 // 추천 서비스 초기화
 const NutritionRecommendationService = require("./utils/nutritionRecommendationService");
 const recommendationService = new NutritionRecommendationService();
 
-// nutrition-info 라우터 초기화
+// nutrition-info 라우터 초기화 (로컬 파일 시스템 사용)
 const nutritionInfoRouter = require("./routes/nutrition-info")(
-  nutritionDataManager,
+  localNutritionDataManager, // 로컬 파일 기반 데이터 매니저 사용
   null, // contentAggregator (현재 사용하지 않음)
   null, // aiContentProcessor (현재 사용하지 않음)
   recommendationService
@@ -145,7 +145,7 @@ app.use(
   "/api/food-nutrition-external",
   require("./routes/food-nutrition-external")
 );
-// Supabase authentication is handled in routes/auth.js
+// 인증은 routes/auth.js에서 처리 (로컬 파일 기반)
 
 // 관리자 캐시 및 최적화 API (직접 정의)
 app.get("/api/admin/cache-stats", (req, res) => {
@@ -1102,44 +1102,6 @@ server.listen(PORT, async () => {
   // 초기 메모리 정리 실행
   setTimeout(performMemoryCleanup, 5000);
 
-  // 프로덕션 환경에서 자동 캐시 워밍
-  if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
-    console.log('🔥 프로덕션 환경 감지 - 자동 캐시 워밍 시작...');
-    setTimeout(async () => {
-      try {
-        const cacheManager = require('./utils/fileCacheManager');
-        const SupabaseNutritionDataManager = require('./utils/supabaseNutritionDataManager');
-        const supabaseDataManager = new SupabaseNutritionDataManager();
-        
-        console.log('📥 인기 영양정보 캐시 워밍 중...');
-        const result = await supabaseDataManager.getNutritionInfoList({}, { page: 1, limit: 20 });
-        const data = result && result.data ? result.data : [];
-        
-        let warmedCount = 0;
-        for (const item of data) {
-          try {
-            const itemData = item && typeof item.toJSON === 'function' ? item.toJSON() : item;
-            const cacheKey = `nutrition_detail_${itemData.id}`;
-            
-            const cacheData = {
-              data: itemData,
-              recommended: [],
-              cachedAt: Date.now()
-            };
-            
-            cacheManager.set('nutrition', cacheKey, cacheData, {}, 1800);
-            warmedCount++;
-          } catch (itemError) {
-            console.error(`캐시 워밍 실패 (ID: ${item.id}):`, itemError);
-          }
-        }
-        
-        console.log(`✅ 캐시 워밍 완료: ${warmedCount}개 영양정보 로드됨`);
-      } catch (error) {
-        console.error('❌ 자동 캐시 워밍 실패:', error);
-      }
-    }, 10000); // 10초 후 시작 (서버 완전 초기화 대기)
-  }
 
   console.log("서버 초기화 완료 - 모든 스케줄러가 시작되었습니다.");
 });

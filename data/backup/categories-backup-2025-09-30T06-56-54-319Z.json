@@ -1,0 +1,26 @@
+[
+  {
+    "id": "cat-1",
+    "name": "일반영양",
+    "description": "일반적인 영양 정보",
+    "post_count": 0,
+    "created_at": "2025-09-30T06:38:30.288Z",
+    "updated_at": "2025-09-30T06:38:30.290Z"
+  },
+  {
+    "id": "cat-2",
+    "name": "다이어트",
+    "description": "다이어트 관련 영양 정보",
+    "post_count": 0,
+    "created_at": "2025-09-30T06:38:30.290Z",
+    "updated_at": "2025-09-30T06:38:30.290Z"
+  },
+  {
+    "id": "cat-3",
+    "name": "건강식품",
+    "description": "건강식품 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-09-30T06:38:30.290Z",
+    "updated_at": "2025-09-30T06:38:30.290Z"
+  }
+]

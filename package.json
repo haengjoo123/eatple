@@ -5,7 +5,8 @@
     "main": "server.js",
     "scripts": {
         "start": "node --expose-gc server.js",
-        "test": "jest"
+        "test": "jest",
+        "migrate-supabase-to-local": "node scripts/migrate-supabase-to-local.js"
     },
     "dependencies": {
         "@google/generative-ai": "^0.24.1",

@@ -1,6 +1,19 @@
 {
-  "total": 0,
-  "byNewCategory": {},
-  "byOldCategory": {},
-  "migrated": 0
+  "migrationDate": "2025-09-30T06:57:28.428Z",
+  "totalItems": {
+    "categories": 36,
+    "tags": 123,
+    "nutritionPosts": 26,
+    "postTags": 136,
+    "relatedProducts": 78
+  },
+  "dataFiles": {
+    "nutritionPosts": "C:\\Users\\gudwn\\Documents\\meal-plan\\data\\nutrition\\nutrition-posts.json",
+    "categories": "C:\\Users\\gudwn\\Documents\\meal-plan\\data\\nutrition\\categories.json",
+    "tags": "C:\\Users\\gudwn\\Documents\\meal-plan\\data\\nutrition\\tags.json",
+    "postTags": "C:\\Users\\gudwn\\Documents\\meal-plan\\data\\nutrition\\post-tags.json",
+    "relatedProducts": "C:\\Users\\gudwn\\Documents\\meal-plan\\data\\nutrition\\post-related-products.json"
+  },
+  "source": "Supabase",
+  "target": "Local File System"
 }

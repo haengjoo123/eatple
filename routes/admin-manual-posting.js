@@ -7,12 +7,12 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const axios = require('axios');
-const SupabaseManualPostingService = require('../utils/supabaseManualPostingService');
+const LocalNutritionDataManager = require('../utils/localNutritionDataManager');
 const CategoryTagManager = require('../utils/categoryTagManager');
 const SupabaseImageManager = require('../utils/supabaseImageManager');
 
 // 서비스 인스턴스 생성
-const postingService = new SupabaseManualPostingService();
+const nutritionDataManager = new LocalNutritionDataManager();
 const categoryTagManager = new CategoryTagManager();
 const imageManager = new SupabaseImageManager();
 
@@ -166,7 +166,7 @@ router.post('/posts', requireAdmin, async (req, res) => {
         };
 
         // 포스팅 생성
-        const newPost = await postingService.createPost(postData, adminInfo);
+        const newPost = await nutritionDataManager.createPost(postData, adminInfo);
 
         // 카테고리 포스팅 수 업데이트
         if (!isDraft) {
@@ -221,7 +221,7 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
         } = req.body;
 
         // 포스팅 존재 확인
-        const existingPost = await postingService.getPostById(id);
+        const existingPost = await nutritionDataManager.getNutritionInfoById(id);
         if (!existingPost) {
             return res.status(404).json({
                 success: false,
@@ -290,18 +290,24 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
             });
         }
         
-        // 포스팅 수정 (relatedProducts는 별도 처리)
-        const { relatedProducts: _, ...dbUpdates } = updates;
-        const updatedPost = await postingService.updatePost(id, dbUpdates, adminInfo);
+        // 포스팅 수정 (로컬 데이터 매니저 사용)
+        const updateResult = await nutritionDataManager.updateNutritionInfo(id, updates);
+        
+        if (!updateResult) {
+            return res.status(500).json({
+                success: false,
+                error: '포스팅 업데이트에 실패했습니다.'
+            });
+        }
 
         // 태그 업데이트가 있는 경우 별도 처리
         if (tagNames.length > 0 || tags !== undefined) {
-            await postingService.updatePostTags(id, tagNames);
+            await nutritionDataManager.saveTags(id, tagNames);
         }
 
         // 관련 상품 정보가 제공된 경우 별도 처리
         if (productName1 !== undefined || productName2 !== undefined || productName3 !== undefined) {
-            await postingService.updateRelatedProducts(id, relatedProducts);
+            await nutritionDataManager.saveRelatedProducts(id, relatedProducts);
         }
 
         // 카테고리 포스팅 수 업데이트 (카테고리가 변경된 경우)
@@ -312,11 +318,14 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
             }
         }
 
+        // 업데이트된 포스트 정보 가져오기
+        const updatedPost = await nutritionDataManager.getNutritionInfoById(id);
+
         console.log(`✅ 포스팅 수정: ${id} (by ${adminInfo.name})`);
 
         res.json({
             success: true,
-            data: updatedPost,
+            data: updatedPost ? (typeof updatedPost.toJSON === 'function' ? updatedPost.toJSON() : updatedPost) : null,
             message: '포스팅이 수정되었습니다.'
         });
 
@@ -339,7 +348,7 @@ router.delete('/posts/:id', requireAdmin, async (req, res) => {
         const { id } = req.params;
 
         // 포스팅 존재 확인
-        const existingPost = await postingService.getPostById(id);
+        const existingPost = await nutritionDataManager.getNutritionInfoById(id);
         if (!existingPost) {
             return res.status(404).json({
                 success: false,
@@ -348,11 +357,13 @@ router.delete('/posts/:id', requireAdmin, async (req, res) => {
         }
 
         // 포스팅 삭제
-        await postingService.deletePost(id);
-
-        // 카테고리 포스팅 수 업데이트
-        if (existingPost.category_id) {
-            await categoryTagManager.updateCategoryPostCount(existingPost.category_id);
+        const deleteResult = await nutritionDataManager.deleteNutritionInfo(id);
+        
+        if (!deleteResult) {
+            return res.status(500).json({
+                success: false,
+                error: '포스팅 삭제에 실패했습니다.'
+            });
         }
 
         console.log(`🗑️ 포스팅 삭제: ${id} (by ${req.session.user.username || req.session.user.name})`);
@@ -381,7 +392,7 @@ router.put('/posts/:id/toggle', requireAdmin, async (req, res) => {
         const { id } = req.params;
 
         // 포스팅 존재 확인
-        const existingPost = await postingService.getPostById(id);
+        const existingPost = await nutritionDataManager.getNutritionInfoById(id);
         if (!existingPost) {
             return res.status(404).json({
                 success: false,
@@ -389,13 +400,15 @@ router.put('/posts/:id/toggle', requireAdmin, async (req, res) => {
             });
         }
 
-        // 임시저장 상태인 경우 토글 불가
-        if (existingPost.is_draft) {
-            return res.status(400).json({
-                success: false,
-                error: '임시저장 상태의 포스팅은 상태를 변경할 수 없습니다. 먼저 게시해주세요.'
-            });
-        }
+        const existingData = typeof existingPost.toJSON === 'function' ? existingPost.toJSON() : existingPost;
+
+        // 임시저장 상태인 경우 토글 불가 (로컬 데이터에서는 일반적으로 is_draft가 없으므로 스킵)
+        // if (existingData.is_draft) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         error: '임시저장 상태의 포스팅은 상태를 변경할 수 없습니다. 먼저 게시해주세요.'
+        //     });
+        // }
 
         // 관리자 정보
         const adminInfo = {
@@ -404,19 +417,29 @@ router.put('/posts/:id/toggle', requireAdmin, async (req, res) => {
         };
 
         // 상태 토글
-        const newStatus = !existingPost.is_active;
+        const newStatus = !existingData.isActive;
         const updates = {
             is_active: newStatus
         };
 
-        const updatedPost = await postingService.updatePost(id, updates, adminInfo);
+        const updateResult = await nutritionDataManager.updateNutritionInfo(id, updates);
+        
+        if (!updateResult) {
+            return res.status(500).json({
+                success: false,
+                error: '포스팅 상태 변경에 실패했습니다.'
+            });
+        }
+
+        // 업데이트된 포스트 정보 가져오기
+        const updatedPost = await nutritionDataManager.getNutritionInfoById(id);
 
         const statusText = newStatus ? '활성화' : '비활성화';
         console.log(`🔄 포스팅 상태 변경: ${id} -> ${statusText} (by ${adminInfo.name})`);
 
         res.json({
             success: true,
-            data: updatedPost,
+            data: updatedPost ? (typeof updatedPost.toJSON === 'function' ? updatedPost.toJSON() : updatedPost) : null,
             message: `포스팅이 ${statusText}되었습니다.`
         });
 
@@ -438,13 +461,74 @@ router.get('/posts/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 
-        const post = await postingService.getPostById(id);
+        const post = await nutritionDataManager.getNutritionInfoById(id);
         if (!post) {
             return res.status(404).json({
                 success: false,
                 error: '해당 포스팅을 찾을 수 없습니다.'
             });
         }
+
+        // 관리자용 형식으로 변환 (프론트엔드 호환성 고려)
+        const postData = typeof post.toJSON === 'function' ? post.toJSON() : post;
+        const isActive = postData.isActive !== false && postData.is_active !== false;
+        
+        // 카테고리 한국어 이름 변환
+        const categoryMap = {
+            'eye_health': '눈 건강',
+            'research': '연구',
+            'diet': '다이어트',
+            'trends': '트렌드',
+            'supplements': '보충제',
+            'omega': '오메가',
+            'brain_health': '뇌 건강',
+            'heart_health': '심장 건강',
+            'bone_health': '뼈 건강',
+            'immunity': '면역력',
+            'cancer': '암 예방',
+            'cardiovascular': '심혈관',
+            'diabetes': '당뇨',
+            'weight_management': '체중 관리',
+            'vitamins': '비타민',
+            'minerals': '미네랄',
+            'protein': '단백질',
+            'carbs': '탄수화물',
+            'fats': '지방',
+            'news': '뉴스',
+            'calcium': '칼슘',
+            'iron': '철분',
+            'probiotics': '프로바이오틱스',
+            'exercise_nutrition': '운동 영양',
+            'general': '일반'
+        };
+        const categoryKorean = postData.category ? (categoryMap[postData.category] || postData.category) : '미분류';
+        
+        const formattedPost = {
+            id: postData.id,
+            title: postData.title,
+            summary: postData.summary,
+            content: postData.content,
+            category: categoryKorean,
+            category_name: categoryKorean,
+            categories: {
+                name: categoryKorean
+            },
+            tags: postData.tags || [],
+            source_type: postData.sourceType || postData.source_type,
+            source_name: postData.sourceName || postData.source_name,
+            source_url: postData.sourceUrl || postData.source_url,
+            trust_score: postData.trustScore || postData.trust_score,
+            view_count: postData.viewCount || postData.view_count || 0,
+            thumbnail_url: postData.thumbnailUrl || postData.thumbnail_url,
+            image_url: postData.imageUrl || postData.image_url,
+            published_date: postData.publishedDate || postData.published_date,
+            collected_date: postData.collectedDate || postData.collected_date,
+            created_at: postData.createdAt || postData.created_at || postData.publishedDate || postData.published_date,
+            updated_at: postData.updatedAt || postData.updated_at || postData.collectedDate || postData.collected_date,
+            is_active: isActive,
+            is_draft: false,
+            status: isActive ? 'active' : 'inactive'
+        };
 
         // 관리자만 자신의 포스팅을 조회할 수 있도록 제한 (선택사항)
         // if (post.admin_id !== req.session.user.id) {
@@ -456,7 +540,7 @@ router.get('/posts/:id', requireAdmin, async (req, res) => {
 
         res.json({
             success: true,
-            data: post
+            data: formattedPost
         });
 
     } catch (error) {
@@ -491,23 +575,105 @@ router.get('/posts', requireAdmin, async (req, res) => {
         if (categoryId) filters.categoryId = categoryId;
         if (search) filters.search = search;
 
-        // 포스팅 목록 조회
-        const posts = await postingService.getAdminPosts(adminId, filters);
+        // 로컬 데이터에서 영양정보 목록 조회
+        const nutritionFilters = {};
+        if (search) nutritionFilters.search = search;
+        if (categoryId) {
+            // categoryId를 카테고리 이름으로 변환 (필요시)
+            nutritionFilters.category = categoryId;
+        }
+        
+        // 임시저장이 아닌 포스팅만 조회 (관리자 포스팅 목록용)
+        nutritionFilters.excludeDrafts = true;
+        
+        const pagination = {
+            page: parseInt(page),
+            limit: parseInt(limit)
+        };
 
-        // 페이지네이션 적용
-        const startIndex = (parseInt(page) - 1) * parseInt(limit);
-        const endIndex = startIndex + parseInt(limit);
-        const paginatedPosts = posts.slice(startIndex, endIndex);
+        const result = await nutritionDataManager.getNutritionInfoList(nutritionFilters, pagination);
+        const posts = result && result.data ? result.data : [];
+        const paginationData = result && result.pagination ? result.pagination : {};
+        
+        console.log('🔍 관리자 포스팅 목록 조회 결과:', {
+            totalPosts: posts.length,
+            filters: nutritionFilters,
+            pagination: paginationData,
+            firstPost: posts[0] ? { id: posts[0].id, title: posts[0].title } : null
+        });
+
+        // 카테고리 정보 로드 (한국어 이름 변환용)
+        const categoryMap = {
+            'eye_health': '눈 건강',
+            'research': '연구',
+            'diet': '다이어트',
+            'trends': '트렌드',
+            'supplements': '보충제',
+            'omega': '오메가',
+            'brain_health': '뇌 건강',
+            'heart_health': '심장 건강',
+            'bone_health': '뼈 건강',
+            'immunity': '면역력',
+            'cancer': '암 예방',
+            'cardiovascular': '심혈관',
+            'diabetes': '당뇨',
+            'weight_management': '체중 관리',
+            'vitamins': '비타민',
+            'minerals': '미네랄',
+            'protein': '단백질',
+            'carbs': '탄수화물',
+            'fats': '지방',
+            'news': '뉴스',
+            'calcium': '칼슘',
+            'iron': '철분',
+            'probiotics': '프로바이오틱스',
+            'exercise_nutrition': '운동 영양',
+            'general': '일반'
+        };
+
+        // 관리자용 형식으로 변환 (프론트엔드 호환성 고려)
+        const paginatedPosts = posts.map(item => {
+            const itemData = typeof item.toJSON === 'function' ? item.toJSON() : item;
+            const isActive = itemData.isActive !== false && itemData.is_active !== false;
+            const categoryKorean = itemData.category ? (categoryMap[itemData.category] || itemData.category) : '미분류';
+            
+            return {
+                id: itemData.id,
+                title: itemData.title,
+                summary: itemData.summary,
+                content: itemData.content,
+                category: categoryKorean,
+                category_name: categoryKorean,
+                categories: {
+                    name: categoryKorean
+                },
+                tags: itemData.tags || [],
+                source_type: itemData.sourceType || itemData.source_type,
+                source_name: itemData.sourceName || itemData.source_name,
+                source_url: itemData.sourceUrl || itemData.source_url,
+                trust_score: itemData.trustScore || itemData.trust_score,
+                view_count: itemData.viewCount || itemData.view_count || 0,
+                thumbnail_url: itemData.thumbnailUrl || itemData.thumbnail_url,
+                image_url: itemData.imageUrl || itemData.image_url,
+                published_date: itemData.publishedDate || itemData.published_date,
+                collected_date: itemData.collectedDate || itemData.collected_date,
+                created_at: itemData.createdAt || itemData.created_at || itemData.publishedDate || itemData.published_date,
+                updated_at: itemData.updatedAt || itemData.updated_at || itemData.collectedDate || itemData.collected_date,
+                is_active: isActive,
+                is_draft: false,
+                status: isActive ? 'active' : 'inactive'
+            };
+        });
 
         res.json({
             success: true,
             data: {
                 posts: paginatedPosts,
                 pagination: {
-                    currentPage: parseInt(page),
-                    totalPages: Math.ceil(posts.length / parseInt(limit)),
-                    totalItems: posts.length,
-                    itemsPerPage: parseInt(limit)
+                    currentPage: paginationData.page || parseInt(page),
+                    totalPages: paginationData.totalPages || 0,
+                    totalItems: paginationData.totalCount || 0,
+                    itemsPerPage: paginationData.limit || parseInt(limit)
                 }
             }
         });
@@ -555,7 +721,7 @@ router.get('/drafts', requireAdmin, async (req, res) => {
         const adminId = req.session.user.id;
 
         // 임시저장 목록 조회
-        const drafts = await postingService.getDrafts(adminId);
+        const drafts = await nutritionDataManager.getDrafts(adminId);
 
         res.json({
             success: true,
@@ -581,7 +747,7 @@ router.delete('/drafts/:id', requireAdmin, async (req, res) => {
         const { id } = req.params;
 
         // 임시저장 포스팅인지 확인
-        const post = await postingService.getPostById(id);
+        const post = await nutritionDataManager.getPostById(id);
         if (!post) {
             return res.status(404).json({
                 success: false,
@@ -597,7 +763,7 @@ router.delete('/drafts/:id', requireAdmin, async (req, res) => {
         }
 
         // 임시저장 삭제
-        await postingService.deletePost(id);
+        await nutritionDataManager.deletePost(id);
 
         console.log(`🗑️ 임시저장 삭제: ${id} (by ${req.session.user.username || req.session.user.name})`);
 

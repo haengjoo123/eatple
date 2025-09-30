@@ -5,12 +5,11 @@
 
 const express = require('express');
 const router = express.Router();
-const SupabaseNutritionDataManager = require('../utils/supabaseNutritionDataManager');
-const { supabase } = require('../utils/supabaseClient');
+const LocalNutritionDataManager = require('../utils/localNutritionDataManager');
 const PermanentStorageManager = require('../utils/permanentStorageManager');
 
-// Supabase 영양 정보 데이터 매니저 인스턴스
-const nutritionDataManager = new SupabaseNutritionDataManager();
+// 로컬 파일 기반 영양 정보 데이터 매니저 인스턴스
+const nutritionDataManager = new LocalNutritionDataManager();
 
 // 영구 저장소 관리자 인스턴스
 const permanentStorageManager = new PermanentStorageManager();
@@ -38,6 +37,86 @@ function requireAdmin(req, res, next) {
 
     next();
 }
+
+/**
+ * 관리자용 영양 정보 목록 조회 API
+ * GET /api/admin/nutrition-info/list
+ */
+router.get('/list', requireAdmin, async (req, res) => {
+    try {
+        const { 
+            page = 1, 
+            limit = 20, 
+            search, 
+            category, 
+            sourceType, 
+            status, 
+            sortBy = 'collected_date', 
+            sortOrder = 'desc' 
+        } = req.query;
+
+        // 필터 구성
+        const filters = {};
+        if (search) filters.search = search;
+        if (category) filters.category = category;
+        if (sourceType) filters.sourceType = [sourceType];
+        if (sortBy) filters.sortBy = sortBy;
+        if (sortOrder) filters.sortOrder = sortOrder;
+
+        // 상태 필터 (관리자는 비활성화된 항목도 볼 수 있음)
+        if (status === 'active') {
+            // 활성화된 항목만
+        } else if (status === 'inactive') {
+            // 비활성화된 항목만 (현재 로컬 데이터 매니저에서는 구현 필요)
+        }
+        // status가 없으면 모든 항목
+
+        // 페이지네이션 구성
+        const pagination = {
+            page: parseInt(page),
+            limit: parseInt(limit)
+        };
+
+        // 로컬 데이터에서 목록 조회
+        const result = await nutritionDataManager.getNutritionInfoList(filters, pagination);
+        const data = result && result.data ? result.data : [];
+        const paginationData = result && result.pagination ? result.pagination : {};
+
+        // 관리자용 추가 정보 포함
+        const enrichedData = data.map(item => {
+            const itemData = typeof item.toJSON === 'function' ? item.toJSON() : item;
+            return {
+                ...itemData,
+                // 관리자용 추가 필드
+                isActive: itemData.isActive !== false, // 기본값 true
+                lastModified: itemData.updatedAt || itemData.collectedDate,
+                sourceInfo: {
+                    type: itemData.sourceType,
+                    name: itemData.sourceName,
+                    url: itemData.sourceUrl
+                }
+            };
+        });
+
+        console.log(`[ADMIN LIST] 영양정보 목록 조회: ${enrichedData.length}개 (총 ${paginationData.totalCount || 0}개)`);
+
+        res.json({
+            success: true,
+            data: enrichedData,
+            pagination: paginationData,
+            filters: filters,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('관리자 영양정보 목록 조회 오류:', error);
+        res.status(500).json({
+            success: false,
+            error: '영양정보 목록을 조회하는 중 오류가 발생했습니다.',
+            details: error.message
+        });
+    }
+});
 
 /**
  * 수집 통계 조회 API
@@ -108,6 +187,70 @@ router.get('/stats', requireAdmin, async (req, res) => {
         res.status(500).json({
             success: false,
             error: '수집 통계를 조회하는 중 오류가 발생했습니다.',
+            details: error.message
+        });
+    }
+});
+
+/**
+ * 새 영양 정보 생성 API
+ * POST /api/admin/nutrition-info/create
+ */
+router.post('/create', requireAdmin, async (req, res) => {
+    try {
+        const { title, summary, content, category, tags, sourceType, sourceName, sourceUrl, trustScore, thumbnailUrl, imageUrl, relatedProducts } = req.body;
+
+        // 필수 필드 검증
+        if (!title || !summary) {
+            return res.status(400).json({
+                success: false,
+                error: '제목과 요약은 필수 입력 항목입니다.'
+            });
+        }
+
+        // 영양 정보 데이터 구성
+        const nutritionData = {
+            title: title.trim(),
+            summary: summary.trim(),
+            content: content ? content.trim() : '',
+            category: category || '일반',
+            tags: tags && Array.isArray(tags) ? tags : [],
+            sourceType: sourceType || 'manual',
+            sourceName: sourceName || 'Admin',
+            sourceUrl: sourceUrl || null,
+            trustScore: trustScore ? parseInt(trustScore) : 80,
+            thumbnailUrl: thumbnailUrl || null,
+            imageUrl: imageUrl || null,
+            relatedProducts: relatedProducts && Array.isArray(relatedProducts) ? relatedProducts : [],
+            publishedDate: new Date().toISOString()
+        };
+
+        // 로컬 데이터에 저장
+        const newId = await nutritionDataManager.createNutritionInfo(nutritionData);
+
+        // 모든 관련 캐시 무효화
+        await invalidateAllNutritionCaches();
+
+        console.log(`📝 새 영양 정보 생성: ${newId} - ${nutritionData.title} (by ${req.session.user.username || req.session.user.id})`);
+
+        res.status(201).json({
+            success: true,
+            data: {
+                id: newId,
+                title: nutritionData.title,
+                summary: nutritionData.summary,
+                category: nutritionData.category,
+                tags: nutritionData.tags,
+                createdBy: req.session.user.username || req.session.user.id,
+                createdAt: nutritionData.publishedDate
+            }
+        });
+
+    } catch (error) {
+        console.error('새 영양 정보 생성 오류:', error);
+        res.status(500).json({
+            success: false,
+            error: '새 영양 정보를 생성하는 중 오류가 발생했습니다.',
             details: error.message
         });
     }
@@ -226,34 +369,26 @@ router.put('/:id/status', requireAdmin, async (req, res) => {
             });
         }
 
-        // Supabase에서 영양 정보 존재 확인
-        const { data: nutritionInfo, error: fetchError } = await supabase
-            .from('nutrition_posts')
-            .select('id, title, is_active')
-            .eq('id', id)
-            .single();
+        // 로컬 데이터에서 영양 정보 존재 확인
+        const nutritionInfo = await nutritionDataManager.getNutritionInfoById(id);
 
-        if (fetchError || !nutritionInfo) {
+        if (!nutritionInfo) {
             return res.status(404).json({
                 success: false,
                 error: '해당 영양 정보를 찾을 수 없습니다.'
             });
         }
 
-        // 상태 업데이트
+        // 로컬 데이터 상태 업데이트
         const updateData = {
-            is_active: status === 'active',
-            updated_at: new Date().toISOString()
+            isActive: status === 'active'
         };
 
-        const { error: updateError } = await supabase
-            .from('nutrition_posts')
-            .update(updateData)
-            .eq('id', id);
+        const updateResult = await nutritionDataManager.updateNutritionInfo(id, updateData);
 
-        if (updateError) {
-            console.error('상태 업데이트 오류:', updateError);
-            throw updateError;
+        if (!updateResult) {
+            console.error('상태 업데이트 실패');
+            throw new Error('상태 업데이트에 실패했습니다.');
         }
 
         // 모든 관련 캐시 무효화
@@ -298,26 +433,19 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 
         console.log(`🔍 영양 정보 삭제 요청: ID=${id}, permanent=${permanent}`);
 
-        // Supabase에서 영양 정보 존재 확인
-        const { data: nutritionInfo, error: fetchError } = await supabase
-            .from('nutrition_posts')
-            .select('id, title, is_active')
-            .eq('id', id)
-            .single();
+        // 로컬 데이터에서 영양 정보 존재 확인
+        const nutritionInfo = await nutritionDataManager.getNutritionInfoById(id);
 
-        if (fetchError || !nutritionInfo) {
-            console.log(`❌ 영양 정보를 찾을 수 없음: ${id}`, fetchError);
+        if (!nutritionInfo) {
+            console.log(`❌ 영양 정보를 찾을 수 없음: ${id}`);
             
             // 디버깅을 위해 현재 존재하는 데이터 확인
-            const { data: allItems, error: listError } = await supabase
-                .from('nutrition_posts')
-                .select('id, title')
-                .limit(10);
+            const allItems = await nutritionDataManager.getNutritionInfoList({}, { limit: 10 });
             
-            console.log(`📊 현재 영양 정보 총 개수: ${allItems ? allItems.length : 0}`);
+            console.log(`📊 현재 영양 정보 총 개수: ${allItems.data ? allItems.data.length : 0}`);
             
-            if (allItems && allItems.length > 0) {
-                console.log('📋 현재 존재하는 영양 정보 ID들:', allItems.map(item => item.id).slice(0, 5));
+            if (allItems.data && allItems.data.length > 0) {
+                console.log('📋 현재 존재하는 영양 정보 ID들:', allItems.data.map(item => item.id).slice(0, 5));
             }
             
             return res.status(404).json({
@@ -325,9 +453,8 @@ router.delete('/:id', requireAdmin, async (req, res) => {
                 error: '해당 영양 정보를 찾을 수 없습니다.',
                 debug: {
                     requestedId: id,
-                    totalItems: allItems ? allItems.length : 0,
-                    availableIds: allItems ? allItems.map(item => item.id).slice(0, 5) : [],
-                    fetchError: fetchError?.message
+                    totalItems: allItems.data ? allItems.data.length : 0,
+                    availableIds: allItems.data ? allItems.data.map(item => item.id).slice(0, 5) : []
                 }
             });
         }
@@ -335,31 +462,23 @@ router.delete('/:id', requireAdmin, async (req, res) => {
         console.log(`✅ 영양 정보 찾음: ${nutritionInfo.title || 'No title'}`);
 
         if (permanent) {
-            // 영구 삭제 - Supabase에서 실제 삭제
-            const { error: deleteError } = await supabase
-                .from('nutrition_posts')
-                .delete()
-                .eq('id', id);
+            // 영구 삭제 - 로컬 데이터에서 실제 삭제 (현재 로컬 데이터 매니저에서 삭제 기능이 없으므로 비활성화로 처리)
+            console.log('⚠️ 로컬 데이터에서는 영구 삭제 대신 비활성화로 처리합니다.');
+            const updateResult = await nutritionDataManager.updateNutritionInfo(id, { isActive: false });
 
-            if (deleteError) {
-                console.error('영구 삭제 오류:', deleteError);
-                throw deleteError;
+            if (!updateResult) {
+                console.error('영구 삭제 (비활성화) 오류');
+                throw new Error('영구 삭제에 실패했습니다.');
             }
 
-            console.log(`🗑️ 영양 정보 영구 삭제: ${id} (by ${req.session.user.username || req.session.user.id})`);
+            console.log(`🗑️ 영양 정보 영구 삭제 (비활성화): ${id} (by ${req.session.user.username || req.session.user.id})`);
         } else {
-            // 비활성화 (소프트 삭제) - is_active를 false로 설정
-            const { error: updateError } = await supabase
-                .from('nutrition_posts')
-                .update({
-                    is_active: false,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', id);
+            // 비활성화 (소프트 삭제) - isActive를 false로 설정
+            const updateResult = await nutritionDataManager.updateNutritionInfo(id, { isActive: false });
 
-            if (updateError) {
-                console.error('비활성화 오류:', updateError);
-                throw updateError;
+            if (!updateResult) {
+                console.error('비활성화 오류');
+                throw new Error('비활성화에 실패했습니다.');
             }
 
             console.log(`🗑️ 영양 정보 비활성화: ${id} (by ${req.session.user.username || req.session.user.id})`);
@@ -444,14 +563,10 @@ router.put('/:id/edit', requireAdmin, async (req, res) => {
             });
         }
 
-        // Supabase에서 영양 정보 존재 확인
-        const { data: nutritionInfo, error: fetchError } = await supabase
-            .from('nutrition_posts')
-            .select('id, title')
-            .eq('id', id)
-            .single();
+        // 로컬 데이터에서 영양 정보 존재 확인
+        const nutritionInfo = await nutritionDataManager.getNutritionInfoById(id);
 
-        if (fetchError || !nutritionInfo) {
+        if (!nutritionInfo) {
             return res.status(404).json({
                 success: false,
                 error: '해당 영양 정보를 찾을 수 없습니다.'
@@ -459,16 +574,14 @@ router.put('/:id/edit', requireAdmin, async (req, res) => {
         }
 
         // 업데이트할 데이터 준비
-        const updateData = {
-            updated_at: new Date().toISOString()
-        };
+        const updateData = {};
 
         if (title) updateData.title = title.trim();
         if (summary) updateData.summary = summary.trim();
         if (trustScore !== undefined) {
             const score = parseInt(trustScore);
             if (score >= 0 && score <= 100) {
-                updateData.trust_score = score;
+                updateData.trustScore = score;
             } else {
                 return res.status(400).json({
                     success: false,
@@ -477,15 +590,12 @@ router.put('/:id/edit', requireAdmin, async (req, res) => {
             }
         }
 
-        // Supabase 업데이트
-        const { error: updateError } = await supabase
-            .from('nutrition_posts')
-            .update(updateData)
-            .eq('id', id);
+        // 로컬 데이터 업데이트
+        const updateResult = await nutritionDataManager.updateNutritionInfo(id, updateData);
 
-        if (updateError) {
-            console.error('편집 업데이트 오류:', updateError);
-            throw updateError;
+        if (!updateResult) {
+            console.error('편집 업데이트 오류');
+            throw new Error('편집 업데이트에 실패했습니다.');
         }
 
         // 카테고리 및 태그 업데이트는 별도 처리 필요 (관계형 테이블)
@@ -508,9 +618,9 @@ router.put('/:id/edit', requireAdmin, async (req, res) => {
             success: true,
             data: {
                 id: id,
-                updatedFields: Object.keys(updateData).filter(key => key !== 'updated_at'),
+                updatedFields: Object.keys(updateData),
                 modifiedBy: req.session.user.username || req.session.user.id,
-                modifiedAt: updateData.updated_at
+                modifiedAt: new Date().toISOString()
             }
         });
 
@@ -788,10 +898,9 @@ async function invalidateAllNutritionCaches() {
             nutritionDataManager.invalidateCache();
         }
         
-        // 메인 nutrition-info 라우터에서 사용하는 supabaseDataManager 캐시도 무효화
-        const SupabaseNutritionDataManager = require('../utils/supabaseNutritionDataManager');
-        const mainDataManager = new SupabaseNutritionDataManager();
-        mainDataManager.invalidateCache();
+        // 메인 nutrition-info 라우터에서 사용하는 로컬 데이터 매니저 캐시도 무효화
+        // 로컬 데이터 매니저는 이미 nutritionDataManager 인스턴스로 사용 중
+        nutritionDataManager.clearCache();
         
         // 서버 전역 캐시 매니저가 있다면 무효화
         try {
