@@ -6,6 +6,7 @@
 const fs = require("fs").promises;
 const path = require("path");
 const NutritionInfo = require("../models/NutritionInfo");
+const { normalizePostMedia } = require("./mediaNormalizer");
 
 class LocalNutritionDataManager {
   constructor() {
@@ -452,22 +453,38 @@ class LocalNutritionDataManager {
       const maxId = posts.length > 0 ? Math.max(...posts.map(p => parseInt(p.id) || 0)) : 0;
       const newId = (maxId + 1).toString();
       
-      // 새 포스트 데이터 구성
-      const newPost = {
-        id: newId,
+      // base64 -> URL 정규화
+      const projectRoot = path.join(__dirname, '..');
+      const normalized = await normalizePostMedia({
         title: nutritionData.title || '',
         summary: nutritionData.summary || '',
         content: nutritionData.content || '',
-        source_type: nutritionData.sourceType || 'manual',
-        source_name: nutritionData.sourceName || 'Admin',
-        source_url: nutritionData.sourceUrl || null,
-        published_date: nutritionData.publishedDate || new Date().toISOString(),
+        sourceType: nutritionData.sourceType || 'manual',
+        sourceName: nutritionData.sourceName || 'Admin',
+        sourceUrl: nutritionData.sourceUrl || null,
+        publishedDate: nutritionData.publishedDate || new Date().toISOString(),
+        trustScore: nutritionData.trustScore || 80,
+        thumbnailUrl: nutritionData.thumbnailUrl || null,
+        imageUrl: nutritionData.imageUrl || null,
+        category: nutritionData.category,
+      }, projectRoot, newId);
+
+      // 새 포스트 데이터 구성
+      const newPost = {
+        id: newId,
+        title: normalized.title,
+        summary: normalized.summary,
+        content: normalized.content,
+        source_type: normalized.sourceType,
+        source_name: normalized.sourceName,
+        source_url: normalized.sourceUrl,
+        published_date: normalized.publishedDate,
         collected_date: new Date().toISOString(),
-        trust_score: nutritionData.trustScore || 80,
+        trust_score: normalized.trustScore,
         view_count: 0,
-        thumbnail_url: nutritionData.thumbnailUrl || null,
-        image_url: nutritionData.imageUrl || null,
-        category_id: await this.getCategoryIdByName(nutritionData.category) || 1,
+        thumbnail_url: normalized.thumbnailUrl,
+        image_url: normalized.imageUrl,
+        category_id: await this.getCategoryIdByName(normalized.category) || 1,
         is_active: true
       };
       
@@ -665,18 +682,30 @@ class LocalNutritionDataManager {
       const maxId = posts.reduce((max, post) => Math.max(max, parseInt(post.id) || 0), 0);
       const newId = (maxId + 1).toString();
       
+      // base64 -> URL 정규화
+      const projectRoot = path.join(__dirname, '..');
+      const normalized = await normalizePostMedia({
+        title: postData.title,
+        summary: postData.summary,
+        content: postData.content,
+        sourceUrl: postData.sourceUrl || null,
+        sourceName: postData.sourceName || null,
+        imageUrl: postData.imageUrl || null,
+        thumbnailUrl: postData.thumbnailUrl || null,
+      }, projectRoot, newId);
+
       // 새 포스팅 데이터 생성
       const now = new Date().toISOString();
       const newPost = {
         id: newId,
-        title: postData.title,
-        summary: postData.summary,
-        content: postData.content,
-        source_url: postData.sourceUrl || null,
-        source_name: postData.sourceName || null,
+        title: normalized.title,
+        summary: normalized.summary,
+        content: normalized.content,
+        source_url: normalized.sourceUrl,
+        source_name: normalized.sourceName,
         category_id: postData.categoryId,
-        image_url: postData.imageUrl || null,
-        thumbnail_url: postData.thumbnailUrl || null,
+        image_url: normalized.imageUrl || null,
+        thumbnail_url: normalized.thumbnailUrl || null,
         is_draft: postData.isDraft || false,
         admin_id: adminInfo.id,
         admin_name: adminInfo.name,
