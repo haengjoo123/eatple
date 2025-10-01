@@ -159,9 +159,20 @@ class LocalNutritionDataManager {
       
       const filteredProducts = relatedProducts.filter(rp => rp.post_id === postId);
       console.log(`해당 포스트 관련상품 수: ${filteredProducts.length}`);
-      console.log('조회된 관련상품:', JSON.stringify(filteredProducts, null, 2));
       
-      return filteredProducts;
+      // 프론트엔드가 기대하는 형식으로 변환
+      const formattedProducts = filteredProducts.map(product => ({
+        id: product.product_id,
+        product_name: product.product_name,
+        product_link: product.product_link, // 이미 product_link 필드를 사용하므로 그대로 사용
+        product_price: product.product_price,
+        product_image_url: product.product_image_url,
+        created_at: product.created_at
+      }));
+      
+      console.log('조회된 관련상품 (포맷팅 후):', JSON.stringify(formattedProducts, null, 2));
+      
+      return formattedProducts;
     } catch (error) {
       console.error('관련상품 조회 오류:', error);
       return [];
@@ -692,7 +703,7 @@ class LocalNutritionDataManager {
           post_id: postId,
           product_id: product.id || null,
           product_name: product.name || '',
-          product_url: product.url || '',
+          product_link: product.link || product.url || '', // 기존 데이터 형식에 맞춰 product_link 사용
           product_price: product.price || null,
           product_image_url: product.imageUrl || null,
           created_at: new Date().toISOString()

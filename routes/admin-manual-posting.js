@@ -555,6 +555,17 @@ router.get('/posts/:id', requireAdmin, async (req, res) => {
         };
         const categoryKorean = postData.category ? (categoryMap[postData.category] || postData.category) : '미분류';
         
+        // 태그 데이터를 프론트엔드가 기대하는 형식으로 변환
+        const tags = postData.tags || [];
+        console.log(`📝 포스팅 조회 - 태그 데이터:`, tags);
+        const postTags = tags.map(tag => ({
+            tags: {
+                name: tag
+            }
+        }));
+        console.log(`📝 포스팅 조회 - 변환된 post_tags:`, postTags);
+        console.log(`📝 포스팅 조회 - 관련상품 데이터:`, postData.related_products);
+
         const formattedPost = {
             id: postData.id,
             title: postData.title,
@@ -565,7 +576,9 @@ router.get('/posts/:id', requireAdmin, async (req, res) => {
             categories: {
                 name: categoryKorean
             },
-            tags: postData.tags || [],
+            tags: tags,
+            post_tags: postTags, // 프론트엔드가 기대하는 형식
+            related_products: postData.related_products || [], // 관련상품 데이터
             source_type: postData.sourceType || postData.source_type,
             source_name: postData.sourceName || postData.source_name,
             source_url: postData.sourceUrl || postData.source_url,
