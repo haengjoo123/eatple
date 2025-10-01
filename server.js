@@ -87,23 +87,35 @@ app.use(
 );
 
 // 세션 미들웨어 적용 (Render 환경 최적화)
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "mealplan_secret_key_enhanced",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // 프로덕션에서는 항상 secure
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24, // 24시간으로 연장
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // 프로덕션에서는 none
-      // domain 설정 제거 - Render에서 자동 처리
-    },
-    name: "mealplan_session", // 세션 쿠키 이름 변경
-    // Render 환경에서 세션 지속성을 위한 추가 설정
-    rolling: true, // 매 요청마다 세션 갱신
-  })
-);
+const sessionConfig = {
+  secret: process.env.SESSION_SECRET || "mealplan_secret_key_enhanced",
+  resave: false,
+  saveUninitialized: false,
+  name: "mealplan_session",
+  rolling: true, // 매 요청마다 세션 갱신
+  cookie: {
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24, // 24시간
+  }
+};
+
+// Render 환경에서는 secure와 sameSite 설정을 조건부로 적용
+if (process.env.NODE_ENV === "production") {
+  sessionConfig.cookie.secure = true;
+  // Render 환경에서는 sameSite를 lax로 설정 (더 안정적)
+  sessionConfig.cookie.sameSite = "lax";
+} else {
+  sessionConfig.cookie.secure = false;
+  sessionConfig.cookie.sameSite = "lax";
+}
+
+console.log('세션 설정:', {
+  nodeEnv: process.env.NODE_ENV,
+  render: process.env.RENDER,
+  cookieConfig: sessionConfig.cookie
+});
+
+app.use(session(sessionConfig));
 
 // 정적 파일 제공 (HTML, CSS, JS) - 캐싱 적용
 app.use(

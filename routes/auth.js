@@ -351,6 +351,15 @@ router.post("/login", async (req, res) => {
     
     req.session.user = sessionUser;
     
+    // 세션을 명시적으로 저장 (Render 환경에서 필요할 수 있음)
+    req.session.save((err) => {
+      if (err) {
+        console.error('세션 저장 오류:', err);
+      } else {
+        console.log('세션 저장 성공');
+      }
+    });
+    
     // 세션 저장 확인
     console.log('세션 설정 완료:', {
       sessionId: req.sessionID,
@@ -1202,6 +1211,18 @@ router.get("/kakao-rest-key", (req, res) => {
 
 // 로그인 상태 확인
 router.get("/me", (req, res) => {
+  console.log('사용자 상태 확인 요청:', {
+    sessionId: req.sessionID,
+    hasSession: !!req.session,
+    hasUser: !!req.session?.user,
+    sessionCookie: req.session?.cookie,
+    headers: {
+      cookie: req.headers.cookie,
+      origin: req.headers.origin,
+      referer: req.headers.referer
+    }
+  });
+  
   if (req.session.user) {
     console.log('사용자 상태 확인 - 세션 사용자:', {
       id: req.session.user.id,
