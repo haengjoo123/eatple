@@ -93,6 +93,8 @@ const sessionConfig = {
   saveUninitialized: false,
   name: "mealplan_session",
   rolling: true, // 매 요청마다 세션 갱신
+  // Render 환경에서 세션 지속성을 위한 설정
+  proxy: true, // 프록시 뒤에서 실행될 때 필요
   cookie: {
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24, // 24시간
@@ -102,8 +104,8 @@ const sessionConfig = {
 // Render 환경에서는 secure와 sameSite 설정을 조건부로 적용
 if (process.env.NODE_ENV === "production") {
   sessionConfig.cookie.secure = true;
-  // Render 환경에서는 sameSite를 lax로 설정 (더 안정적)
-  sessionConfig.cookie.sameSite = "lax";
+  // Render 환경에서는 sameSite를 none으로 명시적 설정
+  sessionConfig.cookie.sameSite = "none";
 } else {
   sessionConfig.cookie.secure = false;
   sessionConfig.cookie.sameSite = "lax";
@@ -115,7 +117,19 @@ console.log('세션 설정:', {
   cookieConfig: sessionConfig.cookie
 });
 
+// 세션 미들웨어 적용
 app.use(session(sessionConfig));
+
+// 세션 디버깅 미들웨어
+app.use((req, res, next) => {
+  console.log('세션 상태:', {
+    sessionId: req.sessionID,
+    hasSession: !!req.session,
+    hasUser: !!req.session?.user,
+    cookie: req.headers.cookie
+  });
+  next();
+});
 
 // 정적 파일 제공 (HTML, CSS, JS) - 캐싱 적용
 app.use(

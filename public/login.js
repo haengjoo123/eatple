@@ -81,6 +81,11 @@ document.getElementById("loginForm").onsubmit = async function (e) {
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
         console.log('사용자 정보 localStorage에 저장됨:', data.user);
+        
+        // 세션 관리자를 통한 인증 데이터 저장
+        if (window.sessionManager) {
+          window.sessionManager.setAuthData(data.user);
+        }
       }
 
       msg.style.color = "green";

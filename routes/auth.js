@@ -1233,7 +1233,17 @@ router.get("/me", (req, res) => {
     });
     res.json({ loggedIn: true, user: req.session.user });
   } else {
-    console.log('사용자 상태 확인 - 로그인되지 않음');
+    console.log('사용자 상태 확인 - 로그인되지 않음 (세션 없음)');
+    
+    // 세션이 없는 경우를 위한 대안 체크 (선택사항)
+    // 실제 운영에서는 보안상 권장하지 않지만, Render 환경에서 임시 해결책으로 사용 가능
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      // 토큰 검증 로직 (필요시 구현)
+      console.log('Authorization 헤더 발견:', token);
+    }
+    
     res.json({ loggedIn: false });
   }
 });
