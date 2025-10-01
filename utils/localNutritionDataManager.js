@@ -22,10 +22,11 @@ class LocalNutritionDataManager {
     this.postTagsFile = path.join(this.dataPath, "post-tags.json");
     this.relatedProductsFile = path.join(this.dataPath, "post-related-products.json");
     
-    console.log(`📁 LocalNutritionDataManager 초기화:`);
-    console.log(`📁 프로젝트 루트: ${projectRoot}`);
-    console.log(`📁 데이터 경로: ${this.dataPath}`);
-    console.log(`📁 포스트 파일: ${this.nutritionPostsFile}`);
+    // 서버 시작 시 로그 출력 비활성화
+    // console.log(`📁 LocalNutritionDataManager 초기화:`);
+    // console.log(`📁 프로젝트 루트: ${projectRoot}`);
+    // console.log(`📁 데이터 경로: ${this.dataPath}`);
+    // console.log(`📁 포스트 파일: ${this.nutritionPostsFile}`);
 
     // 메모리 캐시 (로컬 데이터 안정성을 위해 캐시 비활성화)
     this.cache = new Map();
@@ -41,9 +42,10 @@ class LocalNutritionDataManager {
    */
   async initializeDirectories() {
     try {
-      console.log(`📁 디렉토리 초기화 시작: ${this.dataPath}`);
+      // 서버 시작 시 로그 출력 비활성화
+      // console.log(`📁 디렉토리 초기화 시작: ${this.dataPath}`);
       await fs.mkdir(this.dataPath, { recursive: true });
-      console.log(`✅ 디렉토리 초기화 완료: ${this.dataPath}`);
+      // console.log(`✅ 디렉토리 초기화 완료: ${this.dataPath}`);
       
       // 기본 파일들이 존재하는지 확인하고 없으면 생성
       await this.ensureFileExists(this.nutritionPostsFile, []);
@@ -64,7 +66,7 @@ class LocalNutritionDataManager {
   async ensureFileExists(filePath, defaultData) {
     try {
       await fs.access(filePath);
-      console.log(`✅ 파일 존재 확인: ${filePath}`);
+      // console.log(`✅ 파일 존재 확인: ${filePath}`);
     } catch (error) {
       if (error.code === 'ENOENT') {
         console.log(`📄 파일 생성: ${filePath}`);
@@ -81,10 +83,10 @@ class LocalNutritionDataManager {
    */
   async readJsonFile(filePath) {
     try {
-      console.log(`📂 JSON 파일 읽기 시작: ${filePath}`);
+      // console.log(`📂 JSON 파일 읽기 시작: ${filePath}`);
       const data = await fs.readFile(filePath, 'utf8');
       const parsed = JSON.parse(data);
-      console.log(`📂 JSON 파일 읽기 완료: ${Array.isArray(parsed) ? parsed.length : 'object'} 항목`);
+      // console.log(`📂 JSON 파일 읽기 완료: ${Array.isArray(parsed) ? parsed.length : 'object'} 항목`);
       return parsed;
     } catch (error) {
       console.error(`❌ JSON 파일 읽기 실패: ${filePath}`, error);
@@ -160,17 +162,17 @@ class LocalNutritionDataManager {
    * 영양 정보 포스트 데이터 로드
    */
   async loadNutritionPosts() {
-    console.log(`📁 영양정보 포스트 파일 로드 시작: ${this.nutritionPostsFile}`);
+    // console.log(`📁 영양정보 포스트 파일 로드 시작: ${this.nutritionPostsFile}`);
     const cacheKey = 'nutrition_posts';
     const cached = this.cache.get(cacheKey);
     
     if (cached && Date.now() - cached.timestamp < this.cacheExpiry) {
-      console.log(`📁 캐시에서 영양정보 포스트 로드: ${cached.data.length}개`);
+      // console.log(`📁 캐시에서 영양정보 포스트 로드: ${cached.data.length}개`);
       return cached.data;
     }
 
     const posts = await this.readJsonFile(this.nutritionPostsFile);
-    console.log(`📁 파일에서 영양정보 포스트 로드: ${posts.length}개`);
+    // console.log(`📁 파일에서 영양정보 포스트 로드: ${posts.length}개`);
     this.cache.set(cacheKey, { data: posts, timestamp: Date.now() });
     return posts;
   }
@@ -209,12 +211,12 @@ class LocalNutritionDataManager {
    */
   async getPostRelatedProducts(postId) {
     try {
-      console.log(`🔍 관련상품 조회 시작 - 포스트 ID: ${postId}`);
+      // console.log(`🔍 관련상품 조회 시작 - 포스트 ID: ${postId}`);
       const relatedProducts = await this.loadRelatedProducts();
-      console.log(`전체 관련상품 수: ${relatedProducts.length}`);
+      // console.log(`전체 관련상품 수: ${relatedProducts.length}`);
       
       const filteredProducts = relatedProducts.filter(rp => rp.post_id === postId);
-      console.log(`해당 포스트 관련상품 수: ${filteredProducts.length}`);
+      // console.log(`해당 포스트 관련상품 수: ${filteredProducts.length}`);
       
       // 프론트엔드가 기대하는 형식으로 변환
       const formattedProducts = filteredProducts.map(product => ({
@@ -226,7 +228,7 @@ class LocalNutritionDataManager {
         created_at: product.created_at
       }));
       
-      console.log('조회된 관련상품 (포맷팅 후):', JSON.stringify(formattedProducts, null, 2));
+      // console.log('조회된 관련상품 (포맷팅 후):', JSON.stringify(formattedProducts, null, 2));
       
       return formattedProducts;
     } catch (error) {
@@ -248,9 +250,9 @@ class LocalNutritionDataManager {
    */
   async getNutritionInfoList(filters = {}, pagination = {}) {
     try {
-      console.log(`📖 영양정보 목록 조회 시작 - 필터:`, JSON.stringify(filters, null, 2));
+      // console.log(`📖 영양정보 목록 조회 시작 - 필터:`, JSON.stringify(filters, null, 2));
       const posts = await this.loadNutritionPosts();
-      console.log(`📖 로드된 포스트 수: ${posts.length}`);
+      // console.log(`📖 로드된 포스트 수: ${posts.length}`);
       let filteredPosts = [...posts];
 
       // 필터 적용
@@ -337,7 +339,7 @@ class LocalNutritionDataManager {
         filteredPosts = filteredPosts.filter(post => 
           post.is_draft !== true
         );
-        console.log(`🔍 임시저장 제외 필터: ${beforeCount} → ${filteredPosts.length} 포스팅`);
+        // console.log(`🔍 임시저장 제외 필터: ${beforeCount} → ${filteredPosts.length} 포스팅`);
       }
 
       // 정렬
@@ -370,14 +372,14 @@ class LocalNutritionDataManager {
       const paginatedPosts = filteredPosts.slice(offset, offset + limit);
 
       // NutritionInfo 객체로 변환하고 추가 데이터 로드
-      console.log(`📖 페이지네이션 적용 후 포스트 수: ${paginatedPosts.length}`);
+      // console.log(`📖 페이지네이션 적용 후 포스트 수: ${paginatedPosts.length}`);
       const enrichedPosts = [];
       for (const post of paginatedPosts) {
         const enrichedPost = await this.enrichPostData(post);
         enrichedPosts.push(enrichedPost);
       }
 
-      console.log(`📖 최종 반환할 포스트 수: ${enrichedPosts.length}`);
+      // console.log(`📖 최종 반환할 포스트 수: ${enrichedPosts.length}`);
       const result = {
         data: enrichedPosts,
         pagination: {
@@ -390,7 +392,7 @@ class LocalNutritionDataManager {
         }
       };
       
-      console.log(`📖 영양정보 목록 조회 완료 - 총 ${totalCount}개 중 ${enrichedPosts.length}개 반환`);
+      // console.log(`📖 영양정보 목록 조회 완료 - 총 ${totalCount}개 중 ${enrichedPosts.length}개 반환`);
       return result;
     } catch (error) {
       console.error('영양 정보 목록 조회 오류:', error);
@@ -429,9 +431,9 @@ class LocalNutritionDataManager {
       const categoryInfo = await this.getCategoryInfo(post.category_id);
       
       // 관련 상품 정보 추가
-      console.log(`📦 포스트 ${post.id}의 관련상품 정보 추가 중...`);
+      // console.log(`📦 포스트 ${post.id}의 관련상품 정보 추가 중...`);
       const relatedProducts = await this.getPostRelatedProducts(post.id);
-      console.log(`📦 관련상품 정보 추가 완료: ${relatedProducts.length}개`);
+      // console.log(`📦 관련상품 정보 추가 완료: ${relatedProducts.length}개`);
 
       // NutritionInfo 객체 생성
       const nutritionInfo = new NutritionInfo({
@@ -506,8 +508,8 @@ class LocalNutritionDataManager {
    */
   async updateNutritionInfo(id, updateData) {
     try {
-      console.log(`🔄 영양정보 업데이트 시작 - ID: ${id}`);
-      console.log('업데이트 데이터:', JSON.stringify(updateData, null, 2));
+      // console.log(`🔄 영양정보 업데이트 시작 - ID: ${id}`);
+      // console.log('업데이트 데이터:', JSON.stringify(updateData, null, 2));
       
       const posts = await this.readJsonFile(this.nutritionPostsFile);
       console.log(`전체 포스트 수: ${posts.length}`);
@@ -537,7 +539,7 @@ class LocalNutritionDataManager {
         this.cache.delete('nutrition_posts');
         console.log('✅ 캐시 무효화 완료');
         
-        console.log(`✅ 영양 정보 업데이트 완료: ${id}`);
+        // console.log(`✅ 영양 정보 업데이트 완료: ${id}`);
         return true;
       }
       return false;
@@ -612,7 +614,7 @@ class LocalNutritionDataManager {
       // 캐시 무효화
       this.cache.delete('nutrition_posts');
       
-      console.log(`새 영양 정보 생성: ${newId} - ${newPost.title}`);
+      // console.log(`새 영양 정보 생성: ${newId} - ${newPost.title}`);
       return newId;
     } catch (error) {
       console.error('새 영양 정보 생성 오류:', error);
@@ -649,7 +651,7 @@ class LocalNutritionDataManager {
       this.cache.delete('post_tags');
       this.cache.delete('related_products');
       
-      console.log(`영양 정보 삭제: ${id} - ${deletedPost.title}`);
+      // console.log(`영양 정보 삭제: ${id} - ${deletedPost.title}`);
       return true;
     } catch (error) {
       console.error('영양 정보 삭제 오류:', error);
@@ -744,7 +746,7 @@ class LocalNutritionDataManager {
   }
 
   /**
-   * 관련 상품 저장
+   * 관련 상품 저장 (기존 상품 삭제 후 새로 저장)
    */
   async saveRelatedProducts(postId, relatedProducts) {
     try {
@@ -752,8 +754,13 @@ class LocalNutritionDataManager {
       console.log('관련상품 데이터:', JSON.stringify(relatedProducts, null, 2));
       
       const products = await this.loadRelatedProducts();
-      console.log(`기존 관련상품 수: ${products.length}`);
+      console.log(`기존 총 관련상품 수: ${products.length}`);
       
+      // 1. 기존 관련상품 중 해당 포스트의 상품들 삭제
+      const filteredProducts = products.filter(product => product.post_id !== postId);
+      console.log(`🗑️ 기존 관련상품 삭제 후 수: ${filteredProducts.length}`);
+      
+      // 2. 새로운 관련상품 추가
       for (const product of relatedProducts) {
         const productData = {
           post_id: postId,
@@ -766,13 +773,13 @@ class LocalNutritionDataManager {
         };
         
         console.log('저장할 상품 데이터:', JSON.stringify(productData, null, 2));
-        products.push(productData);
+        filteredProducts.push(productData);
       }
       
-      console.log(`저장 후 총 관련상품 수: ${products.length}`);
+      console.log(`➕ 새로운 관련상품 추가 후 총 수: ${filteredProducts.length}`);
       
       // 관련 상품 파일 저장
-      await fs.writeFile(this.relatedProductsFile, JSON.stringify(products, null, 2), 'utf8');
+      await fs.writeFile(this.relatedProductsFile, JSON.stringify(filteredProducts, null, 2), 'utf8');
       console.log(`✅ 관련상품 파일 저장 완료: ${this.relatedProductsFile}`);
       
       // 캐시 무효화
@@ -865,15 +872,15 @@ class LocalNutritionDataManager {
       posts.push(newPost);
       
       // 파일에 저장
-      console.log(`💾 포스트 파일 저장 시작: ${this.nutritionPostsFile}`);
-      console.log(`💾 저장할 포스트 수: ${posts.length}`);
+      // console.log(`💾 포스트 파일 저장 시작: ${this.nutritionPostsFile}`);
+      // console.log(`💾 저장할 포스트 수: ${posts.length}`);
       
       const jsonString = JSON.stringify(posts, null, 2);
       
       // 파일 쓰기 권한 확인
       try {
         await fs.access(this.nutritionPostsFile, fs.constants.W_OK);
-        console.log(`✅ 파일 쓰기 권한 확인됨: ${this.nutritionPostsFile}`);
+        // console.log(`✅ 파일 쓰기 권한 확인됨: ${this.nutritionPostsFile}`);
       } catch (error) {
         console.error(`❌ 파일 쓰기 권한 없음: ${this.nutritionPostsFile}`, error);
         throw new Error(`파일 쓰기 권한이 없습니다: ${this.nutritionPostsFile}`);
@@ -891,7 +898,7 @@ class LocalNutritionDataManager {
       console.log(`💾 저장 검증: ${parsedContent.length}개 포스트 확인됨`);
       
       // 실제 저장된 파일 경로 출력
-      console.log(`💾 실제 저장된 파일: ${path.resolve(this.nutritionPostsFile)}`);
+      // console.log(`💾 실제 저장된 파일: ${path.resolve(this.nutritionPostsFile)}`);
       
       // 태그 처리 (tags가 있는 경우)
       if (postData.tags && postData.tags.length > 0) {

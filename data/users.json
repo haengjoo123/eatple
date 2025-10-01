@@ -1,19 +1,19 @@
 [
   {
-    "id": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+    "id": "bb0ebb05-aaa4-4fc0-b23c-8016aec86003",
     "email": "gudwns999999@naver.com",
     "name": "관리자",
     "authType": "email",
     "emailConfirmed": true,
     "createdAt": "2025-07-24T06:50:24.739Z",
-    "supabaseId": "87fbf905-b9a1-4dea-a921-2791f94e68cb",
+    "supabaseId": "bb0ebb05-aaa4-4fc0-b23c-8016aec86003",
     "isAdmin": true,
     "role": "admin",
     "gamePoints": {
       "totalPoints": 4440,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-09-30",
+      "lastEarnedDate": "2025-10-01",
       "history": [
         {
           "id": "1753341193454",
@@ -1213,38 +1213,8 @@
       "lastUpdated": "2025-09-20T17:31:54.159Z"
     },
     "profile": {
-      "age": "31",
-      "height": "175",
-      "weight": "75",
-      "blood_glucose_value": null,
-      "hba1c_value": null,
-      "total_cholesterol_value": null,
-      "ldl_cholesterol_value": null,
-      "hdl_cholesterol_value": null,
-      "triglycerides_value": null,
-      "blood_pressure_systolic_value": null,
-      "blood_pressure_diastolic_value": null,
-      "bmi_value": null,
-      "vitamin_a_value": null,
-      "vitamin_d_value": null,
-      "vitamin_e_value": null,
-      "vitamin_k_value": null,
-      "iron_value": null,
-      "calcium_value": null,
-      "magnesium_value": null,
-      "potassium_value": null,
-      "zinc_value": null,
-      "gender": "male",
-      "activity_level": "light",
-      "eating_patterns": "regular",
-      "sleep_patterns": "6_to_8",
-      "meals_per_day": "2",
-      "alcohol_consumption": "socially",
-      "smoking_status": "non_smoker",
-      "allergies": "none",
-      "illnesses": "none",
-      "biomarkers": "none",
-      "supplements": "none"
+      "role": "admin",
+      "isAdmin": true
     },
     "profileCompletionReward": true,
     "profileCompletionDate": "2025-07-25T05:25:20.553Z",
@@ -1306,7 +1276,7 @@
       "totalPoints": 342,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-09-30",
+      "lastEarnedDate": "2025-10-01",
       "history": [
         {
           "id": "1754977248434",
@@ -1403,7 +1373,7 @@
       "totalPoints": 216,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-09-30",
+      "lastEarnedDate": "2025-10-01",
       "history": [
         {
           "id": "1756537539645",
@@ -1442,5 +1412,25 @@
       "mini-game": 2,
       "lastUpdated": "2025-08-30T07:06:24.285Z"
     }
+  },
+  {
+    "id": "33977b69-29c5-4359-b37d-0810e2ed9c87",
+    "email": "verified@example.com",
+    "authType": "email",
+    "emailConfirmed": true,
+    "createdAt": "2025-10-01T11:55:37.118Z",
+    "supabaseId": "33977b69-29c5-4359-b37d-0810e2ed9c87",
+    "isAdmin": false,
+    "role": null
+  },
+  {
+    "id": "64f8ab56-6c8c-4e5e-b045-085536e17bf9",
+    "email": "admin@example.com",
+    "authType": "email",
+    "emailConfirmed": true,
+    "createdAt": "2025-10-01T11:55:42.712Z",
+    "supabaseId": "64f8ab56-6c8c-4e5e-b045-085536e17bf9",
+    "isAdmin": false,
+    "role": null
   }
 ]

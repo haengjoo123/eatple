@@ -16,7 +16,6 @@ class MemoryMonitor {
         
         this.alertCooldown = 5 * 60 * 1000; // 5분 쿨다운
         
-        console.log('🧠 메모리 모니터 초기화 완료');
     }
     
     /**
@@ -141,7 +140,6 @@ class MemoryMonitor {
      * 긴급 메모리 정리
      */
     async emergencyCleanup() {
-        console.log('🚨 긴급 메모리 정리 시작...');
         
         try {
             // 캐시 매니저 정리
@@ -149,16 +147,13 @@ class MemoryMonitor {
             const cacheManager = getCacheManager();
             
             // 긴급 상황에서는 단계적 캐시 정리
-            console.log('1단계: 긴급 메모리 최적화 실행');
             cacheManager.emergencyOptimization();
             
             // 메모리 사용량 재확인
             let memoryCheck = this.getMemoryUsage();
-            console.log(`1단계 후 메모리 사용량: ${memoryCheck.usagePercent * 100}%`);
             
             // 여전히 높으면 전체 캐시 삭제
             if (memoryCheck.usagePercent > 0.85) {
-                console.log('2단계: 전체 캐시 무효화 실행');
                 cacheManager.invalidateCache('all');
             }
             

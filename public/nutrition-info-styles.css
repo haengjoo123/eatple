@@ -208,7 +208,12 @@ body.nutrition-info-page .container {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0; /* 초기에는 투명하게 설정 */
+}
+
+.nutrition-card-thumbnail img[src] {
+  opacity: 1; /* src가 있는 이미지는 불투명하게 */
 }
 
 .nutrition-card:hover .nutrition-card-thumbnail img {

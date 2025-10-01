@@ -85,6 +85,12 @@ INSERT INTO categories (name, description) VALUES
 ('trends', '영양 트렌드 정보')
 ON CONFLICT (name) DO NOTHING;
 
+-- Drop existing triggers and functions if they exist
+DROP TRIGGER IF EXISTS trigger_update_category_post_count ON nutrition_posts;
+DROP TRIGGER IF EXISTS trigger_update_tag_post_count ON post_tags;
+DROP TRIGGER IF EXISTS trigger_update_nutrition_posts_updated_at ON nutrition_posts;
+DROP TRIGGER IF EXISTS trigger_update_categories_updated_at ON categories;
+
 -- Create function to update post_count in categories
 CREATE OR REPLACE FUNCTION update_category_post_count()
 RETURNS TRIGGER AS $$

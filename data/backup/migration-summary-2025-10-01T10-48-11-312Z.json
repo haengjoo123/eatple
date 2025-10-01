@@ -1,0 +1,128 @@
+{
+  "timestamp": "2025-10-01T10:48:11.309Z",
+  "sourceProject": "https://jtomskzwaqoeosxuchwg.supabase.co",
+  "targetProject": "https://ovncracjrivndsjjfyoe.supabase.co",
+  "migrationResults": {
+    "categories": {
+      "success": true,
+      "migrated": 0,
+      "skipped": 0,
+      "errors": 36
+    },
+    "tags": {
+      "success": true,
+      "migrated": 124,
+      "skipped": 0,
+      "errors": 0
+    },
+    "users": {
+      "success": true,
+      "migrated": 0,
+      "skipped": 0
+    },
+    "products": {
+      "success": true,
+      "migrated": 0,
+      "skipped": 0,
+      "errors": 8
+    },
+    "nutrition_posts": {
+      "success": true,
+      "migrated": 0,
+      "skipped": 0,
+      "errors": 27
+    },
+    "post_tags": {
+      "success": false,
+      "error": "백업 데이터 없음"
+    },
+    "post_related_products": {
+      "success": true,
+      "migrated": 0,
+      "skipped": 0,
+      "errors": 81
+    },
+    "reviews": {
+      "success": true,
+      "migrated": 0,
+      "skipped": 0
+    },
+    "promotions": {
+      "success": true,
+      "migrated": 2,
+      "skipped": 0,
+      "errors": 0
+    },
+    "post_modification_history": {
+      "success": false,
+      "error": "백업 데이터 없음"
+    }
+  },
+  "verification": {
+    "categories": {
+      "success": false,
+      "expected": 36,
+      "actual": 4,
+      "match": false
+    },
+    "nutrition-info": {
+      "success": false,
+      "error": "Could not find the table 'public.nutrition-info' in the schema cache"
+    },
+    "nutritionPosts": {
+      "success": false,
+      "error": "Could not find the table 'public.nutritionPosts' in the schema cache"
+    },
+    "nutrition_posts": {
+      "success": false,
+      "expected": 27,
+      "actual": 0,
+      "match": false
+    },
+    "postTags": {
+      "success": false,
+      "error": "Could not find the table 'public.postTags' in the schema cache"
+    },
+    "post_related_products": {
+      "success": false,
+      "expected": 81,
+      "actual": 0,
+      "match": false
+    },
+    "products": {
+      "success": false,
+      "expected": 8,
+      "actual": 0,
+      "match": false
+    },
+    "promotions": {
+      "success": false,
+      "expected": 2,
+      "actual": 8,
+      "match": false
+    },
+    "relatedProducts": {
+      "success": false,
+      "error": "Could not find the table 'public.relatedProducts' in the schema cache"
+    },
+    "reviews": {
+      "success": true,
+      "expected": 0,
+      "actual": 0,
+      "match": true
+    },
+    "tags": {
+      "success": true,
+      "expected": 124,
+      "actual": 124,
+      "match": true
+    },
+    "users": {
+      "success": true,
+      "expected": 0,
+      "actual": 0,
+      "match": true
+    }
+  },
+  "success": false
+}

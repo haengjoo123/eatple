@@ -7,12 +7,12 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const axios = require('axios');
-const LocalNutritionDataManager = require('../utils/localNutritionDataManager');
+const SupabaseNutritionDataManager = require('../utils/supabaseNutritionDataManager');
 const CategoryTagManager = require('../utils/categoryTagManager');
 const SupabaseImageManager = require('../utils/supabaseImageManager');
 
 // 서비스 인스턴스 생성
-const nutritionDataManager = new LocalNutritionDataManager();
+const nutritionDataManager = new SupabaseNutritionDataManager();
 const categoryTagManager = new CategoryTagManager();
 const imageManager = new SupabaseImageManager();
 

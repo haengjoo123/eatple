@@ -15,7 +15,7 @@ const {
 const cacheManager = require("./utils/cacheManager");
 const imageOptimizer = require("./utils/imageOptimizer");
 // const supabaseService = require("./utils/supabaseService"); // 더 이상 사용하지 않음 (로컬 데이터 사용)
-const { updateDailyLimits } = require("./utils/userDataMigration");
+// const { updateDailyLimits } = require("./utils/userDataMigration"); // 파일 삭제됨
 
 const app = express();
 
@@ -111,25 +111,27 @@ if (process.env.NODE_ENV === "production") {
   sessionConfig.cookie.sameSite = "lax";
 }
 
-console.log('세션 설정:', {
-  nodeEnv: process.env.NODE_ENV,
-  render: process.env.RENDER,
-  cookieConfig: sessionConfig.cookie
-});
+// console.log('세션 설정:', {
+//   nodeEnv: process.env.NODE_ENV,
+//   render: process.env.RENDER,
+//   cookieConfig: sessionConfig.cookie
+// });
 
 // 세션 미들웨어 적용
 app.use(session(sessionConfig));
 
-// 세션 디버깅 미들웨어
-app.use((req, res, next) => {
-  console.log('세션 상태:', {
-    sessionId: req.sessionID,
-    hasSession: !!req.session,
-    hasUser: !!req.session?.user,
-    cookie: req.headers.cookie
-  });
-  next();
-});
+// 세션 디버깅 미들웨어 (개발 환경에서만 활성화) - 로그 비활성화
+// if (process.env.NODE_ENV !== 'production') {
+//   app.use((req, res, next) => {
+//     console.log('세션 상태:', {
+//       sessionId: req.sessionID,
+//       hasSession: !!req.session,
+//       hasUser: !!req.session?.user,
+//       cookie: req.headers.cookie
+//     });
+//     next();
+//   });
+// }
 
 // 정적 파일 제공 (HTML, CSS, JS) - 캐싱 적용
 app.use(
@@ -162,19 +164,19 @@ app.use("/api/stats", require("./routes/stats"));
 app.use("/api/contact", require("./routes/contact"));
 app.use("/api/points", require("./routes/points"));
 app.use("/api/games", require("./routes/games"));
-// 영양 정보 관련 유틸리티들 (로컬 데이터 전용)
-const LocalNutritionDataManager = require("./utils/localNutritionDataManager");
+// 영양 정보 관련 유틸리티들 (Supabase 데이터 전용)
+const SupabaseNutritionDataManager = require("./utils/supabaseNutritionDataManager");
 
-// 인스턴스 생성 (로컬 파일 시스템 사용)
-const localNutritionDataManager = new LocalNutritionDataManager();
+// 인스턴스 생성 (Supabase 사용)
+const supabaseNutritionDataManager = new SupabaseNutritionDataManager();
 
 // 추천 서비스 초기화
 const NutritionRecommendationService = require("./utils/nutritionRecommendationService");
 const recommendationService = new NutritionRecommendationService();
 
-// nutrition-info 라우터 초기화 (로컬 파일 시스템 사용)
+// nutrition-info 라우터 초기화 (Supabase 사용)
 const nutritionInfoRouter = require("./routes/nutrition-info")(
-  localNutritionDataManager, // 로컬 파일 기반 데이터 매니저 사용
+  supabaseNutritionDataManager, // Supabase 기반 데이터 매니저 사용
   null, // contentAggregator (현재 사용하지 않음)
   null, // aiContentProcessor (현재 사용하지 않음)
   recommendationService
@@ -1113,18 +1115,20 @@ server.listen(PORT, async () => {
   }
 
   // 서버 시작 시 초기화 작업 수행
-  console.log("서버 초기화 시작...");
+  console.log("🚀 서버 초기화 시작...");
 
-  // 초기 메모리 상태 확인
-  const initialMemory = memoryMonitor.getMemoryUsage();
-  console.log(
-    `초기 메모리 사용량: ${initialMemory.usagePercent * 100}% (${
-      initialMemory.heapUsed
-    }MB / ${initialMemory.heapTotal}MB)`
-  );
+  // 초기 메모리 상태 확인 (프로덕션에서는 간단히만)
+  if (process.env.NODE_ENV !== 'production') {
+    const initialMemory = memoryMonitor.getMemoryUsage();
+    console.log(
+      `초기 메모리 사용량: ${initialMemory.usagePercent * 100}% (${
+        initialMemory.heapUsed
+      }MB / ${initialMemory.heapTotal}MB)`
+    );
+  }
 
-  // 기존 사용자들의 일일 한도 업데이트
-  updateDailyLimits();
+  // 기존 사용자들의 일일 한도 업데이트 (함수 삭제됨)
+  // updateDailyLimits();
 
   initializeDailyLimits();
   initializeSecurityData();
@@ -1155,5 +1159,5 @@ server.listen(PORT, async () => {
   setTimeout(performMemoryCleanup, 5000);
 
 
-  console.log("서버 초기화 완료 - 모든 스케줄러가 시작되었습니다.");
+  console.log("✅ 서버 초기화 완료 - 모든 스케줄러가 시작되었습니다.");
 });

@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-10-01T10:36:01.399Z",
+  "sourceProject": {
+    "url": "https://jtomskzwaqoeosxuchwg.supabase.co",
+    "region": "supabase"
+  },
+  "totalTables": 8,
+  "totalRecords": 278,
+  "tables": [
+    {
+      "name": "categories",
+      "recordCount": 36,
+      "backupFile": "categories-backup-2025-10-01T10-35-55-556Z.json"
+    },
+    {
+      "name": "tags",
+      "recordCount": 124,
+      "backupFile": "tags-backup-2025-10-01T10-35-55-556Z.json"
+    },
+    {
+      "name": "nutrition_posts",
+      "recordCount": 27,
+      "backupFile": "nutrition_posts-backup-2025-10-01T10-35-55-556Z.json"
+    },
+    {
+      "name": "products",
+      "recordCount": 8,
+      "backupFile": "products-backup-2025-10-01T10-35-55-556Z.json"
+    },
+    {
+      "name": "reviews",
+      "recordCount": 0,
+      "backupFile": "reviews-backup-2025-10-01T10-35-55-556Z.json"
+    },
+    {
+      "name": "users",
+      "recordCount": 0,
+      "backupFile": "users-backup-2025-10-01T10-35-55-556Z.json"
+    },
+    {
+      "name": "promotions",
+      "recordCount": 2,
+      "backupFile": "promotions-backup-2025-10-01T10-35-55-556Z.json"
+    },
+    {
+      "name": "post_related_products",
+      "recordCount": 81,
+      "backupFile": "post_related_products-backup-2025-10-01T10-35-55-556Z.json"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-10-01T11:06:34.363Z",
+  "targetProject": "https://ovncracjrivndsjjfyoe.supabase.co",
+  "migrationResults": {
+    "categories": {
+      "success": true,
+      "migrated": 0,
+      "skipped": 36
+    },
+    "tags": {
+      "success": true,
+      "migrated": 124,
+      "skipped": 0
+    },
+    "nutrition_posts": {
+      "success": false,
+      "error": "테이블이 비어있음"
+    },
+    "products": {
+      "success": false,
+      "error": "테이블이 비어있음"
+    },
+    "promotions": {
+      "success": true,
+      "migrated": 0,
+      "skipped": 0
+    }
+  },
+  "success": false
+}

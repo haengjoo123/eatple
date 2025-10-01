@@ -93,15 +93,21 @@ class NutritionInfoManager {
                 if (entry.isIntersecting) {
                     const img = entry.target;
                     if (img.dataset.src) {
+                        // 이미지 로딩 최적화: 우선순위 힌트 추가
                         img.src = img.dataset.src;
                         img.removeAttribute('data-src');
                         this.intersectionObserver.unobserve(img);
+                        
+                        // 이미지 로딩 완료 시 부드러운 전환 효과
+                        img.addEventListener('load', () => {
+                            img.style.opacity = '1';
+                        }, { once: true });
                     }
                 }
             });
         }, {
-            rootMargin: '50px 0px', // 50px 미리 로드
-            threshold: 0.1
+            rootMargin: '100px 0px', // 100px 전에 미리 로딩 시작 (더 빠른 로딩)
+            threshold: 0.01 // 더 민감하게 반응
         });
     }
 
@@ -309,140 +315,15 @@ class NutritionInfoManager {
 
     async loadNutritionInfo() {
         if (this.isLoading) return;
-        
         this.isLoading = true;
-        
-        // 스트리밍 로딩 시도, 실패 시 일반 로딩으로 폴백
         try {
-            await this.loadNutritionInfoStreaming();
-        } catch (error) {
-            console.warn('스트리밍 로딩 실패, 일반 로딩으로 전환:', error);
             await this.loadNutritionInfoFallback();
         } finally {
             this.isLoading = false;
         }
     }
 
-    async loadNutritionInfoStreaming() {
-        // 스켈레톤 UI 건너뛰고 바로 스트리밍 로딩 상태 표시
-        this.showStreamingLoading();
-
-        const params = new URLSearchParams({
-            page: this.currentPage,
-            limit: this.itemsPerPage,
-            sortBy: this.currentSort,
-            sortOrder: this.currentSortOrder,
-            ...this.currentFilters
-        });
-
-        // 기존 EventSource 연결이 있으면 정리
-        if (this.currentEventSource) {
-            this.currentEventSource.close();
-        }
-
-        // EventSource를 사용한 SSE 연결
-        this.currentEventSource = new EventSource(`/api/nutrition-info/stream?${params}`);
-        const eventSource = this.currentEventSource;
-        
-        let allData = [];
-        let paginationData = {};
-        let hasError = false;
-
-        return new Promise((resolve, reject) => {
-            // 연결 타임아웃 설정 (30초)
-            const timeout = setTimeout(() => {
-                eventSource.close();
-                reject(new Error('스트리밍 연결 타임아웃'));
-            }, 30000);
-
-            let hasReceivedData = false; // 데이터 수신 여부 추적
-
-            eventSource.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    console.log('기본 메시지 수신:', data);
-                } catch (error) {
-                    console.error('메시지 파싱 오류:', error);
-                }
-            };
-
-            // 시작 이벤트
-            eventSource.addEventListener('start', (event) => {
-                const data = JSON.parse(event.data);
-                console.log('스트리밍 시작:', data.message);
-                this.showStreamingProgress('서버 연결 완료, 데이터 로딩 중...', 5);
-            });
-
-            // 진행 상황 이벤트
-            eventSource.addEventListener('progress', (event) => {
-                const data = JSON.parse(event.data);
-                const progress = Math.round((data.processed / data.total) * 100);
-                this.showStreamingProgress(data.message, progress);
-                
-                // 총 데이터가 0인 경우 미리 감지
-                if (data.total === 0) {
-                    hasReceivedData = false; // 데이터가 없음을 명시적으로 표시
-                }
-            });
-
-            // 배치 데이터 이벤트
-            eventSource.addEventListener('batch', (event) => {
-                const data = JSON.parse(event.data);
-                hasReceivedData = true; // 데이터 수신됨 표시
-                
-                // 배치 데이터를 전체 데이터에 추가
-                allData = allData.concat(data.data);
-                
-                // 실시간으로 카드 렌더링
-                this.renderBatchData(data.data, data.batch);
-                
-                // 첫 번째 배치에서 콘텐츠 영역 표시
-                if (data.batch === 1) {
-                    this.showContent();
-                }
-            });
-
-            // 완료 이벤트
-            eventSource.addEventListener('complete', (event) => {
-                clearTimeout(timeout);
-                const data = JSON.parse(event.data);
-                paginationData = data.pagination;
-                
-                console.log('스트리밍 완료:', data.message);
-                
-                // 데이터가 없는 경우 빈 상태 표시
-                if (!hasReceivedData || allData.length === 0) {
-                    this.showEmpty();
-                } else {
-                    // 페이지네이션 렌더링
-                    this.renderPagination(paginationData);
-                }
-                
-                eventSource.close();
-                resolve();
-            });
-
-            // 에러 이벤트
-            eventSource.addEventListener('error', (event) => {
-                clearTimeout(timeout);
-                const data = JSON.parse(event.data);
-                console.error('스트리밍 오류:', data);
-                hasError = true;
-                eventSource.close();
-                reject(new Error(data.error || '스트리밍 중 오류가 발생했습니다.'));
-            });
-
-            // 연결 오류 처리
-            eventSource.onerror = (error) => {
-                clearTimeout(timeout);
-                console.error('EventSource 연결 오류:', error);
-                eventSource.close();
-                if (!hasError) {
-                    reject(new Error('스트리밍 연결 오류'));
-                }
-            };
-        });
-    }
+    // 스트리밍 기능 제거됨
 
     async loadNutritionInfoFallback() {
         // 폴백에서도 스켈레톤 대신 간단한 로딩 표시
@@ -538,14 +419,16 @@ class NutritionInfoManager {
         const defaultImage = this.getDefaultImage();
 
         // 이미지 지연 로딩을 위한 플레이스홀더
-        const shouldLazyLoad = this.intersectionObserver && this.renderedCardCount > 4; // 첫 4개는 즉시 로드
+        const shouldLazyLoad = this.intersectionObserver && this.renderedCardCount > 2; // 첫 2개만 즉시 로드
 
         newCard.innerHTML = `
             <div class="nutrition-card-thumbnail">
                 <img ${shouldLazyLoad ? `data-src="${imageUrl}"` : `src="${imageUrl}"`}
                      alt="${this.escapeHtml(item.title)}" 
                      ${shouldLazyLoad ? 'src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\'%3E%3Crect width=\'100%25\' height=\'100%25\' fill=\'%23f8fafc\'/%3E%3C/svg%3E"' : ''}
-                     onerror="this.src='${defaultImage}'">
+                     loading="${shouldLazyLoad ? 'lazy' : 'eager'}"
+                     decoding="async"
+                     onerror="this.src='${defaultImage}'; this.onerror=null;">
             </div>
             <div class="nutrition-card-content">
                 <h3 class="nutrition-card-title">${this.escapeHtml(item.title)}</h3>
@@ -620,7 +503,16 @@ class NutritionInfoManager {
     }
 
     renderPagination(pagination) {
-        if (!pagination || pagination.totalPages <= 1) {
+        if (!pagination) {
+            this.paginationContainer.style.display = 'none';
+            return;
+        }
+
+        const limit = pagination.limit || this.itemsPerPage || 20;
+        const totalPages = pagination.totalPages || Math.ceil((pagination.totalCount || 0) / limit) || 1;
+        const currentPage = pagination.page || pagination.currentPage || this.currentPage || 1;
+
+        if (totalPages <= 1) {
             this.paginationContainer.style.display = 'none';
             return;
         }
@@ -628,8 +520,6 @@ class NutritionInfoManager {
         this.paginationContainer.style.display = 'flex';
         
         // 화살표 버튼 상태 설정
-        const currentPage = pagination.page || pagination.currentPage || 1;
-        const totalPages = pagination.totalPages || 1;
         
         this.prevPageBtn.disabled = currentPage <= 1;
         this.nextPageBtn.disabled = currentPage >= totalPages;
@@ -766,7 +656,7 @@ class NutritionInfoManager {
             // 배치별 애니메이션 지연 설정
             const globalIndex = ((batchNumber - 1) * 4) + index; // 배치 크기가 4라고 가정
             card.style.animationDelay = `${Math.min(globalIndex * 0.1, 1.5)}s`; // 최대 1.5초로 제한
-            card.classList.add('streaming-fade-in');
+            card.classList.add('progressive-fade-in');
             
             fragment.appendChild(card);
         });
@@ -813,52 +703,11 @@ class NutritionInfoManager {
         }
     }
 
-    // 스트리밍 로딩 상태 표시
-    showStreamingLoading() {
-        this.hideAllStates();
-        
-        // 스트리밍 로딩 컨테이너 생성 또는 표시
-        let streamingContainer = document.getElementById('streamingLoadingState');
-        if (!streamingContainer) {
-            streamingContainer = this.createStreamingLoadingContainer();
-            this.loadingState.parentNode.insertBefore(streamingContainer, this.loadingState);
-        }
-        
-        streamingContainer.style.display = 'block';
-    }
+    // 스트리밍 기능 제거됨
 
-    // 스트리밍 로딩 컨테이너 생성
-    createStreamingLoadingContainer() {
-        const container = document.createElement('div');
-        container.id = 'streamingLoadingState';
-        container.className = 'streaming-loading-container';
-        
-        container.innerHTML = `
-            <div class="streaming-loading-content">
-                <div class="streaming-loading-icon">
-                    <div class="streaming-spinner"></div>
-                </div>
-                <h3 id="streamingLoadingTitle">실시간 데이터 로딩 중...</h3>
-                <div class="streaming-progress-bar">
-                    <div id="streamingProgressFill" class="streaming-progress-fill" style="width: 2%"></div>
-                </div>
-                <p id="streamingLoadingMessage">서버에 연결하는 중...</p>
-            </div>
-        `;
-        
-        return container;
-    }
+    // 스트리밍 기능 제거됨
 
-    // 스트리밍 진행 상황 업데이트
-    showStreamingProgress(message, progress) {
-        const titleElement = document.getElementById('streamingLoadingTitle');
-        const messageElement = document.getElementById('streamingLoadingMessage');
-        const progressFill = document.getElementById('streamingProgressFill');
-        
-        if (titleElement) titleElement.textContent = '실시간 데이터 로딩 중...';
-        if (messageElement) messageElement.textContent = message;
-        if (progressFill) progressFill.style.width = `${progress}%`;
-    }
+    // 스트리밍 기능 제거됨
 
     // 상태 표시 메서드들 - 중복 제거 및 최적화
     hideAllStates() {
@@ -870,7 +719,7 @@ class NutritionInfoManager {
             this.emptyState,
             this.nutritionGrid,
             this.paginationContainer,
-            document.getElementById('streamingLoadingState')
+            null
         ].filter(Boolean); // null/undefined 요소 제거
 
         states.forEach(state => {
@@ -895,8 +744,12 @@ class NutritionInfoManager {
     }
 
     showContent() {
-        this.hideAllStates();
+        // 필요한 상태만 숨기고, 페이지네이션은 renderPagination가 제어하도록 둠
+        if (this.loadingState) this.loadingState.style.display = 'none';
+        if (this.errorState) this.errorState.style.display = 'none';
+        if (this.emptyState) this.emptyState.style.display = 'none';
         this.nutritionGrid.style.display = 'grid';
+        // renderPagination에서 이미 표시 여부를 설정함
     }
 
     showToast(message, type = 'info') {

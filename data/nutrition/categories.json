@@ -1,290 +1,290 @@
 [
   {
-    "id": "4bd0b0e2-423e-47fb-86f0-17a61f4773c8",
+    "id": "cb2d07b7-a197-44c1-9f6a-b6d081c8f777",
+    "name": "anti_aging",
+    "description": "안티에이징 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "835b7bd6-5a50-4a28-8bd1-86a1ac6ab976",
+    "name": "beauty",
+    "description": "뷰티 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "5ffbaeee-26c1-4a39-8554-ac4c8176a61b",
+    "name": "blood_sugar",
+    "description": "혈당관리 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "6c115920-77eb-4807-88db-027754edc7e2",
+    "name": "bone_joint",
+    "description": "뼈/관절 건강 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "ae049d38-3be3-4a18-bce7-412deeca9e52",
+    "name": "brain_health",
+    "description": "뇌건강 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "781d3aa9-f1aa-407d-9cdd-9d4145c9e7a2",
+    "name": "cancer",
+    "description": "암 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "250c9e73-b1c6-4773-8c5d-818bd177f131",
+    "name": "cardiovascular",
+    "description": "심혈관 건강 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "a8cbf321-2b14-4a88-8aec-c54e0c52386b",
+    "name": "diet",
+    "description": "식단 관련 영양 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "4a1f254e-fc19-4a95-b19d-f0119a8827da",
+    "name": "energy_fatigue",
+    "description": "에너지/피로 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "440cc936-9f11-4f6b-949b-2bf8551e87e3",
+    "name": "ent",
+    "description": "이비인후과 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "5c374995-0919-4896-a4b2-859f314398d1",
+    "name": "eye_health",
+    "description": "눈건강 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "49e70961-e5a5-48bf-85b3-977e5642ca97",
+    "name": "fat_loss",
+    "description": "체중감량 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "bbc2e693-8fa1-4ac0-befc-9717dc25c6a3",
+    "name": "functional",
+    "description": "기능성 식품 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "d3eaa0b2-9f90-4836-b99d-2e2e2128ad96",
+    "name": "gut_health",
+    "description": "장건강 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "7aff7e5b-98d2-46c4-a267-c4d20365d922",
+    "name": "health",
+    "description": "건강 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "337d0603-c286-486d-80a3-aa0404bc5549",
+    "name": "immunity",
+    "description": "면역력 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "4426ef78-de83-467b-8ca6-c207857fae12",
+    "name": "kidney_urinary",
+    "description": "신장/비뇨기 건강 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "3c69ecf7-1242-47e9-a3d0-4207f0487e54",
+    "name": "liver_health",
+    "description": "간건강 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "a06ae94a-130e-4b60-86c9-319041ae91ea",
+    "name": "lung_respiratory",
+    "description": "폐/호흡기 건강 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "05c18332-8ffc-4376-a88c-6298aa724cc6",
+    "name": "mens_health",
+    "description": "남성 건강 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "24a90748-a3cd-4a89-842c-dad6324979ea",
+    "name": "mental_health",
+    "description": "정신건강 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "e5674197-64c7-42da-8021-ba9919b332da",
+    "name": "muscle_exercise",
+    "description": "근육/운동 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "87183229-c6a9-4ed1-8a96-9ff371ddc33b",
+    "name": "omega",
+    "description": "오메가3 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "1efbddf2-a2a5-4dfd-8e5c-928077aa4a2f",
+    "name": "oral_health",
+    "description": "구강건강 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "9282b929-dbae-4663-a236-ca107f13f613",
+    "name": "organic",
+    "description": "유기농 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "27568473-dbf9-489a-8e66-7c41acca1324",
+    "name": "pain",
+    "description": "통증 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "21c8ec8b-8647-4b60-8da9-db9d6c236f40",
+    "name": "pregnancy_parenting",
+    "description": "임신/육아 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "d4af1293-9b44-480a-9507-7aaef1491954",
+    "name": "protein",
+    "description": "단백질 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "26c5b5ae-59b0-4b46-a108-ff40576171ac",
     "name": "research",
     "description": "영양학 연구 정보",
     "post_count": 0,
-    "created_at": "2025-07-27T12:52:39.322501+00:00",
-    "updated_at": "2025-07-27T12:52:39.322501+00:00"
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
   },
   {
-    "id": "98c48246-87b3-4bc8-80b1-e0a0d719f7f2",
-    "name": "diet",
-    "description": "체중 관리 제품",
-    "post_count": 2,
-    "created_at": "2025-07-27T12:52:39.322501+00:00",
-    "updated_at": "2025-07-27T12:52:39.322501+00:00"
+    "id": "6eabc73b-682d-4b85-b9bd-181baa907bbc",
+    "name": "skin_hair",
+    "description": "피부/모발 건강 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T14:16:06.728Z"
   },
   {
-    "id": "b92019d6-cc58-46a3-a968-6b7a6e982ec0",
-    "name": "trends",
-    "description": "영양 트렌드 정보",
-    "post_count": 2,
-    "created_at": "2025-07-27T12:52:39.322501+00:00",
-    "updated_at": "2025-07-27T12:52:39.322501+00:00"
+    "id": "0f22ed82-63ab-4356-81da-837cfc910729",
+    "name": "sleep",
+    "description": "수면 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
   },
   {
-    "id": "1d668f80-1174-4981-a3ad-3a73943ce990",
+    "id": "4dfd6502-3863-4129-a3eb-399603ce5ee7",
+    "name": "supplement",
+    "description": "보충제 관련 정보",
+    "post_count": 0,
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
+  },
+  {
+    "id": "369c6e4e-5bc7-43cd-87eb-e61b03478c92",
     "name": "supplements",
     "description": "영양 보충제 관련 정보",
-    "post_count": 1,
-    "created_at": "2025-07-27T12:52:39.322501+00:00",
-    "updated_at": "2025-07-27T12:52:39.322501+00:00"
-  },
-  {
-    "id": "7903f7f3-76eb-4066-a154-a603edaeafb9",
-    "name": "omega",
-    "description": "오메가-3 및 필수 지방산 보충제",
     "post_count": 0,
-    "created_at": "2025-08-06T01:58:15.396273+00:00",
-    "updated_at": "2025-08-06T01:58:15.396273+00:00"
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
   },
   {
-    "id": "707966ed-4eed-4d8d-b09f-125f107761e2",
-    "name": "supplement",
-    "description": "비타민, 미네랄 등 건강보조식품",
+    "id": "21c41f01-7306-4c25-bc8c-bbb11dd624eb",
+    "name": "trends",
+    "description": "영양 트렌드 정보",
     "post_count": 0,
-    "created_at": "2025-08-06T01:58:15.456781+00:00",
-    "updated_at": "2025-08-06T01:58:15.456781+00:00"
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
   },
   {
-    "id": "06ce86fc-678e-4092-adb4-f12c83518b36",
+    "id": "9503de8d-14a8-45a7-ac89-05300c92890d",
     "name": "vitamin",
-    "description": "각종 비타민 제품",
+    "description": "비타민 관련 정보",
     "post_count": 0,
-    "created_at": "2025-08-06T01:58:15.514166+00:00",
-    "updated_at": "2025-08-06T01:58:15.514166+00:00"
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
   },
   {
-    "id": "f7147b3c-652a-45d0-afaa-3698b9d42912",
-    "name": "beauty",
-    "description": "미용 및 피부 관리 제품",
-    "post_count": 0,
-    "created_at": "2025-08-06T01:58:15.569156+00:00",
-    "updated_at": "2025-08-06T01:58:15.569156+00:00"
-  },
-  {
-    "id": "7f5ea633-708f-4aff-978b-821359ed32c9",
-    "name": "protein",
-    "description": "단백질 보충제",
-    "post_count": 0,
-    "created_at": "2025-08-06T01:58:15.62271+00:00",
-    "updated_at": "2025-08-06T01:58:15.62271+00:00"
-  },
-  {
-    "id": "18feb0c9-a383-4ab9-9461-389490a023b8",
-    "name": "health",
-    "description": "일반 건강식품",
-    "post_count": 0,
-    "created_at": "2025-08-06T01:58:15.775753+00:00",
-    "updated_at": "2025-08-06T01:58:15.775753+00:00"
-  },
-  {
-    "id": "50b2b9a5-fe40-4f5f-bc17-e1d3b7457ca1",
-    "name": "functional",
-    "description": "특정 기능을 가진 식품",
-    "post_count": 0,
-    "created_at": "2025-08-06T01:58:15.853558+00:00",
-    "updated_at": "2025-08-06T01:58:15.853558+00:00"
-  },
-  {
-    "id": "01c5bfaa-09d6-40e4-8c9c-83d154030808",
-    "name": "organic",
-    "description": "유기농 제품",
-    "post_count": 0,
-    "created_at": "2025-08-06T01:58:15.91801+00:00",
-    "updated_at": "2025-08-06T01:58:15.91801+00:00"
-  },
-  {
-    "id": "4e534856-6834-45ef-a45d-c182f84005ad",
-    "name": "anti_aging",
-    "description": "anti_aging 관련 영양 정보",
-    "post_count": 3,
-    "created_at": "2025-09-20T14:34:51.279005+00:00",
-    "updated_at": "2025-09-20T14:34:51.279005+00:00"
-  },
-  {
-    "id": "b9c82c6a-d146-4546-b2c0-9700b47703fe",
-    "name": "fat_loss",
-    "description": "fat_loss 관련 영양 정보",
-    "post_count": 2,
-    "created_at": "2025-09-20T14:35:36.202553+00:00",
-    "updated_at": "2025-09-20T14:35:36.202553+00:00"
-  },
-  {
-    "id": "9d905e31-1550-4ed3-b9e4-c09c44bd1ec6",
-    "name": "brain_health",
-    "description": "brain_health 관련 영양 정보",
-    "post_count": 1,
-    "created_at": "2025-09-20T14:37:19.156895+00:00",
-    "updated_at": "2025-09-20T14:37:19.156895+00:00"
-  },
-  {
-    "id": "98d2075d-5127-4049-a53c-a49cc7fde877",
-    "name": "cancer",
-    "description": "cancer 관련 영양 정보",
-    "post_count": 4,
-    "created_at": "2025-09-20T14:37:39.366145+00:00",
-    "updated_at": "2025-09-20T14:37:39.366145+00:00"
-  },
-  {
-    "id": "aa4d6061-9273-476c-8598-e18f15356995",
-    "name": "eye_health",
-    "description": "eye_health 관련 영양 정보",
-    "post_count": 2,
-    "created_at": "2025-09-20T14:40:00.203476+00:00",
-    "updated_at": "2025-09-20T14:40:00.203476+00:00"
-  },
-  {
-    "id": "30f0cdc3-fa72-424d-b2af-9d5a3b46b2d0",
-    "name": "cardiovascular",
-    "description": "심혈관 관련 영양 정보",
-    "post_count": 2,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "fc27b9b7-dee4-470b-9417-57db57d180e6",
-    "name": "skin_hair",
-    "description": "피부/모발 관련 영양 정보",
-    "post_count": 2,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "dd9517cf-b4d1-42b2-ae79-e5c72ac39600",
-    "name": "oral_health",
-    "description": "구강 건강 관련 영양 정보",
-    "post_count": 1,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "4b5bc340-0e90-408b-8104-663d01e55313",
-    "name": "blood_sugar",
-    "description": "혈당 관리 관련 영양 정보",
-    "post_count": 3,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "464a6079-c82c-4533-9859-98a48133158a",
-    "name": "pregnancy_parenting",
-    "description": "임신/육아 관련 영양 정보",
-    "post_count": 1,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "dce4fb37-0f6f-4e68-9e31-feadc784572e",
-    "name": "mens_health",
-    "description": "남성 건강 관련 영양 정보",
-    "post_count": 1,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "3dbca465-580d-4955-b24a-82245d1f018e",
-    "name": "ent",
-    "description": "이비인후과 관련 영양 정보",
-    "post_count": 0,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "99d0e537-cb44-4b5a-b35a-3a050b0d4462",
-    "name": "energy_fatigue",
-    "description": "에너지/피로 관련 영양 정보",
-    "post_count": 0,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "93af55ec-4778-471c-8cf9-0d1e63ef45bf",
-    "name": "gut_health",
-    "description": "장 건강 관련 영양 정보",
-    "post_count": 0,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "b8ef43bc-9bf9-496c-bfd2-d18554e4b687",
-    "name": "bone_joint",
-    "description": "뼈/관절 관련 영양 정보",
-    "post_count": 0,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "a6319d6b-3100-4100-9985-3f9ec62869fc",
-    "name": "kidney_urinary",
-    "description": "신장/비뇨기 관련 영양 정보",
-    "post_count": 0,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "1ebe7dfb-a3e8-4671-939d-055e2d90304b",
-    "name": "liver_health",
-    "description": "간 건강 관련 영양 정보",
-    "post_count": 0,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "ae04342c-3274-418d-b1d8-40ed7c9c71eb",
-    "name": "lung_respiratory",
-    "description": "폐/호흡기 관련 영양 정보",
-    "post_count": 0,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "66913186-0044-46f0-935a-984d9843c390",
+    "id": "aa585832-fde1-4dde-b3fb-829133fcd942",
     "name": "womens_health",
-    "description": "여성 건강 관련 영양 정보",
+    "description": "여성 건강 관련 정보",
     "post_count": 0,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "84c94395-3d30-4995-9568-e6d5974c965b",
-    "name": "mental_health",
-    "description": "정신 건강 관련 영양 정보",
-    "post_count": 0,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "210331b6-bc07-4701-a359-dbb91b598b40",
-    "name": "muscle_exercise",
-    "description": "근력/운동 관련 영양 정보",
-    "post_count": 0,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "3d358d9e-db19-4304-90b5-035155dcafca",
-    "name": "pain",
-    "description": "통증 관련 영양 정보",
-    "post_count": 0,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "d392351f-7560-4f75-b9d6-29e0f7c03772",
-    "name": "immunity",
-    "description": "면역력 관련 영양 정보",
-    "post_count": 2,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
-  },
-  {
-    "id": "3e75f2e4-d55a-4382-b458-3eb861cc2051",
-    "name": "sleep",
-    "description": "수면 관련 영양 정보",
-    "post_count": 2,
-    "created_at": "2025-09-20T14:52:18.43234+00:00",
-    "updated_at": "2025-09-20T14:52:18.43234+00:00"
+    "created_at": "2025-10-01T11:04:49.401333+00:00",
+    "updated_at": "2025-10-01T11:04:49.401333+00:00"
   }
 ]

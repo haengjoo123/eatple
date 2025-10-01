@@ -5,11 +5,11 @@
 
 const express = require('express');
 const router = express.Router();
-const LocalNutritionDataManager = require('../utils/localNutritionDataManager');
+const SupabaseNutritionDataManager = require('../utils/supabaseNutritionDataManager');
 
 module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, recommendationService) => {
-    // 로컬 JSON 기반 데이터 매니저 초기화
-    const localDataManager = new LocalNutritionDataManager();
+    // Supabase 기반 데이터 매니저 초기화
+    const supabaseDataManager = new SupabaseNutritionDataManager();
 
     // 헬퍼 함수들
     const parseFiltersAndPagination = (query) => {
@@ -80,10 +80,21 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             // 일반 사용자는 임시저장된 포스팅을 볼 수 없음
             filters.excludeDrafts = true;
             
-            // 로컬 데이터에서 조회
-            const result = await localDataManager.getNutritionInfoList(filters, pagination);
+            // Supabase 데이터에서 조회
+            const result = await supabaseDataManager.getNutritionInfoList(filters, pagination);
             const data = result && result.data ? result.data : [];
             const paginationData = result && result.pagination ? result.pagination : {};
+            
+            // 응답 데이터 크기 로깅
+            const responseData = {
+                success: true,
+                data: data.map(safeToJSON),
+                pagination: paginationData,
+                cached: false
+            };
+            
+            const responseSize = JSON.stringify(responseData).length;
+            console.log(`[PERFORMANCE] 영양정보 API 응답 크기: ${(responseSize / 1024 / 1024).toFixed(2)}MB (${data.length}개 항목)`);
             
             // HTTP 캐시 헤더 설정
             try {
@@ -92,12 +103,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
                 // 헤더 설정 실패는 무시
             }
             
-            res.json({
-                success: true,
-                data: data.map(safeToJSON),
-                pagination: paginationData,
-                cached: false
-            });
+            res.json(responseData);
         } catch (error) {
             console.error('영양 정보 목록 조회 오류:', error);
             res.status(500).json({
@@ -148,7 +154,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             filters.excludeDrafts = true;
             
             // 먼저 해당 페이지의 전체 데이터를 조회
-            const fullPageResult = await localDataManager.getNutritionInfoList(filters, pagination);
+            const fullPageResult = await supabaseDataManager.getNutritionInfoList(filters, pagination);
             const fullPageData = fullPageResult && fullPageResult.data ? fullPageResult.data : [];
             
             // 전체 데이터를 배치로 나누어 전송
@@ -271,7 +277,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             filters.excludeDrafts = true;
 
             // 로컬 데이터에서 검색
-            const result = await localDataManager.searchNutritionInfo(query, filters);
+            const result = await supabaseDataManager.searchNutritionInfo(query, filters);
             
             // 안전하게 데이터 처리
             const data = result && result.data ? result.data : [];
@@ -314,7 +320,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             filters.excludeDrafts = true;
 
             // 로컬 데이터에서 검색
-            const result = await localDataManager.searchNutritionInfo(query, filters);
+            const result = await supabaseDataManager.searchNutritionInfo(query, filters);
             
             // 안전하게 데이터 처리
             const data = result && result.data ? result.data : [];
@@ -397,7 +403,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             for (const id of bookmarkIds) {
                 try {
                     console.log(`[BOOKMARK API] 북마크 정보 조회 중 ${id}`);
-                    const info = await localDataManager.getNutritionInfoById(id);
+                    const info = await supabaseDataManager.getNutritionInfoById(id);
                     if (info && info.isActive) {
                         validBookmarkedInfo.push(info.toJSON());
                         console.log(`[BOOKMARK API] 북마크 정보 추가됨 ${id}`);
@@ -493,7 +499,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             let actualCount = 0;
             for (const id of bookmarkIds) {
                 try {
-                    const info = await localDataManager.getNutritionInfoById(id);
+                    const info = await supabaseDataManager.getNutritionInfoById(id);
                     if (info && info.isActive) {
                         actualCount++;
                     }
@@ -531,7 +537,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             } catch (_) {}
 
             // 영양 정보 존재 여부 확인
-            const nutritionInfo = await localDataManager.getNutritionInfoById(nutritionInfoId);
+            const nutritionInfo = await supabaseDataManager.getNutritionInfoById(nutritionInfoId);
             if (!nutritionInfo) {
                 return res.status(404).json({
                     success: false,
@@ -613,7 +619,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             sendData('start', { message: '상세 정보를 불러오는 중입니다...' });
 
             // 전체 영양 정보 조회 (기존 방식 사용)
-            const fullData = await localDataManager.getNutritionInfoById(nutritionInfoId);
+            const fullData = await supabaseDataManager.getNutritionInfoById(nutritionInfoId);
             
             if (!fullData) {
                 throw new Error('영양 정보를 찾을 수 없습니다.');
@@ -740,7 +746,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             const { id } = req.params;
             
             // 로컬 데이터에서 조회
-            const nutritionInfo = await localDataManager.getNutritionInfoById(id);
+            const nutritionInfo = await supabaseDataManager.getNutritionInfoById(id);
             
             if (!nutritionInfo) {
                 console.error(`[ERROR] 영양정보 ${id}를 로컬에서 찾을 수 없음`);
@@ -752,7 +758,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
 
             // 조회수 증가
             try {
-                await localDataManager.incrementViewCount(id);
+                await supabaseDataManager.incrementViewCount(id);
             } catch (viewError) {
                 console.error('조회수 증가 오류:', viewError);
             }
@@ -773,14 +779,14 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
                     } else {
                         // 비로그인 사용자는 카테고리/태그 기반 추천
                         const categoryFilter = { category: responseData.category };
-                        const categoryResult = await localDataManager.getNutritionInfoList(
+                        const categoryResult = await supabaseDataManager.getNutritionInfoList(
                             categoryFilter, 
                             { limit: 3 }
                         );
                         
                         const tagFilter = responseData.tags && responseData.tags.length > 0 ? 
                             { tags: responseData.tags.slice(0, 2) } : {};
-                        const tagResult = await localDataManager.getNutritionInfoList(
+                        const tagResult = await supabaseDataManager.getNutritionInfoList(
                             tagFilter, 
                             { limit: 2 }
                         );
@@ -837,7 +843,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
     router.get('/meta/categories', async (req, res) => {
         try {
             // 로컬 데이터에서 카테고리 조회
-            const categories = await localDataManager.getCategories();
+            const categories = await supabaseDataManager.getCategories();
 
             res.json({
                 success: true,
@@ -883,7 +889,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
                 });
             }
 
-            const nutritionInfo = await localDataManager.getNutritionInfoById(nutritionInfoId);
+            const nutritionInfo = await supabaseDataManager.getNutritionInfoById(nutritionInfoId);
             if (!nutritionInfo) {
                 return res.status(404).json({
                     success: false,
@@ -894,12 +900,12 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             let result;
             if (action === 'add') {
                 result = await recommendationService.recordUserInteraction(userId, nutritionInfoId, 'bookmarks');
-                await localDataManager.updateNutritionInfo(nutritionInfoId, {
+                await supabaseDataManager.updateNutritionInfo(nutritionInfoId, {
                     bookmarkCount: (nutritionInfo.bookmarkCount || 0) + 1
                 });
             } else {
                 result = await recommendationService.removeUserInteraction(userId, nutritionInfoId, 'bookmarks');
-                await localDataManager.updateNutritionInfo(nutritionInfoId, {
+                await supabaseDataManager.updateNutritionInfo(nutritionInfoId, {
                     bookmarkCount: Math.max(0, (nutritionInfo.bookmarkCount || 0) - 1)
                 });
             }
@@ -949,7 +955,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
                 });
             }
 
-            const nutritionInfo = await localDataManager.getNutritionInfoById(nutritionInfoId);
+            const nutritionInfo = await supabaseDataManager.getNutritionInfoById(nutritionInfoId);
             if (!nutritionInfo) {
                 return res.status(404).json({
                     success: false,
@@ -960,12 +966,12 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             let result;
             if (action === 'add') {
                 result = await recommendationService.recordUserInteraction(userId, nutritionInfoId, 'likes');
-                await localDataManager.updateNutritionInfo(nutritionInfoId, {
+                await supabaseDataManager.updateNutritionInfo(nutritionInfoId, {
                     likeCount: (nutritionInfo.likeCount || 0) + 1
                 });
             } else {
                 result = await recommendationService.removeUserInteraction(userId, nutritionInfoId, 'likes');
-                await localDataManager.updateNutritionInfo(nutritionInfoId, {
+                await supabaseDataManager.updateNutritionInfo(nutritionInfoId, {
                     likeCount: Math.max(0, (nutritionInfo.likeCount || 0) - 1)
                 });
             }

@@ -15,13 +15,8 @@ class NutritionInfoDetailManager {
         // 왜: Supabase 응답 지연 시 사용자에게 즉시 콘텐츠를 보여주고, 백그라운드에서 최신화하기 위함
         this.CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12시간 TTL
         
-        // 스트리밍 관련 속성
-        this.currentEventSource = null;
-        this.sectionsData = {
-            basic: null,
-            content: null,
-            products: []
-        };
+        // 영양정보 데이터
+        this.nutritionInfo = null;
         
         this.initializeElements();
         this.bindEvents();
@@ -119,121 +114,10 @@ class NutritionInfoDetailManager {
             return;
         }
 
-        // 스트리밍 로딩 시도, 실패 시 일반 로딩으로 폴백
-        try {
-            await this.loadNutritionInfoStreaming();
-        } catch (error) {
-            console.warn('스트리밍 로딩 실패, 일반 로딩으로 전환:', error);
-            await this.loadNutritionInfoFallback();
-        }
+        // 일반 로딩 사용
+        await this.loadNutritionInfoFallback();
     }
 
-    async loadNutritionInfoStreaming() {
-        // 스트리밍 로딩 상태 표시
-        this.showStreamingLoading();
-
-        // EventSource를 사용한 SSE 연결
-        this.currentEventSource = new EventSource(`/api/nutrition-info/${this.nutritionInfoId}/stream`);
-        const eventSource = this.currentEventSource;
-        
-        let hasError = false;
-        let sectionsReceived = {
-            basic: false,
-            content: false,
-            products: false
-        };
-
-        return new Promise((resolve, reject) => {
-            // 연결 타임아웃 설정 (30초)
-            const timeout = setTimeout(() => {
-                eventSource.close();
-                reject(new Error('스트리밍 연결 타임아웃'));
-            }, 30000);
-
-            // 시작 이벤트
-            eventSource.addEventListener('start', (event) => {
-                const data = JSON.parse(event.data);
-                console.log('상세 스트리밍 시작:', data.message);
-                this.showStreamingProgress('서버 연결 완료, 상세 정보 로딩 중...', 5);
-            });
-
-            // 진행 상황 이벤트
-            eventSource.addEventListener('progress', (event) => {
-                const data = JSON.parse(event.data);
-                let progress = 0;
-                
-                // 섹션별 진행률 계산
-                if (data.section === 'basic') progress = 20;
-                else if (data.section === 'content') progress = 50;
-                else if (data.section === 'products') progress = 80;
-                
-                this.showStreamingProgress(data.message, progress);
-            });
-
-            // 섹션 데이터 이벤트
-            eventSource.addEventListener('section', (event) => {
-                const data = JSON.parse(event.data);
-                
-                try {
-                    this.renderSectionData(data);
-                    
-                    // 섹션별 수신 상태 업데이트
-                    if (data.type === 'basic') {
-                        sectionsReceived.basic = true;
-                        // 첫 번째 섹션에서 콘텐츠 영역 표시
-                        this.showContent();
-                    } else if (data.type === 'content') {
-                        sectionsReceived.content = true;
-                    } else if (data.type.startsWith('products')) {
-                        sectionsReceived.products = true;
-                    }
-                    
-                } catch (renderError) {
-                    console.error('섹션 렌더링 오류:', renderError);
-                }
-            });
-
-            // 완료 이벤트
-            eventSource.addEventListener('complete', (event) => {
-                clearTimeout(timeout);
-                const data = JSON.parse(event.data);
-                
-                console.log('상세 스트리밍 완료:', data.message);
-                this.showStreamingProgress('로딩 완료!', 100);
-                
-                // 약간의 지연 후 스트리밍 UI 숨김
-                setTimeout(() => {
-                    this.hideStreamingLoading();
-                }, 500);
-                
-                eventSource.close();
-                this.currentEventSource = null;
-                resolve();
-            });
-
-            // 에러 이벤트
-            eventSource.addEventListener('error', (event) => {
-                clearTimeout(timeout);
-                const data = JSON.parse(event.data);
-                console.error('상세 스트리밍 오류:', data);
-                hasError = true;
-                eventSource.close();
-                this.currentEventSource = null;
-                reject(new Error(data.error || '스트리밍 중 오류가 발생했습니다.'));
-            });
-
-            // 연결 오류 처리
-            eventSource.onerror = (error) => {
-                clearTimeout(timeout);
-                console.error('EventSource 연결 오류:', error);
-                eventSource.close();
-                this.currentEventSource = null;
-                if (!hasError) {
-                    reject(new Error('스트리밍 연결 오류'));
-                }
-            };
-        });
-    }
 
     async loadNutritionInfoFallback() {
         // 간단한 로딩 표시
@@ -1042,212 +926,11 @@ class NutritionInfoDetailManager {
         });
     }
 
-    // 스트리밍 관련 메서드들
-    renderSectionData(data) {
-        switch (data.type) {
-            case 'basic':
-                this.renderBasicSection(data.data);
-                break;
-            case 'content':
-                this.renderContentSection(data.data);
-                break;
-            case 'products_batch':
-                this.renderProductsBatch(data.data, data.batch, data.isLastBatch);
-                break;
-            case 'products_empty':
-                this.renderEmptyProducts();
-                break;
-            default:
-                console.warn('알 수 없는 섹션 타입:', data.type);
-        }
-    }
 
-    renderBasicSection(basicData) {
-        // 기본 정보를 sectionsData에 저장
-        this.sectionsData.basic = basicData;
 
-        // 제목 렌더링
-        const titleElement = document.getElementById('detailTitle');
-        if (titleElement && basicData.title) {
-            titleElement.textContent = basicData.title;
-            titleElement.classList.add('streaming-fade-in');
-        }
 
-        // 요약 렌더링
-        const summaryElement = document.getElementById('detailSummary');
-        if (summaryElement && basicData.summary) {
-            summaryElement.textContent = basicData.summary;
-            summaryElement.classList.add('streaming-fade-in');
-        }
 
-        // 메타 정보 렌더링
-        const metaElement = document.getElementById('detailMeta');
-        if (metaElement) {
-            metaElement.innerHTML = `
-                <div class="detail-meta-item">
-                    <span class="meta-label">출처:</span>
-                    <span class="meta-value">${this.escapeHtml(basicData.sourceName)}</span>
-                </div>
-                <div class="detail-meta-item">
-                    <span class="meta-label">발행일:</span>
-                    <span class="meta-value">${this.formatDate(basicData.publishedDate)}</span>
-                </div>
-                <div class="detail-meta-item">
-                    <span class="meta-label">조회수:</span>
-                    <span class="meta-value">${this.formatCount(basicData.viewCount)}</span>
-                </div>
-            `;
-            metaElement.classList.add('streaming-fade-in');
-        }
 
-        // 태그 렌더링
-        const tagsElement = document.getElementById('detailTags');
-        if (tagsElement && basicData.tags && basicData.tags.length > 0) {
-            tagsElement.innerHTML = basicData.tags.map(tag => 
-                `<span class="detail-tag">#${this.escapeHtml(tag)}</span>`
-            ).join('');
-            tagsElement.classList.add('streaming-fade-in');
-        }
-
-        // 썸네일 이미지 렌더링
-        const imageElement = document.getElementById('detailImage');
-        if (imageElement) {
-            const imageUrl = basicData.thumbnailUrl || basicData.imageUrl || this.getDefaultImage();
-            imageElement.src = imageUrl;
-            imageElement.alt = basicData.title;
-            imageElement.classList.add('streaming-fade-in');
-        }
-    }
-
-    renderContentSection(contentData) {
-        // 콘텐츠를 sectionsData에 저장
-        this.sectionsData.content = contentData;
-
-        // 본문 내용 렌더링
-        const contentElement = document.getElementById('detailContent');
-        if (contentElement && contentData.content) {
-            contentElement.innerHTML = contentData.content;
-            contentElement.classList.add('streaming-fade-in');
-        }
-
-        // 원본 콘텐츠 제거 (수동 포스팅만 사용)
-    }
-
-    renderProductsBatch(productsData, batchNumber, isLastBatch) {
-        // 관련 상품을 sectionsData에 추가
-        this.sectionsData.products = this.sectionsData.products.concat(productsData);
-
-        const productsContainer = document.getElementById('relatedProducts');
-        if (!productsContainer) return;
-
-        // 첫 번째 배치에서 컨테이너 초기화
-        if (batchNumber === 1) {
-            productsContainer.innerHTML = '';
-        }
-
-        // Document Fragment 사용하여 성능 최적화
-        const fragment = document.createDocumentFragment();
-
-        productsData.forEach((product, index) => {
-            const productElement = document.createElement('div');
-            productElement.className = 'related-product-item';
-            
-            productElement.innerHTML = `
-                <div class="product-info">
-                    <h4 class="product-name">${this.escapeHtml(product.product_name)}</h4>
-                    <a href="${this.escapeHtml(product.product_link)}" 
-                       target="_blank" 
-                       rel="noopener noreferrer" 
-                       class="product-link">
-                        상품 보기 →
-                    </a>
-                </div>
-            `;
-
-            // 배치별 애니메이션 지연
-            const globalIndex = ((batchNumber - 1) * 2) + index; // 배치 크기가 2라고 가정
-            productElement.style.animationDelay = `${globalIndex * 0.2}s`;
-            productElement.classList.add('streaming-fade-in');
-
-            fragment.appendChild(productElement);
-        });
-
-        productsContainer.appendChild(fragment);
-
-        // 마지막 배치인 경우 관련 상품 섹션 표시
-        if (isLastBatch) {
-            const productsSection = document.getElementById('relatedProductsSection');
-            if (productsSection) {
-                productsSection.style.display = 'block';
-                productsSection.classList.add('streaming-fade-in');
-            }
-        }
-    }
-
-    renderEmptyProducts() {
-        const productsSection = document.getElementById('relatedProductsSection');
-        if (productsSection) {
-            productsSection.style.display = 'none';
-        }
-    }
-
-    // 스트리밍 로딩 상태 표시
-    showStreamingLoading() {
-        // 기존 상태 숨기기
-        this.hideError();
-        this.hideContent();
-        
-        // 스트리밍 로딩 컨테이너 생성 또는 표시
-        let streamingContainer = document.getElementById('detailStreamingLoadingState');
-        if (!streamingContainer) {
-            streamingContainer = this.createStreamingLoadingContainer();
-            const mainContainer = document.querySelector('.detail-container') || document.body;
-            mainContainer.insertBefore(streamingContainer, mainContainer.firstChild);
-        }
-        
-        streamingContainer.style.display = 'block';
-    }
-
-    // 스트리밍 로딩 컨테이너 생성
-    createStreamingLoadingContainer() {
-        const container = document.createElement('div');
-        container.id = 'detailStreamingLoadingState';
-        container.className = 'detail-streaming-loading-container';
-        
-        container.innerHTML = `
-            <div class="detail-streaming-loading-content">
-                <div class="detail-streaming-loading-icon">
-                    <div class="detail-streaming-spinner"></div>
-                </div>
-                <h3 id="detailStreamingLoadingTitle">실시간 상세 정보 로딩 중...</h3>
-                <div class="detail-streaming-progress-bar">
-                    <div id="detailStreamingProgressFill" class="detail-streaming-progress-fill" style="width: 2%"></div>
-                </div>
-                <p id="detailStreamingLoadingMessage">서버에 연결하는 중...</p>
-            </div>
-        `;
-        
-        return container;
-    }
-
-    // 스트리밍 진행 상황 업데이트
-    showStreamingProgress(message, progress) {
-        const titleElement = document.getElementById('detailStreamingLoadingTitle');
-        const messageElement = document.getElementById('detailStreamingLoadingMessage');
-        const progressFill = document.getElementById('detailStreamingProgressFill');
-        
-        if (titleElement) titleElement.textContent = '실시간 데이터 로딩 중...';
-        if (messageElement) messageElement.textContent = message;
-        if (progressFill) progressFill.style.width = `${progress}%`;
-    }
-
-    // 스트리밍 로딩 숨기기
-    hideStreamingLoading() {
-        const streamingContainer = document.getElementById('detailStreamingLoadingState');
-        if (streamingContainer) {
-            streamingContainer.style.display = 'none';
-        }
-    }
 
     // HTML 이스케이프 함수 (XSS 방지)
     escapeHtml(text) {
@@ -1268,12 +951,9 @@ class NutritionInfoDetailManager {
         return count.toString();
     }
 
-    // 리소스 정리 (EventSource 등)
+    // 리소스 정리
     cleanup() {
-        if (this.currentEventSource) {
-            this.currentEventSource.close();
-            this.currentEventSource = null;
-        }
+        // 필요시 리소스 정리 코드 추가
     }
 
     truncateText(text, maxLength) {
@@ -1293,6 +973,14 @@ class NutritionInfoDetailManager {
         if (this.errorMessage) this.errorMessage.textContent = message;
         if (this.loadingState) this.loadingState.style.display = 'none';
         if (this.errorState) this.errorState.style.display = 'flex';
+        if (this.detailContent) this.detailContent.style.display = 'none';
+    }
+
+    hideError() {
+        if (this.errorState) this.errorState.style.display = 'none';
+    }
+
+    hideContent() {
         if (this.detailContent) this.detailContent.style.display = 'none';
     }
 

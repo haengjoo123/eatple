@@ -1,4 +1,4 @@
-const LocalNutritionDataManager = require('./localNutritionDataManager');
+const SupabaseNutritionDataManager = require('./supabaseNutritionDataManager');
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -7,7 +7,7 @@ const path = require('path');
  */
 class CategoryTagManager {
     constructor() {
-        this.localNutritionDataManager = new LocalNutritionDataManager();
+        this.supabaseNutritionDataManager = new SupabaseNutritionDataManager();
         this.dataPath = path.join(__dirname, "../data/nutrition");
         this.categoriesFile = path.join(this.dataPath, "categories.json");
         this.tagsFile = path.join(this.dataPath, "tags.json");
@@ -17,18 +17,34 @@ class CategoryTagManager {
     // ==================== 카테고리 관리 ====================
 
     /**
-     * 모든 카테고리 조회
+     * 모든 카테고리 조회 (Supabase에서 직접 조회)
      * @returns {Promise<Array>} 카테고리 목록
      */
     async getCategories() {
         try {
-            const data = await fs.readFile(this.categoriesFile, 'utf8');
-            const categories = JSON.parse(data);
-            return categories.sort((a, b) => a.name.localeCompare(b.name));
+            // Supabase에서 직접 카테고리 조회
+            const { data, error } = await this.supabaseNutritionDataManager.supabase
+                .from('categories')
+                .select('*')
+                .order('name');
+            
+            if (error) {
+                console.error('Supabase 카테고리 조회 오류:', error);
+                throw error;
+            }
+            
+            return data || [];
         } catch (error) {
             console.error('카테고리 조회 중 오류:', error);
-            // 파일이 없으면 빈 배열 반환
-            return [];
+            // Supabase 조회 실패 시 로컬 파일에서 조회 (폴백)
+            try {
+                const data = await fs.readFile(this.categoriesFile, 'utf8');
+                const categories = JSON.parse(data);
+                return categories.sort((a, b) => a.name.localeCompare(b.name));
+            } catch (fileError) {
+                console.error('로컬 카테고리 파일 조회 오류:', fileError);
+                return [];
+            }
         }
     }
 
@@ -54,25 +70,24 @@ class CategoryTagManager {
      */
     async addCategory(categoryData) {
         try {
-            const categories = await this.getCategories();
+            // Supabase에 직접 카테고리 생성
+            const { data, error } = await this.supabaseNutritionDataManager.supabase
+                .from('categories')
+                .insert([{
+                    name: categoryData.name,
+                    description: categoryData.description || null,
+                    post_count: 0
+                }])
+                .select()
+                .single();
             
-            // 새 카테고리 ID 생성
-            const maxId = categories.length > 0 ? Math.max(...categories.map(cat => parseInt(cat.id) || 0)) : 0;
-            const newId = (maxId + 1).toString();
+            if (error) {
+                console.error('Supabase 카테고리 생성 오류:', error);
+                throw error;
+            }
             
-            const newCategory = {
-                id: newId,
-                name: categoryData.name,
-                description: categoryData.description || null,
-                post_count: 0,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            };
-            
-            categories.push(newCategory);
-            await fs.writeFile(this.categoriesFile, JSON.stringify(categories, null, 2), 'utf8');
-            
-            return newCategory;
+            console.log(`[CATEGORY DEBUG] 새 카테고리 생성: "${data.name}" -> ID: "${data.id}"`);
+            return data;
         } catch (error) {
             console.error('카테고리 생성 중 오류:', error);
             throw error;
@@ -155,7 +170,7 @@ class CategoryTagManager {
             console.log(`📊 카테고리 포스팅 수 업데이트 시작 - 카테고리 ID: ${categoryId}`);
             
             // 로컬 데이터에서 포스팅 수 계산
-            const localPosts = await this.localNutritionDataManager.getNutritionInfoList({}, { limit: 10000 });
+            const localPosts = await this.supabaseNutritionDataManager.getNutritionInfoList({}, { limit: 10000 });
             const posts = localPosts.data || [];
             
             // 카테고리 ID로 필터링하여 활성 포스팅 수 계산
@@ -367,7 +382,7 @@ class CategoryTagManager {
                 .from('post_tags')
                 .select(`
                     nutrition_posts!inner(id)
-                `, { count: 'exact', head: true })
+                `, { count: 'estimated', head: true })
                 .eq('tag_id', tagId)
                 .eq('nutrition_posts.is_active', true);
 

@@ -24,12 +24,14 @@ const USERS_FILE = path.join(__dirname, "../data/users.json");
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 
-// 환경변수 확인 및 로깅
-console.log('Supabase 설정 확인:');
-console.log('- SUPABASE_URL:', supabaseUrl ? '설정됨' : '설정되지 않음');
-console.log('- SUPABASE_KEY:', supabaseKey ? '설정됨' : '설정되지 않음');
-console.log('- NODE_ENV:', process.env.NODE_ENV);
-console.log('- RENDER:', process.env.RENDER);
+// 환경변수 확인 및 로깅 (프로덕션에서는 간단히만)
+if (process.env.NODE_ENV !== 'production') {
+  console.log('Supabase 설정 확인:');
+  console.log('- SUPABASE_URL:', supabaseUrl ? '설정됨' : '설정되지 않음');
+  console.log('- SUPABASE_KEY:', supabaseKey ? '설정됨' : '설정되지 않음');
+  console.log('- NODE_ENV:', process.env.NODE_ENV);
+  console.log('- RENDER:', process.env.RENDER);
+}
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Supabase 환경변수가 설정되지 않았습니다!');
@@ -166,7 +168,7 @@ async function processUserDataAsync(user) {
           
           writeUsers(users);
           
-          console.log("기존 사용자 정보 업데이트:", existingUser.id, "isAdmin:", existingUser.isAdmin, "role:", existingUser.role);
+          // 기존 사용자 정보 업데이트 완료
           resolve(existingUser);
         }
       } catch (error) {
@@ -267,15 +269,13 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    // 디버깅 로그 추가
-    console.log('로그인 시도:', {
-      email: email ? '***설정됨***' : '설정되지 않음',
-      passwordLength: password ? password.length : 0,
-      nodeEnv: process.env.NODE_ENV,
-      render: process.env.RENDER,
-      supabaseUrl: supabaseUrl ? '설정됨' : '설정되지 않음',
-      supabaseKey: supabaseKey ? '설정됨' : '설정되지 않음'
-    });
+    // 로그인 시도 로그 (개발 환경에서만)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('로그인 시도:', {
+        email: email ? '***설정됨***' : '설정되지 않음',
+        passwordLength: password ? password.length : 0
+      });
+    }
     
     // 입력값 검증
     if (!email || !password) {
@@ -296,7 +296,6 @@ router.post("/login", async (req, res) => {
     }
 
     // Supabase를 통한 로그인 (타임아웃 설정)
-    console.log('Supabase 로그인 요청 시작...');
     const loginPromise = supabase.auth.signInWithPassword({
       email: email,
       password: password
@@ -308,11 +307,6 @@ router.post("/login", async (req, res) => {
     });
     
     const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
-    console.log('Supabase 로그인 응답:', { 
-      hasData: !!data, 
-      hasError: !!error,
-      errorMessage: error?.message 
-    });
 
     if (error) {
       console.error('Supabase login error:', error);
@@ -360,13 +354,6 @@ router.post("/login", async (req, res) => {
       }
     });
     
-    // 세션 저장 확인
-    console.log('세션 설정 완료:', {
-      sessionId: req.sessionID,
-      user: sessionUser,
-      sessionCookie: req.session.cookie
-    });
-
     // 즉시 응답 반환
     const responseUser = { 
       id: user.id, 
@@ -376,8 +363,6 @@ router.post("/login", async (req, res) => {
       isAdmin: userData.isAdmin || false,
       role: userData.role || null
     };
-    
-    console.log('로그인 응답 전송:', responseUser);
     
     res.json({ 
       success: true, 
@@ -1211,29 +1196,29 @@ router.get("/kakao-rest-key", (req, res) => {
 
 // 로그인 상태 확인
 router.get("/me", (req, res) => {
-  console.log('사용자 상태 확인 요청:', {
-    sessionId: req.sessionID,
-    hasSession: !!req.session,
-    hasUser: !!req.session?.user,
-    sessionCookie: req.session?.cookie,
-    headers: {
-      cookie: req.headers.cookie,
-      origin: req.headers.origin,
-      referer: req.headers.referer
-    }
-  });
+  // console.log('사용자 상태 확인 요청:', {
+  //   sessionId: req.sessionID,
+  //   hasSession: !!req.session,
+  //   hasUser: !!req.session?.user,
+  //   sessionCookie: req.session?.cookie,
+  //   headers: {
+  //     cookie: req.headers.cookie,
+  //     origin: req.headers.origin,
+  //     referer: req.headers.referer
+  //   }
+  // });
   
   if (req.session.user) {
-    console.log('사용자 상태 확인 - 세션 사용자:', {
-      id: req.session.user.id,
-      email: req.session.user.email,
-      isAdmin: req.session.user.isAdmin,
-      role: req.session.user.role,
-      authType: req.session.user.authType
-    });
+    // console.log('사용자 상태 확인 - 세션 사용자:', {
+    //   id: req.session.user.id,
+    //   email: req.session.user.email,
+    //   isAdmin: req.session.user.isAdmin,
+    //   role: req.session.user.role,
+    //   authType: req.session.user.authType
+    // });
     res.json({ loggedIn: true, user: req.session.user });
   } else {
-    console.log('사용자 상태 확인 - 로그인되지 않음 (세션 없음)');
+    // console.log('사용자 상태 확인 - 로그인되지 않음 (세션 없음)');
     
     // 세션이 없는 경우를 위한 대안 체크 (선택사항)
     // 실제 운영에서는 보안상 권장하지 않지만, Render 환경에서 임시 해결책으로 사용 가능
@@ -1262,61 +1247,51 @@ router.get("/check-username", (req, res) => {
 // 가입자 목록 반환 (비밀번호 제외)
 router.get("/users", (req, res) => {
   const rawUsers = readUsers();
-  console.log(
-    "Raw users data:",
-    rawUsers.map((u) => ({
-      id: u.id,
-      authType: u.authType,
-      kakaoId: !!u.kakaoId,
-      googleId: !!u.googleId,
-      naverId: !!u.naverId,
-      username: !!u.username,
-    }))
-  );
+  // console.log(
+  //   "Raw users data:",
+  //   rawUsers.map((u) => ({
+  //     id: u.id,
+  //     authType: u.authType,
+  //     kakaoId: !!u.kakaoId,
+  //     googleId: !!u.googleId,
+  //     naverId: !!u.naverId,
+  //     username: !!u.username,
+  //   }))
+  // );
 
   const users = rawUsers.map(
     ({ password, googleId, kakaoId, naverId, ...rest }) => {
-      console.log(
-        `Processing user ${rest.id}: authType=${
-          rest.authType
-        }, kakaoId=${!!kakaoId}, googleId=${!!googleId}, naverId=${!!naverId}, username=${!!rest.username}`
-      );
+      // console.log(
+      //   `Processing user ${rest.id}: authType=${
+      //     rest.authType
+      //   }, kakaoId=${!!kakaoId}, googleId=${!!googleId}, naverId=${!!naverId}, username=${!!rest.username}`
+      // );
 
       // 기존 사용자 호환성: authType이 없는 경우 추가
       if (!rest.authType) {
         if (rest.username) {
           rest.authType = "local"; // 일반 로그인 사용자
-          console.log(`Set authType to 'local' for user ${rest.id}`);
         } else if (googleId) {
           rest.authType = "google"; // 구글 사용자
-          console.log(`Set authType to 'google' for user ${rest.id}`);
         } else if (kakaoId) {
           rest.authType = "kakao"; // 카카오 사용자
-          console.log(`Set authType to 'kakao' for user ${rest.id}`);
         } else if (naverId) {
           rest.authType = "naver"; // 네이버 사용자
-          console.log(`Set authType to 'naver' for user ${rest.id}`);
         } else if (rest.email && !rest.username) {
           rest.authType = "google"; // 이메일만 있고 username이 없으면 구글 사용자로 추정
-          console.log(
-            `Set authType to 'google' (email only) for user ${rest.id}`
-          );
         } else {
           rest.authType = "unknown"; // 알 수 없는 경우
-          console.log(`Set authType to 'unknown' for user ${rest.id}`);
         }
-      } else {
-        console.log(`User ${rest.id} already has authType: ${rest.authType}`);
       }
 
       return rest;
     }
   );
 
-  console.log(
-    "Final users data:",
-    users.map((u) => ({ id: u.id, authType: u.authType, name: u.name }))
-  );
+  // console.log(
+  //   "Final users data:",
+  //   users.map((u) => ({ id: u.id, authType: u.authType, name: u.name }))
+  // );
   res.json(users);
 });
 
@@ -1515,13 +1490,15 @@ router.get("/check-admin", (req, res) => {
   // 관리자 권한 확인 (role 필드가 'admin'인 경우)
   const isAdmin = user.role === 'admin';
   
-  // 디버깅 정보 출력
-  console.log('관리자 권한 확인:', {
-    userId: user.id,
-    username: user.username,
-    role: user.role,
-    isAdmin: isAdmin
-  });
+  // 관리자 권한 확인 (개발 환경에서만 로그)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('관리자 권한 확인:', {
+      userId: user.id,
+      username: user.username,
+      role: user.role,
+      isAdmin: isAdmin
+    });
+  }
   
   return res.json({ 
     success: true, 
