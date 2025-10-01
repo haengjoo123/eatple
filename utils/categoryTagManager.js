@@ -1,11 +1,17 @@
-const { supabaseAdmin } = require('./supabaseClient');
+const LocalNutritionDataManager = require('./localNutritionDataManager');
+const fs = require('fs').promises;
+const path = require('path');
 
 /**
- * 카테고리 및 태그 관리 서비스
+ * 카테고리 및 태그 관리 서비스 (로컬 데이터 전용)
  */
 class CategoryTagManager {
     constructor() {
-        this.supabase = supabaseAdmin;
+        this.localNutritionDataManager = new LocalNutritionDataManager();
+        this.dataPath = path.join(__dirname, "../data/nutrition");
+        this.categoriesFile = path.join(this.dataPath, "categories.json");
+        this.tagsFile = path.join(this.dataPath, "tags.json");
+        this.postTagsFile = path.join(this.dataPath, "post-tags.json");
     }
 
     // ==================== 카테고리 관리 ====================
@@ -16,19 +22,13 @@ class CategoryTagManager {
      */
     async getCategories() {
         try {
-            const { data, error } = await this.supabase
-                .from('categories')
-                .select('*')
-                .order('name');
-
-            if (error) {
-                throw new Error(`카테고리 조회 실패: ${error.message}`);
-            }
-
-            return data;
+            const data = await fs.readFile(this.categoriesFile, 'utf8');
+            const categories = JSON.parse(data);
+            return categories.sort((a, b) => a.name.localeCompare(b.name));
         } catch (error) {
             console.error('카테고리 조회 중 오류:', error);
-            throw error;
+            // 파일이 없으면 빈 배열 반환
+            return [];
         }
     }
 
@@ -39,21 +39,8 @@ class CategoryTagManager {
      */
     async getCategoryByName(name) {
         try {
-            const { data, error } = await this.supabase
-                .from('categories')
-                .select('*')
-                .eq('name', name)
-                .single();
-
-            if (error) {
-                if (error.code === 'PGRST116') {
-                    // No rows returned
-                    return null;
-                }
-                throw new Error(`카테고리 조회 실패: ${error.message}`);
-            }
-
-            return data;
+            const categories = await this.getCategories();
+            return categories.find(cat => cat.name === name) || null;
         } catch (error) {
             console.error('카테고리 이름 조회 중 오류:', error);
             throw error;
@@ -67,20 +54,25 @@ class CategoryTagManager {
      */
     async addCategory(categoryData) {
         try {
-            const { data, error } = await this.supabase
-                .from('categories')
-                .insert({
-                    name: categoryData.name,
-                    description: categoryData.description || null
-                })
-                .select()
-                .single();
-
-            if (error) {
-                throw new Error(`카테고리 생성 실패: ${error.message}`);
-            }
-
-            return data;
+            const categories = await this.getCategories();
+            
+            // 새 카테고리 ID 생성
+            const maxId = categories.length > 0 ? Math.max(...categories.map(cat => parseInt(cat.id) || 0)) : 0;
+            const newId = (maxId + 1).toString();
+            
+            const newCategory = {
+                id: newId,
+                name: categoryData.name,
+                description: categoryData.description || null,
+                post_count: 0,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+            
+            categories.push(newCategory);
+            await fs.writeFile(this.categoriesFile, JSON.stringify(categories, null, 2), 'utf8');
+            
+            return newCategory;
         } catch (error) {
             console.error('카테고리 생성 중 오류:', error);
             throw error;
@@ -160,28 +152,38 @@ class CategoryTagManager {
      */
     async updateCategoryPostCount(categoryId) {
         try {
-            // 해당 카테고리의 활성 포스팅 수 계산
-            const { count, error: countError } = await this.supabase
-                .from('nutrition_posts')
-                .select('*', { count: 'exact', head: true })
-                .eq('category_id', categoryId)
-                .eq('is_active', true);
+            console.log(`📊 카테고리 포스팅 수 업데이트 시작 - 카테고리 ID: ${categoryId}`);
+            
+            // 로컬 데이터에서 포스팅 수 계산
+            const localPosts = await this.localNutritionDataManager.getNutritionInfoList({}, { limit: 10000 });
+            const posts = localPosts.data || [];
+            
+            // 카테고리 ID로 필터링하여 활성 포스팅 수 계산
+            const activePostsCount = posts.filter(post => {
+                const postData = typeof post.toJSON === 'function' ? post.toJSON() : post;
+                return postData.category === categoryId || postData.category_id === categoryId;
+            }).length;
 
-            if (countError) {
-                throw new Error(`포스팅 수 계산 실패: ${countError.message}`);
+            console.log(`📊 로컬 데이터에서 계산된 포스팅 수: ${activePostsCount}`);
+
+            // 로컬 카테고리 데이터 업데이트
+            const categories = await this.getCategories();
+            const categoryIndex = categories.findIndex(cat => cat.id === categoryId || cat.name === categoryId);
+            
+            if (categoryIndex !== -1) {
+                categories[categoryIndex].post_count = activePostsCount;
+                categories[categoryIndex].updated_at = new Date().toISOString();
+                
+                // 로컬 카테고리 파일 업데이트
+                await fs.writeFile(this.categoriesFile, JSON.stringify(categories, null, 2), 'utf8');
+                
+                console.log(`✅ 로컬 카테고리 ${categoryId} 포스팅 수 업데이트: ${activePostsCount}`);
+            } else {
+                console.log(`⚠️ 카테고리 ${categoryId}를 찾을 수 없음`);
             }
 
-            // 카테고리 포스팅 수 업데이트
-            const { error: updateError } = await this.supabase
-                .from('categories')
-                .update({ post_count: count || 0 })
-                .eq('id', categoryId);
-
-            if (updateError) {
-                throw new Error(`카테고리 포스팅 수 업데이트 실패: ${updateError.message}`);
-            }
         } catch (error) {
-            console.error('카테고리 포스팅 수 업데이트 중 오류:', error);
+            console.error('❌ 카테고리 포스팅 수 업데이트 오류:', error);
             throw error;
         }
     }
@@ -195,42 +197,32 @@ class CategoryTagManager {
      */
     async getTags(options = {}) {
         try {
-            let query = this.supabase
-                .from('tags')
-                .select('*');
+            const data = await fs.readFile(this.tagsFile, 'utf8');
+            let tags = JSON.parse(data);
 
             // 검색 필터
             if (options.search) {
-                query = query.ilike('name', `%${options.search}%`);
+                tags = tags.filter(tag => 
+                    tag.name.toLowerCase().includes(options.search.toLowerCase())
+                );
             }
 
             // 정렬
             if (options.sortBy === 'post_count') {
-                query = query.order('post_count', { ascending: false });
+                tags.sort((a, b) => (b.post_count || 0) - (a.post_count || 0));
             } else {
-                query = query.order('name');
+                tags.sort((a, b) => a.name.localeCompare(b.name));
             }
 
             // 제한
             if (options.limit) {
-                query = query.limit(options.limit);
+                tags = tags.slice(0, options.limit);
             }
 
-            const { data, error } = await query;
-
-            if (error) {
-                // 테이블이 존재하지 않는 경우 빈 배열 반환
-                if (error.code === '42P01') {
-                    console.warn('Tags table does not exist, returning empty array');
-                    return [];
-                }
-                throw new Error(`태그 조회 실패: ${error.message}`);
-            }
-
-            return data || [];
+            return tags;
         } catch (error) {
             console.error('태그 조회 중 오류:', error);
-            // 오류 발생 시 빈 배열 반환
+            // 파일이 없으면 빈 배열 반환
             return [];
         }
     }

@@ -184,7 +184,9 @@ router.post('/posts', requireAdmin, async (req, res) => {
 
         // 카테고리 포스팅 수 업데이트
         if (!isDraft) {
+            console.log(`📊 새 포스팅 카테고리 포스팅 수 업데이트 시작 - 카테고리 ID: ${finalCategoryId}`);
             await categoryTagManager.updateCategoryPostCount(finalCategoryId);
+            console.log(`📊 새 포스팅 카테고리 포스팅 수 업데이트 완료 - 카테고리 ID: ${finalCategoryId}`);
         }
 
         console.log(`✅ 새 포스팅 생성: ${newPost.id} (by ${adminInfo.name})`);
@@ -313,9 +315,14 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
         console.log(`🔗 포스팅 수정 - 처리된 관련상품 수: ${relatedProducts.length}`, relatedProducts);
         
         // 포스팅 수정 (로컬 데이터 매니저 사용)
+        console.log(`🔄 포스팅 업데이트 시작 - ID: ${id}`);
+        console.log('업데이트할 데이터:', JSON.stringify(updates, null, 2));
+        
         const updateResult = await nutritionDataManager.updateNutritionInfo(id, updates);
+        console.log(`🔄 포스팅 업데이트 결과: ${updateResult}`);
         
         if (!updateResult) {
+            console.error(`❌ 포스팅 업데이트 실패 - ID: ${id}`);
             return res.status(500).json({
                 success: false,
                 error: '포스팅 업데이트에 실패했습니다.'
@@ -324,26 +331,45 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
 
         // 태그 업데이트가 있는 경우 별도 처리
         if (tagNames.length > 0 || tags !== undefined) {
-            await nutritionDataManager.saveTags(id, tagNames);
+            console.log(`🏷️ 태그 업데이트 시작 - ID: ${id}`, tagNames);
+            try {
+                await nutritionDataManager.saveTags(id, tagNames);
+                console.log(`🏷️ 태그 업데이트 완료 - ID: ${id}`);
+            } catch (error) {
+                console.error(`❌ 태그 업데이트 오류 - ID: ${id}:`, error);
+                throw error;
+            }
         }
 
         // 관련 상품 정보가 제공된 경우 별도 처리
         if (productName1 !== undefined || productName2 !== undefined || productName3 !== undefined) {
             console.log(`🔗 포스팅 수정 - 관련상품 저장 시작: ${id}`, relatedProducts);
-            await nutritionDataManager.saveRelatedProducts(id, relatedProducts);
-            console.log(`🔗 포스팅 수정 - 관련상품 저장 완료: ${id}`);
+            try {
+                await nutritionDataManager.saveRelatedProducts(id, relatedProducts);
+                console.log(`🔗 포스팅 수정 - 관련상품 저장 완료: ${id}`);
+            } catch (error) {
+                console.error(`❌ 관련상품 저장 오류 - ID: ${id}:`, error);
+                throw error;
+            }
         }
 
         // 카테고리 포스팅 수 업데이트 (카테고리가 변경된 경우)
         if (finalCategoryId !== undefined) {
+            console.log(`📊 카테고리 포스팅 수 업데이트 시작 - 카테고리 ID: ${finalCategoryId}`);
             await categoryTagManager.updateCategoryPostCount(finalCategoryId);
+            console.log(`📊 카테고리 포스팅 수 업데이트 완료 - 카테고리 ID: ${finalCategoryId}`);
+            
             if (existingPost.category_id !== finalCategoryId) {
+                console.log(`📊 이전 카테고리 포스팅 수 업데이트 시작 - 카테고리 ID: ${existingPost.category_id}`);
                 await categoryTagManager.updateCategoryPostCount(existingPost.category_id);
+                console.log(`📊 이전 카테고리 포스팅 수 업데이트 완료 - 카테고리 ID: ${existingPost.category_id}`);
             }
         }
 
         // 업데이트된 포스트 정보 가져오기
+        console.log(`📖 업데이트된 포스트 정보 조회 시작 - ID: ${id}`);
         const updatedPost = await nutritionDataManager.getNutritionInfoById(id);
+        console.log(`📖 업데이트된 포스트 정보 조회 완료 - ID: ${id}`);
 
         console.log(`✅ 포스팅 수정: ${id} (by ${adminInfo.name})`);
 
@@ -354,11 +380,13 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('포스팅 수정 오류:', error);
+        console.error('❌ 포스팅 수정 오류:', error);
+        console.error('❌ 오류 스택:', error.stack);
         res.status(500).json({
             success: false,
             error: '포스팅 수정 중 오류가 발생했습니다.',
-            details: error.message
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 });

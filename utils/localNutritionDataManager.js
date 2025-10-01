@@ -429,24 +429,38 @@ class LocalNutritionDataManager {
    */
   async updateNutritionInfo(id, updateData) {
     try {
+      console.log(`🔄 영양정보 업데이트 시작 - ID: ${id}`);
+      console.log('업데이트 데이터:', JSON.stringify(updateData, null, 2));
+      
       const posts = await this.readJsonFile(this.nutritionPostsFile);
+      console.log(`전체 포스트 수: ${posts.length}`);
+      
       const postIndex = posts.findIndex(p => p.id === id);
+      console.log(`포스트 인덱스: ${postIndex}`);
       
       if (postIndex !== -1) {
+        console.log('업데이트 전 포스트 데이터:', JSON.stringify(posts[postIndex], null, 2));
+        
         // 업데이트 데이터 적용
         Object.keys(updateData).forEach(key => {
           // snake_case로 변환
           const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+          const oldValue = posts[postIndex][snakeKey];
           posts[postIndex][snakeKey] = updateData[key];
+          console.log(`필드 업데이트: ${key} -> ${snakeKey}, ${oldValue} -> ${updateData[key]}`);
         });
+        
+        console.log('업데이트 후 포스트 데이터:', JSON.stringify(posts[postIndex], null, 2));
         
         // 파일에 저장
         await fs.writeFile(this.nutritionPostsFile, JSON.stringify(posts, null, 2), 'utf8');
+        console.log('✅ 포스트 파일 저장 완료');
         
         // 캐시 무효화
         this.cache.delete('nutrition_posts');
+        console.log('✅ 캐시 무효화 완료');
         
-        console.log(`영양 정보 업데이트: ${id}`, updateData);
+        console.log(`✅ 영양 정보 업데이트 완료: ${id}`);
         return true;
       }
       return false;
