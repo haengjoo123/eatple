@@ -130,6 +130,12 @@ router.post('/posts', requireAdmin, async (req, res) => {
         };
 
         // 관련 상품 정보 처리
+        console.log('🔗 관련상품 데이터 수신:', {
+            productName1, productLink1,
+            productName2, productLink2,
+            productName3, productLink3
+        });
+        
         const relatedProducts = [];
         if (productName1 && productName1.trim()) {
             relatedProducts.push({
@@ -149,6 +155,8 @@ router.post('/posts', requireAdmin, async (req, res) => {
                 link: productLink3 ? productLink3.trim() : null
             });
         }
+        
+        console.log(`🔗 처리된 관련상품 수: ${relatedProducts.length}`, relatedProducts);
 
         // 포스팅 데이터 준비
         const postData = {
@@ -166,7 +174,13 @@ router.post('/posts', requireAdmin, async (req, res) => {
         };
 
         // 포스팅 생성
+        console.log('📝 포스팅 생성 시작:', {
+            title: postData.title,
+            relatedProductsCount: postData.relatedProducts.length,
+            adminInfo
+        });
         const newPost = await nutritionDataManager.createPost(postData, adminInfo);
+        console.log('📝 포스팅 생성 완료:', newPost.id);
 
         // 카테고리 포스팅 수 업데이트
         if (!isDraft) {
@@ -270,6 +284,12 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
         }
 
         // 관련 상품 정보 처리
+        console.log('🔗 포스팅 수정 - 관련상품 데이터 수신:', {
+            productName1, productLink1,
+            productName2, productLink2,
+            productName3, productLink3
+        });
+        
         const relatedProducts = [];
         if (productName1 && productName1.trim()) {
             relatedProducts.push({
@@ -290,6 +310,8 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
             });
         }
         
+        console.log(`🔗 포스팅 수정 - 처리된 관련상품 수: ${relatedProducts.length}`, relatedProducts);
+        
         // 포스팅 수정 (로컬 데이터 매니저 사용)
         const updateResult = await nutritionDataManager.updateNutritionInfo(id, updates);
         
@@ -307,7 +329,9 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
 
         // 관련 상품 정보가 제공된 경우 별도 처리
         if (productName1 !== undefined || productName2 !== undefined || productName3 !== undefined) {
+            console.log(`🔗 포스팅 수정 - 관련상품 저장 시작: ${id}`, relatedProducts);
             await nutritionDataManager.saveRelatedProducts(id, relatedProducts);
+            console.log(`🔗 포스팅 수정 - 관련상품 저장 완료: ${id}`);
         }
 
         // 카테고리 포스팅 수 업데이트 (카테고리가 변경된 경우)

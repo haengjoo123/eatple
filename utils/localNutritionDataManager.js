@@ -149,8 +149,20 @@ class LocalNutritionDataManager {
    * 포스트의 관련 상품 가져오기
    */
   async getPostRelatedProducts(postId) {
-    const relatedProducts = await this.loadRelatedProducts();
-    return relatedProducts.filter(rp => rp.post_id === postId);
+    try {
+      console.log(`🔍 관련상품 조회 시작 - 포스트 ID: ${postId}`);
+      const relatedProducts = await this.loadRelatedProducts();
+      console.log(`전체 관련상품 수: ${relatedProducts.length}`);
+      
+      const filteredProducts = relatedProducts.filter(rp => rp.post_id === postId);
+      console.log(`해당 포스트 관련상품 수: ${filteredProducts.length}`);
+      console.log('조회된 관련상품:', JSON.stringify(filteredProducts, null, 2));
+      
+      return filteredProducts;
+    } catch (error) {
+      console.error('관련상품 조회 오류:', error);
+      return [];
+    }
   }
 
   /**
@@ -340,7 +352,9 @@ class LocalNutritionDataManager {
       const categoryInfo = await this.getCategoryInfo(post.category_id);
       
       // 관련 상품 정보 추가
+      console.log(`📦 포스트 ${post.id}의 관련상품 정보 추가 중...`);
       const relatedProducts = await this.getPostRelatedProducts(post.id);
+      console.log(`📦 관련상품 정보 추가 완료: ${relatedProducts.length}개`);
 
       // NutritionInfo 객체 생성
       const nutritionInfo = new NutritionInfo({
@@ -643,10 +657,14 @@ class LocalNutritionDataManager {
    */
   async saveRelatedProducts(postId, relatedProducts) {
     try {
+      console.log(`🔗 관련상품 저장 시작 - 포스트 ID: ${postId}, 상품 수: ${relatedProducts.length}`);
+      console.log('관련상품 데이터:', JSON.stringify(relatedProducts, null, 2));
+      
       const products = await this.loadRelatedProducts();
+      console.log(`기존 관련상품 수: ${products.length}`);
       
       for (const product of relatedProducts) {
-        products.push({
+        const productData = {
           post_id: postId,
           product_id: product.id || null,
           product_name: product.name || '',
@@ -654,14 +672,21 @@ class LocalNutritionDataManager {
           product_price: product.price || null,
           product_image_url: product.imageUrl || null,
           created_at: new Date().toISOString()
-        });
+        };
+        
+        console.log('저장할 상품 데이터:', JSON.stringify(productData, null, 2));
+        products.push(productData);
       }
+      
+      console.log(`저장 후 총 관련상품 수: ${products.length}`);
       
       // 관련 상품 파일 저장
       await fs.writeFile(this.relatedProductsFile, JSON.stringify(products, null, 2), 'utf8');
+      console.log(`✅ 관련상품 파일 저장 완료: ${this.relatedProductsFile}`);
       
       // 캐시 무효화
       this.cache.delete('related_products');
+      console.log('관련상품 캐시 무효화 완료');
     } catch (error) {
       console.error('관련 상품 저장 오류:', error);
       throw error;
