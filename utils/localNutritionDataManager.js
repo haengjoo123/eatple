@@ -28,10 +28,13 @@ class LocalNutritionDataManager {
    */
   async readJsonFile(filePath) {
     try {
+      console.log(`📂 JSON 파일 읽기 시작: ${filePath}`);
       const data = await fs.readFile(filePath, 'utf8');
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      console.log(`📂 JSON 파일 읽기 완료: ${Array.isArray(parsed) ? parsed.length : 'object'} 항목`);
+      return parsed;
     } catch (error) {
-      console.error(`JSON 파일 읽기 실패: ${filePath}`, error);
+      console.error(`❌ JSON 파일 읽기 실패: ${filePath}`, error);
       return [];
     }
   }
@@ -809,7 +812,20 @@ class LocalNutritionDataManager {
       posts.push(newPost);
       
       // 파일에 저장
-      await fs.writeFile(this.nutritionPostsFile, JSON.stringify(posts, null, 2), 'utf8');
+      console.log(`💾 포스트 파일 저장 시작: ${this.nutritionPostsFile}`);
+      console.log(`💾 저장할 포스트 수: ${posts.length}`);
+      
+      const jsonString = JSON.stringify(posts, null, 2);
+      await fs.writeFile(this.nutritionPostsFile, jsonString, 'utf8');
+      
+      // 저장 확인
+      const stats = await fs.stat(this.nutritionPostsFile);
+      console.log(`💾 포스트 파일 저장 완료: 크기 ${stats.size} bytes`);
+      
+      // 저장된 내용 검증
+      const savedContent = await fs.readFile(this.nutritionPostsFile, 'utf8');
+      const parsedContent = JSON.parse(savedContent);
+      console.log(`💾 저장 검증: ${parsedContent.length}개 포스트 확인됨`);
       
       // 태그 처리 (tags가 있는 경우)
       if (postData.tags && postData.tags.length > 0) {
