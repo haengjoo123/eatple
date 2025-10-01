@@ -736,23 +736,47 @@ class LocalNutritionDataManager {
    */
   async createPost(postData, adminInfo) {
     try {
+      console.log(`📝 createPost 시작 - 제목: ${postData.title}`);
+      console.log(`📝 createPost 데이터:`, JSON.stringify(postData, null, 2));
+      console.log(`📝 createPost 관리자:`, adminInfo);
+      
       const posts = await this.readJsonFile(this.nutritionPostsFile);
+      console.log(`📝 기존 포스트 수: ${posts.length}`);
       
       // 새 포스팅 ID 생성 (기존 포스팅 중 가장 큰 ID + 1)
       const maxId = posts.reduce((max, post) => Math.max(max, parseInt(post.id) || 0), 0);
       const newId = (maxId + 1).toString();
+      console.log(`📝 새 포스트 ID 생성: ${newId}`);
       
       // base64 -> URL 정규화
+      console.log(`📝 미디어 정규화 시작`);
       const projectRoot = path.join(__dirname, '..');
-      const normalized = await normalizePostMedia({
-        title: postData.title,
-        summary: postData.summary,
-        content: postData.content,
-        sourceUrl: postData.sourceUrl || null,
-        sourceName: postData.sourceName || null,
-        imageUrl: postData.imageUrl || null,
-        thumbnailUrl: postData.thumbnailUrl || null,
-      }, projectRoot, newId);
+      let normalized;
+      try {
+        normalized = await normalizePostMedia({
+          title: postData.title,
+          summary: postData.summary,
+          content: postData.content,
+          sourceUrl: postData.sourceUrl || null,
+          sourceName: postData.sourceName || null,
+          imageUrl: postData.imageUrl || null,
+          thumbnailUrl: postData.thumbnailUrl || null,
+        }, projectRoot, newId);
+        console.log(`📝 미디어 정규화 완료`);
+      } catch (normalizeError) {
+        console.error(`❌ 미디어 정규화 오류:`, normalizeError);
+        // 정규화 실패 시 원본 데이터 사용
+        normalized = {
+          title: postData.title,
+          summary: postData.summary,
+          content: postData.content,
+          sourceUrl: postData.sourceUrl || null,
+          sourceName: postData.sourceName || null,
+          imageUrl: postData.imageUrl || null,
+          thumbnailUrl: postData.thumbnailUrl || null,
+        };
+        console.log(`📝 미디어 정규화 실패, 원본 데이터 사용`);
+      }
 
       // 새 포스팅 데이터 생성
       const now = new Date().toISOString();
@@ -794,12 +818,19 @@ class LocalNutritionDataManager {
       
       // 관련 상품 처리 (relatedProducts가 있는 경우)
       if (postData.relatedProducts && postData.relatedProducts.length > 0) {
-        await this.saveRelatedProducts(newId, postData.relatedProducts.map(product => ({
-          name: product.name,
-          url: product.link,
-          price: product.price || null,
-          imageUrl: product.imageUrl || null
-        })));
+        console.log(`📝 관련상품 저장 시작: ${postData.relatedProducts.length}개`);
+        try {
+          await this.saveRelatedProducts(newId, postData.relatedProducts.map(product => ({
+            name: product.name,
+            url: product.link,
+            price: product.price || null,
+            imageUrl: product.imageUrl || null
+          })));
+          console.log(`📝 관련상품 저장 완료`);
+        } catch (relatedError) {
+          console.error(`❌ 관련상품 저장 오류:`, relatedError);
+          // 관련상품 저장 실패해도 포스팅은 생성 계속
+        }
       }
       
       // 캐시 무효화

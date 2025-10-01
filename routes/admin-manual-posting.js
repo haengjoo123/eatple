@@ -198,11 +198,13 @@ router.post('/posts', requireAdmin, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('포스팅 생성 오류:', error);
+        console.error('❌ 포스팅 생성 오류:', error);
+        console.error('❌ 오류 스택:', error.stack);
         res.status(500).json({
             success: false,
             error: '포스팅 생성 중 오류가 발생했습니다.',
-            details: error.message
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 });
