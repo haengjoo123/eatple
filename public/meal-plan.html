@@ -846,8 +846,16 @@
             
             // 관리자 권한 확인
             let adminButton = '';
-            if (data.user.isAdmin === true || data.user.role === 'admin') {
+            const isAdminCheck = data.user.isAdmin === true || data.user.role === 'admin';
+            console.log("관리자 권한 체크 결과:", isAdminCheck);
+            console.log("isAdmin === true:", data.user.isAdmin === true);
+            console.log("role === 'admin':", data.user.role === 'admin');
+            
+            if (isAdminCheck) {
               adminButton = '<a href="admin.html" class="main-nav-button" style="background-color: #dc3545; color: white;">관리자</a>';
+              console.log("관리자 버튼 추가됨");
+            } else {
+              console.log("관리자 권한 없음");
             }
             
             const authHTML = `

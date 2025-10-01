@@ -428,12 +428,17 @@
 
             // 디버깅: 사용자 정보 출력
             console.log("사용자 정보:", data.user);
-            console.log("isAdmin:", data.user.isAdmin);
-            console.log("role:", data.user.role);
-
+            console.log("isAdmin:", data.user.isAdmin, typeof data.user.isAdmin);
+            console.log("role:", data.user.role, typeof data.user.role);
+            
             // 관리자 권한 확인
             let adminButton = "";
-            if (data.user.isAdmin === true || data.user.role === "admin") {
+            const isAdminCheck = data.user.isAdmin === true || data.user.role === "admin";
+            console.log("관리자 권한 체크 결과:", isAdminCheck);
+            console.log("isAdmin === true:", data.user.isAdmin === true);
+            console.log("role === 'admin':", data.user.role === "admin");
+            
+            if (isAdminCheck) {
               adminButton =
                 '<a href="admin.html" class="main-nav-button" style="background-color: #dc3545; color: white;">관리자</a>';
               console.log("관리자 버튼 추가됨");

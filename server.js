@@ -86,20 +86,22 @@ app.use(
   })
 );
 
-// 세션 미들웨어 적용 (보안 강화)
+// 세션 미들웨어 적용 (Render 환경 최적화)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "mealplan_secret_key_enhanced",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production" && process.env.RENDER === "true", // Render에서만 secure 활성화
+      secure: process.env.NODE_ENV === "production", // 프로덕션에서는 항상 secure
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 8, // 8시간 (관리자 작업을 고려하여 연장)
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Render에서는 none으로 설정
-      // domain 제거 - Render에서는 자동으로 처리됨
+      maxAge: 1000 * 60 * 60 * 24, // 24시간으로 연장
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // 프로덕션에서는 none
+      // domain 설정 제거 - Render에서 자동 처리
     },
     name: "mealplan_session", // 세션 쿠키 이름 변경
+    // Render 환경에서 세션 지속성을 위한 추가 설정
+    rolling: true, // 매 요청마다 세션 갱신
   })
 );
 

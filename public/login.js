@@ -74,14 +74,18 @@ document.getElementById("loginForm").onsubmit = async function (e) {
     
     const data = await res.json();
     
+    console.log('로그인 응답 받음:', data);
+    
     if (data.success) {
       // 사용자 정보 저장
       if (data.user) {
         localStorage.setItem("user", JSON.stringify(data.user));
+        console.log('사용자 정보 localStorage에 저장됨:', data.user);
       }
 
       msg.style.color = "green";
       msg.textContent = "로그인 성공!";
+      console.log('로그인 성공 처리 시작');
       
       // 로그인 성공 후 리다이렉트 처리
       const returnUrl = sessionStorage.getItem("returnUrl");

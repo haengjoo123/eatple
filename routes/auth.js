@@ -340,7 +340,7 @@ router.post("/login", async (req, res) => {
     const userData = await processUserDataAsync(user);
     
     // 세션 설정을 먼저 수행
-    req.session.user = { 
+    const sessionUser = { 
       id: user.id, 
       email: user.email, 
       authType: "email",
@@ -348,18 +348,31 @@ router.post("/login", async (req, res) => {
       isAdmin: userData.isAdmin || false,
       role: userData.role || null
     };
+    
+    req.session.user = sessionUser;
+    
+    // 세션 저장 확인
+    console.log('세션 설정 완료:', {
+      sessionId: req.sessionID,
+      user: sessionUser,
+      sessionCookie: req.session.cookie
+    });
 
     // 즉시 응답 반환
+    const responseUser = { 
+      id: user.id, 
+      email: user.email, 
+      authType: "email",
+      emailConfirmed: user.email_confirmed_at ? true : false,
+      isAdmin: userData.isAdmin || false,
+      role: userData.role || null
+    };
+    
+    console.log('로그인 응답 전송:', responseUser);
+    
     res.json({ 
       success: true, 
-      user: { 
-        id: user.id, 
-        email: user.email, 
-        authType: "email",
-        emailConfirmed: user.email_confirmed_at ? true : false,
-        isAdmin: userData.isAdmin || false,
-        role: userData.role || null
-      } 
+      user: responseUser 
     });
 
 
@@ -1190,8 +1203,16 @@ router.get("/kakao-rest-key", (req, res) => {
 // 로그인 상태 확인
 router.get("/me", (req, res) => {
   if (req.session.user) {
+    console.log('사용자 상태 확인 - 세션 사용자:', {
+      id: req.session.user.id,
+      email: req.session.user.email,
+      isAdmin: req.session.user.isAdmin,
+      role: req.session.user.role,
+      authType: req.session.user.authType
+    });
     res.json({ loggedIn: true, user: req.session.user });
   } else {
+    console.log('사용자 상태 확인 - 로그인되지 않음');
     res.json({ loggedIn: false });
   }
 });
