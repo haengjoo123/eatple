@@ -96,9 +96,11 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             const responseSize = JSON.stringify(responseData).length;
             console.log(`[PERFORMANCE] 영양정보 API 응답 크기: ${(responseSize / 1024 / 1024).toFixed(2)}MB (${data.length}개 항목)`);
             
-            // HTTP 캐시 헤더 설정
+            // HTTP 캐시 헤더 설정 (성능 최적화)
             try {
-                res.setHeader('Cache-Control', 'public, max-age=180, stale-while-revalidate=60');
+                // 영양정보 목록은 5분 캐시, 1분 stale-while-revalidate
+                res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+                res.setHeader('ETag', `"${Buffer.from(JSON.stringify(responseData)).toString('base64').slice(0, 16)}"`);
             } catch (e) {
                 // 헤더 설정 실패는 무시
             }
@@ -804,11 +806,12 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
                 console.error('추천 기능 오류:', recommendError);
             }
 
-            // HTTP 캐시 헤더 설정
+            // HTTP 캐시 헤더 설정 (성능 최적화)
             try {
                 const etag = `W/"ni-${responseData.id}-${new Date(responseData.collectedDate || responseData.publishedDate || 0).getTime()}-${responseData.viewCount || 0}"`;
                 res.setHeader('ETag', etag);
-                res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+                // 상세 조회는 10분 캐시, 2분 stale-while-revalidate
+                res.setHeader('Cache-Control', 'public, max-age=600, stale-while-revalidate=120');
                 
                 const ifNoneMatch = req.headers['if-none-match'];
                 if (ifNoneMatch && ifNoneMatch === etag) {

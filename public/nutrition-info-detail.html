@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>영양 정보 상세 - 잇플</title>
+    <!-- 성능 최적화 메타데이터 -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#4a69bd">
+    <link rel="preconnect" href="https://images.unsplash.com">
+    <link rel="dns-prefetch" href="//images.unsplash.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- 중요 리소스 우선 로딩 -->
+    <link rel="preload" href="nutrition-info-detail.js" as="script">
+    <link rel="preload" href="style.css" as="style">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="nutrition-info-styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -96,15 +106,16 @@
             border-radius: 8px;
         }
 
-        /* 점진적 로딩 애니메이션 */
+        /* 점진적 로딩 애니메이션 (성능 최적화) */
         .progressive-fade-in {
-            animation: progressive-fade-in 0.5s ease-in-out;
+            animation: progressive-fade-in 0.3s ease-out;
+            will-change: opacity, transform;
         }
 
         @keyframes progressive-fade-in {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(10px);
             }
             to {
                 opacity: 1;
@@ -119,6 +130,33 @@
         .detail-content-section { animation-delay: 0.4s; }
         .detail-tags-section { animation-delay: 0.5s; }
         .detail-recommendations { animation-delay: 0.6s; }
+
+        /* 이미지 최적화 */
+        .detail-image, .recommended-card-image img {
+            will-change: transform;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+        }
+
+        /* 지연 로딩 이미지 플레이스홀더 */
+        .detail-image[loading="lazy"] {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200px 100%;
+            animation: skeleton-shimmer 1.5s infinite;
+        }
+
+        /* 추천 카드 이미지 최적화 */
+        .recommended-card-image img {
+            transition: opacity 0.3s ease;
+        }
+
+        .recommended-card-image img[loading="lazy"] {
+            opacity: 0;
+        }
+
+        .recommended-card-image img[loading="lazy"].loaded {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="nutrition-detail-page">
@@ -425,8 +463,9 @@
         </div>
     </footer>
 
-    <script src="nutrition-info-detail.js"></script>
-    <script src="script.js"></script>
+    <!-- JavaScript 번들 최적화 -->
+    <script src="nutrition-info-detail.js" defer></script>
+    <script src="script.js" defer></script>
     <script>
         // 모바일 네비게이션 토글 (index.html과 동일)
         document.getElementById('navToggle').addEventListener('click', function () {

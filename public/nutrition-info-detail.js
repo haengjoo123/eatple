@@ -14,6 +14,7 @@ class NutritionInfoDetailManager {
         // 클라이언트 캐시 설정 (SWR 전략)
         // 왜: Supabase 응답 지연 시 사용자에게 즉시 콘텐츠를 보여주고, 백그라운드에서 최신화하기 위함
         this.CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12시간 TTL
+        this.RECOMMENDATION_CACHE_TTL_MS = 30 * 60 * 1000; // 추천 정보 30분 TTL
         
         // 영양정보 데이터
         this.nutritionInfo = null;
@@ -211,31 +212,50 @@ class NutritionInfoDetailManager {
     async renderProgressively() {
         // 1단계: 기본 정보 렌더링 (제목, 메타 정보)
         await this.renderBasicInfo();
-        await this.delay(100);
+        await this.delay(50); // 지연 시간 단축
 
         // 2단계: 이미지 렌더링
         await this.renderImage();
-        await this.delay(100);
+        await this.delay(50);
 
         // 3단계: 요약 정보 렌더링
         await this.renderSummary();
-        await this.delay(100);
+        await this.delay(50);
 
         // 4단계: 상세 내용 렌더링
         await this.renderDetailContent();
-        await this.delay(100);
+        await this.delay(50);
 
         // 5단계: 태그 및 액션 버튼 렌더링
         await this.renderTagsAndActions();
-        await this.delay(100);
+        await this.delay(50);
 
-        // 6단계: 사용자 상호작용 상태 로드 (백그라운드)
-        this.loadUserInteractionState().then(() => {
-            this.updateActionButtons();
-        });
-
-        // 7단계: 추천 정보 로드 (백그라운드)
-        this.loadRecommendedInfo();
+        // 6단계: 사용자 상호작용 상태와 추천 정보를 병렬로 로드 (백그라운드)
+        // requestIdleCallback을 사용하여 브라우저가 유휴 상태일 때 실행
+        if (window.requestIdleCallback) {
+            requestIdleCallback(() => {
+                Promise.allSettled([
+                    this.loadUserInteractionState().then(() => {
+                        this.updateActionButtons();
+                    }),
+                    this.loadRecommendedInfo()
+                ]).catch(error => {
+                    console.warn('백그라운드 데이터 로드 중 일부 실패:', error);
+                });
+            });
+        } else {
+            // requestIdleCallback을 지원하지 않는 브라우저를 위한 폴백
+            setTimeout(() => {
+                Promise.allSettled([
+                    this.loadUserInteractionState().then(() => {
+                        this.updateActionButtons();
+                    }),
+                    this.loadRecommendedInfo()
+                ]).catch(error => {
+                    console.warn('백그라운드 데이터 로드 중 일부 실패:', error);
+                });
+            }, 100);
+        }
     }
 
     // 지연 유틸리티
@@ -345,18 +365,62 @@ class NutritionInfoDetailManager {
 
         const info = this.nutritionInfo;
 
-        // 이미지 설정
-        if (info.thumbnailUrl) {
-            this.detailImage.src = info.thumbnailUrl;
-        } else if (info.imageUrl) {
-            this.detailImage.src = info.imageUrl;
-        } else {
-            this.detailImage.src = this.getDefaultImage();
-        }
+        // 이미지 지연 로딩 및 WebP 최적화
+        this.detailImage.loading = 'lazy';
+        this.detailImage.decoding = 'async';
+        
+        // WebP 지원 확인 및 최적화된 이미지 URL 생성
+        const imageUrl = this.getOptimizedImageUrl(info);
+        this.detailImage.src = imageUrl;
         this.detailImage.alt = info.title;
 
-        // 이미지 컨테이너에 애니메이션 적용
-        this.detailImage.parentElement.classList.add('progressive-fade-in');
+        // 이미지 로드 완료 시 애니메이션 적용
+        this.detailImage.onload = () => {
+            this.detailImage.parentElement.classList.add('progressive-fade-in');
+        };
+
+        // 이미지 로드 실패 시 기본 이미지로 대체
+        this.detailImage.onerror = () => {
+            this.detailImage.src = this.getDefaultImage();
+            this.detailImage.parentElement.classList.add('progressive-fade-in');
+        };
+    }
+
+    // 최적화된 이미지 URL 생성
+    getOptimizedImageUrl(info) {
+        let imageUrl = '';
+        
+        if (info.thumbnailUrl) {
+            imageUrl = info.thumbnailUrl;
+        } else if (info.imageUrl) {
+            imageUrl = info.imageUrl;
+        } else {
+            return this.getDefaultImage();
+        }
+
+        // WebP 지원 확인 및 URL 최적화
+        if (this.supportsWebP() && !imageUrl.includes('.webp')) {
+            // WebP 변환 요청 (서버에서 지원하는 경우)
+            const url = new URL(imageUrl);
+            url.searchParams.set('format', 'webp');
+            url.searchParams.set('quality', '80');
+            return url.toString();
+        }
+
+        // 기존 URL에 최적화 파라미터 추가
+        const url = new URL(imageUrl);
+        url.searchParams.set('w', '800');
+        url.searchParams.set('h', '400');
+        url.searchParams.set('fit', 'crop');
+        return url.toString();
+    }
+
+    // WebP 지원 확인
+    supportsWebP() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
     }
 
     async renderSummary() {
@@ -544,7 +608,7 @@ class NutritionInfoDetailManager {
             // 클라이언트 캐시에서 추천 정보 확인
             const recKey = `nutritionInfoDetail:rec:${this.nutritionInfoId}`;
             const cached = this.readCache(recKey);
-            if (cached && cached.data && cached.cachedAt && Date.now() - cached.cachedAt < 30 * 60 * 1000) {
+            if (cached && cached.data && cached.cachedAt && Date.now() - cached.cachedAt < this.RECOMMENDATION_CACHE_TTL_MS) {
                 // 추천 정보 클라이언트 캐시에서 조회
                 this.renderRecommendedInfo(cached.data);
                 return;
@@ -569,60 +633,52 @@ class NutritionInfoDetailManager {
             const info = this.nutritionInfo;
             let recommendedItems = [];
 
+            // 병렬 API 호출로 성능 최적화
+            const apiPromises = [];
+            
             // 1. 같은 카테고리의 다른 정보들
             if (info.category) {
-                const categoryResponse = await fetch(`/api/nutrition-info?category=${info.category}&limit=3`, {
-                    credentials: 'include'
-                });
-                
-                if (categoryResponse.ok) {
-                    const categoryResult = await categoryResponse.json();
-                    if (categoryResult.success && categoryResult.data) {
-                        const categoryItems = categoryResult.data.filter(item => item.id !== this.nutritionInfoId);
-                        recommendedItems.push(...categoryItems);
-                    }
-                }
+                apiPromises.push(
+                    fetch(`/api/nutrition-info?category=${info.category}&limit=3`, {
+                        credentials: 'include'
+                    }).then(response => response.ok ? response.json() : null)
+                );
             }
 
             // 2. 태그 기반 추천 (첫 번째 태그 사용)
             if (info.tags && info.tags.length > 0) {
                 const firstTag = info.tags[0];
-                const tagResponse = await fetch(`/api/nutrition-info?tags=${encodeURIComponent(firstTag)}&limit=3`, {
-                    credentials: 'include'
-                });
-                
-                if (tagResponse.ok) {
-                    const tagResult = await tagResponse.json();
-                    if (tagResult.success && tagResult.data) {
-                        const tagItems = tagResult.data.filter(item => 
-                            item.id !== this.nutritionInfoId && 
-                            !recommendedItems.find(existing => existing.id === item.id)
-                        );
-                        recommendedItems.push(...tagItems);
-                    }
-                }
+                apiPromises.push(
+                    fetch(`/api/nutrition-info?tags=${encodeURIComponent(firstTag)}&limit=3`, {
+                        credentials: 'include'
+                    }).then(response => response.ok ? response.json() : null)
+                );
             }
 
-            // 3. 추천 항목이 부족하면 최신 정보로 보완
-            if (recommendedItems.length < 4) {
-                const generalResponse = await fetch('/api/nutrition-info?limit=6&sortBy=collectedDate', {
+            // 3. 최신 정보 (백업용)
+            apiPromises.push(
+                fetch('/api/nutrition-info?limit=6&sortBy=collectedDate', {
                     credentials: 'include'
-                });
-                
-                if (generalResponse.ok) {
-                    const generalResult = await generalResponse.json();
-                    if (generalResult.success && generalResult.data) {
-                        const generalItems = generalResult.data.filter(item => 
-                            item.id !== this.nutritionInfoId && 
-                            !recommendedItems.find(existing => existing.id === item.id)
-                        );
-                        recommendedItems.push(...generalItems);
-                    }
-                }
-            }
+                }).then(response => response.ok ? response.json() : null)
+            );
 
-            // 최대 4개까지만 표시
-            const top = recommendedItems.slice(0, 4);
+            // 모든 API 호출을 병렬로 실행
+            const results = await Promise.allSettled(apiPromises);
+            
+            // 결과 처리
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled' && result.value && result.value.success && result.value.data) {
+                    const items = result.value.data.filter(item => item.id !== this.nutritionInfoId);
+                    recommendedItems.push(...items);
+                }
+            });
+
+            // 중복 제거 및 최대 4개까지만 표시
+            const uniqueItems = recommendedItems.filter((item, index, self) => 
+                index === self.findIndex(t => t.id === item.id)
+            );
+            const top = uniqueItems.slice(0, 4);
+            
             this.renderRecommendedInfo(top);
             // 캐시 저장
             this.writeCache(`nutritionInfoDetail:rec:${this.nutritionInfoId}`, { data: top, cachedAt: Date.now() });
@@ -694,12 +750,12 @@ class NutritionInfoDetailManager {
             const recommendedCard = document.createElement('div');
             recommendedCard.className = 'recommended-card';
             
-            // 이미지 URL 결정 (썸네일 우선)
+            // 이미지 URL 결정 (썸네일 우선) 및 최적화
             let imageUrl;
             if (item.thumbnailUrl) {
-                imageUrl = item.thumbnailUrl;
+                imageUrl = this.getOptimizedImageUrl(item);
             } else if (item.imageUrl) {
-                imageUrl = item.imageUrl;
+                imageUrl = this.getOptimizedImageUrl(item);
             } else {
                 imageUrl = this.getDefaultImage();
             }
@@ -708,6 +764,8 @@ class NutritionInfoDetailManager {
                 <div class="recommended-card-image">
                     <img src="${imageUrl}" 
                          alt="${item.title}" 
+                         loading="lazy"
+                         decoding="async"
                          onerror="this.src='${this.getDefaultImage()}'">
                 </div>
                 <div class="recommended-card-content">
