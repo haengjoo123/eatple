@@ -17,10 +17,10 @@ class LocalNutritionDataManager {
     this.postTagsFile = path.join(this.dataPath, "post-tags.json");
     this.relatedProductsFile = path.join(this.dataPath, "post-related-products.json");
 
-    // 메모리 캐시
+    // 메모리 캐시 (로컬 데이터 안정성을 위해 캐시 비활성화)
     this.cache = new Map();
-    this.cacheExpiry = 5 * 60 * 1000; // 5분
-    this.maxCacheSize = 100;
+    this.cacheExpiry = 0; // 캐시 비활성화
+    this.maxCacheSize = 0;
   }
 
   /**
@@ -104,14 +104,17 @@ class LocalNutritionDataManager {
    * 영양 정보 포스트 데이터 로드
    */
   async loadNutritionPosts() {
+    console.log(`📁 영양정보 포스트 파일 로드 시작: ${this.nutritionPostsFile}`);
     const cacheKey = 'nutrition_posts';
     const cached = this.cache.get(cacheKey);
     
     if (cached && Date.now() - cached.timestamp < this.cacheExpiry) {
+      console.log(`📁 캐시에서 영양정보 포스트 로드: ${cached.data.length}개`);
       return cached.data;
     }
 
     const posts = await this.readJsonFile(this.nutritionPostsFile);
+    console.log(`📁 파일에서 영양정보 포스트 로드: ${posts.length}개`);
     this.cache.set(cacheKey, { data: posts, timestamp: Date.now() });
     return posts;
   }
@@ -178,7 +181,9 @@ class LocalNutritionDataManager {
    */
   async getNutritionInfoList(filters = {}, pagination = {}) {
     try {
+      console.log(`📖 영양정보 목록 조회 시작 - 필터:`, JSON.stringify(filters, null, 2));
       const posts = await this.loadNutritionPosts();
+      console.log(`📖 로드된 포스트 수: ${posts.length}`);
       let filteredPosts = [...posts];
 
       // 필터 적용
@@ -298,13 +303,15 @@ class LocalNutritionDataManager {
       const paginatedPosts = filteredPosts.slice(offset, offset + limit);
 
       // NutritionInfo 객체로 변환하고 추가 데이터 로드
+      console.log(`📖 페이지네이션 적용 후 포스트 수: ${paginatedPosts.length}`);
       const enrichedPosts = [];
       for (const post of paginatedPosts) {
         const enrichedPost = await this.enrichPostData(post);
         enrichedPosts.push(enrichedPost);
       }
 
-      return {
+      console.log(`📖 최종 반환할 포스트 수: ${enrichedPosts.length}`);
+      const result = {
         data: enrichedPosts,
         pagination: {
           page: page,
@@ -315,6 +322,9 @@ class LocalNutritionDataManager {
           totalPages: totalPages
         }
       };
+      
+      console.log(`📖 영양정보 목록 조회 완료 - 총 ${totalCount}개 중 ${enrichedPosts.length}개 반환`);
+      return result;
     } catch (error) {
       console.error('영양 정보 목록 조회 오류:', error);
       throw error;

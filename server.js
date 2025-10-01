@@ -108,12 +108,10 @@ app.use("/api/stats", require("./routes/stats"));
 app.use("/api/contact", require("./routes/contact"));
 app.use("/api/points", require("./routes/points"));
 app.use("/api/games", require("./routes/games"));
-// 영양 정보 관련 유틸리티들
-const NutritionDataManager = require("./utils/nutritionDataManager");
+// 영양 정보 관련 유틸리티들 (로컬 데이터 전용)
 const LocalNutritionDataManager = require("./utils/localNutritionDataManager");
 
 // 인스턴스 생성 (로컬 파일 시스템 사용)
-const nutritionDataManager = new NutritionDataManager();
 const localNutritionDataManager = new LocalNutritionDataManager();
 
 // 추천 서비스 초기화
