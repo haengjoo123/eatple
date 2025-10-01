@@ -10,17 +10,70 @@ const { normalizePostMedia } = require("./mediaNormalizer");
 
 class LocalNutritionDataManager {
   constructor() {
-    this.dataPath = path.join(__dirname, "../data/nutrition");
+    // 배포환경에서는 절대 경로 사용
+    const projectRoot = process.env.NODE_ENV === 'production' 
+      ? process.cwd() 
+      : path.join(__dirname, "..");
+    
+    this.dataPath = path.join(projectRoot, "data/nutrition");
     this.nutritionPostsFile = path.join(this.dataPath, "nutrition-posts.json");
     this.categoriesFile = path.join(this.dataPath, "categories.json");
     this.tagsFile = path.join(this.dataPath, "tags.json");
     this.postTagsFile = path.join(this.dataPath, "post-tags.json");
     this.relatedProductsFile = path.join(this.dataPath, "post-related-products.json");
+    
+    console.log(`📁 LocalNutritionDataManager 초기화:`);
+    console.log(`📁 프로젝트 루트: ${projectRoot}`);
+    console.log(`📁 데이터 경로: ${this.dataPath}`);
+    console.log(`📁 포스트 파일: ${this.nutritionPostsFile}`);
 
     // 메모리 캐시 (로컬 데이터 안정성을 위해 캐시 비활성화)
     this.cache = new Map();
     this.cacheExpiry = 0; // 캐시 비활성화
     this.maxCacheSize = 0;
+    
+    // 디렉토리 초기화
+    this.initializeDirectories();
+  }
+  
+  /**
+   * 데이터 디렉토리 초기화
+   */
+  async initializeDirectories() {
+    try {
+      console.log(`📁 디렉토리 초기화 시작: ${this.dataPath}`);
+      await fs.mkdir(this.dataPath, { recursive: true });
+      console.log(`✅ 디렉토리 초기화 완료: ${this.dataPath}`);
+      
+      // 기본 파일들이 존재하는지 확인하고 없으면 생성
+      await this.ensureFileExists(this.nutritionPostsFile, []);
+      await this.ensureFileExists(this.categoriesFile, []);
+      await this.ensureFileExists(this.tagsFile, []);
+      await this.ensureFileExists(this.postTagsFile, []);
+      await this.ensureFileExists(this.relatedProductsFile, []);
+      
+    } catch (error) {
+      console.error(`❌ 디렉토리 초기화 오류:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * 파일이 존재하지 않으면 기본값으로 생성
+   */
+  async ensureFileExists(filePath, defaultData) {
+    try {
+      await fs.access(filePath);
+      console.log(`✅ 파일 존재 확인: ${filePath}`);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        console.log(`📄 파일 생성: ${filePath}`);
+        await fs.writeFile(filePath, JSON.stringify(defaultData, null, 2), 'utf8');
+        console.log(`✅ 파일 생성 완료: ${filePath}`);
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**
@@ -816,6 +869,16 @@ class LocalNutritionDataManager {
       console.log(`💾 저장할 포스트 수: ${posts.length}`);
       
       const jsonString = JSON.stringify(posts, null, 2);
+      
+      // 파일 쓰기 권한 확인
+      try {
+        await fs.access(this.nutritionPostsFile, fs.constants.W_OK);
+        console.log(`✅ 파일 쓰기 권한 확인됨: ${this.nutritionPostsFile}`);
+      } catch (error) {
+        console.error(`❌ 파일 쓰기 권한 없음: ${this.nutritionPostsFile}`, error);
+        throw new Error(`파일 쓰기 권한이 없습니다: ${this.nutritionPostsFile}`);
+      }
+      
       await fs.writeFile(this.nutritionPostsFile, jsonString, 'utf8');
       
       // 저장 확인
@@ -826,6 +889,9 @@ class LocalNutritionDataManager {
       const savedContent = await fs.readFile(this.nutritionPostsFile, 'utf8');
       const parsedContent = JSON.parse(savedContent);
       console.log(`💾 저장 검증: ${parsedContent.length}개 포스트 확인됨`);
+      
+      // 실제 저장된 파일 경로 출력
+      console.log(`💾 실제 저장된 파일: ${path.resolve(this.nutritionPostsFile)}`);
       
       // 태그 처리 (tags가 있는 경우)
       if (postData.tags && postData.tags.length > 0) {
