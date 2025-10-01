@@ -23,10 +23,25 @@ const USERS_FILE = path.join(__dirname, "../data/users.json");
 // Supabase 클라이언트 초기화 (성능 최적화 옵션 추가)
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
+
+// 환경변수 확인 및 로깅
+console.log('Supabase 설정 확인:');
+console.log('- SUPABASE_URL:', supabaseUrl ? '설정됨' : '설정되지 않음');
+console.log('- SUPABASE_KEY:', supabaseKey ? '설정됨' : '설정되지 않음');
+console.log('- NODE_ENV:', process.env.NODE_ENV);
+console.log('- RENDER:', process.env.RENDER);
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('❌ Supabase 환경변수가 설정되지 않았습니다!');
+  console.error('SUPABASE_URL:', supabaseUrl);
+  console.error('SUPABASE_KEY:', supabaseKey ? '***설정됨***' : '설정되지 않음');
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     autoRefreshToken: true, // 자동 토큰 갱신 활성화로 세션 지속성 향상
     persistSession: true,   // 세션 지속성 활성화로 로그인 상태 유지
+    detectSessionInUrl: false, // URL에서 세션 감지 비활성화 (프로덕션에서 문제 방지)
   },
   global: {
     headers: {
@@ -252,15 +267,36 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     
+    // 디버깅 로그 추가
+    console.log('로그인 시도:', {
+      email: email ? '***설정됨***' : '설정되지 않음',
+      passwordLength: password ? password.length : 0,
+      nodeEnv: process.env.NODE_ENV,
+      render: process.env.RENDER,
+      supabaseUrl: supabaseUrl ? '설정됨' : '설정되지 않음',
+      supabaseKey: supabaseKey ? '설정됨' : '설정되지 않음'
+    });
+    
     // 입력값 검증
     if (!email || !password) {
+      console.log('로그인 실패: 입력값 누락');
       return res.status(400).json({ 
         success: false, 
         error: "이메일과 비밀번호를 입력하세요." 
       });
     }
 
+    // Supabase 클라이언트 확인
+    if (!supabase) {
+      console.error('Supabase 클라이언트가 초기화되지 않았습니다');
+      return res.status(500).json({ 
+        success: false, 
+        error: "서버 설정 오류가 발생했습니다." 
+      });
+    }
+
     // Supabase를 통한 로그인 (타임아웃 설정)
+    console.log('Supabase 로그인 요청 시작...');
     const loginPromise = supabase.auth.signInWithPassword({
       email: email,
       password: password
@@ -272,6 +308,11 @@ router.post("/login", async (req, res) => {
     });
     
     const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
+    console.log('Supabase 로그인 응답:', { 
+      hasData: !!data, 
+      hasError: !!error,
+      errorMessage: error?.message 
+    });
 
     if (error) {
       console.error('Supabase login error:', error);

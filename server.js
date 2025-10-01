@@ -42,12 +42,39 @@ app.use(generalLimiter);
 // CORS 설정: 개발 및 프로덕션 환경 모두 허용
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://eatple.onrender.com"
-    ],
-    methods: ["GET", "POST", "DELETE"],
+    origin: function (origin, callback) {
+      // 개발 환경에서는 모든 origin 허용
+      if (process.env.NODE_ENV !== "production") {
+        return callback(null, true);
+      }
+      
+      // 프로덕션 환경에서 허용할 origin 목록
+      const allowedOrigins = [
+        "http://localhost:3000",
+        "https://eatple.onrender.com",
+        process.env.FRONTEND_URL, // 환경변수로 프론트엔드 URL 설정 가능
+        // Render의 자동 생성 도메인도 허용
+        /^https:\/\/.*\.onrender\.com$/
+      ];
+      
+      // origin이 없거나 허용 목록에 있으면 허용
+      if (!origin || allowedOrigins.some(allowed => {
+        if (typeof allowed === 'string') {
+          return allowed === origin;
+        } else if (allowed instanceof RegExp) {
+          return allowed.test(origin);
+        }
+        return false;
+      })) {
+        callback(null, true);
+      } else {
+        console.log('CORS blocked origin:', origin);
+        callback(new Error('CORS policy violation'));
+      }
+    },
+    methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
     credentials: true,
+    optionsSuccessStatus: 200 // 일부 브라우저 호환성을 위해
   })
 );
 app.use(bodyParser.json({ limit: "50mb" })); // 요청 크기 제한 증가
@@ -66,12 +93,11 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production" && process.env.RENDER === "true", // Render에서만 secure 활성화
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 8, // 8시간 (관리자 작업을 고려하여 연장)
-      sameSite: "lax",
-      domain:
-        process.env.NODE_ENV === "production" ? ".yourdomain.com" : undefined,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Render에서는 none으로 설정
+      // domain 제거 - Render에서는 자동으로 처리됨
     },
     name: "mealplan_session", // 세션 쿠키 이름 변경
   })
