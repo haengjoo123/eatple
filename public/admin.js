@@ -219,7 +219,8 @@ function setupNavigation() {
       } else if (targetSection === "users") {
         fetchUsers();
       } else if (targetSection === "nutrition") {
-        // 수동 포스팅만 사용
+        // 영양정보 포스팅 통계 로드
+        fetchNutritionPostStats();
       } else if (targetSection === "contacts") {
         loadContacts();
       } else if (targetSection === "promotions") {
@@ -278,6 +279,50 @@ async function fetchProductStats() {
 // 상품 통계 새로고침
 function refreshProductStats() {
   fetchProductStats();
+}
+
+// 영양정보 포스팅 통계 조회
+async function fetchNutritionPostStats() {
+  try {
+    const response = await fetch("/api/admin/manual-posting/stats", {
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
+        const stats = data.stats;
+        document.getElementById("totalPosts").textContent = stats.totalPosts || 0;
+        document.getElementById("publishedPosts").textContent = stats.publishedPosts || 0;
+        document.getElementById("draftPosts").textContent = stats.draftPosts || 0;
+        document.getElementById("inactivePosts").textContent = stats.inactivePosts || 0;
+      } else {
+        console.error("영양정보 포스팅 통계 조회 실패:", data.error);
+        // 기본값 설정
+        setDefaultStats();
+      }
+    } else if (response.status === 401) {
+      console.warn("관리자 권한이 필요합니다. 로그인을 확인해주세요.");
+      // 기본값 설정
+      setDefaultStats();
+    } else {
+      console.error("영양정보 포스팅 통계 조회 실패:", response.status);
+      // 기본값 설정
+      setDefaultStats();
+    }
+  } catch (error) {
+    console.error("영양정보 포스팅 통계 로딩 실패:", error);
+    // 기본값 설정
+    setDefaultStats();
+  }
+}
+
+// 기본 통계값 설정
+function setDefaultStats() {
+  document.getElementById("totalPosts").textContent = "0";
+  document.getElementById("publishedPosts").textContent = "0";
+  document.getElementById("draftPosts").textContent = "0";
+  document.getElementById("inactivePosts").textContent = "0";
 }
 
 // 상품 관리 페이지 열기

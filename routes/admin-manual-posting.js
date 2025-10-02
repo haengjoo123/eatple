@@ -1260,4 +1260,94 @@ router.post('/validate-url', requireAdmin, async (req, res) => {
     }
 });
 
+/**
+ * 포스팅 통계 조회 API
+ * GET /api/admin/manual-posting/stats
+ */
+router.get('/stats', requireAdmin, async (req, res) => {
+    try {
+        console.log('📊 포스팅 통계 조회 시작...');
+        
+        // 전체 포스팅 수 조회 (모든 상태 포함)
+        const allPosts = await nutritionDataManager.getNutritionInfoList({}, { page: 1, limit: 1000 });
+        const totalPosts = allPosts && allPosts.data ? allPosts.data.length : 0;
+        console.log('📊 전체 포스팅 수:', totalPosts);
+        
+        // 게시된 포스팅 수 (활성화되고 임시저장이 아닌 포스팅)
+        const publishedPosts = await nutritionDataManager.getNutritionInfoList(
+            { excludeDrafts: true, activeOnly: true }, 
+            { page: 1, limit: 1000 }
+        );
+        const publishedCount = publishedPosts && publishedPosts.data ? publishedPosts.data.length : 0;
+        console.log('📊 게시된 포스팅 수:', publishedCount);
+        
+        // 임시저장 포스팅 수 (draft 상태)
+        const draftPosts = await nutritionDataManager.getNutritionInfoList(
+            { draftsOnly: true }, 
+            { page: 1, limit: 1000 }
+        );
+        const draftCount = draftPosts && draftPosts.data ? draftPosts.data.length : 0;
+        console.log('📊 임시저장 포스팅 수:', draftCount);
+        
+        // 비활성 포스팅 수 (비활성화된 포스팅, 임시저장 제외)
+        const inactivePosts = await nutritionDataManager.getNutritionInfoList(
+            { excludeDrafts: true, inactiveOnly: true }, 
+            { page: 1, limit: 1000 }
+        );
+        const inactiveCount = inactivePosts && inactivePosts.data ? inactivePosts.data.length : 0;
+        console.log('📊 비활성 포스팅 수:', inactiveCount);
+
+        // 데이터베이스에서 직접 조회하는 방법으로 변경
+        const { createClient } = require('@supabase/supabase-js');
+        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+        
+        // 전체 포스팅 수
+        const { count: totalCount } = await supabase
+            .from('nutrition_posts')
+            .select('*', { count: 'exact', head: true });
+        
+        // 게시된 포스팅 수 (is_draft = false, is_active = true)
+        const { count: publishedCountDB } = await supabase
+            .from('nutrition_posts')
+            .select('*', { count: 'exact', head: true })
+            .eq('is_draft', false)
+            .eq('is_active', true);
+        
+        // 임시저장 포스팅 수 (is_draft = true)
+        const { count: draftCountDB } = await supabase
+            .from('nutrition_posts')
+            .select('*', { count: 'exact', head: true })
+            .eq('is_draft', true);
+        
+        // 비활성 포스팅 수 (is_draft = false, is_active = false)
+        const { count: inactiveCountDB } = await supabase
+            .from('nutrition_posts')
+            .select('*', { count: 'exact', head: true })
+            .eq('is_draft', false)
+            .eq('is_active', false);
+
+        const stats = {
+            totalPosts: totalCount || 0,
+            publishedPosts: publishedCountDB || 0,
+            draftPosts: draftCountDB || 0,
+            inactivePosts: inactiveCountDB || 0
+        };
+
+        console.log('📊 최종 통계:', stats);
+
+        res.json({
+            success: true,
+            stats: stats
+        });
+
+    } catch (error) {
+        console.error('포스팅 통계 조회 오류:', error);
+        res.status(500).json({
+            success: false,
+            error: '포스팅 통계를 조회하는 중 오류가 발생했습니다.',
+            details: error.message
+        });
+    }
+});
+
 module.exports = router;
