@@ -398,21 +398,39 @@ class NutritionInfoDetailManager {
             return this.getDefaultImage();
         }
 
-        // WebP 지원 확인 및 URL 최적화
-        if (this.supportsWebP() && !imageUrl.includes('.webp')) {
-            // WebP 변환 요청 (서버에서 지원하는 경우)
-            const url = new URL(imageUrl);
-            url.searchParams.set('format', 'webp');
-            url.searchParams.set('quality', '80');
-            return url.toString();
+        // URL 유효성 검사
+        if (!imageUrl || typeof imageUrl !== 'string') {
+            return this.getDefaultImage();
         }
 
-        // 기존 URL에 최적화 파라미터 추가
-        const url = new URL(imageUrl);
-        url.searchParams.set('w', '800');
-        url.searchParams.set('h', '400');
-        url.searchParams.set('fit', 'crop');
-        return url.toString();
+        // 상대 경로인 경우 절대 경로로 변환
+        if (imageUrl.startsWith('/')) {
+            imageUrl = window.location.origin + imageUrl;
+        }
+
+        // URL 유효성 검사 및 안전한 처리
+        try {
+            // 이미 완전한 URL인지 확인
+            const url = new URL(imageUrl);
+            
+            // WebP 지원 확인 및 URL 최적화
+            if (this.supportsWebP() && !imageUrl.includes('.webp')) {
+                // WebP 변환 요청 (서버에서 지원하는 경우)
+                url.searchParams.set('format', 'webp');
+                url.searchParams.set('quality', '80');
+                return url.toString();
+            }
+
+            // 기존 URL에 최적화 파라미터 추가
+            url.searchParams.set('w', '800');
+            url.searchParams.set('h', '400');
+            url.searchParams.set('fit', 'crop');
+            return url.toString();
+        } catch (error) {
+            console.warn('이미지 URL 처리 중 오류 발생:', error, '원본 URL:', imageUrl);
+            // URL이 유효하지 않은 경우 기본 이미지 반환
+            return this.getDefaultImage();
+        }
     }
 
     // WebP 지원 확인
@@ -754,10 +772,13 @@ class NutritionInfoDetailManager {
             let imageUrl;
             if (item.thumbnailUrl) {
                 imageUrl = this.getOptimizedImageUrl(item);
+                console.log('추천 카드 썸네일 URL:', item.thumbnailUrl, '→ 최적화된 URL:', imageUrl);
             } else if (item.imageUrl) {
                 imageUrl = this.getOptimizedImageUrl(item);
+                console.log('추천 카드 이미지 URL:', item.imageUrl, '→ 최적화된 URL:', imageUrl);
             } else {
                 imageUrl = this.getDefaultImage();
+                console.log('추천 카드 기본 이미지 사용:', imageUrl);
             }
             
             recommendedCard.innerHTML = `
@@ -766,7 +787,8 @@ class NutritionInfoDetailManager {
                          alt="${item.title}" 
                          loading="lazy"
                          decoding="async"
-                         onerror="this.src='${this.getDefaultImage()}'">
+                         onerror="this.src='${this.getDefaultImage()}'; this.onerror=null;"
+                         onload="this.style.opacity='1';">
                 </div>
                 <div class="recommended-card-content">
                     <h3 class="recommended-card-title">${this.truncateText(item.title, 50)}</h3>
