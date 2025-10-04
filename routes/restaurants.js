@@ -425,7 +425,7 @@ async function searchNearbyRestaurants(lat, lng, radius = 1000) {
           {
             headers: {
               Authorization: `KakaoAK ${KAKAO_REST_API_KEY}`,
-              KA: "sdk/1.0.0 os/javascript origin/http://localhost:3000",
+              KA: `sdk/1.0.0 os/javascript origin/${process.env.NODE_ENV === 'production' ? 'https://eatple.onrender.com' : 'http://localhost:3000'}`,
             },
             params: {
               category_group_code: "FD6", // 음식점 카테고리
@@ -488,7 +488,7 @@ async function searchNearbyRestaurants(lat, lng, radius = 1000) {
               {
                 headers: {
                   Authorization: `KakaoAK ${KAKAO_REST_API_KEY}`,
-                  KA: "sdk/1.0.0 os/javascript origin/http://localhost:3000",
+                  KA: `sdk/1.0.0 os/javascript origin/${process.env.NODE_ENV === 'production' ? 'https://eatple.onrender.com' : 'http://localhost:3000'}`,
                 },
                 params: {
                   query: place.place_name,
@@ -1084,7 +1084,7 @@ async function addDistanceInfoToRecommendations(
             {
               headers: {
                 Authorization: `KakaoAK ${KAKAO_REST_API_KEY}`,
-                KA: "sdk/1.0.0 os/javascript origin/http://localhost:3000",
+                KA: `sdk/1.0.0 os/javascript origin/${process.env.NODE_ENV === 'production' ? 'https://eatple.onrender.com' : 'http://localhost:3000'}`,
               },
               params: {
                 query: restaurantName,

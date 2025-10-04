@@ -1166,7 +1166,7 @@ async function sendPromptToServer(promptText) {
 
   try {
     const response = await fetch(
-      "http://localhost:3000/api/generate-meal-plan",
+      "/api/generate-meal-plan",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
