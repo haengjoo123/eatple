@@ -2068,6 +2068,44 @@
       // 페이지 로드 시 영양 정보 로드
       document.addEventListener("DOMContentLoaded", function () {
         loadNutritionInfo();
+        
+        // URL 해시(앵커) 처리 - 다른 페이지에서 모달 링크로 접근할 때
+        const hash = window.location.hash;
+        if (hash === '#faq') {
+          faqModal.style.display = "block";
+          document.body.style.overflow = "hidden";
+        } else if (hash === '#contact') {
+          contactModal.style.display = "block";
+          document.body.style.overflow = "hidden";
+          checkLoginForContact();
+        } else if (hash === '#privacy') {
+          privacyModal.style.display = "block";
+          document.body.style.overflow = "hidden";
+        }
+        
+        // 해시 변경 감지 (브라우저 뒤로가기/앞으로가기 처리)
+        window.addEventListener('hashchange', function() {
+          const newHash = window.location.hash;
+          
+          // 모든 모달 닫기
+          faqModal.style.display = "none";
+          contactModal.style.display = "none";
+          privacyModal.style.display = "none";
+          document.body.style.overflow = "";
+          
+          // 새로운 해시에 따라 모달 열기
+          if (newHash === '#faq') {
+            faqModal.style.display = "block";
+            document.body.style.overflow = "hidden";
+          } else if (newHash === '#contact') {
+            contactModal.style.display = "block";
+            document.body.style.overflow = "hidden";
+            checkLoginForContact();
+          } else if (newHash === '#privacy') {
+            privacyModal.style.display = "block";
+            document.body.style.overflow = "hidden";
+          }
+        });
       });
     </script>
   </body>

@@ -304,6 +304,24 @@
   box-shadow: 0 4px 12px rgba(74, 105, 189, 0.3);
 }
 
+.next-tab-btn {
+  background: #28a745;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.next-tab-btn:hover {
+  background: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
 /* 프로필 완성도 섹션 */
 .profile-completion-section {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

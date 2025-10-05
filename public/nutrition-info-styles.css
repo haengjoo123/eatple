@@ -1226,6 +1226,89 @@ body.nutrition-detail-page .container {
 }
 
 /* 반응형 디자인 */
+
+/* 작은 태블릿 환경 (700px - 768px) */
+@media (min-width: 700px) and (max-width: 768px) {
+  .nutrition-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .pagination-container {
+    margin: 30px 0;
+    gap: 8px;
+  }
+  
+  .pagination-arrow {
+    width: 34px;
+    height: 34px;
+  }
+  
+  .page-number {
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+  
+  .page-numbers {
+    gap: 4px;
+  }
+  
+  .detail-content-area {
+    max-width: 100%;
+  }
+  
+  .detail-products {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .product-iframe {
+    width: 100px;
+    height: 200px;
+  }
+}
+
+/* 태블릿 환경 (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .nutrition-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+  }
+  
+  .pagination-container {
+    margin: 35px 0;
+    gap: 10px;
+  }
+  
+  .pagination-arrow {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .page-number {
+    min-width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+  }
+  
+  .page-numbers {
+    gap: 5px;
+  }
+  
+  .detail-content-area {
+    max-width: 100%;
+  }
+  
+  .detail-products {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .product-iframe {
+    width: 100px;
+    height: 200px;
+  }
+}
+
 @media (max-width: 1024px) {
   .nutrition-grid {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

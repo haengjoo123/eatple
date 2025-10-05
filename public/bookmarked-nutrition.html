@@ -186,6 +186,49 @@
             }
         }
 
+        /* 작은 태블릿 환경 (700px - 768px) */
+        @media (min-width: 700px) and (max-width: 768px) {
+            .nutrition-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 18px !important;
+            }
+            
+            .bookmarked-nutrition-header h1 {
+                font-size: 1.7rem;
+            }
+            
+            .container {
+                padding: 20px !important;
+            }
+            
+            /* 작은 태블릿 페이지네이션 스타일 */
+            .pagination-container {
+                margin: 30px 0;
+                gap: 8px;
+            }
+            
+            .pagination {
+                flex-wrap: nowrap;
+                gap: 8px;
+                justify-content: center;
+            }
+            
+            .pagination-btn,
+            .page-number {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+                min-width: 32px;
+                height: 32px;
+            }
+            
+            .page-numbers {
+                display: flex;
+                gap: 4px;
+                flex-wrap: nowrap;
+                justify-content: center;
+            }
+        }
+
         /* 태블릿 반응형 스타일 */
         @media (min-width: 769px) and (max-width: 1024px) {
             .nutrition-grid {
@@ -199,6 +242,33 @@
             
             .container {
                 padding: 25px !important;
+            }
+            
+            /* 태블릿 페이지네이션 스타일 */
+            .pagination-container {
+                margin: 35px 0;
+                gap: 10px;
+            }
+            
+            .pagination {
+                flex-wrap: nowrap;
+                gap: 10px;
+                justify-content: center;
+            }
+            
+            .pagination-btn,
+            .page-number {
+                padding: 10px 14px;
+                font-size: 0.9rem;
+                min-width: 36px;
+                height: 36px;
+            }
+            
+            .page-numbers {
+                display: flex;
+                gap: 5px;
+                flex-wrap: nowrap;
+                justify-content: center;
             }
         }
     </style>
@@ -301,18 +371,6 @@
             </span>
             <span class="footer-nav-label">AI기능</span>
           </button>
-        </li>
-        <li class="footer-nav-item" id="footerNavStore">
-          <a href="store.html">
-            <span class="footer-nav-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-              </svg>
-            </span>
-            <span class="footer-nav-label">스토어</span>
-          </a>
         </li>
         <li class="footer-nav-item" id="footerNavMy">
           <a href="mypage.html">

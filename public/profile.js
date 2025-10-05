@@ -191,20 +191,35 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+  // 탭 전환 함수
+  function switchToTab(tabName) {
+    // 모든 탭/섹션 비활성화
+    document
+      .querySelectorAll(".profile-tab")
+      .forEach((t) => t.classList.remove("active"));
+    document
+      .querySelectorAll(".tab-section")
+      .forEach((s) => s.classList.remove("active"));
+    // 선택 탭/섹션 활성화
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add("active");
+    document.getElementById("tab-" + tabName).classList.add("active");
+    updateProfileProgress();
+  }
+
   // 탭 클릭 이벤트
   document.querySelectorAll(".profile-tab").forEach((tab) => {
     tab.addEventListener("click", function () {
-      // 모든 탭/섹션 비활성화
-      document
-        .querySelectorAll(".profile-tab")
-        .forEach((t) => t.classList.remove("active"));
-      document
-        .querySelectorAll(".tab-section")
-        .forEach((s) => s.classList.remove("active"));
-      // 선택 탭/섹션 활성화
-      this.classList.add("active");
-      document.getElementById("tab-" + this.dataset.tab).classList.add("active");
-      updateProfileProgress();
+      switchToTab(this.dataset.tab);
+    });
+  });
+
+  // 다음 버튼 클릭 이벤트
+  document.querySelectorAll(".next-tab-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const nextTab = this.dataset.nextTab;
+      if (nextTab) {
+        switchToTab(nextTab);
+      }
     });
   });
 

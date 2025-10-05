@@ -10,6 +10,339 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="nutrition-info-styles.css" />
+    <style>
+      /* 모달 공통 스타일 */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        overflow-y: auto;
+      }
+      
+      .modal-content {
+        background-color: #fff;
+        margin: 50px auto;
+        width: 90%;
+        max-width: 800px;
+        border-radius: 15px;
+        box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+        animation: modalFadeIn 0.3s ease;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      @keyframes modalFadeIn {
+        from { opacity: 0; transform: translateY(-30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 30px;
+        background-color: #4a69bd;
+        color: white;
+        border-radius: 15px 15px 0 0;
+      }
+      
+      .modal-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: white;
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      
+      .close-modal {
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+      
+      .close-modal:hover {
+        color: #e0e6ed;
+      }
+      
+      .modal-body {
+        padding: 20px 30px 30px;
+        overflow-y: auto;
+      }
+      
+      /* FAQ 아코디언 스타일 */
+      .faq-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .faq-item {
+        border: 1px solid #e0e6ed;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+      
+      .faq-item:hover {
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      }
+      
+      .faq-question {
+        padding: 18px 20px;
+        background-color: #f8fafc;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background-color 0.2s;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+      
+      .faq-question:hover {
+        background-color: #e8f0fe;
+      }
+      
+      .faq-question h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #2d3748;
+        font-weight: 500;
+      }
+      
+      .faq-toggle {
+        font-size: 1.5rem;
+        color: #4a69bd;
+        font-weight: bold;
+        transition: transform 0.3s ease;
+      }
+      
+      .faq-answer {
+        display: none;
+        padding: 0 20px 20px;
+        background-color: #fff;
+      }
+      
+      .faq-answer p {
+        margin: 0;
+        line-height: 1.6;
+        color: #4a5568;
+      }
+      
+      /* 문의하기 폼 스타일 */
+      .contact-content {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      
+      .login-required-message {
+        text-align: center;
+        padding: 40px 20px;
+        background-color: #f8fafc;
+        border-radius: 10px;
+        border: 2px dashed #cbd5e0;
+      }
+      
+      .login-required-message p {
+        margin: 0 0 20px 0;
+        color: #4a5568;
+        font-size: 1.1rem;
+      }
+      
+      .login-btn {
+        background-color: #4a69bd;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      
+      .login-btn:hover {
+        background-color: #3c5aa6;
+      }
+      
+      .form-group {
+        margin-bottom: 20px;
+      }
+      
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #2d3748;
+      }
+      
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+      }
+      
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #4a69bd;
+      }
+      
+      .form-hint {
+        margin-top: 5px;
+        font-size: 0.9rem;
+        color: #718096;
+      }
+      
+      .submit-btn {
+        background-color: #4a69bd;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      
+      .submit-btn:hover {
+        background-color: #3c5aa6;
+      }
+      
+      .form-message {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 5px;
+        font-weight: 500;
+      }
+      
+      .form-message.success {
+        background-color: #f0fff4;
+        color: #22543d;
+        border: 1px solid #9ae6b4;
+      }
+      
+      .form-message.error {
+        background-color: #fed7d7;
+        color: #742a2a;
+        border: 1px solid #feb2b2;
+      }
+      
+      /* 개인정보처리방침 스타일 */
+      .privacy-content {
+        line-height: 1.8;
+        color: #2d3748;
+      }
+      
+      .privacy-content h4 {
+        color: #2d3748;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 8px;
+      }
+      
+      .privacy-content h5 {
+        color: #4a69bd;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+      }
+      
+      .privacy-content ul {
+        margin: 10px 0;
+        padding-left: 20px;
+      }
+      
+      .privacy-content li {
+        margin-bottom: 8px;
+      }
+      
+      /* 모바일 반응형 */
+      @media (max-width: 768px) {
+        .modal-content {
+          margin: 15px auto;
+          width: 90%;
+          max-height: calc(100vh - 120px);
+        }
+        
+        .modal-header {
+          padding: 15px 18px;
+        }
+        
+        .modal-header h2 {
+          font-size: 1.3rem;
+        }
+        
+        .modal-body {
+          padding: 15px 18px 20px;
+          max-height: calc(100vh - 180px);
+          overflow-y: auto;
+        }
+        
+        .faq-question {
+          padding: 15px 18px;
+        }
+        
+        .faq-question h3 {
+          font-size: 1rem;
+        }
+        
+        .faq-answer {
+          padding: 0 18px 15px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+          padding: 10px;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .modal-content {
+          margin: 8px auto;
+          width: 90%;
+          max-height: calc(100vh - 100px);
+        }
+        
+        .modal-header {
+          padding: 12px 14px;
+        }
+        
+        .modal-header h2 {
+          font-size: 1.2rem;
+        }
+        
+        .modal-body {
+          padding: 12px 14px 18px;
+          max-height: calc(100vh - 160px);
+        }
+        
+        .faq-question {
+          padding: 12px 14px;
+        }
+        
+        .faq-answer {
+          padding: 0 14px 12px;
+        }
+      }
+    </style>
   </head>
   <body class="nutrition-info-page">
     <div class="site-brand-fixed">
@@ -227,9 +560,9 @@
             <div class="footer-section">
               <h4>고객지원</h4>
               <ul>
-                <li><a href="index.html#faq">자주 묻는 질문</a></li>
-                <li><a href="#contact">문의하기</a></li>
-                <li><a href="#privacy">개인정보처리방침</a></li>
+                <li><a href="#" onclick="loadAndShowModal('faq'); return false;">자주 묻는 질문</a></li>
+                <li><a href="#" onclick="loadAndShowModal('contact'); return false;">문의하기</a></li>
+                <li><a href="#" onclick="loadAndShowModal('privacy'); return false;">개인정보처리방침</a></li>
               </ul>
             </div>
           </div>
@@ -322,7 +655,9 @@
       </div>
     </div>
 
+
     <script src="nutrition-info.js"></script>
+    <script src="contact-form.js"></script>
     <script>
       // 인증 링크 업데이트 함수
       async function updateAuthLinks() {
@@ -404,7 +739,161 @@
             }
           });
         }
+
       });
+
+      // 모달 로드 및 표시 함수
+      async function loadAndShowModal(modalType) {
+        console.log('모달 로드 시작:', modalType);
+        try {
+          // index.html에서 모달 HTML 가져오기
+          console.log('index.html 가져오는 중...');
+          const response = await fetch('index.html');
+          const html = await response.text();
+          console.log('index.html 가져오기 완료');
+          
+          // HTML 파싱
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          
+          // 모달 HTML 추출
+          let modalHTML = '';
+          if (modalType === 'faq') {
+            const faqModal = doc.getElementById('faqModal');
+            if (faqModal) modalHTML = faqModal.outerHTML;
+          } else if (modalType === 'contact') {
+            const contactModal = doc.getElementById('contactModal');
+            if (contactModal) modalHTML = contactModal.outerHTML;
+          } else if (modalType === 'privacy') {
+            const privacyModal = doc.getElementById('privacyModal');
+            if (privacyModal) modalHTML = privacyModal.outerHTML;
+          }
+
+          if (modalHTML) {
+            // 모달을 body에 추가
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // 모달 표시
+            const modal = document.getElementById(modalType + 'Modal');
+            if (modal) {
+              modal.style.display = 'block';
+              document.body.style.overflow = 'hidden';
+              
+              // 모달 닫기 이벤트 추가
+              setupModalCloseEvents(modal, modalType);
+              
+              // 문의하기 모달의 경우 로그인 상태 확인
+              if (modalType === 'contact') {
+                checkLoginForContact();
+              }
+              
+              // FAQ 모달의 경우 토글 기능 초기화
+              if (modalType === 'faq') {
+                initializeFAQToggle();
+              }
+            }
+          }
+        } catch (error) {
+          console.error('모달 로드 실패:', error);
+          alert('모달을 불러오는데 실패했습니다.');
+        }
+      }
+
+      // 모달 닫기 이벤트 설정
+      function setupModalCloseEvents(modal, modalType) {
+        const closeBtn = modal.querySelector('.close-modal');
+        
+        // 닫기 버튼 클릭
+        if (closeBtn) {
+          closeBtn.addEventListener('click', function() {
+            closeModal(modal);
+          });
+        }
+        
+        // 모달 외부 클릭
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeModal(modal);
+          }
+        });
+        
+        // ESC 키
+        const escHandler = function(e) {
+          if (e.key === 'Escape') {
+            closeModal(modal);
+            document.removeEventListener('keydown', escHandler);
+          }
+        };
+        document.addEventListener('keydown', escHandler);
+      }
+
+      // 모달 닫기
+      function closeModal(modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        modal.remove(); // DOM에서 제거
+      }
+
+      // FAQ 토글 기능 초기화
+      function initializeFAQToggle() {
+        const faqItems = document.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+          const question = item.querySelector('.faq-question');
+          const answer = item.querySelector('.faq-answer');
+          const toggle = item.querySelector('.faq-toggle');
+          
+          if (question && answer && toggle) {
+            question.addEventListener('click', function() {
+              const isOpen = answer.style.display === 'block';
+              
+              // 모든 FAQ 닫기
+              faqItems.forEach(otherItem => {
+                const otherAnswer = otherItem.querySelector('.faq-answer');
+                const otherToggle = otherItem.querySelector('.faq-toggle');
+                if (otherAnswer && otherToggle) {
+                  otherAnswer.style.display = 'none';
+                  otherToggle.textContent = '+';
+                }
+              });
+              
+              // 클릭한 FAQ 토글
+              if (!isOpen) {
+                answer.style.display = 'block';
+                toggle.textContent = '-';
+              }
+            });
+          }
+        });
+      }
+
+      // 로그인 상태에 따라 문의하기 폼 표시 여부 결정
+      function checkLoginForContact() {
+        const contactLoginRequired = document.getElementById("contactLoginRequired");
+        const contactFormContainer = document.getElementById("contactFormContainer");
+        
+        if (!contactLoginRequired || !contactFormContainer) return;
+        
+        // 로컬 스토리지에서 사용자 정보 확인
+        const user = JSON.parse(localStorage.getItem("user"));
+        
+        if (user) {
+          // 로그인 상태
+          contactLoginRequired.style.display = "none";
+          contactFormContainer.style.display = "block";
+          
+          // 이메일 필드에 사용자 이메일 자동 입력
+          if (user.email) {
+            const emailField = document.getElementById("contactEmail");
+            if (emailField) {
+              emailField.value = user.email;
+            }
+          }
+        } else {
+          // 비로그인 상태
+          contactLoginRequired.style.display = "block";
+          contactFormContainer.style.display = "none";
+        }
+      }
     </script>
   </body>
 </html>

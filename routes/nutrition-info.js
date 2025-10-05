@@ -93,8 +93,6 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
                 cached: false
             };
             
-            const responseSize = JSON.stringify(responseData).length;
-            console.log(`[PERFORMANCE] 영양정보 API 응답 크기: ${(responseSize / 1024 / 1024).toFixed(2)}MB (${data.length}개 항목)`);
             
             // HTTP 캐시 헤더 설정 (성능 최적화)
             try {
