@@ -14,7 +14,7 @@ This document provides step-by-step instructions to set up the database schema f
 
 1. **Open Supabase Dashboard**
    - Go to [https://supabase.com/dashboard](https://supabase.com/dashboard)
-   - Navigate to your project: `jtomskzwaqoeosxuchwg`
+   - Navigate to your project: `ovncracjrivndsjjfyoe`
 
 2. **Open SQL Editor**
    - Click on "SQL Editor" in the left sidebar

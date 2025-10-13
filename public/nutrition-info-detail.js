@@ -928,7 +928,6 @@ class NutritionInfoDetailManager {
             
             // 특정 질환 및 증상 관리 대분류
             'cancer': '특정 질환 및 증상 관리',
-            'autoimmune': '특정 질환 및 증상 관리',
             'pain': '특정 질환 및 증상 관리',
             
             // 생애 주기별 건강 대분류
@@ -968,7 +967,6 @@ class NutritionInfoDetailManager {
             
             // 특정 질환 및 증상 관리 소분류
             'cancer': '암',
-            'autoimmune': '자가면역',
             'pain': '통증',
             
             // 생애 주기별 건강 소분류
