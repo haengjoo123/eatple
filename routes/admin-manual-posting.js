@@ -182,11 +182,16 @@ router.post('/posts', requireAdmin, async (req, res) => {
         const newPost = await nutritionDataManager.createPost(postData, adminInfo);
         console.log('📝 포스팅 생성 완료:', newPost.id);
 
-        // 카테고리 포스팅 수 업데이트
-        if (!isDraft) {
+        // 카테고리 포스팅 수 업데이트 (로컬 환경에서만)
+        // Supabase 환경에서는 데이터베이스에서 직접 집계하므로 별도 업데이트 불필요
+        if (!isDraft && !process.env.SUPABASE_URL) {
             console.log(`📊 새 포스팅 카테고리 포스팅 수 업데이트 시작 - 카테고리 ID: ${finalCategoryId}`);
-            await categoryTagManager.updateCategoryPostCount(finalCategoryId);
-            console.log(`📊 새 포스팅 카테고리 포스팅 수 업데이트 완료 - 카테고리 ID: ${finalCategoryId}`);
+            try {
+                await categoryTagManager.updateCategoryPostCount(finalCategoryId);
+                console.log(`📊 새 포스팅 카테고리 포스팅 수 업데이트 완료 - 카테고리 ID: ${finalCategoryId}`);
+            } catch (error) {
+                console.warn(`⚠️ 카테고리 포스팅 수 업데이트 실패 (무시): ${error.message}`);
+            }
         }
 
         console.log(`✅ 새 포스팅 생성: ${newPost.id} (by ${adminInfo.name})`);
@@ -355,16 +360,21 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
             }
         }
 
-        // 카테고리 포스팅 수 업데이트 (카테고리가 변경된 경우)
-        if (finalCategoryId !== undefined) {
+        // 카테고리 포스팅 수 업데이트 (카테고리가 변경된 경우, 로컬 환경에서만)
+        // Supabase 환경에서는 데이터베이스에서 직접 집계하므로 별도 업데이트 불필요
+        if (finalCategoryId !== undefined && !process.env.SUPABASE_URL) {
             console.log(`📊 카테고리 포스팅 수 업데이트 시작 - 카테고리 ID: ${finalCategoryId}`);
-            await categoryTagManager.updateCategoryPostCount(finalCategoryId);
-            console.log(`📊 카테고리 포스팅 수 업데이트 완료 - 카테고리 ID: ${finalCategoryId}`);
-            
-            if (existingPost.category_id !== finalCategoryId) {
-                console.log(`📊 이전 카테고리 포스팅 수 업데이트 시작 - 카테고리 ID: ${existingPost.category_id}`);
-                await categoryTagManager.updateCategoryPostCount(existingPost.category_id);
-                console.log(`📊 이전 카테고리 포스팅 수 업데이트 완료 - 카테고리 ID: ${existingPost.category_id}`);
+            try {
+                await categoryTagManager.updateCategoryPostCount(finalCategoryId);
+                console.log(`📊 카테고리 포스팅 수 업데이트 완료 - 카테고리 ID: ${finalCategoryId}`);
+                
+                if (existingPost.category_id !== finalCategoryId) {
+                    console.log(`📊 이전 카테고리 포스팅 수 업데이트 시작 - 카테고리 ID: ${existingPost.category_id}`);
+                    await categoryTagManager.updateCategoryPostCount(existingPost.category_id);
+                    console.log(`📊 이전 카테고리 포스팅 수 업데이트 완료 - 카테고리 ID: ${existingPost.category_id}`);
+                }
+            } catch (error) {
+                console.warn(`⚠️ 카테고리 포스팅 수 업데이트 실패 (무시): ${error.message}`);
             }
         }
 
