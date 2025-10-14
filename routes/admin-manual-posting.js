@@ -57,6 +57,31 @@ function requireAdmin(req, res, next) {
     next();
 }
 
+// 로그용 데이터 정리 헬퍼 함수 (긴 base64 데이터 등을 간략화)
+function sanitizeForLog(data, maxLength = 100) {
+    if (!data) return data;
+    
+    const sanitized = {};
+    for (const [key, value] of Object.entries(data)) {
+        if (typeof value === 'string') {
+            // base64 이미지 데이터 감지 (data:image로 시작하거나 매우 긴 문자열)
+            if (value.startsWith('data:image/') || value.length > 1000) {
+                sanitized[key] = `[${value.substring(0, 20)}...] (${value.length} chars)`;
+            } else if (value.length > maxLength) {
+                sanitized[key] = value.substring(0, maxLength) + `... (${value.length} chars)`;
+            } else {
+                sanitized[key] = value;
+            }
+        } else if (typeof value === 'object' && value !== null) {
+            // 재귀적으로 객체 처리
+            sanitized[key] = sanitizeForLog(value, maxLength);
+        } else {
+            sanitized[key] = value;
+        }
+    }
+    return sanitized;
+}
+
 // ==================== 포스팅 CRUD API ====================
 
 /**
@@ -68,7 +93,7 @@ router.post('/posts', requireAdmin, async (req, res) => {
         url: req.originalUrl,
         method: req.method,
         timestamp: new Date().toISOString(),
-        body: req.body
+        body: sanitizeForLog(req.body)
     });
     try {
         const {
@@ -323,7 +348,7 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
         
         // 포스팅 수정 (로컬 데이터 매니저 사용)
         console.log(`🔄 포스팅 업데이트 시작 - ID: ${id}`);
-        console.log('업데이트할 데이터:', JSON.stringify(updates, null, 2));
+        console.log('업데이트할 데이터:', sanitizeForLog(updates));
         
         const updateResult = await nutritionDataManager.updateNutritionInfo(id, updates);
         console.log(`🔄 포스팅 업데이트 결과: ${updateResult}`);

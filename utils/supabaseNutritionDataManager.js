@@ -8,6 +8,50 @@ const NutritionInfo = require("../models/NutritionInfo");
 const { normalizePostMedia } = require("./mediaNormalizer");
 const path = require("path");
 
+// 로그용 데이터 정리 헬퍼 함수 (긴 base64 데이터 등을 간략화)
+function sanitizeForLog(data, maxLength = 100) {
+  if (!data) return data;
+  
+  // 배열인 경우
+  if (Array.isArray(data)) {
+    return data.map(item => sanitizeForLog(item, maxLength));
+  }
+  
+  // 객체가 아닌 경우
+  if (typeof data !== 'object') {
+    if (typeof data === 'string') {
+      // base64 이미지 데이터 감지
+      if (data.startsWith('data:image/') || data.length > 1000) {
+        return `[${data.substring(0, 20)}...] (${data.length} chars)`;
+      } else if (data.length > maxLength) {
+        return data.substring(0, maxLength) + `... (${data.length} chars)`;
+      }
+    }
+    return data;
+  }
+  
+  // 객체인 경우
+  const sanitized = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (typeof value === 'string') {
+      // base64 이미지 데이터 감지
+      if (value.startsWith('data:image/') || value.length > 1000) {
+        sanitized[key] = `[${value.substring(0, 20)}...] (${value.length} chars)`;
+      } else if (value.length > maxLength) {
+        sanitized[key] = value.substring(0, maxLength) + `... (${value.length} chars)`;
+      } else {
+        sanitized[key] = value;
+      }
+    } else if (typeof value === 'object' && value !== null) {
+      // 재귀적으로 객체 처리
+      sanitized[key] = sanitizeForLog(value, maxLength);
+    } else {
+      sanitized[key] = value;
+    }
+  }
+  return sanitized;
+}
+
 class SupabaseNutritionDataManager {
   constructor() {
     // Supabase 클라이언트 초기화
@@ -567,7 +611,7 @@ class SupabaseNutritionDataManager {
   async updateNutritionInfo(id, updateData) {
     try {
       console.log(`📝 updateNutritionInfo 호출 - ID: ${id}`);
-      console.log(`📝 업데이트 데이터:`, updateData);
+      console.log(`📝 업데이트 데이터:`, sanitizeForLog(updateData));
       
       // camelCase를 snake_case로 변환 (이미 snake_case인 경우는 그대로 유지)
       const snakeCaseData = {};
@@ -586,7 +630,7 @@ class SupabaseNutritionDataManager {
       // updated_at 자동 설정
       snakeCaseData.updated_at = new Date().toISOString();
       
-      console.log(`📝 변환된 snake_case 데이터:`, snakeCaseData);
+      console.log(`📝 변환된 snake_case 데이터:`, sanitizeForLog(snakeCaseData));
       
       const { error } = await this.supabase
         .from('nutrition_posts')
