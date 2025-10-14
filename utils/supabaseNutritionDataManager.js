@@ -566,24 +566,39 @@ class SupabaseNutritionDataManager {
    */
   async updateNutritionInfo(id, updateData) {
     try {
+      console.log(`📝 updateNutritionInfo 호출 - ID: ${id}`);
+      console.log(`📝 업데이트 데이터:`, updateData);
       
-      // camelCase를 snake_case로 변환
+      // camelCase를 snake_case로 변환 (이미 snake_case인 경우는 그대로 유지)
       const snakeCaseData = {};
       Object.keys(updateData).forEach(key => {
-        const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
-        snakeCaseData[snakeKey] = updateData[key];
+        // 이미 snake_case인지 확인 (언더스코어가 있는 경우)
+        if (key.includes('_')) {
+          // 이미 snake_case이므로 그대로 사용
+          snakeCaseData[key] = updateData[key];
+        } else {
+          // camelCase를 snake_case로 변환
+          const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+          snakeCaseData[snakeKey] = updateData[key];
+        }
       });
       
       // updated_at 자동 설정
       snakeCaseData.updated_at = new Date().toISOString();
+      
+      console.log(`📝 변환된 snake_case 데이터:`, snakeCaseData);
       
       const { error } = await this.supabase
         .from('nutrition_posts')
         .update(snakeCaseData)
         .eq('id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error(`❌ Supabase 업데이트 에러:`, error);
+        throw error;
+      }
       
+      console.log(`✅ updateNutritionInfo 성공 - ID: ${id}`);
       return true;
     } catch (error) {
       console.error('영양 정보 업데이트 오류:', error);
@@ -694,46 +709,68 @@ class SupabaseNutritionDataManager {
   }
 
   /**
-   * 태그 저장
+   * 태그 저장 (기존 태그 삭제 후 새로 저장)
    */
   async saveTags(postId, tagNames) {
     try {
-      for (const tagName of tagNames) {
-        // 태그가 존재하는지 확인
-        let { data: tag, error } = await this.supabase
-          .from('tags')
-          .select('id')
-          .eq('name', tagName)
-          .single();
-        
-        if (error && error.code !== 'PGRST116') { // PGRST116: No rows found
-          throw error;
-        }
-        
-        if (!tag) {
-          // 새 태그 생성
-          const { data: newTag, error: createError } = await this.supabase
+      console.log(`🏷️ 태그 저장 시작 - 포스트 ID: ${postId}, 태그 수: ${tagNames.length}`);
+      
+      // 1. 기존 태그 관계 모두 삭제
+      const { error: deleteError } = await this.supabase
+        .from('post_tags')
+        .delete()
+        .eq('post_id', postId);
+      
+      if (deleteError) {
+        console.error('기존 태그 관계 삭제 오류:', deleteError);
+        throw deleteError;
+      }
+      
+      console.log(`🗑️ 기존 태그 관계 삭제 완료 - 포스트 ID: ${postId}`);
+      
+      // 2. 새로운 태그 저장 (태그가 있는 경우에만)
+      if (tagNames && tagNames.length > 0) {
+        for (const tagName of tagNames) {
+          if (!tagName || !tagName.trim()) continue;
+          
+          // 태그가 존재하는지 확인
+          let { data: tag, error } = await this.supabase
             .from('tags')
-            .insert([{ name: tagName }])
-            .select()
+            .select('id')
+            .eq('name', tagName.trim())
             .single();
           
-          if (createError) throw createError;
-          tag = newTag;
+          if (error && error.code !== 'PGRST116') { // PGRST116: No rows found
+            throw error;
+          }
+          
+          if (!tag) {
+            // 새 태그 생성
+            const { data: newTag, error: createError } = await this.supabase
+              .from('tags')
+              .insert([{ name: tagName.trim() }])
+              .select()
+              .single();
+            
+            if (createError) throw createError;
+            tag = newTag;
+          }
+          
+          // 포스트-태그 관계 저장
+          const { error: relationError } = await this.supabase
+            .from('post_tags')
+            .insert([{
+              post_id: postId,
+              tag_id: tag.id
+            }]);
+          
+          if (relationError) throw relationError;
         }
-        
-        // 포스트-태그 관계 저장 (중복 방지)
-        const { error: relationError } = await this.supabase
-          .from('post_tags')
-          .upsert([{
-            post_id: postId,
-            tag_id: tag.id
-          }], {
-            onConflict: 'post_id,tag_id'
-          });
-        
-        if (relationError) throw relationError;
+        console.log(`✅ 태그 저장 완료 - ${tagNames.length}개`);
+      } else {
+        console.log(`ℹ️ 저장할 태그가 없음 - 포스트 ID: ${postId}`);
       }
+      
     } catch (error) {
       console.error('태그 저장 오류:', error);
       throw error;

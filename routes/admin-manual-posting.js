@@ -331,8 +331,8 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
             });
         }
 
-        // 태그 업데이트가 있는 경우 별도 처리
-        if (tagNames.length > 0 || tags !== undefined) {
+        // 태그 업데이트가 있는 경우 별도 처리 (tags가 명시적으로 전달된 경우에만)
+        if (tags !== undefined) {
             console.log(`🏷️ 태그 업데이트 시작 - ID: ${id}`, tagNames);
             try {
                 await nutritionDataManager.saveTags(id, tagNames);
