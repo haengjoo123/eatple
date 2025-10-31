@@ -52,6 +52,8 @@ app.use(
       const allowedOrigins = [
         "http://localhost:3000",
         "https://eatple.onrender.com",
+        "https://eatple.net",
+        "https://www.eatple.net",
         process.env.FRONTEND_URL, // 환경변수로 프론트엔드 URL 설정 가능
         // Render의 자동 생성 도메인도 허용
         /^https:\/\/.*\.onrender\.com$/
@@ -106,6 +108,8 @@ if (process.env.NODE_ENV === "production") {
   sessionConfig.cookie.secure = true;
   // Render 환경에서는 sameSite를 none으로 명시적 설정
   sessionConfig.cookie.sameSite = "none";
+  // 새 도메인(apex 및 www) 모두에서 세션 공유를 위해 최상위 도메인 설정
+  sessionConfig.cookie.domain = ".eatple.net";
 } else {
   sessionConfig.cookie.secure = false;
   sessionConfig.cookie.sameSite = "lax";
