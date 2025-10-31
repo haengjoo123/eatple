@@ -337,6 +337,8 @@ async function handleKakaoSignup() {
       "kakaoLoginPopup",
       "width=500,height=700,menubar=no,toolbar=no,location=no,status=no"
     );
+    // 메시지 누락 대비 폴백 처리: 로그인 상태 폴링
+    waitForSocialLoginSuccess("kakao");
   } catch (error) {
     console.error("카카오 회원가입 오류:", error);
     msg.style.color = "red";
@@ -667,7 +669,7 @@ async function handleNaverSignup() {
     // 상태 값을 세션 스토리지에 저장 (CSRF 방지)
     sessionStorage.setItem("naverOAuthState", state);
 
-    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${naverClientId}&redirect_uri=${redirectUri}&state=${state}`;
+    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${naverClientId}&redirect_uri=${redirectUri}&state=${state}&auth_type=reprompt&prompt=login`;
 
     console.log("네이버 회원가입 URL로 이동:", naverAuthUrl);
     // 팝업으로 띄우기
@@ -676,6 +678,8 @@ async function handleNaverSignup() {
       "naverLoginPopup",
       "width=500,height=700,menubar=no,toolbar=no,location=no,status=no"
     );
+    // 메시지 누락 대비 폴백 처리: 로그인 상태 폴링
+    waitForSocialLoginSuccess("naver");
   } catch (error) {
     console.error("네이버 회원가입 오류:", error);
     msg.style.color = "red";
@@ -720,3 +724,46 @@ window.addEventListener("message", function (event) {
     }
   }
 });
+
+// 소셜 로그인 성공 폴백: 세션 상태 폴링으로 성공 감지
+async function waitForSocialLoginSuccess(provider) {
+  const msgEl = document.getElementById("signupMsg");
+  const maxWaitMs = 15000; // 최대 15초 대기
+  const intervalMs = 800;
+  const startedAt = Date.now();
+
+  if (msgEl) {
+    msgEl.style.color = "#2274A5";
+    msgEl.textContent = `${provider === "kakao" ? "카카오" : provider === "naver" ? "네이버" : "소셜"} 인증 중입니다... 잠시만 기다려주세요.`;
+  }
+
+  const timer = setInterval(async () => {
+    try {
+      const res = await fetch("/api/auth/me", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.loggedIn && data.user) {
+          clearInterval(timer);
+          if (msgEl) {
+            const p = data.user.authType || provider || "social";
+            msgEl.style.color = "green";
+            msgEl.textContent = `${p === "kakao" ? "카카오" : p === "naver" ? "네이버" : p === "google" ? "구글" : "소셜"} 계정으로 가입이 완료되었습니다!`;
+          }
+          setTimeout(() => {
+            window.location.href = "index.html";
+          }, 800);
+        }
+      }
+    } catch (e) {
+      // 네트워크 오류는 무시하고 재시도
+    }
+
+    if (Date.now() - startedAt > maxWaitMs) {
+      clearInterval(timer);
+      if (msgEl) {
+        msgEl.style.color = "red";
+        msgEl.textContent = "인증 결과를 확인하지 못했습니다. 팝업 차단 해제 후 다시 시도해주세요.";
+      }
+    }
+  }, intervalMs);
+}
