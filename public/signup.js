@@ -683,9 +683,40 @@ async function handleNaverSignup() {
   }
 }
 
-// 팝업에서 로그인 성공 메시지 수신 시 메인 페이지로 이동
+// 팝업에서 로그인/회원가입 결과 메시지 수신 처리 (카카오/네이버 공통)
 window.addEventListener("message", function (event) {
+  const msgEl = document.getElementById("signupMsg");
+
+  // 구조화된 성공 메시지 처리
+  if (event.data && event.data.type === "social_login_success") {
+    const provider = event.data.user?.authType || "social";
+    if (msgEl) {
+      msgEl.style.color = "green";
+      msgEl.textContent = `${provider === "kakao" ? "카카오" : provider === "naver" ? "네이버" : provider === "google" ? "구글" : "소셜"} 계정으로 가입이 완료되었습니다!`;
+    }
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 1000);
+    return;
+  }
+
+  // 과거 문자열 기반 성공 메시지도 호환
   if (event.data === "social_login_success") {
-    window.location.href = "index.html";
+    if (msgEl) {
+      msgEl.style.color = "green";
+      msgEl.textContent = "소셜 계정으로 가입이 완료되었습니다!";
+    }
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 1000);
+    return;
+  }
+
+  // 실패 메시지 처리
+  if (event.data === "social_login_failed") {
+    if (msgEl) {
+      msgEl.style.color = "red";
+      msgEl.textContent = "소셜 회원가입에 실패했습니다. 다시 시도해주세요.";
+    }
   }
 });
