@@ -1143,7 +1143,7 @@ router.get("/kakao/callback", async (req, res) => {
 
     console.log("Session user set:", req.session.user);
 
-    // 5. 팝업에서 부모창으로 메시지 전송 후 닫기
+    // 5. 팝업에서 부모창으로 메시지 전송 후 닫기 또는 현재 창에서 리다이렉트
     res.send(`
       <script>
         if (window.opener) {
@@ -1162,7 +1162,14 @@ router.get("/kakao/callback", async (req, res) => {
           }, '*');
           window.close();
         } else {
-          window.location.href = '/index.html?login=success';
+          // 현재 창에서 이동 - 회원가입 여부 확인
+          const isSignup = sessionStorage.getItem('socialSignup');
+          if (isSignup) {
+            sessionStorage.removeItem('socialSignup');
+            window.location.href = '/index.html?signup=success&provider=kakao';
+          } else {
+            window.location.href = '/index.html?login=success';
+          }
         }
       </script>
     `);
@@ -1726,7 +1733,7 @@ router.get("/naver/callback", async (req, res) => {
 
     console.log("Session user set:", req.session.user);
 
-    // 5. 팝업에서 부모창으로 메시지 전송 후 닫기
+    // 5. 팝업에서 부모창으로 메시지 전송 후 닫기 또는 현재 창에서 리다이렉트
     res.send(`
       <script>
         if (window.opener) {
@@ -1745,7 +1752,14 @@ router.get("/naver/callback", async (req, res) => {
           }, '*');
           window.close();
         } else {
-          window.location.href = '/index.html?login=success';
+          // 현재 창에서 이동 - 회원가입 여부 확인
+          const isSignup = sessionStorage.getItem('socialSignup');
+          if (isSignup) {
+            sessionStorage.removeItem('socialSignup');
+            window.location.href = '/index.html?signup=success&provider=naver';
+          } else {
+            window.location.href = '/index.html?login=success';
+          }
         }
       </script>
     `);

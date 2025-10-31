@@ -236,7 +236,7 @@ async function handleNaverLogin() {
     );
     const state = Math.random().toString(36).substring(2, 15);
     sessionStorage.setItem("naverOAuthState", state);
-    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${naverClientId}&redirect_uri=${redirectUri}&state=${state}&auth_type=reprompt&prompt=login`;
+    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${naverClientId}&redirect_uri=${redirectUri}&state=${state}`;
 
     window.open(
       naverAuthUrl,

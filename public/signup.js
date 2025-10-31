@@ -331,14 +331,10 @@ async function handleKakaoSignup() {
     const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoRestApiKey}&redirect_uri=${redirectUri}&response_type=code&scope=profile_nickname`;
 
     console.log("카카오 회원가입 URL로 이동:", kakaoAuthUrl);
-    // 팝업으로 띄우기
-    window.open(
-      kakaoAuthUrl,
-      "kakaoLoginPopup",
-      "width=500,height=700,menubar=no,toolbar=no,location=no,status=no"
-    );
-    // 메시지 누락 대비 폴백 처리: 로그인 상태 폴링
-    waitForSocialLoginSuccess("kakao");
+    // 회원가입 플래그 설정 (콜백에서 구분하기 위해)
+    sessionStorage.setItem("socialSignup", "true");
+    // 현재 창에서 이동
+    window.location.href = kakaoAuthUrl;
   } catch (error) {
     console.error("카카오 회원가입 오류:", error);
     msg.style.color = "red";
@@ -669,17 +665,13 @@ async function handleNaverSignup() {
     // 상태 값을 세션 스토리지에 저장 (CSRF 방지)
     sessionStorage.setItem("naverOAuthState", state);
 
-    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${naverClientId}&redirect_uri=${redirectUri}&state=${state}&auth_type=reprompt&prompt=login`;
+    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${naverClientId}&redirect_uri=${redirectUri}&state=${state}`;
 
     console.log("네이버 회원가입 URL로 이동:", naverAuthUrl);
-    // 팝업으로 띄우기
-    window.open(
-      naverAuthUrl,
-      "naverLoginPopup",
-      "width=500,height=700,menubar=no,toolbar=no,location=no,status=no"
-    );
-    // 메시지 누락 대비 폴백 처리: 로그인 상태 폴링
-    waitForSocialLoginSuccess("naver");
+    // 회원가입 플래그 설정 (콜백에서 구분하기 위해)
+    sessionStorage.setItem("socialSignup", "true");
+    // 현재 창에서 이동
+    window.location.href = naverAuthUrl;
   } catch (error) {
     console.error("네이버 회원가입 오류:", error);
     msg.style.color = "red";
