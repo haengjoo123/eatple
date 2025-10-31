@@ -659,7 +659,16 @@ app.post("/api/upload-images", upload.array("images", 10), async (req, res) => {
 
 // 네이버 Client ID 제공 엔드포인트
 app.get("/api/naver-client-id", (req, res) => {
-  res.json({ clientId: process.env.NAVER_CLOUD_CLIENT_ID });
+  const clientId = process.env.NAVER_CLOUD_CLIENT_ID || process.env.NAVER_CLIENT_ID;
+
+  if (!clientId) {
+    return res.status(500).json({
+      error: "NAVER Client ID가 설정되지 않았습니다.",
+      clientId: null,
+    });
+  }
+
+  res.json({ clientId });
 });
 
 // 잇플스토어 일시 비활성화 - 상품 문의 API 엔드포인트 (Supabase 사용)

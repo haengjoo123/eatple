@@ -388,7 +388,7 @@ async function getNaverClientId() {
   try {
     console.log("Fetching Naver Client ID from:", "/api/naver-client-id");
 
-    const response = await fetch("/api/naver-client-id", {
+    const response = await fetch("/api/auth/naver-client-id", {
       method: "GET",
       headers: {
         Accept: "application/json",
