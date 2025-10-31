@@ -303,6 +303,48 @@
             
             if (!isLoggedIn) {
                 const sectorsToBlur = ['.nutrition-grid-modern', '.components-list', '.recipes-list'];
+
+                function ensureOverlay(section) {
+                    if (!section) return;
+                    if (!section.classList.contains('login-required-blur')) {
+                        section.classList.add('login-required-blur');
+                    }
+                    const computedStyle = window.getComputedStyle(section);
+                    if (computedStyle.position === 'static') {
+                        section.style.position = 'relative';
+                    }
+                    if (section.offsetHeight < 120) {
+                        section.style.minHeight = '160px';
+                    }
+                    if (!section.querySelector(':scope > .login-required-overlay')) {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'login-required-overlay';
+                        overlay.style.zIndex = '9999';
+                        overlay.style.position = 'absolute';
+                        overlay.style.top = '0';
+                        overlay.style.left = '0';
+                        overlay.style.right = '0';
+                        overlay.style.bottom = '0';
+                        overlay.innerHTML = `
+                            <div class="login-required-message">
+                                <span class="lock-icon">🔑</span>
+                                <span class="message-text">로그인하고 모든 기능을 이용해 보세요</span>
+                            </div>
+                        `;
+                        section.appendChild(overlay);
+                    }
+                }
+
+                function attachSectionObserver(section) {
+                    if (!section || section.__loginOverlayObserverAttached) return;
+                    const sectionObserver = new MutationObserver(() => {
+                        ensureOverlay(section);
+                    });
+                    sectionObserver.observe(section, { childList: true, subtree: true });
+                    section.__loginOverlayObserverAttached = true;
+                    // 초기 1회 보장
+                    ensureOverlay(section);
+                }
                 
                 // DOM 변화 감지
                 const observer = new MutationObserver(function(mutations) {
@@ -316,31 +358,8 @@
                                     const sectionsToBlur = isTargetSection ? [node] : Array.from(sections);
                                     
                                     sectionsToBlur.forEach(function(section) {
-                                        if (!section.classList.contains('login-required-blur')) {
-                                            // 블러 효과 적용
-                                            section.classList.add('login-required-blur');
-                                            
-                                            // position 설정 (중요!)
-                                            const computedStyle = window.getComputedStyle(section);
-                                            if (computedStyle.position === 'static') {
-                                                section.style.position = 'relative';
-                                            }
-                                            
-                                            // 오버레이 메시지 추가
-                                            const overlay = document.createElement('div');
-                                            overlay.className = 'login-required-overlay';
-                                            overlay.innerHTML = `
-                                                <div class="login-required-message">
-                                                    <span class="lock-icon">🔑</span>
-                                                    <span class="message-text">로그인하고 모든 기능을 이용해 보세요</span>
-                                                </div>
-                                            `;
-                                            
-                                            section.appendChild(overlay);
-                                            
-                                            // 디버깅을 위한 로그
-                                            console.log('Ingredient overlay added to:', section);
-                                        }
+                                        ensureOverlay(section);
+                                        attachSectionObserver(section);
                                     });
                                 });
                             }
@@ -357,29 +376,8 @@
                 // 이미 존재하는 섹션들 처리
                 sectorsToBlur.forEach(function(selector) {
                     document.querySelectorAll(selector).forEach(function(section) {
-                        if (!section.classList.contains('login-required-blur')) {
-                            section.classList.add('login-required-blur');
-                            
-                            // position 설정 (중요!)
-                            const computedStyle = window.getComputedStyle(section);
-                            if (computedStyle.position === 'static') {
-                                section.style.position = 'relative';
-                            }
-                            
-                            const overlay = document.createElement('div');
-                            overlay.className = 'login-required-overlay';
-                            overlay.innerHTML = `
-                                <div class="login-required-message">
-                                    <span class="lock-icon">🔑</span>
-                                    <span class="message-text">로그인하고 모든 기능을 이용해 보세요</span>
-                                </div>
-                            `;
-                            
-                            section.appendChild(overlay);
-                            
-                            // 디버깅을 위한 로그
-                            console.log('Ingredient overlay added to existing section:', section);
-                        }
+                        ensureOverlay(section);
+                        attachSectionObserver(section);
                     });
                 });
             }

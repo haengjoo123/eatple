@@ -11323,6 +11323,10 @@ input[type="email"]:focus:invalid {
 /* 비로그인 상태 블러 처리 스타일 */
 .login-required-blur {
   position: relative !important;
+}
+
+/* 오버레이를 제외한 자식들만 블러 처리하여 오버레이는 선명하게 표시 */
+.login-required-blur > :not(.login-required-overlay) {
   filter: blur(5px);
   pointer-events: none;
   user-select: none;

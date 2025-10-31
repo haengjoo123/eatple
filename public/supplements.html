@@ -18,8 +18,11 @@
         font-style: italic;
       }
 
-      /* 로그인 필요 블러 효과 */
+      /* 로그인 필요 블러 효과: 오버레이 제외 자식만 블러 */
       .government-products-section.login-required-blur {
+        position: relative;
+      }
+      .government-products-section.login-required-blur > :not(.login-required-overlay) {
         filter: blur(8px);
         pointer-events: none;
         user-select: none;
@@ -37,9 +40,10 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 10;
+        z-index: 999; /* 오버레이가 항상 위로 올라오도록 */
         border-radius: 12px;
         backdrop-filter: blur(2px);
+        pointer-events: auto;
       }
 
       .login-required-message {
@@ -3323,7 +3327,7 @@
             <div class="login-required-overlay">
               <div class="login-required-message">
                 <span class="lock-icon">🔑</span>
-                <span class="message-text">로그인하면 열립니다!</span>
+                <span class="message-text">로그인하고 모든 기능을 이용해 보세요</span>
               </div>
             </div>
           ` : '';
@@ -3362,7 +3366,7 @@
           <div class="login-required-overlay">
             <div class="login-required-message">
               <span class="lock-icon">🔑</span>
-              <span class="message-text">로그인하면 열립니다!</span>
+              <span class="message-text">로그인하고 모든 기능을 이용해 보세요</span>
             </div>
           </div>
         ` : '';
