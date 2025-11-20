@@ -18,6 +18,25 @@ function generateUUID() {
   });
 }
 
+// 카카오 리다이렉트 URI 생성 헬퍼 함수 (프록시 환경 지원)
+function getKakaoRedirectUri(req) {
+  // 환경 변수로 리다이렉트 URI가 설정되어 있으면 사용
+  if (process.env.KAKAO_REDIRECT_URI) {
+    return process.env.KAKAO_REDIRECT_URI;
+  }
+  
+  // 프록시 뒤에서 실행될 때 X-Forwarded-Proto 헤더 확인
+  const protocol = req.get('X-Forwarded-Proto') || req.protocol;
+  const host = req.get('host');
+  
+  // 프로덕션 환경에서는 https 강제
+  const finalProtocol = process.env.NODE_ENV === 'production' && protocol === 'http' 
+    ? 'https' 
+    : protocol;
+  
+  return `${finalProtocol}://${host}/api/auth/kakao/callback`;
+}
+
 const USERS_FILE = path.join(__dirname, "../data/users.json");
 
 // Supabase 클라이언트 초기화 (성능 최적화 옵션 추가)
@@ -825,14 +844,15 @@ router.post("/kakao", async (req, res) => {
 
     // 인증 코드가 있으면 액세스 토큰으로 교환
     if (code && !accessToken) {
+      const redirectUri = getKakaoRedirectUri(req);
+      console.log("카카오 토큰 교환 - Redirect URI:", redirectUri);
+      
       const tokenResponse = await axios.post(
         "https://kauth.kakao.com/oauth/token",
         new URLSearchParams({
           grant_type: "authorization_code",
           client_id: process.env.KAKAO_REST_API_KEY,
-          redirect_uri: `${req.protocol}://${req.get(
-            "host"
-          )}/api/auth/kakao/callback`,
+          redirect_uri: redirectUri,
           code: code,
         }),
         {
@@ -958,10 +978,13 @@ router.get("/kakao/callback", async (req, res) => {
 
     console.log("Received kakao auth code:", code);
     console.log("Using KAKAO_REST_API_KEY:", process.env.KAKAO_REST_API_KEY);
-    console.log(
-      "Redirect URI:",
-      `${req.protocol}://${req.get("host")}/api/auth/kakao/callback`
-    );
+    
+    // 리다이렉트 URI 생성
+    const redirectUri = getKakaoRedirectUri(req);
+    console.log("Redirect URI:", redirectUri);
+    console.log("Request protocol:", req.protocol);
+    console.log("X-Forwarded-Proto:", req.get('X-Forwarded-Proto'));
+    console.log("Host:", req.get("host"));
 
     // 직접 토큰 교환 및 사용자 정보 조회
     const axios = require("axios");
@@ -972,9 +995,7 @@ router.get("/kakao/callback", async (req, res) => {
       new URLSearchParams({
         grant_type: "authorization_code",
         client_id: process.env.KAKAO_REST_API_KEY,
-        redirect_uri: `${req.protocol}://${req.get(
-          "host"
-        )}/api/auth/kakao/callback`,
+        redirect_uri: redirectUri,
         code: code,
       }),
       {
