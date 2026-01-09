@@ -16,17 +16,45 @@ module.exports = () => {
      */
     router.get('/', async (req, res) => {
         try {
-            // 최신 영양 정보 20개 조회
+            // 모든 활성화된 영양 정보 조회 (RSS 피드용)
             const filters = {
                 excludeDrafts: true
             };
-            const pagination = {
-                page: 1,
-                limit: 20
-            };
-
-            const result = await supabaseDataManager.getNutritionInfoList(filters, pagination);
-            const items = result && result.data ? result.data : [];
+            
+            // 페이지네이션을 통해 모든 데이터 가져오기
+            const allItems = [];
+            let page = 1;
+            const pageSize = 100; // 한 번에 100개씩 가져오기
+            const maxPages = 100; // 최대 100페이지 (10,000개)로 제한하여 무한 루프 방지
+            let hasMore = true;
+            
+            while (hasMore && page <= maxPages) {
+                const pagination = {
+                    page: page,
+                    limit: pageSize
+                };
+                
+                const result = await supabaseDataManager.getNutritionInfoList(filters, pagination);
+                const items = result && result.data ? result.data : [];
+                
+                if (items.length === 0) {
+                    hasMore = false;
+                } else {
+                    allItems.push(...items);
+                    
+                    // 전체 개수 확인하여 더 가져올 데이터가 있는지 확인
+                    const totalCount = result?.pagination?.totalCount || 0;
+                    const currentCount = allItems.length;
+                    
+                    if (currentCount >= totalCount || items.length < pageSize) {
+                        hasMore = false;
+                    } else {
+                        page++;
+                    }
+                }
+            }
+            
+            const items = allItems;
 
             // 사이트 정보
             const siteUrl = process.env.SITE_URL || 'https://www.eatple.net';
