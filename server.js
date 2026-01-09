@@ -194,6 +194,10 @@ app.use("/api/admin/monitoring", require("./routes/monitoring"));
 const rssRouter = require("./routes/rss")();
 app.use("/rss", rssRouter);
 app.use("/rss.xml", rssRouter);
+
+// 사이트맵 라우트
+const sitemapRouter = require("./routes/sitemap")();
+app.use("/sitemap.xml", sitemapRouter);
 // 잇플스토어 일시 비활성화 - 재활성화시 주석 해제
 // app.use("/api/admin/products", require("./routes/admin-products"));
 // app.use("/api/admin/product-categories", require("./routes/admin-categories"));
