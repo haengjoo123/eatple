@@ -189,6 +189,11 @@ app.use("/api/nutrition-info", nutritionInfoRouter);
 app.use("/api/admin/nutrition-info", require("./routes/admin-nutrition-info"));
 app.use("/api/admin/manual-posting", require("./routes/admin-manual-posting"));
 app.use("/api/admin/monitoring", require("./routes/monitoring"));
+
+// RSS 피드 라우트
+const rssRouter = require("./routes/rss")();
+app.use("/rss", rssRouter);
+app.use("/rss.xml", rssRouter);
 // 잇플스토어 일시 비활성화 - 재활성화시 주석 해제
 // app.use("/api/admin/products", require("./routes/admin-products"));
 // app.use("/api/admin/product-categories", require("./routes/admin-categories"));
