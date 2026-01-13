@@ -81,21 +81,44 @@ const SUPPLEMENT_NAME_KEYWORDS = {
     '비타민 C': ['비타민C', '비타민 C', 'vitamin C', 'ascorbic acid', '아스코르브산'],
     '비타민C': ['비타민C', '비타민 C', 'vitamin C', 'ascorbic acid', '아스코르브산'],
     
-    // 비타민 B 관련
-    '비타민 B': ['비타민B', '비타민 B', 'vitamin B', 'B복합', 'B군'],
-    '비타민B': ['비타민B', '비타민 B', 'vitamin B', 'B복합', 'B군'],
-    '비타민 B12': ['비타민B12', '비타민 B12', 'vitamin B12', 'cobalamin', '코발라민'],
-    '비타민B12': ['비타민B12', '비타민 B12', 'vitamin B12', 'cobalamin', '코발라민'],
+    // 비타민 B 관련 (확장된 매핑)
+    '비타민 B': ['비타민B', '비타민 B', 'vitamin B', 'B복합', 'B군', '비타민B1', '비타민B2', '비타민B3', '비타민B5', '비타민B6', '비타민B7', '비타민B9', '비타민B12', '티아민', '리보플라빈', '나이아신', '판토텐산', '피리독신', '비오틴', '엽산', '코발라민'],
+    '비타민B': ['비타민B', '비타민 B', 'vitamin B', 'B복합', 'B군', '비타민B1', '비타민B2', '비타민B3', '비타민B5', '비타민B6', '비타민B7', '비타민B9', '비타민B12', '티아민', '리보플라빈', '나이아신', '판토텐산', '피리독신', '비오틴', '엽산', '코발라민'],
+    '비타민 B1': ['비타민B1', '비타민 B1', 'vitamin B1', 'thiamine', '티아민'],
+    '비타민B1': ['비타민B1', '비타민 B1', 'vitamin B1', 'thiamine', '티아민'],
+    '비타민 B2': ['비타민B2', '비타민 B2', 'vitamin B2', 'riboflavin', '리보플라빈'],
+    '비타민B2': ['비타민B2', '비타민 B2', 'vitamin B2', 'riboflavin', '리보플라빈'],
+    '비타민 B3': ['비타민B3', '비타민 B3', 'vitamin B3', 'niacin', '나이아신', '니코틴산'],
+    '비타민B3': ['비타민B3', '비타민 B3', 'vitamin B3', 'niacin', '나이아신', '니코틴산'],
+    '비타민 B5': ['비타민B5', '비타민 B5', 'vitamin B5', 'pantothenic acid', '판토텐산'],
+    '비타민B5': ['비타민B5', '비타민 B5', 'vitamin B5', 'pantothenic acid', '판토텐산'],
+    '비타민 B6': ['비타민B6', '비타민 B6', 'vitamin B6', 'pyridoxine', '피리독신'],
+    '비타민B6': ['비타민B6', '비타민 B6', 'vitamin B6', 'pyridoxine', '피리독신'],
+    '비타민 B7': ['비타민B7', '비타민 B7', 'vitamin B7', 'biotin', '비오틴'],
+    '비타민B7': ['비타민B7', '비타민 B7', 'vitamin B7', 'biotin', '비오틴'],
+    '비타민 B9': ['비타민B9', '비타민 B9', 'vitamin B9', 'folic acid', 'folate', '엽산', '폴산'],
+    '비타민B9': ['비타민B9', '비타민 B9', 'vitamin B9', 'folic acid', 'folate', '엽산', '폴산'],
+    '비타민 B12': ['비타민B12', '비타민 B12', 'vitamin B12', 'cobalamin', '코발라민', '시아노코발라민', '메틸코발라민'],
+    '비타민B12': ['비타민B12', '비타민 B12', 'vitamin B12', 'cobalamin', '코발라민', '시아노코발라민', '메틸코발라민'],
     
     // 철분 관련
     '철분': ['철', '철분', 'iron', '헤모글로빈', '철(II)', '철(III)'],
     '철': ['철', '철분', 'iron', '헤모글로빈', '철(II)', '철(III)'],
     
-    // 칼슘 관련
-    '칼슘': ['칼슘', 'calcium', '탄산칼슘', '구연산칼슘', '칼슘카보네이트'],
+    // 칼슘 관련 (다양한 형태 포함)
+    '칼슘': ['칼슘', 'calcium', '탄산칼슘', '구연산칼슘', '칼슘카보네이트', '젖산칼슘', '글루콘산칼슘', '인산칼슘'],
+    '칼슘 구연산': ['칼슘', 'calcium', '구연산칼슘', 'citrate'],
+    '구연산칼슘': ['칼슘', 'calcium', '구연산칼슘', 'citrate'],
+    '탄산칼슘': ['칼슘', 'calcium', '탄산칼슘', 'carbonate'],
     
-    // 마그네슘 관련
-    '마그네슘': ['마그네슘', 'magnesium', '산화마그네슘', '구연산마그네슘'],
+    // 마그네슘 관련 (다양한 형태 포함)
+    '마그네슘': ['마그네슘', 'magnesium', '산화마그네슘', '구연산마그네슘', '글리신산마그네슘', '킬레이트마그네슘', '말산마그네슘', '타우린산마그네슘', '트레온산마그네슘'],
+    '마그네슘 글리시네이트': ['마그네슘', 'magnesium', '글리신산마그네슘', '글리시네이트', 'glycinate'],
+    '마그네슘글리시네이트': ['마그네슘', 'magnesium', '글리신산마그네슘', '글리시네이트', 'glycinate'],
+    '마그네슘 구연산': ['마그네슘', 'magnesium', '구연산마그네슘', 'citrate'],
+    '마그네슘구연산': ['마그네슘', 'magnesium', '구연산마그네슘', 'citrate'],
+    '마그네슘 산화물': ['마그네슘', 'magnesium', '산화마그네슘', 'oxide'],
+    '산화마그네슘': ['마그네슘', 'magnesium', '산화마그네슘', 'oxide'],
     
     // 아연 관련
     '아연': ['아연', 'zinc', '황산아연', '구연산아연'],
@@ -461,7 +484,7 @@ function generateSearchKeywords(supplementName) {
 }
 
 /**
- * 유사도 기반 영양제 명칭 매칭 (원재료명과 제품명 모두에서 매칭되어야 함 - AND 조건)
+ * 유사도 기반 영양제 명칭 매칭 (원재료명과 제품명 모두에서 매칭되어야 함 - 엄격한 AND 조건)
  * @param {Array} products - 식약처 API에서 가져온 제품 배열
  * @param {string} supplementName - 영양제 명칭
  * @param {number} similarityThreshold - 유사도 임계값 (기본값: 0.6)
@@ -471,30 +494,31 @@ function findSimilarSupplements(products, supplementName, similarityThreshold = 
     const searchKeywords = generateSearchKeywords(supplementName);
     const results = [];
     
-    console.log(`검색 키워드: ${searchKeywords.join(', ')}`);
+    console.log(`🔍 유사도 매칭 시작 - 검색어: "${supplementName}"`);
+    console.log(`생성된 키워드: ${searchKeywords.join(', ')}`);
     console.log(`유사도 매칭 대상 제품 수: ${products.length}개`);
+    console.log(`⚠️ 엄격한 AND 조건: 원재료명 AND 제품명 모두 매칭 필수`);
     
     products.forEach(product => {
         const rawMaterials = (product.RAWMTRL_NM || '').toLowerCase();
         const productName = (product.PRDT_NM || product.PRDLST_NM || '').toLowerCase();
         
-        let maxScore = 0;
+        let maxRawMaterialScore = 0;
+        let maxProductNameScore = 0;
         let matchedKeyword = '';
-        let matchType = '';
-        let matchSource = '';
+        let rawMaterialMatchType = '';
+        let productNameMatchType = '';
         
-        // 각 검색 키워드에 대해 매칭 시도 (원재료명과 제품명 모두에서 매칭되어야 함)
+        // 각 검색 키워드에 대해 원재료명과 제품명 점수를 따로 계산
         searchKeywords.forEach(keyword => {
-            let rawMaterialScore = 0;
-            let productNameScore = 0;
-            let rawMaterialMatchType = '';
-            let productNameMatchType = '';
+            // 1. 원재료명에서 최고 점수 찾기
+            let currentRawScore = 0;
+            let currentRawMatchType = '';
             
-            // 1. 원재료명에서 매칭 확인
             // 1-1. 완전 일치 (원재료명)
             if (rawMaterials.includes(keyword)) {
-                rawMaterialScore = 1;
-                rawMaterialMatchType = '완전일치';
+                currentRawScore = 1;
+                currentRawMatchType = '완전일치';
             } else {
                 // 1-2. 부분 문자열 매칭 (최소 3글자 이상, 원재료명)
                 if (keyword.length >= 3) {
@@ -502,9 +526,9 @@ function findSimilarSupplements(products, supplementName, similarityThreshold = 
                         const substring = rawMaterials.substring(i, i + keyword.length);
                         const similarity = calculateSimilarity(keyword, substring);
                         
-                        if (similarity >= similarityThreshold && similarity > rawMaterialScore) {
-                            rawMaterialScore = similarity;
-                            rawMaterialMatchType = `부분매칭(${similarity.toFixed(2)})`;
+                        if (similarity >= similarityThreshold && similarity > currentRawScore) {
+                            currentRawScore = similarity;
+                            currentRawMatchType = `부분매칭(${similarity.toFixed(2)})`;
                         }
                     }
                 }
@@ -513,18 +537,21 @@ function findSimilarSupplements(products, supplementName, similarityThreshold = 
                 const rawMaterialWords = rawMaterials.split(/[\s,\(\)]+/).filter(w => w.length > 2);
                 rawMaterialWords.forEach(word => {
                     const similarity = calculateSimilarity(keyword, word);
-                    if (similarity >= similarityThreshold && similarity > rawMaterialScore) {
-                        rawMaterialScore = similarity;
-                        rawMaterialMatchType = `단어유사(${similarity.toFixed(2)})`;
+                    if (similarity >= similarityThreshold && similarity > currentRawScore) {
+                        currentRawScore = similarity;
+                        currentRawMatchType = `단어유사(${similarity.toFixed(2)})`;
                     }
                 });
             }
             
-            // 2. 제품명에서 매칭 확인
+            // 2. 제품명에서 최고 점수 찾기
+            let currentProdScore = 0;
+            let currentProdMatchType = '';
+            
             // 2-1. 완전 일치 (제품명)
             if (productName.includes(keyword)) {
-                productNameScore = 1;
-                productNameMatchType = '완전일치';
+                currentProdScore = 1;
+                currentProdMatchType = '완전일치';
             } else {
                 // 2-2. 부분 문자열 매칭 (최소 3글자 이상, 제품명)
                 if (keyword.length >= 3) {
@@ -532,9 +559,9 @@ function findSimilarSupplements(products, supplementName, similarityThreshold = 
                         const substring = productName.substring(i, i + keyword.length);
                         const similarity = calculateSimilarity(keyword, substring);
                         
-                        if (similarity >= similarityThreshold && similarity > productNameScore) {
-                            productNameScore = similarity;
-                            productNameMatchType = `부분매칭(${similarity.toFixed(2)})`;
+                        if (similarity >= similarityThreshold && similarity > currentProdScore) {
+                            currentProdScore = similarity;
+                            currentProdMatchType = `부분매칭(${similarity.toFixed(2)})`;
                         }
                     }
                 }
@@ -543,34 +570,40 @@ function findSimilarSupplements(products, supplementName, similarityThreshold = 
                 const productNameWords = productName.split(/[\s,\(\)]+/).filter(w => w.length > 2);
                 productNameWords.forEach(word => {
                     const similarity = calculateSimilarity(keyword, word);
-                    if (similarity >= similarityThreshold && similarity > productNameScore) {
-                        productNameScore = similarity;
-                        productNameMatchType = `단어유사(${similarity.toFixed(2)})`;
+                    if (similarity >= similarityThreshold && similarity > currentProdScore) {
+                        currentProdScore = similarity;
+                        currentProdMatchType = `단어유사(${similarity.toFixed(2)})`;
                     }
                 });
             }
             
-            // 3. 원재료명과 제품명 모두에서 매칭된 경우만 결과에 포함 (AND 조건)
-            if (rawMaterialScore >= similarityThreshold && productNameScore >= similarityThreshold) {
-                // 두 점수의 평균을 최종 점수로 사용
-                const combinedScore = (rawMaterialScore + productNameScore) / 2;
+            // 3. 두 점수 모두 임계값 이상이고, 이전보다 높으면 업데이트
+            if (currentRawScore >= similarityThreshold && currentProdScore >= similarityThreshold) {
+                const combinedScore = (currentRawScore + currentProdScore) / 2;
+                const previousCombined = (maxRawMaterialScore + maxProductNameScore) / 2;
                 
-                if (combinedScore > maxScore) {
-                    maxScore = combinedScore;
+                if (combinedScore > previousCombined) {
+                    maxRawMaterialScore = currentRawScore;
+                    maxProductNameScore = currentProdScore;
                     matchedKeyword = keyword;
-                    matchType = `${rawMaterialMatchType}+${productNameMatchType}`;
-                    matchSource = '원재료명+제품명';
+                    rawMaterialMatchType = currentRawMatchType;
+                    productNameMatchType = currentProdMatchType;
                 }
             }
         });
         
-        if (maxScore >= similarityThreshold) {
+        // 4. 원재료명과 제품명 모두 임계값 이상일 때만 결과에 추가 (엄격한 AND 조건)
+        if (maxRawMaterialScore >= similarityThreshold && maxProductNameScore >= similarityThreshold) {
+            const finalScore = (maxRawMaterialScore + maxProductNameScore) / 2;
+            
             results.push({
                 product,
-                score: maxScore,
+                score: finalScore,
                 matchedKeyword,
-                matchType,
-                matchSource
+                matchType: `원재료[${rawMaterialMatchType}]+제품명[${productNameMatchType}]`,
+                matchSource: '원재료명+제품명(AND)',
+                rawMaterialScore: maxRawMaterialScore,
+                productNameScore: maxProductNameScore
             });
         }
     });
@@ -578,16 +611,100 @@ function findSimilarSupplements(products, supplementName, similarityThreshold = 
     // 점수 순으로 정렬
     results.sort((a, b) => b.score - a.score);
     
-    console.log(`유사도 매칭 결과 (총 ${results.length}개):`);
+    console.log(`\n✅ 유사도 매칭 결과 (총 ${results.length}개, AND 조건 만족):`);
     if (results.length > 0) {
-        results.slice(0, 5).forEach((result, index) => {
-            console.log(`✅ [${result.matchType}] ${result.product.PRDT_NM} (키워드: ${result.matchedKeyword}, 점수: ${result.score.toFixed(3)}, 출처: ${result.matchSource})`);
+        results.slice(0, 10).forEach((result, index) => {
+            console.log(`${index + 1}. [${result.matchType}] ${result.product.PRDT_NM || result.product.PRDLST_NM}`);
+            console.log(`   키워드: "${result.matchedKeyword}", 최종점수: ${result.score.toFixed(3)} (원재료: ${result.rawMaterialScore.toFixed(2)}, 제품명: ${result.productNameScore.toFixed(2)})`);
         });
     } else {
-        console.log('❌ 유사도 매칭 결과가 없습니다.');
+        console.log('❌ AND 조건을 만족하는 제품이 없습니다.');
     }
     
     return results;
+}
+
+/**
+ * 구체적인 영양제 명칭에서 기본 영양제 명칭 추출
+ * 예: "마그네슘 글리시네이트" → "마그네슘"
+ * @param {string} supplementName - 영양제 명칭
+ * @returns {string|null} 기본 영양제 명칭 또는 null
+ */
+function extractBasicSupplementName(supplementName) {
+    const normalized = supplementName.trim().toLowerCase();
+    
+    // 형태별 키워드 패턴 (구체적 형태 → 기본 형태)
+    const formPatterns = {
+        // 마그네슘 형태들
+        'magnesium': ['마그네슘'],
+        '마그네슘': ['마그네슘'],
+        'glycinate': ['마그네슘'],
+        'citrate': ['마그네슘'],
+        'oxide': ['마그네슘'],
+        '글리시네이트': ['마그네슘'],
+        '글리신산': ['마그네슘'],
+        '구연산': ['마그네슘', '칼슘'],
+        '산화': ['마그네슘'],
+        
+        // 칼슘 형태들
+        'calcium': ['칼슘'],
+        '칼슘': ['칼슘'],
+        'carbonate': ['칼슘'],
+        '탄산': ['칼슘'],
+        '젖산': ['칼슘'],
+        '글루콘산': ['칼슘'],
+        
+        // 비타민 형태들
+        'vitamin': ['비타민'],
+        '비타민': ['비타민'],
+        
+        // 오메가 형태들
+        'omega': ['오메가'],
+        '오메가': ['오메가'],
+        
+        // 철분 형태들
+        'iron': ['철분'],
+        '철': ['철분'],
+        'ferrous': ['철분'],
+        'ferric': ['철분']
+    };
+    
+    // 1. 공백이나 특수문자로 분리된 경우 첫 단어 추출
+    const words = normalized.split(/[\s\-_]+/);
+    if (words.length > 1) {
+        const firstWord = words[0];
+        
+        // 첫 단어가 기본 영양제명인지 확인
+        if (SUPPLEMENT_NAME_KEYWORDS[firstWord]) {
+            console.log(`🔍 폴백: "${supplementName}" → "${firstWord}" (첫 단어 추출)`);
+            return firstWord;
+        }
+        
+        // 형태 패턴에서 기본 영양제명 찾기
+        for (const [pattern, basics] of Object.entries(formPatterns)) {
+            if (normalized.includes(pattern)) {
+                for (const basic of basics) {
+                    if (normalized.includes(basic)) {
+                        console.log(`🔍 폴백: "${supplementName}" → "${basic}" (패턴 매칭)`);
+                        return basic;
+                    }
+                }
+            }
+        }
+    }
+    
+    // 2. 키워드 매핑에서 상위 카테고리 찾기
+    for (const [key, keywords] of Object.entries(SUPPLEMENT_NAME_KEYWORDS)) {
+        if (normalized === key.toLowerCase()) continue; // 자기 자신은 제외
+        
+        // 현재 검색어가 키워드 목록에 포함되어 있고, 키가 더 짧으면 상위 카테고리
+        if (keywords.some(k => k.toLowerCase() === normalized) && key.length < supplementName.length) {
+            console.log(`🔍 폴백: "${supplementName}" → "${key}" (키워드 역매칭)`);
+            return key;
+        }
+    }
+    
+    return null;
 }
 
 /**
@@ -606,7 +723,8 @@ function filterProductsBySupplementName(products, supplementName, options = {}) 
         similarityThreshold = 0.6,  // 유사도 임계값
         maxResults = 500,           // 최대 결과 수 (기본값 증가)
         useExactMatch = true,       // 정확한 매칭 우선 사용
-        useSimilarityMatch = true   // 유사도 매칭 사용
+        useSimilarityMatch = true,  // 유사도 매칭 사용
+        _isFallback = false         // 폴백 호출 여부 (내부 사용)
     } = options;
 
     console.log(`=== 영양제 명칭 "${supplementName}"으로 제품 검색 (개선된 버전) ===`);
@@ -642,11 +760,24 @@ function filterProductsBySupplementName(products, supplementName, options = {}) 
                 const rawMaterials = (product.RAWMTRL_NM || '').toLowerCase();
                 const productName = (product.PRDT_NM || product.PRDLST_NM || '').toLowerCase();
                 
-                return matchKeywords.some(keyword => {
-                    const normalizedKeyword = keyword.toLowerCase();
-                    // 원재료명과 제품명 모두에서 매칭 확인 (AND 조건)
-                    return rawMaterials.includes(normalizedKeyword) && productName.includes(normalizedKeyword);
-                });
+                // 원재료명과 제품명 모두에서 매칭되는지 확인 (엄격한 AND 조건)
+                const hasRawMaterialMatch = matchKeywords.some(keyword => 
+                    rawMaterials.includes(keyword.toLowerCase())
+                );
+                const hasProductNameMatch = matchKeywords.some(keyword => 
+                    productName.includes(keyword.toLowerCase())
+                );
+                
+                // 두 조건 모두 만족해야 함
+                const bothMatch = hasRawMaterialMatch && hasProductNameMatch;
+                
+                if (bothMatch) {
+                    console.log(`✅ AND 조건 만족: "${product.PRDT_NM || product.PRDLST_NM}"`);
+                    console.log(`   - 원재료: ${rawMaterials.substring(0, 100)}...`);
+                    console.log(`   - 제품명: ${productName}`);
+                }
+                
+                return bothMatch;
             });
             
             matchingInfo = filteredProducts.map(product => ({
@@ -672,6 +803,30 @@ function filterProductsBySupplementName(products, supplementName, options = {}) 
         
         matchingInfo.push(...newResults);
         filteredProducts.push(...newResults.map(r => r.product));
+    }
+    
+    // 3. 폴백 로직: 구체적인 형태로 검색했는데 결과가 없으면 기본 형태로 재검색
+    if (filteredProducts.length === 0 && !_isFallback) {
+        const fallbackKeyword = extractBasicSupplementName(supplementName);
+        
+        if (fallbackKeyword && fallbackKeyword !== supplementName.toLowerCase()) {
+            console.log(`⚠️ 구체적 형태("${supplementName}") 검색 결과 없음`);
+            console.log(`🔄 기본 형태("${fallbackKeyword}")로 폴백 검색 시도...`);
+            
+            // 기본 형태로 재귀 호출 (무한 재귀 방지)
+            const fallbackResults = filterProductsBySupplementName(products, fallbackKeyword, {
+                ...options,
+                _isFallback: true
+            });
+            
+            if (fallbackResults.length > 0) {
+                console.log(`✅ 폴백 검색 성공: ${fallbackResults.length}개 제품 찾음`);
+                console.log(`💡 "${supplementName}" 대신 "${fallbackKeyword}" 제품을 표시합니다.`);
+                return fallbackResults.slice(0, maxResults);
+            } else {
+                console.log(`❌ 폴백 검색도 결과 없음`);
+            }
+        }
     }
     
     // 결과 로깅
@@ -933,5 +1088,6 @@ module.exports = {
     // 새로 추가된 함수들
     calculateSimilarity,
     generateSearchKeywords,
-    findSimilarSupplements
+    findSimilarSupplements,
+    extractBasicSupplementName  // 폴백용 함수 추가
 };

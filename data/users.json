@@ -13,7 +13,7 @@
       "totalPoints": 4440,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-11-19",
+      "lastEarnedDate": "2026-01-13",
       "history": [
         {
           "id": "1753341193454",
@@ -1207,56 +1207,42 @@
     "serviceUsage": {
       "mealPlan": 34,
       "restaurantRecommendation": 32,
-      "supplementRecommendation": 167,
+      "supplementRecommendation": 180,
       "ingredientAnalysis": 26,
       "mini-game": 125,
-      "lastUpdated": "2025-10-04T07:09:10.190Z"
+      "lastUpdated": "2026-01-13T05:46:58.464Z"
     },
     "profile": {
-      "age": "31",
-      "gender": "male",
-      "height": "175",
-      "weight": "75",
-      "allergies": [
-        "none"
-      ],
-      "bmi_value": "",
+      "age": "22",
+      "gender": "female",
+      "height": "150",
+      "weight": "40",
+      "allergies": [],
       "illnesses": [
-        "none"
+        "diabetes",
+        "anemia",
+        "gastritis",
+        "ibs"
       ],
       "biomarkers": [
         "none"
       ],
-      "iron_value": "",
-      "zinc_value": "",
-      "hba1c_value": "",
       "supplements": [
         "none"
       ],
-      "calcium_value": "",
-      "meals_per_day": "2",
-      "activity_level": "light",
-      "sleep_patterns": "6_to_8",
+      "meal_purpose": "muscle_gain",
+      "meals_per_day": "1",
+      "activity_level": "sedentary",
+      "sleep_patterns": "less_than_6",
       "smoking_status": "non_smoker",
-      "eating_patterns": "regular",
-      "magnesium_value": "",
-      "potassium_value": "",
-      "vitamin_a_value": "",
-      "vitamin_d_value": "",
-      "vitamin_e_value": "",
-      "vitamin_k_value": "",
-      "alcohol_consumption": "none",
-      "blood_glucose_value": "",
-      "triglycerides_value": "",
-      "other_allergies_text": "",
+      "eating_patterns": "irregular",
+      "alcohol_consumption": "frequent",
+      "specific_biomarkers": {},
+      "other_allergies_text": "프로폴리스",
       "other_illnesses_text": "",
-      "hdl_cholesterol_value": "",
-      "ldl_cholesterol_value": "",
+      "specific_supplements": {},
       "other_biomarkers_text": "",
-      "other_supplements_text": "",
-      "total_cholesterol_value": "",
-      "blood_pressure_systolic_value": "",
-      "blood_pressure_diastolic_value": ""
+      "other_supplements_text": ""
     },
     "profileCompletionReward": true,
     "profileCompletionDate": "2025-07-25T05:25:20.553Z",
@@ -1318,7 +1304,7 @@
       "totalPoints": 342,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-11-19",
+      "lastEarnedDate": "2026-01-13",
       "history": [
         {
           "id": "1754977248434",
@@ -1415,7 +1401,7 @@
       "totalPoints": 216,
       "dailyEarned": 0,
       "dailyLimit": 100,
-      "lastEarnedDate": "2025-11-19",
+      "lastEarnedDate": "2026-01-13",
       "history": [
         {
           "id": "1756537539645",

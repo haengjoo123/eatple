@@ -3101,30 +3101,36 @@
           const recommendations = await response.json();
           console.log("✅ 추천 결과 수신:", recommendations);
 
-          // 각 영양제별로 정부승인 제품을 가져와서 추천 결과에 추가
+          // 각 영양제별로 정부승인 제품을 가져와서 추천 결과에 추가 (병렬 처리로 최적화)
           if (recommendations.supplements && recommendations.supplements.length > 0) {
-            console.log("🔍 각 영양제별 정부승인 제품 검색 시작");
+            console.log("🔍 각 영양제별 정부승인 제품 검색 시작 (병렬 처리)");
+            console.time("⏱️ 정부승인 제품 검색 소요 시간");
             
-            for (let i = 0; i < recommendations.supplements.length; i++) {
-              const supplement = recommendations.supplements[i];
+            // 모든 영양제에 대한 API 호출을 병렬로 실행
+            const productPromises = recommendations.supplements.map(supplement => {
               console.log(`영양제 "${supplement.name}" 정부승인 제품 검색 중...`);
               
-              try {
-                const governmentProducts = await loadGovernmentProductsForSupplement(
-                  supplement.name, 
-                  selectedGoals,
-                  getUserDosagePreference(),
-                  questionAnswers.avoid_ingredients || []
-                );
-                
-                // 각 영양제에 해당하는 정부승인 제품을 추가
-                recommendations.supplements[i].governmentProducts = governmentProducts;
-                console.log(`✅ "${supplement.name}" - ${governmentProducts.length}개 정부승인 제품 찾음`);
-              } catch (error) {
+              return loadGovernmentProductsForSupplement(
+                supplement.name, 
+                selectedGoals,
+                getUserDosagePreference(),
+                questionAnswers.avoid_ingredients || []
+              ).catch(error => {
                 console.error(`❌ "${supplement.name}" 정부승인 제품 검색 실패:`, error);
-                recommendations.supplements[i].governmentProducts = [];
-              }
-            }
+                return []; // 실패 시 빈 배열 반환
+              });
+            });
+            
+            // 모든 API 호출이 완료될 때까지 대기
+            const allProducts = await Promise.all(productPromises);
+            
+            // 결과를 각 영양제에 할당
+            recommendations.supplements.forEach((supplement, i) => {
+              supplement.governmentProducts = allProducts[i];
+              console.log(`✅ "${supplement.name}" - ${allProducts[i].length}개 정부승인 제품 찾음`);
+            });
+            
+            console.timeEnd("⏱️ 정부승인 제품 검색 소요 시간");
           }
           
           displayRecommendations(recommendations);
