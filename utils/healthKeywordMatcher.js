@@ -243,18 +243,6 @@ function matchHealthConcerns(selectedGoals, apiProducts) {
         return apiProducts;
     }
 
-    // 디버깅: 건강고민 매칭 과정 확인 (성능 최적화)
-    if (apiProducts.length < 1000) { // 소량 데이터일 때만 상세 로그
-        console.log('=== 건강고민 필터링 디버깅 ===');
-        console.log(`선택된 건강고민: [${selectedGoals.join(', ')}]`);
-        
-        selectedGoals.forEach(goal => {
-            const keywords = HEALTH_KEYWORDS[goal] || [];
-            console.log(`${goal} → 키워드: [${keywords.join(', ')}]`);
-        });
-    }
-
-    let matchCount = 0;
     const filteredProducts = apiProducts.filter(product => {
         const primaryFunction = (product.PRIMARY_FNCLTY || '').toLowerCase();
         
@@ -264,20 +252,12 @@ function matchHealthConcerns(selectedGoals, apiProducts) {
                 primaryFunction.includes(keyword.toLowerCase())
             );
             
-            if (hasKeywordMatch) {
-                if (apiProducts.length < 1000) { // 소량 데이터일 때만 상세 로그
-                    console.log(`✅ 건강고민 매칭: "${product.PRDT_NM}" - 기능: "${primaryFunction}" ← 목표: ${goal}`);
-                }
-                matchCount++;
-            }
-            
             return hasKeywordMatch;
         });
         
         return isMatch;
     });
     
-    console.log(`건강고민 매칭 결과: ${matchCount}개 제품이 매칭됨`);
     return filteredProducts;
 }
 
@@ -292,25 +272,11 @@ function filterByDosagePreference(products, userPreference) {
     
     const acceptableForms = DOSAGE_FORM_MAPPING[userPreference] || [];
     
-    // 디버깅: 실제 제품 형태 확인 (성능 최적화)
-    if (products.length > 0 && products.length < 1000) { // 소량 데이터일 때만 상세 로그
-        console.log('=== 복용형태 디버깅 ===');
-        console.log(`사용자 선호: ${userPreference}`);
-        console.log(`매칭 키워드: [${acceptableForms.join(', ')}]`);
-        
-        const uniqueForms = [...new Set(products.slice(0, 20).map(p => p.PRDT_SHAP_CD_NM).filter(f => f))];
-        console.log('실제 제품 형태들 (상위 20개):', uniqueForms);
-    }
-    
     return products.filter(product => {
         const productForm = (product.PRDT_SHAP_CD_NM || '').toLowerCase();
         const match = acceptableForms.some(form => 
             productForm.includes(form.toLowerCase())
         );
-        
-        if (match && products.length < 1000) { // 소량 데이터일 때만 상세 로그
-            console.log(`✅ 형태 매칭: "${productForm}" ← "${acceptableForms.join(', ')}"`);
-        }
         
         return match;
     });
@@ -326,21 +292,6 @@ function filterByDosagePreference(products, userPreference) {
  * @returns {Array} 필터링된 제품 배열
  */
 function filterProductsByAllCriteria(products, healthGoals, dosagePreference, requiredIngredients = [], avoidIngredients = []) {
-    console.log('=== 필터링 시작 ===');
-    console.log('전체 제품 수:', products.length);
-    console.log('건강고민:', healthGoals);
-    console.log('복용형태 선호:', dosagePreference);
-    
-    // 첫 3개 제품의 PRIMARY_FNCLTY 샘플 출력
-    console.log('=== 샘플 제품 기능성 ===');
-    products.slice(0, 3).forEach((product, index) => {
-        console.log(`제품 ${index + 1}:`, {
-            name: product.PRDT_NM,
-            function: product.PRIMARY_FNCLTY,
-            dosageForm: product.PRDT_SHAP_CD_NM
-        });
-    });
-    
     return products.filter(product => {
         // 조건 1: 건강고민 매칭
         let healthMatch = true;
@@ -349,15 +300,9 @@ function filterProductsByAllCriteria(products, healthGoals, dosagePreference, re
                 const keywords = HEALTH_KEYWORDS[goal] || [];
                 const primaryFunction = (product.PRIMARY_FNCLTY || '').toLowerCase();
                 
-                const match = keywords.some(keyword => 
+                return keywords.some(keyword => 
                     primaryFunction.includes(keyword.toLowerCase())
                 );
-                
-                if (match) {
-                    console.log(`✅ 매칭됨 - 목표: ${goal}, 키워드: ${keywords.join(', ')}, 제품기능: ${primaryFunction}`);
-                }
-                
-                return match;
             });
         }
         
@@ -453,8 +398,6 @@ function generateSearchKeywords(supplementName) {
     const normalized = supplementName.trim().toLowerCase();
     const keywords = [supplementName, normalized];
     
-    console.log(`🔍 키워드 생성 시작: "${supplementName}"`);
-    
     // 특수 문자 제거
     const cleanName = normalized.replace(/[^a-z0-9가-힣\s-]/g, '');
     if (cleanName !== normalized) {
@@ -479,7 +422,6 @@ function generateSearchKeywords(supplementName) {
     
     // 중복 제거
     const finalKeywords = [...new Set(keywords)].filter(keyword => keyword.length > 1);
-    console.log(`🔍 생성된 키워드: [${finalKeywords.join(', ')}]`);
     return finalKeywords;
 }
 
@@ -493,11 +435,6 @@ function generateSearchKeywords(supplementName) {
 function findSimilarSupplements(products, supplementName, similarityThreshold = 0.6) {
     const searchKeywords = generateSearchKeywords(supplementName);
     const results = [];
-    
-    console.log(`🔍 유사도 매칭 시작 - 검색어: "${supplementName}"`);
-    console.log(`생성된 키워드: ${searchKeywords.join(', ')}`);
-    console.log(`유사도 매칭 대상 제품 수: ${products.length}개`);
-    console.log(`⚠️ 엄격한 AND 조건: 원재료명 AND 제품명 모두 매칭 필수`);
     
     products.forEach(product => {
         const rawMaterials = (product.RAWMTRL_NM || '').toLowerCase();
@@ -611,16 +548,6 @@ function findSimilarSupplements(products, supplementName, similarityThreshold = 
     // 점수 순으로 정렬
     results.sort((a, b) => b.score - a.score);
     
-    console.log(`\n✅ 유사도 매칭 결과 (총 ${results.length}개, AND 조건 만족):`);
-    if (results.length > 0) {
-        results.slice(0, 10).forEach((result, index) => {
-            console.log(`${index + 1}. [${result.matchType}] ${result.product.PRDT_NM || result.product.PRDLST_NM}`);
-            console.log(`   키워드: "${result.matchedKeyword}", 최종점수: ${result.score.toFixed(3)} (원재료: ${result.rawMaterialScore.toFixed(2)}, 제품명: ${result.productNameScore.toFixed(2)})`);
-        });
-    } else {
-        console.log('❌ AND 조건을 만족하는 제품이 없습니다.');
-    }
-    
     return results;
 }
 
@@ -676,7 +603,6 @@ function extractBasicSupplementName(supplementName) {
         
         // 첫 단어가 기본 영양제명인지 확인
         if (SUPPLEMENT_NAME_KEYWORDS[firstWord]) {
-            console.log(`🔍 폴백: "${supplementName}" → "${firstWord}" (첫 단어 추출)`);
             return firstWord;
         }
         
@@ -685,7 +611,6 @@ function extractBasicSupplementName(supplementName) {
             if (normalized.includes(pattern)) {
                 for (const basic of basics) {
                     if (normalized.includes(basic)) {
-                        console.log(`🔍 폴백: "${supplementName}" → "${basic}" (패턴 매칭)`);
                         return basic;
                     }
                 }
@@ -699,7 +624,6 @@ function extractBasicSupplementName(supplementName) {
         
         // 현재 검색어가 키워드 목록에 포함되어 있고, 키가 더 짧으면 상위 카테고리
         if (keywords.some(k => k.toLowerCase() === normalized) && key.length < supplementName.length) {
-            console.log(`🔍 폴백: "${supplementName}" → "${key}" (키워드 역매칭)`);
             return key;
         }
     }
@@ -726,8 +650,6 @@ function filterProductsBySupplementName(products, supplementName, options = {}) 
         useSimilarityMatch = true,  // 유사도 매칭 사용
         _isFallback = false         // 폴백 호출 여부 (내부 사용)
     } = options;
-
-    console.log(`=== 영양제 명칭 "${supplementName}"으로 제품 검색 (개선된 버전) ===`);
     
     let filteredProducts = [];
     let matchingInfo = [];
@@ -754,8 +676,6 @@ function filterProductsBySupplementName(products, supplementName, options = {}) 
         }
         
         if (matchKeywords.length > 0) {
-            console.log(`정확한 매칭 키워드: ${matchKeywords.join(', ')}`);
-            
             filteredProducts = products.filter(product => {
                 const rawMaterials = (product.RAWMTRL_NM || '').toLowerCase();
                 const productName = (product.PRDT_NM || product.PRDLST_NM || '').toLowerCase();
@@ -769,15 +689,7 @@ function filterProductsBySupplementName(products, supplementName, options = {}) 
                 );
                 
                 // 두 조건 모두 만족해야 함
-                const bothMatch = hasRawMaterialMatch && hasProductNameMatch;
-                
-                if (bothMatch) {
-                    console.log(`✅ AND 조건 만족: "${product.PRDT_NM || product.PRDLST_NM}"`);
-                    console.log(`   - 원재료: ${rawMaterials.substring(0, 100)}...`);
-                    console.log(`   - 제품명: ${productName}`);
-                }
-                
-                return bothMatch;
+                return hasRawMaterialMatch && hasProductNameMatch;
             });
             
             matchingInfo = filteredProducts.map(product => ({
@@ -791,7 +703,6 @@ function filterProductsBySupplementName(products, supplementName, options = {}) 
     
     // 2. 정확한 매칭이 없거나 결과가 적을 때 유사도 매칭 사용
     if (useSimilarityMatch && filteredProducts.length < 5) {
-        console.log('유사도 기반 매칭 시작...');
         // 전체 제품에 대해 유사도 계산
         const similarResults = findSimilarSupplements(products, supplementName, similarityThreshold);
         
@@ -810,9 +721,6 @@ function filterProductsBySupplementName(products, supplementName, options = {}) 
         const fallbackKeyword = extractBasicSupplementName(supplementName);
         
         if (fallbackKeyword && fallbackKeyword !== supplementName.toLowerCase()) {
-            console.log(`⚠️ 구체적 형태("${supplementName}") 검색 결과 없음`);
-            console.log(`🔄 기본 형태("${fallbackKeyword}")로 폴백 검색 시도...`);
-            
             // 기본 형태로 재귀 호출 (무한 재귀 방지)
             const fallbackResults = filterProductsBySupplementName(products, fallbackKeyword, {
                 ...options,
@@ -820,23 +728,11 @@ function filterProductsBySupplementName(products, supplementName, options = {}) 
             });
             
             if (fallbackResults.length > 0) {
-                console.log(`✅ 폴백 검색 성공: ${fallbackResults.length}개 제품 찾음`);
-                console.log(`💡 "${supplementName}" 대신 "${fallbackKeyword}" 제품을 표시합니다.`);
                 return fallbackResults.slice(0, maxResults);
-            } else {
-                console.log(`❌ 폴백 검색도 결과 없음`);
             }
         }
     }
     
-    // 결과 로깅
-    console.log(`매칭 결과 (총 ${matchingInfo.length}개):`);
-    matchingInfo.slice(0, 5).forEach(info => {
-        const productName = info.product.PRDT_NM || info.product.PRDLST_NM || '제품명 없음';
-        console.log(`✅ [${info.matchType}] ${productName} (키워드: ${info.matchedKeyword})`);
-    });
-    
-    console.log(`필터링 결과: ${filteredProducts.slice(0, maxResults).length}개 제품 찾음`);
     return filteredProducts.slice(0, maxResults);
 }
 
@@ -970,76 +866,50 @@ function getHealthConcernLabel(key) {
  * @returns {Array} 필터링된 제품 배열
  */
 function filterProductsByNewOrder(products, healthGoals, dosagePreference, avoidIngredients = [], supplementName = null, options = {}) {
-    console.log('=== 새로운 매칭 순서로 제품 필터링 시작 ===');
-    console.log('전체 제품 수:', products.length);
-    console.log('건강고민:', healthGoals);
-    console.log('복용형태 선호:', dosagePreference);
-    console.log('기피성분:', avoidIngredients);
-    console.log('영양제 명칭:', supplementName);
-    
     let filteredProducts = [...products];
-    let stepCount = 0;
     
     // 1단계: 건강고민 매칭
     if (healthGoals && healthGoals.length > 0) {
-        stepCount++;
-        const beforeCount = filteredProducts.length;
         filteredProducts = matchHealthConcerns(healthGoals, filteredProducts);
-        console.log(`✅ 1단계 - 건강고민 매칭: ${beforeCount}개 → ${filteredProducts.length}개 제품`);
         
         if (filteredProducts.length === 0) {
-            console.log('❌ 건강고민 매칭 후 제품이 없어서 필터링을 중단합니다.');
             return [];
         }
     }
     
     // 2단계: 복용형태 선호도 매칭
     if (dosagePreference && dosagePreference !== 'any') {
-        stepCount++;
-        const beforeCount = filteredProducts.length;
         const filteredByDosage = filterByDosagePreference(filteredProducts, dosagePreference);
         
         // 복용형태 필터링으로 제품이 너무 적어지면 필터링을 건너뜀
-        if (filteredByDosage.length === 0 && beforeCount > 0) {
-            console.log(`⚠️ 2단계 - 복용형태 필터링으로 제품이 0개가 되어 필터링을 건너뜁니다.`);
-            console.log(`복용형태 필터링 후: ${beforeCount}개 제품 (필터링 건너뜀)`);
-        } else {
+        if (filteredByDosage.length > 0) {
             filteredProducts = filteredByDosage;
-            console.log(`✅ 2단계 - 복용형태 매칭: ${beforeCount}개 → ${filteredProducts.length}개 제품`);
         }
     }
     
     // 3단계: 기피성분 필터링
     if (avoidIngredients && avoidIngredients.length > 0) {
-        stepCount++;
-        const beforeCount = filteredProducts.length;
         filteredProducts = filteredProducts.filter(product => {
             const rawMaterials = (product.RAWMTRL_NM || '').toLowerCase();
             return !avoidIngredients.some(ingredient => 
                 rawMaterials.includes(ingredient.toLowerCase())
             );
         });
-        console.log(`✅ 3단계 - 기피성분 필터링: ${beforeCount}개 → ${filteredProducts.length}개 제품`);
     }
     
     // 4단계: 영양제 명칭 유사도 매칭 (마지막 단계)
     if (supplementName && supplementName.trim()) {
-        stepCount++;
-        const beforeCount = filteredProducts.length;
-        
         // 유사도 매칭 옵션 설정
         const similarityOptions = {
             similarityThreshold: options.similarityThreshold || 0.6,
-            maxResults: options.maxResults || 500, // 기본값을 500으로 증가
+            maxResults: options.maxResults || 500,
             useExactMatch: options.useExactMatch !== false,
             useSimilarityMatch: options.useSimilarityMatch !== false
         };
         
         filteredProducts = filterProductsBySupplementName(filteredProducts, supplementName, similarityOptions);
-        console.log(`✅ 4단계 - 영양제 명칭 유사도 매칭: ${beforeCount}개 → ${filteredProducts.length}개 제품`);
     }
     
-    console.log(`=== 필터링 완료: 총 ${stepCount}단계, 최종 ${filteredProducts.length}개 제품 ===`);
     return filteredProducts;
 }
 

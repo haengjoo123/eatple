@@ -55,7 +55,6 @@ class FoodSafetyAPI {
             }
 
             url = `${this.baseURL}/${this.serviceKey}/${this.serviceId}/json/${startIdx}/${endIdx}`;
-            console.log('식약처 API 호출:', url);
             
             const response = await axios.get(url, {
                 timeout: 10000, // 10초 타임아웃
@@ -64,23 +63,10 @@ class FoodSafetyAPI {
                 }
             });
 
-            console.log('API 응답 상태:', response.status);
-            console.log('API 응답 헤더:', response.headers);
-            console.log('API 응답 데이터 (처음 500자):', JSON.stringify(response.data).substring(0, 500));
-
             if (response.data && response.data.C003) {
-                console.log(`식약처 API 성공: ${response.data.C003.total_count || 0}개 제품 조회`);
-                console.log('응답 구조:', {
-                    hasC003: !!response.data.C003,
-                    hasRow: !!response.data.C003.row,
-                    rowLength: response.data.C003.row ? response.data.C003.row.length : 0,
-                    totalCount: response.data.C003.total_count
-                });
                 return response.data;
             } else {
-                console.error('식약처 API 응답 형식 오류:', response.data);
-                console.error('응답 상태:', response.status);
-                console.error('응답 헤더:', response.headers);
+                console.error('식약처 API 응답 형식 오류');
                 return null;
             }
         } catch (error) {
@@ -118,11 +104,9 @@ class FoodSafetyAPI {
 
             // 캐시가 만료되었으면 null 반환
             if (hoursDiff > this.cacheExpiryHours) {
-                console.log('캐시가 만료되었습니다. 새로운 데이터를 가져옵니다.');
                 return null;
             }
 
-            console.log(`캐시된 데이터를 사용합니다. (${cacheData.products.length}개 제품, ${hoursDiff.toFixed(1)}시간 전)`);
             return cacheData.products;
         } catch (error) {
             console.error('캐시 데이터 읽기 실패:', error);
@@ -161,9 +145,6 @@ class FoodSafetyAPI {
             
             // JSON을 압축하지 않고 저장 (공백 제거로 용량 절약)
             fs.writeFileSync(this.cacheFile, JSON.stringify(cacheData));
-            
-            const fileSizeMB = (fs.statSync(this.cacheFile).size / 1024 / 1024).toFixed(2);
-            console.log(`${optimizedProducts.length}개 제품을 캐시에 저장했습니다. (파일 크기: ${fileSizeMB}MB)`);
         } catch (error) {
             console.error('캐시 데이터 저장 실패:', error);
         }
@@ -178,12 +159,17 @@ class FoodSafetyAPI {
         const results = [];
         let failedBatches = [];
         
-        console.log(`총 ${batches.length}개 배치를 순차적으로 처리합니다...`);
+        console.log(`📡 식약처 API 데이터 수집 중... (${batches.length}개 배치)`);
         
         // 각 배치를 순차적으로 처리
         for (let i = 0; i < batches.length; i++) {
             const batch = batches[i];
-            console.log(`순차 처리 중... [${i + 1}/${batches.length}] 배치 ${batch.start}-${batch.end}`);
+            const progress = Math.round(((i + 1) / batches.length) * 100);
+            
+            // 진행률 표시 (10% 단위로만)
+            if (progress % 10 === 0 || i === 0 || i === batches.length - 1) {
+                console.log(`   진행률: ${progress}% (${i + 1}/${batches.length})`);
+            }
             
             // 재시도 로직 (최대 3회)
             let success = false;
@@ -191,54 +177,44 @@ class FoodSafetyAPI {
                 try {
                     const batchResult = await this.getHealthFunctionalFoods(batch.start, batch.end);
                     if (batchResult && batchResult.C003 && batchResult.C003.row) {
-                        console.log(`✅ 배치 ${batch.start}-${batch.end}: ${batchResult.C003.row.length}개 제품 (시도 ${attempt}/3)`);
                         results.push(...batchResult.C003.row);
                         success = true;
                         break;
-                    } else {
-                        console.log(`❌ 배치 ${batch.start}-${batch.end}: 데이터 없음 (시도 ${attempt}/3)`);
                     }
                 } catch (error) {
-                    console.log(`❌ 배치 ${batch.start}-${batch.end} 실패 (시도 ${attempt}/3):`, error.message);
-                    
                     // 마지막 시도가 아니면 대기 후 재시도
                     if (attempt < 3) {
-                        const retryDelay = attempt * 1000 + Math.random() * 1000; // 1-2초, 2-3초
-                        console.log(`재시도까지 ${retryDelay.toFixed(0)}ms 대기...`);
+                        const retryDelay = attempt * 1000 + Math.random() * 1000;
                         await new Promise(resolve => setTimeout(resolve, retryDelay));
                     }
                 }
             }
             
             if (!success) {
-                console.error(`❌ 배치 ${batch.start}-${batch.end}: 모든 시도 실패`);
                 failedBatches.push(batch);
             }
             
-            // 다음 배치 처리 전 대기 시간 (API 부하 방지)
+            // 다음 배치 처리 전 대기 (API 부하 방지)
             if (i + 1 < batches.length) {
-                const waitTime = 1000 + Math.random() * 500; // 1-1.5초 랜덤 대기
-                console.log(`API 부하 방지를 위해 ${waitTime.toFixed(0)}ms 대기 중...`);
+                const waitTime = 1000 + Math.random() * 500;
                 await new Promise(resolve => setTimeout(resolve, waitTime));
             }
         }
         
         // 실패한 배치들 재시도 (1회만)
-        if (failedBatches.length > 0 && failedBatches.length < batches.length * 0.5) { // 50% 미만 실패 시만 재시도
-            console.log(`${failedBatches.length}개 실패 배치 재시도 중...`);
-            await new Promise(resolve => setTimeout(resolve, 2000)); // 2초 대기 후 재시도
+        if (failedBatches.length > 0 && failedBatches.length < batches.length * 0.5) {
+            console.log(`   재시도: ${failedBatches.length}개 배치`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
             for (const batch of failedBatches) {
                 try {
-                    console.log(`재시도: 배치 ${batch.start}-${batch.end}`);
                     const retryResult = await this.getHealthFunctionalFoods(batch.start, batch.end);
                     if (retryResult && retryResult.C003 && retryResult.C003.row) {
-                        console.log(`✅ 재시도 성공 ${batch.start}-${batch.end}: ${retryResult.C003.row.length}개 제품`);
                         results.push(...retryResult.C003.row);
                     }
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // 재시도 간 1초 대기
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 } catch (error) {
-                    console.error(`재시도 실패 ${batch.start}-${batch.end}:`, error.message);
+                    // 조용히 실패 처리
                 }
             }
         }
@@ -254,14 +230,11 @@ class FoodSafetyAPI {
      */
     async getAllHealthFunctionalFoods(maxItems = 42000, forceRefresh = false) {
         try {
-            console.log('전체 건강기능식품 데이터 조회 시작...');
-            
             // 1순위: 영구 저장소 확인 (강제 새로고침이 아닌 경우)
             if (!forceRefresh) {
-                console.log('🔍 1단계: 영구 저장소 확인 중...');
                 const permanentData = this.getPermanentData();
                 if (permanentData && permanentData.length > 0) {
-                    console.log(`✅ 영구 저장소 데이터 사용: ${permanentData.length}개 제품 (API 호출 없음)`);
+                    console.log(`✅ 정부승인 제품 로드 완료 (${permanentData.length}개)`);
                     
                     return {
                         C003: {
@@ -270,18 +243,14 @@ class FoodSafetyAPI {
                             source: 'permanent_storage'
                         }
                     };
-                } else {
-                    console.log('⚠️ 영구 저장소에 데이터 없음');
                 }
                 
                 // 2순위: 캐시 확인 (영구 저장소가 없는 경우)
-                console.log('🔍 2단계: 캐시 확인 중...');
                 const cachedData = this.getCachedData();
                 if (cachedData && cachedData.length > 0) {
-                    console.log(`✅ 캐시 데이터 사용: ${cachedData.length}개 제품 (API 호출 없음)`);
+                    console.log(`✅ 정부승인 제품 로드 완료 (${cachedData.length}개)`);
                     
                     // 캐시 데이터를 영구 저장소에 자동 복사
-                    console.log('💾 캐시 데이터를 영구 저장소에 자동 복사 중...');
                     this.setPermanentData(cachedData);
                     
                     return {
@@ -291,30 +260,24 @@ class FoodSafetyAPI {
                             source: 'cache'
                         }
                     };
-                } else {
-                    console.log('⚠️ 캐시에도 데이터 없음');
                 }
-            } else {
-                console.log('🔄 강제 새로고침 모드: 영구 저장소와 캐시 건너뛰기');
             }
             
             // 먼저 소량 데이터로 전체 개수 확인
+            console.log('📡 식약처 API 연결 중...');
             const firstBatch = await this.getHealthFunctionalFoods(1, 100);
             if (!firstBatch || !firstBatch.C003) {
-                console.error('초기 데이터 조회 실패');
+                console.error('❌ API 연결 실패');
                 return null;
             }
 
             const totalCount = firstBatch.C003.total_count || 0;
-            console.log(`전체 데이터 개수: ${totalCount}개`);
-
             if (totalCount === 0) {
                 return firstBatch;
             }
 
             // 실제로 가져올 개수 결정
             const itemsToFetch = Math.min(totalCount, maxItems);
-            console.log(`실제 조회할 개수: ${itemsToFetch}개`);
 
             // 배치 정보 생성 (42개 배치로 분할)
             const batchSize = 1000;
@@ -324,17 +287,14 @@ class FoodSafetyAPI {
                 batches.push({ start, end });
             }
 
-            console.log(`총 ${batches.length}개 배치를 순차적으로 처리합니다...`);
-            console.log(`배치 크기: ${batchSize}개, 전체 개수: ${itemsToFetch}개`);
-            console.log(`예상 배치 수: ${Math.ceil(itemsToFetch / batchSize)}개`);
             const startTime = Date.now();
 
-            // 순차적으로 모든 배치 조회 (병렬 처리 제거)
+            // 순차적으로 모든 배치 조회
             const allProducts = await this.fetchBatchesSequentially(batches);
 
             const endTime = Date.now();
             const duration = ((endTime - startTime) / 1000).toFixed(1);
-            console.log(`✅ 순차 처리 완료: ${allProducts.length}개 제품 (${duration}초 소요)`);
+            console.log(`✅ 데이터 수집 완료: ${allProducts.length}개 제품 (${duration}초)`);
 
             // 결과 데이터 구성
             const result = {
@@ -347,7 +307,7 @@ class FoodSafetyAPI {
             // 캐시와 영구 저장소 모두에 저장
             this.setCachedData(allProducts);
             this.setPermanentData(allProducts);
-            console.log('💾 API 데이터를 캐시와 영구 저장소에 모두 저장했습니다.');
+            console.log('💾 데이터 저장 완료 (영구 저장소)');
 
             return result;
 
@@ -456,9 +416,6 @@ class FoodSafetyAPI {
             };
             
             fs.writeFileSync(this.permanentFile, JSON.stringify(permanentData));
-            
-            const fileSizeMB = (fs.statSync(this.permanentFile).size / 1024 / 1024).toFixed(2);
-            console.log(`✅ ${optimizedProducts.length}개 제품을 영구 저장소에 저장했습니다. (파일 크기: ${fileSizeMB}MB)`);
             return true;
         } catch (error) {
             console.error('영구 저장소 데이터 저장 실패:', error);
@@ -476,7 +433,6 @@ class FoodSafetyAPI {
             }
 
             const permanentData = JSON.parse(fs.readFileSync(this.permanentFile, 'utf-8'));
-            console.log(`영구 저장소 데이터 로드: ${permanentData.products.length}개 제품 (저장 시간: ${permanentData.timestamp})`);
             return permanentData.products;
         } catch (error) {
             console.error('영구 저장소 데이터 읽기 실패:', error);
