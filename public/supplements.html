@@ -94,6 +94,85 @@
           transform: translateY(-3px);
         }
       }
+
+      /* 생활 통합 가이드 스타일 개선 */
+      .lifestyle-content {
+        line-height: 1.8;
+        color: #333;
+      }
+
+      .lifestyle-content strong {
+        color: #667eea;
+        font-weight: 600;
+      }
+
+      /* 리스트 아이템 스타일 */
+      .lifestyle-item {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        background: #f8f9ff;
+        border-radius: 8px;
+        border-left: 3px solid #667eea;
+        transition: all 0.2s ease;
+      }
+
+      .lifestyle-item:hover {
+        background: #f0f2ff;
+        transform: translateX(4px);
+      }
+
+      .lifestyle-item .item-number {
+        color: #667eea;
+        font-weight: 700;
+        font-size: 1.1em;
+        min-width: 24px;
+      }
+
+      .lifestyle-item .item-title {
+        color: #333;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .lifestyle-item .item-desc {
+        color: #555;
+        flex: 1;
+      }
+
+      /* 일반 문장 포인트 스타일 */
+      .lifestyle-point {
+        margin-bottom: 10px;
+        padding-left: 16px;
+        position: relative;
+        line-height: 1.7;
+      }
+
+      .lifestyle-point:before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: #667eea;
+        font-weight: bold;
+        font-size: 1.2em;
+      }
+
+      .lifestyle-point:last-child {
+        margin-bottom: 0;
+      }
+
+      /* 카드 내부 패딩 조정 */
+      .lifestyle-card .card-content {
+        padding: 16px;
+      }
+
+      .lifestyle-card h4 {
+        margin-bottom: 12px;
+        color: #333;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
     </style>
   </head>
   <body class="supplement-page">
@@ -3215,6 +3294,40 @@
         }
       }
 
+      // 생활 통합 가이드 텍스트 포맷팅 함수 (마크다운 -> HTML 변환 + 가독성 개선)
+      function formatLifestyleContent(text) {
+        if (!text) return '';
+        
+        // 1. **볼드** 처리: **텍스트** -> <strong>텍스트</strong>
+        text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        
+        // 2. 숫자로 시작하는 항목을 리스트로 변환 (예: 1. 항목, 2. 항목)
+        const numberedPattern = /(\d+)\.\s*\*\*([^*]+)\*\*:\s*([^\n]+)/g;
+        if (numberedPattern.test(text)) {
+          text = text.replace(/(\d+)\.\s*\*\*([^*]+)\*\*:\s*([^\n]+)/g, 
+            '<div class="lifestyle-item"><strong class="item-number">$1.</strong> <strong class="item-title">$2:</strong> <span class="item-desc">$3</span></div>');
+        } else {
+          // 3. 일반 문장 구분 (마침표 기준)
+          const sentences = text.split(/\.\s+/).filter(s => s.trim());
+          if (sentences.length > 1) {
+            text = sentences.map(s => {
+              if (!s.trim()) return '';
+              const trimmed = s.trim();
+              // 이미 HTML 태그가 있으면 그대로, 없으면 p 태그로 감싸기
+              if (trimmed.includes('<strong>')) {
+                return `<p class="lifestyle-point">${trimmed}${trimmed.endsWith('.') ? '' : '.'}</p>`;
+              }
+              return `<p class="lifestyle-point">${trimmed}${trimmed.endsWith('.') ? '' : '.'}</p>`;
+            }).join('');
+          } else {
+            // 단일 문장인 경우
+            text = `<p class="lifestyle-point">${text}</p>`;
+          }
+        }
+        
+        return text;
+      }
+
       // 사용자 복용 선호도 가져오기 함수
       function getUserDosagePreference() {
         // questionAnswers에서 복용 선호도 추출 (supplement_form 키 사용)
@@ -3651,21 +3764,21 @@
                                 <div class="card-icon">🗓️</div>
                                 <div class="card-content">
                                     <h4>일상 루틴</h4>
-                                    <p>${recommendations.lifestyleIntegration.dailyRoutine}</p>
+                                    <div class="lifestyle-content">${formatLifestyleContent(recommendations.lifestyleIntegration.dailyRoutine)}</div>
                                 </div>
                             </div>
                             <div class="lifestyle-card">
                                 <div class="card-icon">🍽️</div>
                                 <div class="card-content">
                                     <h4>식사 계획</h4>
-                                    <p>${recommendations.lifestyleIntegration.mealPlanning}</p>
+                                    <div class="lifestyle-content">${formatLifestyleContent(recommendations.lifestyleIntegration.mealPlanning)}</div>
                                 </div>
                             </div>
                             <div class="lifestyle-card">
                                 <div class="card-icon">📊</div>
                                 <div class="card-content">
                                     <h4>모니터링</h4>
-                                    <p>${recommendations.lifestyleIntegration.monitoringTips}</p>
+                                    <div class="lifestyle-content">${formatLifestyleContent(recommendations.lifestyleIntegration.monitoringTips)}</div>
                                 </div>
                             </div>
                         </div>

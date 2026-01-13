@@ -997,10 +997,12 @@ function performMemoryCleanup() {
       console.log(`비활성 WebSocket 연결 ${closedConnections}개 정리됨`);
     }
 
-    // 메모리 사용량이 높으면 가비지 컬렉션 강제 실행
-    if (memoryInfo.usagePercent > 0.8 && global.gc) {
+    // 메모리 사용량이 높으면 가비지 컬렉션 강제 실행 (임계값 상향 조정)
+    if (memoryInfo.usagePercent > 0.90 && global.gc) {
       global.gc();
       console.log("가비지 컬렉션 강제 실행 완료");
+    } else if (!global.gc && memoryInfo.usagePercent > 0.90) {
+      console.log("ℹ️ 가비지 컬렉션을 사용하려면 --expose-gc 플래그로 Node.js를 시작하세요");
     }
 
     // 정리 후 메모리 사용량 확인
@@ -1011,8 +1013,8 @@ function performMemoryCleanup() {
       }MB / ${afterCleanup.heapTotal}MB)`
     );
 
-    // 메모리 사용량이 여전히 높으면 권장사항 출력
-    if (afterCleanup.usagePercent > 0.85) {
+    // 메모리 사용량이 여전히 높으면 권장사항 출력 (임계값을 90%로 상향 조정)
+    if (afterCleanup.usagePercent > 0.90) {
       const recommendations =
         memoryMonitor.getOptimizationRecommendations(afterCleanup);
       console.warn("⚠️ 메모리 최적화 권장사항:", recommendations);

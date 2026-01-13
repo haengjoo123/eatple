@@ -5,8 +5,8 @@
 class MemoryMonitor {
     constructor() {
         this.alertThresholds = {
-            warning: 0.75,  // 75% (더 이른 경고)
-            critical: 0.90  // 90% (더 이른 긴급 조치)
+            warning: 0.85,  // 85% (경고)
+            critical: 0.95  // 95% (긴급 조치)
         };
         
         this.lastAlert = {
@@ -264,7 +264,8 @@ class MemoryMonitor {
     getOptimizationRecommendations(memoryInfo) {
         const recommendations = [];
         
-        if (memoryInfo.usagePercent > 0.9) {
+        // 임계값 상향 조정: 95% 이상일 때만 high priority 경고
+        if (memoryInfo.usagePercent > 0.95) {
             recommendations.push({
                 priority: 'high',
                 action: 'immediate_cleanup',
@@ -272,7 +273,8 @@ class MemoryMonitor {
             });
         }
         
-        if (memoryInfo.usagePercent > 0.8) {
+        // 임계값 상향 조정: 90% 이상일 때만 medium priority 경고
+        if (memoryInfo.usagePercent > 0.90 && memoryInfo.usagePercent <= 0.95) {
             recommendations.push({
                 priority: 'medium',
                 action: 'reduce_cache_ttl',
