@@ -905,17 +905,8 @@ router.post('/government-approved-products', async (req, res) => {
         // 식약처 API 인스턴스 생성
         const foodSafetyAPI = new FoodSafetyAPI();
         
-        // 캐시 상태 확인 및 로깅
+        // 캐시 상태 확인
         const cacheStatus = foodSafetyAPI.getCacheStatus();
-        console.log('=== 캐시 상태 확인 ===');
-        if (cacheStatus.exists) {
-            console.log(`✅ 캐시 존재: ${cacheStatus.count}개 제품`);
-            console.log(`📅 생성 시간: ${cacheStatus.timestamp}`);
-            console.log(`⏰ 경과 시간: ${cacheStatus.age.toFixed(1)}시간`);
-            console.log(`🔄 상태: ${cacheStatus.expired ? '만료됨' : '유효함'}`);
-        } else {
-            console.log('❌ 캐시 없음 - API 호출 필요');
-        }
         
         // 식약처 API에서 건강기능식품 데이터 조회 (전체 데이터)
         const apiResponse = await foodSafetyAPI.getAllHealthFunctionalFoods();
@@ -931,31 +922,6 @@ router.post('/government-approved-products', async (req, res) => {
         }
 
         const allProducts = apiResponse.C003.row || [];
-        console.log(`전체 제품 수: ${allProducts.length}`);
-        
-        // 첫 번째 제품의 모든 필드 출력
-        if (allProducts.length > 0) {
-            console.log('=== 첫 번째 제품의 모든 필드 ===');
-            console.log(JSON.stringify(allProducts[0], null, 2));
-            
-            // 필드명들 확인
-            console.log('=== 사용 가능한 필드명들 ===');
-            console.log(Object.keys(allProducts[0]));
-            
-            // PRIMARY_FNCLTY 필드 존재 확인
-            if (allProducts[0].PRIMARY_FNCLTY) {
-                console.log('✅ PRIMARY_FNCLTY 필드 존재:', allProducts[0].PRIMARY_FNCLTY);
-            } else {
-                console.log('❌ PRIMARY_FNCLTY 필드 없음');
-                // 기능성 관련 다른 필드 찾기
-                Object.keys(allProducts[0]).forEach(key => {
-                    if (key.toLowerCase().includes('fnc') || key.toLowerCase().includes('function') || 
-                        key.toLowerCase().includes('효능') || key.toLowerCase().includes('기능')) {
-                        console.log(`🔍 기능성 관련 필드 발견: ${key} = ${allProducts[0][key]}`);
-                    }
-                });
-            }
-        }
 
         // 새로운 매칭 순서로 제품 필터링 (건강고민 → 복용선호 → 기피성분 → 유사도 매칭)
         const filteredProducts = filterProductsByNewOrder(
@@ -970,8 +936,6 @@ router.post('/government-approved-products', async (req, res) => {
             }
         );
 
-        console.log(`필터링 후 제품 수: ${filteredProducts.length}`);
-
         // 프론트엔드용 데이터 포맷팅 (건강고민 정보 포함)
         const formattedProducts = filteredProducts.map(product => 
             formatProductForFrontend(product, healthGoals)
@@ -982,15 +946,10 @@ router.post('/government-approved-products', async (req, res) => {
             incrementServiceUsage(req.session.user.id, SERVICE_TYPES.SUPPLEMENT_RECOMMENDATION);
         }
 
-        // 성능 로깅
+        // 성능 로깅 (간단하게)
         const endTime = Date.now();
         const duration = ((endTime - startTime) / 1000).toFixed(2);
-        console.log('=== 성능 요약 ===');
-        console.log(`⏱️ 총 소요 시간: ${duration}초`);
-        console.log(`📊 전체 제품 수: ${allProducts.length}개`);
-        console.log(`🎯 필터링 결과: ${formattedProducts.length}개`);
-        console.log(`💾 캐시 사용: ${!cacheStatus.expired && cacheStatus.exists ? '예' : '아니오'}`);
-        console.log(`✅ 정부승인 제품 조회 완료`);
+        console.log(`✅ 정부승인 제품 조회 완료: ${formattedProducts.length}개 (${duration}초)`);
 
         res.json({
             products: formattedProducts,
@@ -1129,27 +1088,8 @@ router.post('/search-by-supplement-name', async (req, res) => {
             });
         }
         
-        console.log('영양제 명칭 검색 요청:', {
-            supplementName,
-            healthGoals,
-            dosagePreference,
-            avoidIngredients
-        });
-
         // 식약처 API 인스턴스 생성
         const foodSafetyAPI = new FoodSafetyAPI();
-        
-        // 캐시 상태 확인 및 로깅
-        const cacheStatus = foodSafetyAPI.getCacheStatus();
-        console.log('=== 캐시 상태 확인 ===');
-        if (cacheStatus.exists) {
-            console.log(`✅ 캐시 존재: ${cacheStatus.count}개 제품`);
-            console.log(`📅 생성 시간: ${cacheStatus.timestamp}`);
-            console.log(`⏰ 경과 시간: ${cacheStatus.age.toFixed(1)}시간`);
-            console.log(`🔄 상태: ${cacheStatus.expired ? '만료됨' : '유효함'}`);
-        } else {
-            console.log('❌ 캐시 없음 - API 호출 필요');
-        }
         
         // 식약처 API에서 건강기능식품 데이터 조회 (전체 데이터)
         const apiResponse = await foodSafetyAPI.getAllHealthFunctionalFoods();
@@ -1165,7 +1105,6 @@ router.post('/search-by-supplement-name', async (req, res) => {
         }
 
         const allProducts = apiResponse.C003.row || [];
-        console.log(`전체 제품 수: ${allProducts.length}`);
         
         // 새로운 매칭 순서로 제품 필터링 (건강고민 → 복용선호 → 기피성분 → 유사도 매칭)
         const filteredProducts = filterProductsByNewOrder(
@@ -1182,8 +1121,6 @@ router.post('/search-by-supplement-name', async (req, res) => {
             }
         );
 
-        console.log(`최종 필터링 후 제품 수: ${filteredProducts.length}`);
-
         // 프론트엔드용 데이터 포맷팅 (건강고민 정보 포함)
         const formattedProducts = filteredProducts.map(product => 
             formatProductForFrontend(product, healthGoals || [])
@@ -1194,16 +1131,10 @@ router.post('/search-by-supplement-name', async (req, res) => {
             incrementServiceUsage(req.session.user.id, SERVICE_TYPES.SUPPLEMENT_RECOMMENDATION);
         }
 
-        // 성능 로깅
+        // 성능 로깅 (간단하게)
         const endTime = Date.now();
         const duration = ((endTime - startTime) / 1000).toFixed(2);
-        console.log('=== 성능 요약 ===');
-        console.log(`⏱️ 총 소요 시간: ${duration}초`);
-        console.log(`🔍 검색어: "${supplementName}"`);
-        console.log(`📊 전체 제품 수: ${allProducts.length}개`);
-        console.log(`🎯 필터링 결과: ${formattedProducts.length}개`);
-        console.log(`💾 캐시 사용: ${!cacheStatus.expired && cacheStatus.exists ? '예' : '아니오'}`);
-        console.log(`✅ 영양제 명칭 검색 완료`);
+        console.log(`✅ "${supplementName}" 검색 완료: ${formattedProducts.length}개 제품 (${duration}초)`);
 
         res.json({
             products: formattedProducts,
