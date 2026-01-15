@@ -579,7 +579,61 @@ class PerformanceMonitor {
             }
         });
         
+        // 보존 기간이 지난 로그는 저장 공간 절약을 위해 정리
+        const retentionDays = this.parseRetentionDays(this.config?.logging?.retention);
+        this.cleanupOldLogs(logsDir, retentionDays);
+        
         console.log('📋 Log files rotated');
+    }
+
+    /**
+     * 설정값에서 로그 보존 기간(일)을 해석
+     */
+    parseRetentionDays(retentionValue) {
+        if (!retentionValue) return 30;
+        if (typeof retentionValue === 'number' && retentionValue > 0) return Math.floor(retentionValue);
+        
+        if (typeof retentionValue !== 'string') return 30;
+        
+        const trimmed = retentionValue.trim();
+        const match = trimmed.match(/(\d+)\s*(day|days|d)?/i);
+        if (!match) return 30;
+        
+        const days = parseInt(match[1], 10);
+        return Number.isFinite(days) && days > 0 ? days : 30;
+    }
+
+    /**
+     * 보존 기간이 지난 로그 아카이브 파일 정리
+     */
+    cleanupOldLogs(logsDir, retentionDays) {
+        if (!logsDir || !Number.isFinite(retentionDays) || retentionDays <= 0) return;
+        
+        const cutoffTime = Date.now() - retentionDays * 24 * 60 * 60 * 1000;
+        const archivePattern = /\.log\.\d{4}-\d{2}-\d{2}$/;
+        
+        try {
+            const files = fs.readdirSync(logsDir);
+            
+            files.forEach(file => {
+                if (!archivePattern.test(file)) return;
+                
+                const datePart = file.split('.log.')[1];
+                const archiveDate = new Date(`${datePart}T00:00:00.000Z`);
+                if (Number.isNaN(archiveDate.getTime())) return;
+                
+                if (archiveDate.getTime() < cutoffTime) {
+                    const filePath = path.join(logsDir, file);
+                    try {
+                        fs.unlinkSync(filePath);
+                    } catch (error) {
+                        console.error(`Failed to delete old log ${file}:`, error.message);
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Failed to cleanup old logs:', error.message);
+        }
     }
 
     /**
