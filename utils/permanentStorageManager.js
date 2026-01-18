@@ -145,8 +145,8 @@ class PermanentStorageManager {
         try {
             console.log('기존 캐시 데이터를 영구 저장소로 복사합니다...');
             
-            // 캐시에서 데이터 읽기
-            const cachedData = this.foodSafetyAPI.getCachedData();
+            // 캐시에서 데이터 읽기 (만료 여부 무시)
+            const cachedData = this.foodSafetyAPI.getCachedDataIgnoreExpiry();
             
             if (!cachedData) {
                 console.log('캐시에 데이터가 없습니다.');
@@ -194,8 +194,8 @@ class PermanentStorageManager {
                 console.error('API에서 데이터를 받아오지 못했습니다.');
                 console.log('캐시 데이터를 사용하여 영구 저장소를 업데이트합니다...');
                 
-                // 캐시 데이터를 사용하여 영구 저장소 업데이트
-                const cachedData = this.foodSafetyAPI.getCachedData();
+                // 캐시 데이터를 사용하여 영구 저장소 업데이트 (만료 무시)
+                const cachedData = this.foodSafetyAPI.getCachedDataIgnoreExpiry();
                 if (cachedData) {
                     console.log(`캐시에서 ${cachedData.length}개 제품을 발견했습니다.`);
                     

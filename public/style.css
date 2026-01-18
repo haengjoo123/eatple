@@ -5834,14 +5834,14 @@ body.supplement-page.step-4 .container {
 .lifestyle-cards {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 32px;
   margin-top: 20px;
 }
 
 .lifestyle-card {
   background: white;
   border-radius: 16px;
-  padding: 24px;
+  padding: 28px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: flex-start;

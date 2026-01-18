@@ -89,7 +89,7 @@ class FoodSafetyAPI {
     }
 
     /**
-     * 캐시에서 데이터 읽기
+     * 캐시에서 데이터 읽기 (만료 확인)
      */
     getCachedData() {
         try {
@@ -110,6 +110,32 @@ class FoodSafetyAPI {
             return cacheData.products;
         } catch (error) {
             console.error('캐시 데이터 읽기 실패:', error);
+            return null;
+        }
+    }
+
+    /**
+     * 캐시에서 데이터 읽기 (만료 여부 무시)
+     */
+    getCachedDataIgnoreExpiry() {
+        try {
+            if (!fs.existsSync(this.cacheFile)) {
+                console.log('📂 캐시 파일이 존재하지 않음:', this.cacheFile);
+                return null;
+            }
+
+            console.log('📂 캐시 파일 읽기 시도 (만료 무시):', this.cacheFile);
+            const cacheData = JSON.parse(fs.readFileSync(this.cacheFile, 'utf-8'));
+            
+            if (!cacheData || !cacheData.products) {
+                console.log('⚠️ 캐시 파일은 존재하지만 products 데이터가 없음');
+                return null;
+            }
+            
+            console.log(`📂 캐시에서 ${cacheData.products.length}개 제품 데이터 읽기 성공 (만료 무시)`);
+            return cacheData.products;
+        } catch (error) {
+            console.error('❌ 캐시 데이터 읽기 실패:', error.message);
             return null;
         }
     }
@@ -234,7 +260,7 @@ class FoodSafetyAPI {
             if (!forceRefresh) {
                 const permanentData = this.getPermanentData();
                 if (permanentData && permanentData.length > 0) {
-                    console.log(`✅ 정부승인 제품 로드 완료 (${permanentData.length}개)`);
+                    console.log(`✅ [영구 저장소] 정부승인 제품 로드 완료 (${permanentData.length}개) - API 호출 없음`);
                     
                     return {
                         C003: {
@@ -245,13 +271,16 @@ class FoodSafetyAPI {
                     };
                 }
                 
+                console.log('⚠️ 영구 저장소에 데이터 없음. 캐시 확인 중...');
+                
                 // 2순위: 캐시 확인 (영구 저장소가 없는 경우)
                 const cachedData = this.getCachedData();
                 if (cachedData && cachedData.length > 0) {
-                    console.log(`✅ 정부승인 제품 로드 완료 (${cachedData.length}개)`);
+                    console.log(`✅ [캐시] 정부승인 제품 로드 완료 (${cachedData.length}개) - 영구 저장소에 자동 복사 중...`);
                     
                     // 캐시 데이터를 영구 저장소에 자동 복사
                     this.setPermanentData(cachedData);
+                    console.log('💾 캐시 데이터를 영구 저장소에 복사 완료');
                     
                     return {
                         C003: {
@@ -261,6 +290,10 @@ class FoodSafetyAPI {
                         }
                     };
                 }
+                
+                console.log('⚠️ 캐시에도 데이터 없음. API 호출 시작...');
+            } else {
+                console.log('🔄 강제 새로고침 모드 - API 호출 시작...');
             }
             
             // 먼저 소량 데이터로 전체 개수 확인
@@ -307,7 +340,7 @@ class FoodSafetyAPI {
             // 캐시와 영구 저장소 모두에 저장
             this.setCachedData(allProducts);
             this.setPermanentData(allProducts);
-            console.log('💾 데이터 저장 완료 (영구 저장소)');
+            console.log('💾 [API → 영구 저장소] 데이터 저장 완료 - 다음 조회부터는 API 호출 없이 영구 저장소 사용');
 
             return result;
 
@@ -391,6 +424,8 @@ class FoodSafetyAPI {
      */
     setPermanentData(products) {
         try {
+            console.log(`💾 영구 저장소에 ${products.length}개 제품 저장 시작...`);
+            
             // 메모리 절약을 위해 불필요한 필드 제거
             const optimizedProducts = products.map(product => ({
                 PRDLST_REPORT_NO: product.PRDLST_REPORT_NO,
@@ -416,9 +451,11 @@ class FoodSafetyAPI {
             };
             
             fs.writeFileSync(this.permanentFile, JSON.stringify(permanentData));
+            const fileSizeMB = (fs.statSync(this.permanentFile).size / 1024 / 1024).toFixed(2);
+            console.log(`✅ 영구 저장소 저장 완료: ${optimizedProducts.length}개 제품 (${fileSizeMB}MB) - ${this.permanentFile}`);
             return true;
         } catch (error) {
-            console.error('영구 저장소 데이터 저장 실패:', error);
+            console.error('❌ 영구 저장소 데이터 저장 실패:', error.message);
             return false;
         }
     }
@@ -429,13 +466,22 @@ class FoodSafetyAPI {
     getPermanentData() {
         try {
             if (!fs.existsSync(this.permanentFile)) {
+                console.log('📂 영구 저장소 파일이 존재하지 않음:', this.permanentFile);
                 return null;
             }
 
+            console.log('📂 영구 저장소 파일 읽기 시도:', this.permanentFile);
             const permanentData = JSON.parse(fs.readFileSync(this.permanentFile, 'utf-8'));
+            
+            if (!permanentData || !permanentData.products) {
+                console.log('⚠️ 영구 저장소 파일은 존재하지만 products 데이터가 없음');
+                return null;
+            }
+            
+            console.log(`📂 영구 저장소에서 ${permanentData.products.length}개 제품 데이터 읽기 성공`);
             return permanentData.products;
         } catch (error) {
-            console.error('영구 저장소 데이터 읽기 실패:', error);
+            console.error('❌ 영구 저장소 데이터 읽기 실패:', error.message);
             return null;
         }
     }
