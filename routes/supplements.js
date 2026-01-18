@@ -278,11 +278,6 @@ ${otherAllergy ? `- 기타 기피 성분: ${otherAllergy}` : ''}
       "expectedResults": "예상 효과 발현 시기 및 정도"
     }
   ],
-  "lifestyleIntegration": {
-    "dailyRoutine": "일상 루틴 통합 가이드 (구조화된 형식으로 작성: 1. **규칙적인 식사**: 하루 1회 식사는..., 2. **적정한 수면**: 주 3회 이상의..., 3. **음주량 감소**: 음주 빈도를... 등)",
-    "mealPlanning": "식사와 연계한 복용 계획 (구조화된 형식으로 작성: 1. **아침**: (프로바이오틱스 공복 복용) 간단한 하루와..., 2. **점심**: 현재 유일한 식사와..., 3. **저녁**: (가능하다면) 가벼운 식사 추가 시도..., 4. **마그네슘**: 저녁 식후 또는 취침 전 복용하여 수면 질 개선 등)",
-    "monitoringTips": "효과 모니터링 방법 (구조화된 형식으로 작성: 1. **신체 증상 변화**: 피로도, 소화 불편감..., 2. **주요 건강 지표**: 3-6개월 후 병원에서..., 3. **부작용 발견 여부**: 새로운 불편감이나..., 4. **관절/근력 개선**: 당뇨 관리 수치(혈당)를 다시 확인 등)"
-  },
   "safetyProtocol": {
     "generalPrecautions": [
       "일반적 주의사항 1",
@@ -297,13 +292,7 @@ ${otherAllergy ? `- 기타 기피 성분: ${otherAllergy}` : ''}
 
 **중요한 지침:**
 - scientificRationale은 반드시 항목별로 제공하세요.
-- 각 근거는 간결하고 명확하게 작성하세요.
-- lifestyleIntegration의 각 항목(dailyRoutine, mealPlanning, monitoringTips)은 반드시 구조화된 형식으로 작성하세요:
-  * 형식: "1. **주제**: 설명. 2. **주제**: 설명. 3. **주제**: 설명."
-  * **주제** 부분은 반드시 **별표 2개**로 감싸서 볼드 처리되도록 작성
-  * 각 항목은 번호와 함께 명확하게 구분
-  * 사용자의 실제 상황(식사 패턴, 수면, 활동량 등)에 맞춰 구체적으로 작성
-- 줄글 형태가 아닌 번호가 있는 구조화된 리스트 형식으로 작성하여 가독성을 높이세요.`;
+- 각 근거는 간결하고 명확하게 작성하세요.`;
     
     return prompt;
 }
@@ -844,11 +833,6 @@ async function generateAIRecommendations(data) {
                     recommendationStrategy: "안전하고 효과적인 영양제 조합을 제안합니다."
                 },
                 supplements: generateBasicSupplementRecommendations(data),
-                lifestyleIntegration: {
-                    dailyRoutine: "규칙적인 시간에 영양제를 복용하시기 바랍니다.",
-                    mealPlanning: "식후 30분 이내에 복용하시는 것을 권장합니다.",
-                    monitoringTips: "복용 후 몸의 변화를 주의 깊게 관찰하시기 바랍니다."
-                },
                 safetyProtocol: {
                     generalPrecautions: [
                         "권장량을 초과하여 복용하지 마세요",
