@@ -116,7 +116,7 @@
       
     </div>
 
-    <!-- 오늘 조회수 상세 모달 -->
+    <!-- 오늘 조회수 상세 모달 (상품) -->
     <div class="modal-overlay" id="todayViewsModal">
       <div class="modal-content views-modal">
         <div class="modal-header">
@@ -145,6 +145,44 @@
           </div>
 
           <div class="views-list" id="todayViewsList">
+            <div class="loading-placeholder">
+              <div class="spinner"></div>
+              <p>조회수 데이터를 불러오는 중...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 오늘 조회수 상세 모달 (영양정보) -->
+    <div class="modal-overlay" id="todayNutritionViewsModal">
+      <div class="modal-content views-modal">
+        <div class="modal-header">
+          <h3>영양정보 오늘 조회수 상세</h3>
+          <button class="modal-close" id="closeTodayNutritionViewsModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="views-summary">
+            <div class="summary-item">
+              <span class="summary-label">총 조회수:</span>
+              <span class="summary-value" id="totalTodayNutritionViews">0</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">조회된 포스팅:</span>
+              <span class="summary-value" id="viewedPostsCount">0</span>
+            </div>
+          </div>
+          
+          <div class="views-filters">
+            <select id="nutritionViewsSortBy">
+              <option value="views_desc">조회수 높은순</option>
+              <option value="views_asc">조회수 낮은순</option>
+              <option value="title_asc">제목 순</option>
+            </select>
+            <input type="text" id="nutritionViewsSearchInput" placeholder="포스팅 제목 검색...">
+          </div>
+
+          <div class="views-list" id="todayNutritionViewsList">
             <div class="loading-placeholder">
               <div class="spinner"></div>
               <p>조회수 데이터를 불러오는 중...</p>
@@ -218,6 +256,30 @@
           <div class="stat-card">
             <div class="stat-title">비활성 포스팅</div>
             <div class="stat-number" id="inactivePosts">0</div>
+          </div>
+          <div class="stat-card clickable-stat" id="nutritionViewsCard" onclick="showNutritionViewsDetail()">
+            <div class="stat-title">오늘 조회수</div>
+            <div class="stat-number" id="todayNutritionViews">0</div>
+            <div class="stat-subtitle">클릭하여 상세보기</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 조회수 분석 섹션 -->
+      <div class="admin-stats-section">
+        <h3>조회수 분석 (최근 7일)</h3>
+        <div class="nutrition-views-container">
+          <div class="views-chart-wrapper">
+            <canvas id="nutritionViewsChart" style="width: 100%; height: 300px;"></canvas>
+          </div>
+          <div class="top-posts-list">
+            <h4>상위 조회수 TOP 10</h4>
+            <div id="topPostsList" class="top-posts-items">
+              <div class="loading-placeholder">
+                <div class="spinner"></div>
+                <p>데이터를 불러오는 중...</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -784,6 +846,9 @@
     </div>
   </div>
 
+  <!-- Chart.js 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
   <script src="admin.js"></script>
   <script>
     // 문의 관리 관련 전역 변수는 admin.js에서 관리합니다.

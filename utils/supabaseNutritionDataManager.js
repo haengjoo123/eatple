@@ -570,7 +570,7 @@ class SupabaseNutritionDataManager {
   /**
    * 조회수 증가
    */
-  async incrementViewCount(id) {
+  async incrementViewCount(id, userInfo = null) {
     try {
       // 현재 조회수를 먼저 가져온 다음 증가
       const { data: currentPost, error: fetchError } = await this.supabase
@@ -583,6 +583,7 @@ class SupabaseNutritionDataManager {
       
       const newViewCount = (currentPost.view_count || 0) + 1;
       
+      // nutrition_posts 테이블의 view_count 업데이트
       const { error } = await this.supabase
         .from('nutrition_posts')
         .update({ 
@@ -592,6 +593,29 @@ class SupabaseNutritionDataManager {
         .eq('id', id);
       
       if (error) throw error;
+      
+      // nutrition_post_views 테이블에 조회 기록 추가
+      try {
+        const viewRecord = {
+          post_id: id,
+          viewed_at: new Date().toISOString(),
+          view_count: 1,
+          user_id: userInfo?.userId || null,
+          ip_address: userInfo?.ipAddress || null,
+          user_agent: userInfo?.userAgent || null
+        };
+        
+        const { error: viewError } = await this.supabase
+          .from('nutrition_post_views')
+          .insert(viewRecord);
+        
+        if (viewError) {
+          console.warn('조회 기록 저장 실패 (무시):', viewError.message);
+        }
+      } catch (viewLogError) {
+        console.warn('조회 기록 저장 오류 (무시):', viewLogError);
+      }
+      
       console.log(`조회수 증가: ${id} -> ${newViewCount}`);
     } catch (error) {
       console.error('조회수 증가 오류:', error);

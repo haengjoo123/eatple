@@ -1361,11 +1361,24 @@ router.get('/stats', requireAdmin, async (req, res) => {
             .eq('is_draft', false)
             .eq('is_active', false);
 
+        // 오늘 조회수 집계
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayStr = today.toISOString().split('T')[0];
+        
+        const { data: todayViewsData } = await supabase
+            .from('nutrition_post_views')
+            .select('view_count')
+            .gte('viewed_at', todayStr);
+        
+        const todayViews = todayViewsData?.reduce((sum, item) => sum + (item.view_count || 1), 0) || 0;
+
         const stats = {
             totalPosts: totalCount || 0,
             publishedPosts: publishedCountDB || 0,
             draftPosts: draftCountDB || 0,
-            inactivePosts: inactiveCountDB || 0
+            inactivePosts: inactiveCountDB || 0,
+            todayViews: todayViews
         };
 
         console.log('📊 최종 통계:', stats);
@@ -1380,6 +1393,192 @@ router.get('/stats', requireAdmin, async (req, res) => {
         res.status(500).json({
             success: false,
             error: '포스팅 통계를 조회하는 중 오류가 발생했습니다.',
+            details: error.message
+        });
+    }
+});
+
+/**
+ * 조회수 분석 데이터 조회 API (최근 7일)
+ * GET /api/admin/manual-posting/views-analytics?days=7
+ */
+router.get('/views-analytics', requireAdmin, async (req, res) => {
+    try {
+        const days = parseInt(req.query.days) || 7;
+        console.log(`📊 조회수 분석 데이터 조회 시작 (최근 ${days}일)...`);
+
+        const { createClient } = require('@supabase/supabase-js');
+        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+        // 최근 N일 날짜 범위 계산 (오늘 포함, 한국 시간 기준)
+        // 한국 시간으로 오늘 날짜 계산
+        const now = new Date();
+        const kstOffset = 9 * 60 * 60 * 1000; // 9시간을 밀리초로
+        const kstNow = new Date(now.getTime() + kstOffset);
+        
+        // 한국 시간 기준 오늘 00:00:00
+        const kstToday = new Date(kstNow.getFullYear(), kstNow.getMonth(), kstNow.getDate());
+        
+        // N일 전 날짜 (한국 시간 기준)
+        const kstStartDate = new Date(kstToday);
+        kstStartDate.setDate(kstStartDate.getDate() - (days - 1));
+
+        console.log(`📊 조회 기간 (KST): ${kstStartDate.toISOString().split('T')[0]} ~ ${kstToday.toISOString().split('T')[0]}`);
+
+        // 최근 N일 일별 조회수 집계 (오늘 포함)
+        const chartData = [];
+        for (let i = 0; i < days; i++) {
+            // 한국 시간 기준 해당 날짜
+            const kstDate = new Date(kstStartDate);
+            kstDate.setDate(kstDate.getDate() + i);
+            
+            // UTC로 변환 (한국 시간 00:00:00 -> UTC)
+            const utcStartOfDay = new Date(kstDate.getTime() - kstOffset);
+            const utcEndOfDay = new Date(utcStartOfDay.getTime() + 24 * 60 * 60 * 1000);
+            
+            // 마지막 날(오늘)인 경우 현재 시각까지만
+            const isToday = i === days - 1;
+            const endTime = isToday ? now.toISOString() : utcEndOfDay.toISOString();
+            
+            const dateStr = kstDate.toISOString().split('T')[0];
+
+            console.log(`📅 날짜 (KST): ${dateStr}, UTC 범위: ${utcStartOfDay.toISOString()} ~ ${endTime}`);
+
+            // 해당 날짜의 조회수 집계
+            const { data: viewsData } = await supabase
+                .from('nutrition_post_views')
+                .select('view_count')
+                .gte('viewed_at', utcStartOfDay.toISOString())
+                .lt('viewed_at', endTime);
+
+            const totalViews = viewsData?.reduce((sum, item) => sum + (item.view_count || 1), 0) || 0;
+
+            console.log(`📊 ${dateStr} (KST): ${totalViews}회 (레코드 ${viewsData?.length || 0}개)`);
+
+            chartData.push({
+                date: dateStr,
+                views: totalViews
+            });
+        }
+
+        // TOP 10 조회수 포스팅 조회 (전체 기간)
+        const { data: topPostsData } = await supabase
+            .from('nutrition_posts')
+            .select(`
+                id,
+                title,
+                view_count,
+                categories:category_id (
+                    name
+                )
+            `)
+            .eq('is_active', true)
+            .eq('is_draft', false)
+            .order('view_count', { ascending: false })
+            .limit(10);
+
+        const topPosts = topPostsData?.map(post => ({
+            id: post.id,
+            title: post.title,
+            view_count: post.view_count || 0,
+            category: post.categories?.name || '미분류'
+        })) || [];
+
+        console.log('📊 조회수 분석 데이터 조회 완료');
+
+        res.json({
+            success: true,
+            chartData: chartData,
+            topPosts: topPosts
+        });
+
+    } catch (error) {
+        console.error('❌ 조회수 분석 데이터 조회 오류:', error);
+        res.status(500).json({
+            success: false,
+            error: '조회수 분석 데이터를 조회하는 중 오류가 발생했습니다.',
+            details: error.message
+        });
+    }
+});
+
+/**
+ * 오늘 조회수 상세 데이터 조회 API
+ * GET /api/admin/manual-posting/today-views-detail
+ */
+router.get('/today-views-detail', requireAdmin, async (req, res) => {
+    try {
+        console.log('📊 오늘 조회수 상세 데이터 조회 시작...');
+
+        const { createClient } = require('@supabase/supabase-js');
+        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+        // 오늘 날짜 범위 계산
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayStr = today.toISOString().split('T')[0];
+        
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+        // 오늘 조회된 포스팅별 조회수 집계
+        const { data: viewsData } = await supabase
+            .from('nutrition_post_views')
+            .select(`
+                post_id,
+                view_count,
+                nutrition_posts:post_id (
+                    id,
+                    title,
+                    categories:category_id (
+                        name
+                    )
+                )
+            `)
+            .gte('viewed_at', todayStr)
+            .lt('viewed_at', tomorrowStr);
+
+        // 포스팅별 조회수 합산
+        const postsMap = new Map();
+        viewsData?.forEach(view => {
+            const post = view.nutrition_posts;
+            if (!post) return;
+
+            const postId = post.id;
+            if (!postsMap.has(postId)) {
+                postsMap.set(postId, {
+                    id: postId,
+                    title: post.title,
+                    category: post.categories?.name || '미분류',
+                    todayViews: 0
+                });
+            }
+            postsMap.get(postId).todayViews += (view.view_count || 1);
+        });
+
+        // Map을 배열로 변환하고 조회수로 정렬
+        const posts = Array.from(postsMap.values()).sort((a, b) => b.todayViews - a.todayViews);
+        const totalViews = posts.reduce((sum, post) => sum + post.todayViews, 0);
+
+        console.log('📊 오늘 조회수 상세 데이터 조회 완료:', {
+            totalViews,
+            postsCount: posts.length
+        });
+
+        res.json({
+            success: true,
+            data: {
+                totalViews: totalViews,
+                posts: posts
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ 오늘 조회수 상세 데이터 조회 오류:', error);
+        res.status(500).json({
+            success: false,
+            error: '오늘 조회수 상세 데이터를 조회하는 중 오류가 발생했습니다.',
             details: error.message
         });
     }

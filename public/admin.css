@@ -2218,7 +2218,155 @@ button {
   background: #4b5563;
 }
 
+/* 영양정보 조회수 분석 스타일 */
+.nutrition-views-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.views-chart-wrapper {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  min-height: 300px;
+}
+
+.top-posts-list {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.top-posts-list h4 {
+  margin: 0 0 16px 0;
+  color: #1f2937;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.top-posts-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.top-post-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.top-post-item:hover {
+  border-color: #4a69bd;
+  background: #f8faff;
+}
+
+.post-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4a69bd 0%, #2a7de1 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.post-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.post-title {
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.post-title a:hover {
+  color: #4a69bd !important;
+  text-decoration: underline !important;
+}
+
+.post-category {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.post-views {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.views-count {
+  font-weight: 600;
+  color: #4a69bd;
+  font-size: 1rem;
+}
+
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #6b7280;
+}
+
+.no-data-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.no-data p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* 영양정보 조회수 모달 추가 스타일 */
+.view-item-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4a69bd 0%, #2a7de1 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
 /* 반응형 디자인 */
+@media (max-width: 1024px) {
+  .nutrition-views-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .top-posts-list {
+    max-height: 400px;
+  }
+}
+
 @media (max-width: 768px) {
   .admin-controls {
     flex-direction: column;
@@ -2244,5 +2392,13 @@ button {
   .modal-content {
     width: 95%;
     margin: 10px;
+  }
+  
+  .stats-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .nutrition-views-container {
+    grid-template-columns: 1fr;
   }
 }

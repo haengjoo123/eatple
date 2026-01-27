@@ -756,9 +756,14 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
                 });
             }
 
-            // 조회수 증가
+            // 조회수 증가 (사용자 정보 포함)
             try {
-                await supabaseDataManager.incrementViewCount(id);
+                const userInfo = {
+                    userId: req.session?.user?.id || null,
+                    ipAddress: req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+                    userAgent: req.headers['user-agent'] || null
+                };
+                await supabaseDataManager.incrementViewCount(id, userInfo);
             } catch (viewError) {
                 console.error('조회수 증가 오류:', viewError);
             }

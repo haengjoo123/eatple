@@ -296,6 +296,10 @@ async function fetchNutritionPostStats() {
         document.getElementById("publishedPosts").textContent = stats.publishedPosts || 0;
         document.getElementById("draftPosts").textContent = stats.draftPosts || 0;
         document.getElementById("inactivePosts").textContent = stats.inactivePosts || 0;
+        document.getElementById("todayNutritionViews").textContent = stats.todayViews || 0;
+        
+        // 조회수 분석 데이터 로드
+        loadNutritionViewsAnalytics();
       } else {
         console.error("영양정보 포스팅 통계 조회 실패:", data.error);
         // 기본값 설정
@@ -323,6 +327,332 @@ function setDefaultStats() {
   document.getElementById("publishedPosts").textContent = "0";
   document.getElementById("draftPosts").textContent = "0";
   document.getElementById("inactivePosts").textContent = "0";
+  document.getElementById("todayNutritionViews").textContent = "0";
+}
+
+// 영양정보 조회수 분석 데이터 로드
+let nutritionViewsChart = null;
+
+async function loadNutritionViewsAnalytics() {
+  try {
+    // 최근 7일 조회수 데이터 가져오기
+    const response = await fetch("/api/admin/manual-posting/views-analytics?days=7", {
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
+        // 차트 렌더링
+        renderNutritionViewsChart(data.chartData);
+        // TOP 10 렌더링
+        renderTopPostsList(data.topPosts);
+      } else {
+        console.error("조회수 분석 데이터 로드 실패:", data.error);
+        showNutritionViewsError("조회수 분석 데이터를 불러올 수 없습니다.");
+      }
+    } else {
+      console.error("조회수 분석 데이터 로드 실패:", response.status);
+      showNutritionViewsError("서버 오류가 발생했습니다.");
+    }
+  } catch (error) {
+    console.error("조회수 분석 데이터 로드 오류:", error);
+    showNutritionViewsError("데이터를 불러오는 중 오류가 발생했습니다.");
+  }
+}
+
+// 영양정보 조회수 차트 렌더링
+function renderNutritionViewsChart(chartData) {
+  const canvas = document.getElementById("nutritionViewsChart");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+
+  // 기존 차트가 있으면 파괴
+  if (nutritionViewsChart) {
+    nutritionViewsChart.destroy();
+  }
+
+  // 날짜 레이블 생성 (최근 7일, 오늘 포함)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const labels = chartData.map(item => {
+    const date = new Date(item.date);
+    const isToday = date.toDateString() === today.toDateString();
+    const label = `${date.getMonth() + 1}/${date.getDate()}`;
+    return isToday ? `${label} (오늘)` : label;
+  });
+
+  // 데이터 생성
+  const viewsData = chartData.map(item => item.views);
+
+  nutritionViewsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '조회수',
+        data: viewsData,
+        borderColor: '#4a69bd',
+        backgroundColor: 'rgba(74, 105, 189, 0.1)',
+        borderWidth: 3,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBackgroundColor: '#4a69bd',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+        },
+        title: {
+          display: true,
+          text: '최근 7일 영양정보 조회수 추이',
+          font: {
+            size: 16,
+            weight: 'bold'
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return '조회수: ' + context.parsed.y + '회';
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1,
+            callback: function(value) {
+              return value + '회';
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// TOP 10 포스팅 목록 렌더링
+function renderTopPostsList(topPosts) {
+  const container = document.getElementById("topPostsList");
+  if (!container) return;
+
+  if (!topPosts || topPosts.length === 0) {
+    container.innerHTML = `
+      <div class="no-data">
+        <div class="no-data-icon">📊</div>
+        <p>조회된 포스팅이 없습니다.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = topPosts.map((post, index) => `
+    <div class="top-post-item">
+      <div class="post-rank">${index + 1}</div>
+      <div class="post-info">
+        <div class="post-title">
+          <a href="nutrition-info-detail.html?id=${post.id}" target="_blank" style="color: #1f2937; text-decoration: none;">
+            ${escapeHtml(post.title)}
+          </a>
+        </div>
+        <div class="post-category">${post.category || '미분류'}</div>
+      </div>
+      <div class="post-views">
+        <div class="views-count">${post.view_count || 0}회</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// 영양정보 조회수 오류 표시
+function showNutritionViewsError(message) {
+  const topPostsList = document.getElementById("topPostsList");
+  if (topPostsList) {
+    topPostsList.innerHTML = `
+      <div class="no-data">
+        <div class="no-data-icon">⚠️</div>
+        <p>${message}</p>
+      </div>
+    `;
+  }
+
+  const canvas = document.getElementById("nutritionViewsChart");
+  if (canvas) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#ef4444";
+    ctx.textAlign = "center";
+    ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+  }
+}
+
+// 영양정보 오늘 조회수 상세 보기
+async function showNutritionViewsDetail() {
+  const modal = document.getElementById("todayNutritionViewsModal");
+  const viewsList = document.getElementById("todayNutritionViewsList");
+
+  // 모달 열기
+  modal.classList.add("active");
+
+  // 로딩 상태 표시
+  viewsList.innerHTML = `
+    <div class="loading-placeholder">
+      <div class="spinner"></div>
+      <p>조회수 데이터를 불러오는 중...</p>
+    </div>
+  `;
+
+  try {
+    // 오늘 조회수 상세 데이터 가져오기
+    const response = await fetch("/api/admin/manual-posting/today-views-detail", {
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
+        renderTodayNutritionViewsDetail(data.data);
+      } else {
+        showNutritionViewsDetailError("데이터를 불러올 수 없습니다: " + data.error);
+      }
+    } else {
+      showNutritionViewsDetailError("서버 오류가 발생했습니다.");
+    }
+  } catch (error) {
+    console.error("오늘 영양정보 조회수 상세 로드 실패:", error);
+    showNutritionViewsDetailError("데이터를 불러오는 중 오류가 발생했습니다.");
+  }
+}
+
+// 오늘 영양정보 조회수 상세 데이터 렌더링
+function renderTodayNutritionViewsDetail(data) {
+  const { totalViews, posts } = data;
+
+  // 요약 정보 업데이트
+  document.getElementById("totalTodayNutritionViews").textContent = totalViews;
+  document.getElementById("viewedPostsCount").textContent = posts.length;
+
+  const viewsList = document.getElementById("todayNutritionViewsList");
+
+  if (posts.length === 0) {
+    viewsList.innerHTML = `
+      <div class="no-views">
+        <div class="no-views-icon">📊</div>
+        <h4>오늘 조회된 포스팅이 없습니다</h4>
+        <p>영양정보 상세 페이지를 방문하면 조회수가 기록됩니다.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // 포스팅별 조회수 목록 렌더링
+  const viewsHtml = posts
+    .map((post, index) => {
+      const percentage =
+        totalViews > 0
+          ? ((post.todayViews / totalViews) * 100).toFixed(1)
+          : 0;
+
+      return `
+      <div class="view-item">
+        <div class="view-item-rank">${index + 1}</div>
+        <div class="view-item-info">
+          <div class="view-item-name">
+            <a href="nutrition-info-detail.html?id=${post.id}" target="_blank" style="color: #1f2937; text-decoration: none;">
+              ${escapeHtml(post.title)}
+            </a>
+          </div>
+          <div class="view-item-category">${post.category || '미분류'}</div>
+        </div>
+        <div class="view-item-stats">
+          <div class="view-count">${post.todayViews}회</div>
+          <div class="view-percentage">${percentage}%</div>
+        </div>
+      </div>
+    `;
+    })
+    .join("");
+
+  viewsList.innerHTML = viewsHtml;
+
+  // 필터링 및 정렬 이벤트 리스너 추가
+  setupNutritionViewsFilters(posts);
+}
+
+// 영양정보 조회수 상세 필터링 및 정렬 설정
+function setupNutritionViewsFilters(originalPosts) {
+  const sortSelect = document.getElementById("nutritionViewsSortBy");
+  const searchInput = document.getElementById("nutritionViewsSearchInput");
+
+  function applyFilters() {
+    let filteredPosts = [...originalPosts];
+
+    // 검색 필터
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    if (searchTerm) {
+      filteredPosts = filteredPosts.filter((post) =>
+        post.title.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // 정렬
+    const sortBy = sortSelect.value;
+    switch (sortBy) {
+      case "views_desc":
+        filteredPosts.sort((a, b) => b.todayViews - a.todayViews);
+        break;
+      case "views_asc":
+        filteredPosts.sort((a, b) => a.todayViews - b.todayViews);
+        break;
+      case "title_asc":
+        filteredPosts.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+    }
+
+    // 필터링된 결과 렌더링
+    const totalViews = originalPosts.reduce(
+      (sum, p) => sum + p.todayViews,
+      0
+    );
+    renderTodayNutritionViewsDetail({ totalViews, posts: filteredPosts });
+  }
+
+  // 이벤트 리스너 추가 (중복 방지를 위해 기존 리스너 제거)
+  sortSelect.removeEventListener("change", applyFilters);
+  searchInput.removeEventListener("input", applyFilters);
+
+  sortSelect.addEventListener("change", applyFilters);
+  searchInput.addEventListener("input", applyFilters);
+}
+
+// 영양정보 조회수 상세 오류 표시
+function showNutritionViewsDetailError(message) {
+  const viewsList = document.getElementById("todayNutritionViewsList");
+  viewsList.innerHTML = `
+    <div class="no-views">
+      <div class="no-views-icon">⚠️</div>
+      <h4>데이터 로드 실패</h4>
+      <p>${message}</p>
+      <button class="admin-action-btn" onclick="showNutritionViewsDetail()" style="margin-top: 15px;">
+        다시 시도
+      </button>
+    </div>
+  `;
 }
 
 // 상품 관리 페이지 열기
@@ -643,6 +973,25 @@ document.addEventListener("DOMContentLoaded", function () {
     modal.addEventListener("click", function (e) {
       if (e.target === modal) {
         modal.classList.remove("active");
+      }
+    });
+  }
+
+  // 영양정보 조회수 모달 닫기
+  const nutritionModal = document.getElementById("todayNutritionViewsModal");
+  const nutritionCloseBtn = document.getElementById("closeTodayNutritionViewsModal");
+
+  if (nutritionCloseBtn) {
+    nutritionCloseBtn.addEventListener("click", function () {
+      nutritionModal.classList.remove("active");
+    });
+  }
+
+  // 모달 배경 클릭으로 닫기
+  if (nutritionModal) {
+    nutritionModal.addEventListener("click", function (e) {
+      if (e.target === nutritionModal) {
+        nutritionModal.classList.remove("active");
       }
     });
   }
