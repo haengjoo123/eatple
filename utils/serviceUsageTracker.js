@@ -94,10 +94,36 @@ function getUserServiceUsage(userId) {
 }
 
 // 모든 사용자의 서비스 이용 통계 조회
-function getAllUsersServiceUsage() {
+async function getAllUsersServiceUsage() {
     const users = readUsers();
+    
+    // Supabase에서 실제 사용자 수 가져오기
+    let totalUsersFromSupabase = users.length; // 기본값은 로컬 파일 기준
+    
+    try {
+        const { createClient } = require('@supabase/supabase-js');
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_KEY;
+        
+        if (supabaseUrl && supabaseKey) {
+            const supabase = createClient(supabaseUrl, supabaseKey);
+            const { count, error } = await supabase
+                .from('users')
+                .select('*', { count: 'exact', head: true });
+            
+            if (!error && count !== null) {
+                totalUsersFromSupabase = count;
+                console.log('Supabase 사용자 수:', count);
+            } else {
+                console.warn('Supabase 사용자 수 조회 실패, 로컬 파일 사용:', error);
+            }
+        }
+    } catch (error) {
+        console.warn('Supabase 연동 오류, 로컬 파일 사용:', error.message);
+    }
+    
     const stats = {
-        totalUsers: users.length,
+        totalUsers: totalUsersFromSupabase,
         serviceUsage: {
             mealPlan: 0,
             restaurantRecommendation: 0,

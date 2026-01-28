@@ -24,9 +24,9 @@ router.get('/user/:userId', (req, res) => {
 });
 
 // 전체 서비스 이용 통계 조회 (관리자용)
-router.get('/all', (req, res) => {
+router.get('/all', async (req, res) => {
     try {
-        const stats = getAllUsersServiceUsage();
+        const stats = await getAllUsersServiceUsage();
         
         res.json({
             success: true,

@@ -9184,7 +9184,8 @@ body.nutrition-info-page .container {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 5px;
+  margin-top: 12px;
+  margin-bottom: 0;
 }
 
 .nutrition-tag {
