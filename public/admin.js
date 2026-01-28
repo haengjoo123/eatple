@@ -85,10 +85,19 @@ function initializeAdminPage() {
 
 async function fetchUsers() {
   try {
-    const res = await fetch("/api/admin/users");
+    const res = await fetch("/api/auth/users", {
+      credentials: "include"
+    });
+    
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
     const users = await res.json();
+    console.log("가입자 목록 조회 성공:", users.length, "명");
     renderUsers(users);
   } catch (e) {
+    console.error("가입자 목록 조회 오류:", e);
     document.getElementById("adminMsg").textContent =
       "가입자 목록을 불러오지 못했습니다.";
   }
@@ -153,14 +162,22 @@ function renderUsers(users) {
     btn.addEventListener("click", function () {
       const userId = this.getAttribute("data-id");
       if (confirm("정말로 이 계정을 삭제하시겠습니까?")) {
-        fetch(`/api/admin/users/${userId}`, { method: "DELETE" })
+        fetch(`/api/auth/users/${userId}`, { 
+          method: "DELETE",
+          credentials: "include"
+        })
           .then((res) => res.json())
           .then((result) => {
             if (result.success) {
+              alert("계정이 삭제되었습니다.");
               fetchUsers();
             } else {
               alert("삭제 실패: " + (result.error || "알 수 없는 오류"));
             }
+          })
+          .catch((error) => {
+            console.error("사용자 삭제 오류:", error);
+            alert("사용자 삭제 중 오류가 발생했습니다.");
           });
       }
     });

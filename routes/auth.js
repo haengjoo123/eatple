@@ -1272,70 +1272,121 @@ router.get("/check-username", (req, res) => {
   res.json({ exists });
 });
 
-// 가입자 목록 반환 (비밀번호 제외)
-router.get("/users", (req, res) => {
-  const rawUsers = readUsers();
-  // console.log(
-  //   "Raw users data:",
-  //   rawUsers.map((u) => ({
-  //     id: u.id,
-  //     authType: u.authType,
-  //     kakaoId: !!u.kakaoId,
-  //     googleId: !!u.googleId,
-  //     naverId: !!u.naverId,
-  //     username: !!u.username,
-  //   }))
-  // );
+// 가입자 목록 반환 (비밀번호 제외) - Supabase 연동
+router.get("/users", async (req, res) => {
+  try {
+    // Supabase users 테이블에서 사용자 목록 조회
+    const { data: supabaseUsers, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  const users = rawUsers.map(
-    ({ password, googleId, kakaoId, naverId, ...rest }) => {
-      // console.log(
-      //   `Processing user ${rest.id}: authType=${
-      //     rest.authType
-      //   }, kakaoId=${!!kakaoId}, googleId=${!!googleId}, naverId=${!!naverId}, username=${!!rest.username}`
-      // );
-
-      // 기존 사용자 호환성: authType이 없는 경우 추가
-      if (!rest.authType) {
-        if (rest.username) {
-          rest.authType = "local"; // 일반 로그인 사용자
-        } else if (googleId) {
-          rest.authType = "google"; // 구글 사용자
-        } else if (kakaoId) {
-          rest.authType = "kakao"; // 카카오 사용자
-        } else if (naverId) {
-          rest.authType = "naver"; // 네이버 사용자
-        } else if (rest.email && !rest.username) {
-          rest.authType = "google"; // 이메일만 있고 username이 없으면 구글 사용자로 추정
-        } else {
-          rest.authType = "unknown"; // 알 수 없는 경우
+    if (error) {
+      console.error('Supabase users 조회 오류:', error);
+      // Supabase 조회 실패 시 로컬 JSON 파일에서 읽기
+      const rawUsers = readUsers();
+      const users = rawUsers.map(
+        ({ password, googleId, kakaoId, naverId, ...rest }) => {
+          // 기존 사용자 호환성: authType이 없는 경우 추가
+          if (!rest.authType) {
+            if (rest.username) {
+              rest.authType = "local";
+            } else if (googleId) {
+              rest.authType = "google";
+            } else if (kakaoId) {
+              rest.authType = "kakao";
+            } else if (naverId) {
+              rest.authType = "naver";
+            } else if (rest.email && !rest.username) {
+              rest.authType = "google";
+            } else {
+              rest.authType = "unknown";
+            }
+          }
+          return rest;
         }
-      }
-
-      return rest;
+      );
+      return res.json(users);
     }
-  );
 
-  // console.log(
-  //   "Final users data:",
-  //   users.map((u) => ({ id: u.id, authType: u.authType, name: u.name }))
-  // );
-  res.json(users);
+    // Supabase 데이터를 프론트엔드 형식으로 변환
+    const users = supabaseUsers.map(user => ({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      authType: user.auth_type || 'email',
+      createdAt: user.created_at,
+      picture: user.picture,
+      username: user.username,
+      role: user.role,
+      isAdmin: user.role === 'admin'
+    }));
+
+    res.json(users);
+  } catch (err) {
+    console.error('사용자 목록 조회 오류:', err);
+    // 오류 발생 시 로컬 JSON 파일에서 읽기
+    const rawUsers = readUsers();
+    const users = rawUsers.map(
+      ({ password, googleId, kakaoId, naverId, ...rest }) => {
+        if (!rest.authType) {
+          if (rest.username) {
+            rest.authType = "local";
+          } else if (googleId) {
+            rest.authType = "google";
+          } else if (kakaoId) {
+            rest.authType = "kakao";
+          } else if (naverId) {
+            rest.authType = "naver";
+          } else if (rest.email && !rest.username) {
+            rest.authType = "google";
+          } else {
+            rest.authType = "unknown";
+          }
+        }
+        return rest;
+      }
+    );
+    res.json(users);
+  }
 });
 
-// 관리자: 사용자 삭제
-router.delete("/users/:id", (req, res) => {
-  const { id } = req.params;
-  let users = readUsers();
-  const prevLen = users.length;
-  users = users.filter((u) => u.id !== id);
-  if (users.length === prevLen) {
-    return res
-      .status(404)
-      .json({ success: false, error: "사용자를 찾을 수 없습니다." });
+// 관리자: 사용자 삭제 - Supabase 연동
+router.delete("/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Supabase users 테이블에서 사용자 삭제
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Supabase users 삭제 오류:', error);
+      // Supabase 삭제 실패 시 로컬 JSON 파일에서 삭제
+      let users = readUsers();
+      const prevLen = users.length;
+      users = users.filter((u) => u.id !== id);
+      if (users.length === prevLen) {
+        return res
+          .status(404)
+          .json({ success: false, error: "사용자를 찾을 수 없습니다." });
+      }
+      writeUsers(users);
+      return res.json({ success: true });
+    }
+
+    // 로컬 JSON 파일에서도 삭제
+    let users = readUsers();
+    users = users.filter((u) => u.id !== id);
+    writeUsers(users);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('사용자 삭제 오류:', err);
+    res.status(500).json({ success: false, error: "사용자 삭제 중 오류가 발생했습니다." });
   }
-  writeUsers(users);
-  res.json({ success: true });
 });
 
 // 비밀번호 변경
