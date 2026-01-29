@@ -8,8 +8,11 @@
 </head>
 <body>
   <div class="site-brand-fixed">
-    <a href="index.html">
+    <a href="/">
+      <picture>
+      <source srcset="images/eatplelogo.webp" type="image/webp">
       <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+    </picture>
     </a>
   </div>
   <div class="container" style="max-width:600px;margin:40px auto;">
@@ -17,7 +20,7 @@
     <div class="settings-section">
       <h2>계정 설정</h2>
       <div class="settings-group">
-        <button class="settings-btn" onclick="location.href='change-password.html'">비밀번호 변경</button>
+        <button class="settings-btn" onclick="location.href='change-password'">비밀번호 변경</button>
         <button class="settings-btn" onclick="if(confirm('정말로 탈퇴하시겠습니까?')) { /* 탈퇴 로직 */ }">회원 탈퇴</button>
       </div>
     </div>

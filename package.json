@@ -6,8 +6,8 @@
     "scripts": {
         "start": "node --expose-gc server.js",
         "test": "jest",
-    "migrate-supabase-to-local": "node scripts/migrate-supabase-to-local.js",
-    "migrate-inline-images-to-urls": "node scripts/migrate-inline-images-to-urls.js"
+        "migrate-supabase-to-local": "node scripts/migrate-supabase-to-local.js",
+        "migrate-inline-images-to-urls": "node scripts/migrate-inline-images-to-urls.js"
     },
     "dependencies": {
         "@google/generative-ai": "^0.24.1",

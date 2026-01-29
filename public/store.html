@@ -8,14 +8,14 @@
     <!-- SEO 메타 태그 -->
     <meta name="description" content="건강한 선택의 시작, 잇플 스토어. 엄선된 건강기능식품과 영양제를 브랜드별 무료배송 혜택과 함께 만나보세요. 30,000원 이상 구매 시 무료배송!" />
     <meta name="keywords" content="건강기능식품, 영양제 쇼핑몰, 건강식품 구매, 영양제 구매, 무료배송, 건강 쇼핑몰" />
-    <link rel="canonical" href="https://www.eatple.net/store.html" />
+    <link rel="canonical" href="https://www.eatple.net/store" />
     
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="잇플 스토어 - 건강한 선택의 시작" />
     <meta property="og:description" content="엄선된 건강기능식품과 영양제를 브랜드별 무료배송 혜택과 함께 만나보세요." />
     <meta property="og:image" content="https://www.eatple.net/images/eatple_logo.png" />
-    <meta property="og:url" content="https://www.eatple.net/store.html" />
+    <meta property="og:url" content="https://www.eatple.net/store" />
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -38,7 +38,7 @@
       // 스토어 접근 차단 - 재활성화시 이 스크립트 블록 전체 삭제
       document.addEventListener('DOMContentLoaded', function() {
         alert('잇플스토어는 현재 일시적으로 이용할 수 없습니다.\n빠른 시일 내에 재오픈하겠습니다.\n\n잇플 메인 페이지로 이동합니다.');
-        window.location.href = 'index.html';
+        window.location.href = "/";
       });
     </script>
   </head>
@@ -48,10 +48,13 @@
       <div class="container">
         <div class="header-top-content">
           <div class="header-left">
-            <a href="store.html" class="logo">
-              <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+            <a href="store" class="logo">
+              <picture>
+      <source srcset="images/eatplelogo.webp" type="image/webp">
+      <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+    </picture>
             </a>
-            <a href="index.html" class="home-link" aria-label="잇플 메인으로 이동">잇플 메인으로 이동</a>
+            <a href="/" class="home-link" aria-label="잇플 메인으로 이동">잇플 메인으로 이동</a>
           </div>
 
           <div class="header-center">
@@ -81,8 +84,8 @@
           <div class="header-right">
             <div class="header-right-section">
               <div class="header-links">
-                <a href="login.html" class="header-link">로그인</a>
-                <a href="signup.html" class="header-link">회원가입</a>
+                <a href="login" class="header-link">로그인</a>
+                <a href="signup" class="header-link">회원가입</a>
                 <a href="#support" class="header-link">고객센터</a>
               </div>
               <div class="header-actions">
@@ -218,7 +221,7 @@
                 <a class="nav-link" href="collection-groups.html?group=sale">특가상품</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="event.html">이벤트</a>
+                <a class="nav-link" href="event">이벤트</a>
               </li>
             </ul>
             <div class="search-container-nav">
@@ -707,8 +710,11 @@
         <div class="store-footer-content">
           <div class="store-footer-brand">
             <div class="store-brand-logo">
-              <a href="index.html">
-                <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+              <a href="/">
+                <picture>
+      <source srcset="images/eatplelogo.webp" type="image/webp">
+      <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+    </picture>
               </a>
             </div>
             <p>건강한 식생활을 위한 종합 플랫폼</p>
@@ -720,7 +726,7 @@
                 <li><a href="collection-groups.html?group=best">베스트</a></li>
                 <li><a href="collection-groups.html?group=new">신상품</a></li>
                 <li><a href="collection-groups.html?group=sale">특가상품</a></li>
-                <li><a href="event.html">이벤트</a></li>
+                <li><a href="event">이벤트</a></li>
               </ul>
             </div>
           </div>
@@ -746,7 +752,7 @@
     <nav class="store-footer-nav-mobile">
       <ul>
         <li class="store-footer-nav-item" id="storeNavHome">
-          <a href="store.html">
+          <a href="store">
             <span class="store-footer-nav-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>

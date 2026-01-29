@@ -137,6 +137,37 @@ app.use(session(sessionConfig));
 //   });
 // }
 
+// URL 리라이트 미들웨어: .html 확장자 제거
+// 1. .html로 끝나는 URL을 확장자 없는 URL로 301 리다이렉트
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html')) {
+    const newPath = req.path.slice(0, -5); // .html 제거
+    return res.redirect(301, newPath + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : ''));
+  }
+  next();
+});
+
+// 2. 확장자 없는 URL 요청 시 .html 파일 제공
+app.use((req, res, next) => {
+  // API 라우트나 정적 파일(이미지, CSS, JS)은 제외
+  if (req.path.startsWith('/api/') || 
+      req.path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|webp|json|xml|txt|map)$/)) {
+    return next();
+  }
+  
+  // 확장자가 없는 경로에 대해 .html 파일 존재 여부 확인
+  if (!req.path.includes('.')) {
+    const fs = require('fs');
+    const htmlPath = path.join(__dirname, 'public', req.path + '.html');
+    
+    if (fs.existsSync(htmlPath)) {
+      return res.sendFile(htmlPath);
+    }
+  }
+  
+  next();
+});
+
 // 정적 파일 제공 (HTML, CSS, JS) - 캐싱 적용
 app.use(
   express.static(path.join(__dirname, "public"), {

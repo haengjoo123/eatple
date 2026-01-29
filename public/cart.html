@@ -8,7 +8,7 @@
     <!-- SEO 메타 태그 -->
     <meta name="description" content="잇플 스토어 장바구니. 선택한 건강기능식품과 영양제를 확인하고 주문하세요." />
     <meta name="robots" content="noindex, nofollow" />
-    <link rel="canonical" href="https://www.eatple.net/cart.html" />
+    <link rel="canonical" href="https://www.eatple.net/cart" />
     
     <link rel="stylesheet" href="store.css" />
     <link rel="stylesheet" href="cart.css" />
@@ -23,8 +23,11 @@
       <div class="container">
         <div class="header-top-content">
           <div class="header-left">
-            <a href="store.html" class="logo">
-              <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+            <a href="store" class="logo">
+              <picture>
+      <source srcset="images/eatplelogo.webp" type="image/webp">
+      <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+    </picture>
             </a>
           </div>
           <div class="header-center">
@@ -53,8 +56,8 @@
           <div class="header-right">
             <div class="header-right-section">
               <div class="header-links">
-                <a href="login.html" class="header-link">로그인</a>
-                <a href="signup.html" class="header-link">회원가입</a>
+                <a href="login" class="header-link">로그인</a>
+                <a href="signup" class="header-link">회원가입</a>
                 <a href="#support" class="header-link">고객센터</a>
               </div>
               <div class="header-actions">
@@ -71,7 +74,7 @@
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
                 </button>
-                <button class="action-btn cart-btn" onclick="location.href='store.html'">
+                <button class="action-btn cart-btn" onclick="location.href='store'">
                   <svg
                     width="20"
                     height="20"
@@ -102,7 +105,7 @@
         <div class="page-header">
           <h1 class="page-title">장바구니</h1>
           <div class="breadcrumb">
-            <a href="store.html">스토어</a>
+            <a href="store">스토어</a>
             <span class="breadcrumb-separator">></span>
             <span class="breadcrumb-current">장바구니</span>
           </div>
@@ -133,7 +136,7 @@
                 <div class="empty-cart-icon">🛒</div>
                 <h3>장바구니가 비어있습니다</h3>
                 <p>원하는 상품을 장바구니에 담아보세요</p>
-                <a href="store.html" class="continue-shopping-btn"
+                <a href="store" class="continue-shopping-btn"
                   >쇼핑 계속하기</a
                 >
               </div>

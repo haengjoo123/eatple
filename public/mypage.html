@@ -8,15 +8,18 @@
     <!-- SEO 메타 태그 -->
     <meta name="description" content="잇플 마이페이지. 내 프로필, 저장된 식단, 영양제, 포인트 내역을 관리하세요." />
     <meta name="robots" content="noindex, nofollow" />
-    <link rel="canonical" href="https://www.eatple.net/mypage.html" />
+    <link rel="canonical" href="https://www.eatple.net/mypage" />
     
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="mypage.css" />
   </head>
   <body class="mypage-page">
     <div class="site-brand-fixed">
-    <a href="index.html">
+    <a href="/">
+      <picture>
+      <source srcset="images/eatplelogo.webp" type="image/webp">
       <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+    </picture>
     </a>
   </div>
     <div class="auth-links">
@@ -27,7 +30,7 @@
       <button
         id="settingsBtn"
         title="설정"
-        onclick="window.location.href='settings.html'"
+        onclick="window.location.href='settings'"
       >
         <span id="settingsText">계정관리 및 설정</span>
       </button>
@@ -76,7 +79,7 @@
             <button
               type="button"
               class="profile-activity-btn"
-              onclick="window.location.href='profile.html'"
+              onclick="window.location.href = "profile""
             >
               <span class="btn-icon">✏️</span>
               프로필 수정하기
@@ -122,7 +125,7 @@
             <button
               type="button"
               class="nutrition-activity-btn"
-              onclick="window.location.href='nutrition.html'"
+              onclick="window.location.href='nutrition'"
             >
               <span class="btn-icon">📊</span>
               영양정보 보러가기
@@ -198,7 +201,7 @@
             <button
               type="button"
               class="points-activity-btn"
-              onclick="window.location.href='mini-games.html'"
+              onclick="window.location.href='mini-games'"
             >
               <span class="btn-icon">🎮</span>
               미니게임 하러가기
@@ -248,7 +251,7 @@
             <button
               type="button"
               class="meal-activity-btn"
-              onclick="window.location.href='meal-plan.html'"
+              onclick="window.location.href='meal-plan'"
             >
               <span class="btn-icon">🍽️</span>
               식단 계획하기
@@ -294,7 +297,7 @@
             <button
               type="button"
               class="supplement-activity-btn"
-              onclick="window.location.href='supplement.html'"
+              onclick="window.location.href='supplement'"
             >
               <span class="btn-icon">💊</span>
               영양제 추천받기
@@ -446,14 +449,14 @@
             
             if (isAdminCheck) {
               adminButton =
-                '<a href="admin.html" class="main-nav-button" style="background-color: #dc3545; color: white;">관리자</a>';
+                '<a href="admin" class="main-nav-button" style="background-color: #dc3545; color: white;">관리자</a>';
               console.log("관리자 버튼 추가됨");
             } else {
               console.log("관리자 권한 없음");
             }
 
             navAuth.innerHTML = `
-                    <a href="mypage.html" class="main-nav-button">마이페이지</a>
+                    <a href="mypage" class="main-nav-button">마이페이지</a>
                     ${adminButton}
                     <button class="main-nav-button" onclick="logout()">로그아웃</button>
                 `;
@@ -462,8 +465,8 @@
             localStorage.removeItem("token");
             localStorage.removeItem("user");
             navAuth.innerHTML = `
-                        <a href="login.html" class="main-nav-button">로그인</a>
-                        <a href="signup.html" class="main-nav-button primary">회원가입</a>
+                        <a href="login" class="main-nav-button">로그인</a>
+                        <a href="signup" class="main-nav-button primary">회원가입</a>
                     `;
           }
         } catch (error) {
@@ -472,8 +475,8 @@
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           navAuth.innerHTML = `
-                    <a href="login.html" class="main-nav-button">로그인</a>
-                    <a href="signup.html" class="main-nav-button primary">회원가입</a>
+                    <a href="login" class="main-nav-button">로그인</a>
+                    <a href="signup" class="main-nav-button primary">회원가입</a>
                 `;
         }
       }
@@ -507,14 +510,14 @@
 
           if (!data.loggedIn) {
             alert("로그인이 필요한 서비스입니다.");
-            window.location.href = "login.html";
+            window.location.href = "login";
             return false;
           }
           return true;
         } catch (error) {
           console.error("인증 상태 확인 오류:", error);
           alert("로그인 상태를 확인할 수 없습니다. 다시 시도해주세요.");
-          window.location.href = "login.html";
+          window.location.href = "login";
           return false;
         }
       }
@@ -526,18 +529,18 @@
         var profileCard = document.getElementById("mypageProfileCard");
         if (profileCard) {
           profileCard.addEventListener("click", function () {
-            window.location.href = "profile.html";
+            window.location.href = "profile";
           });
           profileCard.addEventListener("keydown", function (e) {
             if (e.key === "Enter" || e.key === " ") {
-              window.location.href = "profile.html";
+              window.location.href = "profile";
             }
           });
         }
         var settingsBtn = document.getElementById("settingsBtn");
         if (settingsBtn) {
           settingsBtn.addEventListener("click", function () {
-            window.location.href = "settings.html";
+            window.location.href = "settings";
           });
         }
 
@@ -737,7 +740,7 @@
                         }</div>
                         <div style="color:#475569;">배송 완료 상품</div>
                       </div>
-                      <button style="padding:8px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;" onclick="window.location.href='cart.html'">리뷰 작성</button>
+                      <button style="padding:8px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;" onclick="window.location.href='cart'">리뷰 작성</button>
                     </div>`
                       )
                       .join("");
@@ -851,7 +854,7 @@
                     console.log("재료 추출 실패:", e);
                   }
 
-                  return `<div class="mini-meal-card" tabindex="0" onclick="window.location.href='saved-meals.html'">
+                  return `<div class="mini-meal-card" tabindex="0" onclick="window.location.href='saved-meals'">
                 <div class="mini-meal-title"><span class="mini-meal-emoji">${emoji}</span>${meal.title}</div>
                 <div class="mini-meal-ingredient">${mainIngredient}</div>
                 <div class="mini-meal-date">${savedDate}</div>
@@ -919,7 +922,7 @@
                           nutrition.createdAt || nutrition.publishedAt
                         ).toLocaleDateString("ko-KR");
 
-                        return `<div class="mini-nutrition-card" tabindex="0" onclick="window.location.href='bookmarked-nutrition.html'">
+                        return `<div class="mini-nutrition-card" tabindex="0" onclick="window.location.href='bookmarked-nutrition'">
                       <div class="mini-nutrition-title"><span class="mini-nutrition-emoji">${emoji}</span>${nutrition.title}</div>
                       <div class="mini-nutrition-category">${nutrition.category}</div>
                       <div class="mini-nutrition-date">${savedDate}</div>
@@ -974,7 +977,7 @@
                     supplement.savedAt
                   ).toLocaleDateString("ko-KR");
 
-                  return `<div class="mini-supplement-card" tabindex="0" onclick="window.location.href='saved-supplements.html'">
+                  return `<div class="mini-supplement-card" tabindex="0" onclick="window.location.href='saved-supplements'">
                 <div class="mini-supplement-title"><span class="mini-supplement-emoji">${emoji}</span>${supplement.name}</div>
                 <div class="mini-supplement-category">${supplement.category}</div>
                 <div class="mini-supplement-date">${savedDate}</div>
@@ -988,11 +991,11 @@
         var savedNutritionCard = document.getElementById("mypageNutritionCard");
         if (savedNutritionCard) {
           savedNutritionCard.addEventListener("click", function () {
-            window.location.href = "bookmarked-nutrition.html";
+            window.location.href = "bookmarked-nutrition";
           });
           savedNutritionCard.addEventListener("keydown", function (e) {
             if (e.key === "Enter" || e.key === " ") {
-              window.location.href = "bookmarked-nutrition.html";
+              window.location.href = "bookmarked-nutrition";
             }
           });
         }
@@ -1003,11 +1006,11 @@
         );
         if (savedSupplementsCard) {
           savedSupplementsCard.addEventListener("click", function () {
-            window.location.href = "saved-supplements.html";
+            window.location.href = "saved-supplements";
           });
           savedSupplementsCard.addEventListener("keydown", function (e) {
             if (e.key === "Enter" || e.key === " ") {
-              window.location.href = "saved-supplements.html";
+              window.location.href = "saved-supplements";
             }
           });
         }
@@ -1016,11 +1019,11 @@
         var savedMealsCard = document.getElementById("mypageSavedMealsCard");
         if (savedMealsCard) {
           savedMealsCard.addEventListener("click", function () {
-            window.location.href = "saved-meals.html";
+            window.location.href = "saved-meals";
           });
           savedMealsCard.addEventListener("keydown", function (e) {
             if (e.key === "Enter" || e.key === " ") {
-              window.location.href = "saved-meals.html";
+              window.location.href = "saved-meals";
             }
           });
         }
@@ -1064,11 +1067,11 @@
         var pointsCard = document.getElementById("mypagePointsCard");
         if (pointsCard) {
           pointsCard.addEventListener("click", function () {
-            window.location.href = "mini-games.html";
+            window.location.href = "mini-games";
           });
           pointsCard.addEventListener("keydown", function (e) {
             if (e.key === "Enter" || e.key === " ") {
-              window.location.href = "mini-games.html";
+              window.location.href = "mini-games";
             }
           });
         }
@@ -1153,7 +1156,7 @@
     <nav class="footer-nav-mobile">
       <ul>
         <li class="footer-nav-item" id="footerNavHome">
-          <a href="index.html">
+          <a href="/">
             <span class="footer-nav-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -1164,7 +1167,7 @@
           </a>
         </li>
         <li class="footer-nav-item" id="footerNavNutrition">
-          <a href="nutrition-info.html">
+          <a href="nutrition-info">
             <span class="footer-nav-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -1194,7 +1197,7 @@
         <!-- 잇플스토어 일시 비활성화 - 재활성화시 주석 해제 -->
         <!--
         <li class="footer-nav-item" id="footerNavStore">
-          <a href="store.html">
+          <a href="store">
             <span class="footer-nav-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="9" cy="21" r="1"></circle>
@@ -1207,7 +1210,7 @@
         </li>
         -->
         <li class="footer-nav-item" id="footerNavMy">
-          <a href="mypage.html" class="active">
+          <a href="mypage" class="active">
             <span class="footer-nav-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -1224,9 +1227,9 @@
     <div id="aiFeatureModal" class="ai-feature-modal">
       <div class="ai-feature-modal-content">
         <ul>
-          <li><a href="meal-plan.html">뭐 해먹지?</a></li>
-          <li><a href="supplements.html">나만의 영양제</a></li>
-          <li><a href="restaurant-recommendation.html">오늘의 맛집</a></li>
+          <li><a href="meal-plan">뭐 해먹지?</a></li>
+          <li><a href="supplements">나만의 영양제</a></li>
+          <li><a href="restaurant-recommendation">오늘의 맛집</a></li>
         </ul>
       </div>
     </div>

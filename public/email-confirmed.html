@@ -117,8 +117,11 @@
 </head>
 <body>
     <div class="site-brand-fixed">
-      <a href="index.html">
-        <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+      <a href="/">
+        <picture>
+      <source srcset="images/eatplelogo.webp" type="image/webp">
+      <img src="images/eatplelogo.png" alt="잇플" class="logo-image">
+    </picture>
       </a>
     </div>
     
@@ -135,8 +138,8 @@
         </p>
         
         <div class="confirmation-actions">
-            <a href="login.html" class="btn-primary">로그인하기</a>
-            <a href="index.html" class="btn-secondary">홈으로 가기</a>
+            <a href="login" class="btn-primary">로그인하기</a>
+            <a href="/" class="btn-secondary">홈으로 가기</a>
         </div>
         
         <div id="errorContainer" class="error-container" style="display: none;">
@@ -169,8 +172,8 @@
             
             // 액션 버튼 변경
             document.querySelector('.confirmation-actions').innerHTML = `
-                <a href="signup.html" class="btn-primary">다시 회원가입</a>
-                <a href="login.html" class="btn-secondary">로그인 시도</a>
+                <a href="signup" class="btn-primary">다시 회원가입</a>
+                <a href="login" class="btn-secondary">로그인 시도</a>
             `;
         }
         
