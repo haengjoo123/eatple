@@ -2900,8 +2900,14 @@ body.mypage-page .main-nav {
   transition: color 0.3s ease;
 }
 
+.nav-brand picture {
+  display: flex;
+  align-items: center;
+}
+
 .nav-brand .logo-image {
   height: 36px;
+  display: block;
 }
 
 .nav-brand a:hover {
