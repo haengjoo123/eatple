@@ -4,7 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 맞춤 식단 플래너</title>
+    <title>AI 맞춤 식단 플래너 - 잇플 | 무료 식단 추천</title>
+    
+    <!-- SEO 메타 태그 -->
+    <meta name="description" content="AI가 분석한 나만의 맞춤 식단 플래너. 건강 목표, 알레르기, 식습관을 고려한 개인화된 식단을 무료로 받아보세요. 영양 정보와 조리법까지 한 번에!" />
+    <meta name="keywords" content="AI 식단, 맞춤 식단, 식단 플래너, 건강 식단, 다이어트 식단, 영양 식단, 무료 식단 추천" />
+    <link rel="canonical" href="https://www.eatple.net/meal-plan.html" />
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AI 맞춤 식단 플래너 - 잇플" />
+    <meta property="og:description" content="AI가 분석한 나만의 맞춤 식단 플래너. 건강 목표, 알레르기, 식습관을 고려한 개인화된 식단을 무료로 받아보세요." />
+    <meta property="og:image" content="https://www.eatple.net/images/eatple_logo.png" />
+    <meta property="og:url" content="https://www.eatple.net/meal-plan.html" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AI 맞춤 식단 플래너 - 잇플" />
+    <meta name="twitter:description" content="AI가 분석한 나만의 맞춤 식단. 건강 목표에 맞는 개인화된 식단을 무료로 받아보세요." />
+    
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -193,7 +211,7 @@
         </div>
 
         <div id="profile" class="section">
-            <h1>내 정보 입력</h1>
+            <h2>내 정보 입력</h2>
             <div class="progress-container">
                 <div id="profileProgressBar" class="progress-bar"></div>
                 <div class="progress-step active" data-step="1" data-text="기본정보"></div>
@@ -468,13 +486,13 @@
         </div>
 
         <div id="meal_form" class="section">
-            <h1>식단 구성</h1>
+            <h2>식단 구성</h2>
             <button onclick="showSection('profile')" class="profile-edit-btn">프로필 수정하기</button>
             <div id="dynamicMealForm"></div>
         </div>
 
         <div id="meal_plan" class="section">
-            <h1>당신의 맞춤 식단</h1>
+            <h2>당신의 맞춤 식단</h2>
             <div id="meal_plan_content"></div>
             <button onclick="showSection('home')" class="back-button">홈으로 돌아가기</button>
         </div>
@@ -911,6 +929,27 @@
       document.addEventListener("DOMContentLoaded", function () {
         checkAuthStatus();
       });
+    </script>
+    
+    <!-- 브레드크럼 Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "홈",
+          "item": "https://www.eatple.net/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "AI 맞춤 식단 플래너"
+        }
+      ]
+    }
     </script>
 </body>
 

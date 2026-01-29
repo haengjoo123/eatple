@@ -3,7 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>음식 영양성분 검색 - 잇플</title>
+    <title>음식 영양성분 검색 - 잇플 | 식품 영양 정보 데이터베이스</title>
+    
+    <!-- SEO 메타 태그 -->
+    <meta name="description" content="42,000개 이상의 식품 영양성분 데이터베이스. 음식의 칼로리, 단백질, 탄수화물, 지방 등 상세한 영양 정보를 빠르게 검색하세요." />
+    <meta name="keywords" content="음식 영양성분, 칼로리 검색, 영양 정보, 식품 데이터베이스, 영양성분표, 식품 영양" />
+    <link rel="canonical" href="https://www.eatple.net/food-nutrition-search.html" />
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="음식 영양성분 검색 - 잇플" />
+    <meta property="og:description" content="42,000개 이상의 식품 영양성분 데이터베이스. 음식의 칼로리와 영양 정보를 빠르게 검색하세요." />
+    <meta property="og:image" content="https://www.eatple.net/images/eatple_logo.png" />
+    <meta property="og:url" content="https://www.eatple.net/food-nutrition-search.html" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="음식 영양성분 검색 - 잇플" />
+    <meta name="twitter:description" content="42,000개 이상의 식품 영양성분 데이터베이스" />
+    
     <link rel="stylesheet" href="style.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap"
@@ -194,5 +212,32 @@
 
     <script src="script.js"></script>
     <script src="food-nutrition-search.js"></script>
+    
+    <!-- 브레드크럼 Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "홈",
+          "item": "https://www.eatple.net/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "AI 성분 분석",
+          "item": "https://www.eatple.net/ingredient-analyzer.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "음식 영양성분 검색"
+        }
+      ]
+    }
+    </script>
   </body>
 </html>

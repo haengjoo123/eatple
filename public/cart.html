@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>장바구니 - 잇플 스토어</title>
+    
+    <!-- SEO 메타 태그 -->
+    <meta name="description" content="잇플 스토어 장바구니. 선택한 건강기능식품과 영양제를 확인하고 주문하세요." />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href="https://www.eatple.net/cart.html" />
+    
     <link rel="stylesheet" href="store.css" />
     <link rel="stylesheet" href="cart.css" />
     <link
@@ -360,5 +366,32 @@
 
     <script src="header-auth.js"></script>
     <script src="cart.js"></script>
+    
+    <!-- 브레드크럼 Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "홈",
+          "item": "https://www.eatple.net/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "잇플 스토어",
+          "item": "https://www.eatple.net/store.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "장바구니"
+        }
+      ]
+    }
+    </script>
   </body>
 </html>

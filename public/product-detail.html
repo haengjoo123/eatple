@@ -578,5 +578,32 @@
 
     <script src="header-auth.js"></script>
     <script src="product-detail.js"></script>
+    
+    <!-- 브레드크럼 Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "홈",
+          "item": "https://www.eatple.net/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "잇플 스토어",
+          "item": "https://www.eatple.net/store.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "제품 상세"
+        }
+      ]
+    }
+    </script>
   </body>
 </html>
