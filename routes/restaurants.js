@@ -8,18 +8,21 @@ const {
   SERVICE_TYPES,
 } = require("../utils/serviceUsageTracker");
 
+// AI 요청 큐 모듈
+const aiRequestQueue = require("../utils/aiRequestQueue");
+
 // 카카오 REST API 키
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY || "test_key";
 
 // Gemini API 설정
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
 
 // Google Places API 설정
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 
-// Gemini API 호출 함수 (Google Search 도구 포함)
-async function callGeminiAPI(prompt) {
+// Gemini API 호출 함수 (큐 적용)
+async function callGeminiAPI(prompt, metadata = {}) {
   try {
     console.log("🤖 Gemini API 호출 시작...");
 
@@ -29,24 +32,30 @@ async function callGeminiAPI(prompt) {
       throw new Error("Gemini API 키가 설정되지 않았습니다.");
     }
 
-    const response = await axios.post(
-      GEMINI_API_URL,
-      {
-        contents: [
+    // AI 요청 큐에 추가하여 순차 처리
+    const response = await aiRequestQueue.add(
+      async () => {
+        return await axios.post(
+          GEMINI_API_URL,
           {
-            parts: [
+            contents: [
               {
-                text: prompt,
+                parts: [
+                  {
+                    text: prompt,
+                  },
+                ],
               },
             ],
+            // Google Search 도구 제거 - 직접 API로 데이터 수집
           },
-        ],
-        // Google Search 도구 제거 - 직접 API로 데이터 수집
+          {
+            headers: { "Content-Type": "application/json" },
+            timeout: 200000, // 타임아웃 단축 (Google Search 불필요)
+          }
+        );
       },
-      {
-        headers: { "Content-Type": "application/json" },
-        timeout: 200000, // 타임아웃 단축 (Google Search 불필요)
-      }
+      { type: 'restaurant-recommendation', ...metadata }
     );
 
     console.log("✅ Gemini API 응답 수신");

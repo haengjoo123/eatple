@@ -570,6 +570,33 @@ function displayActiveComponents(components) {
     
     componentsList.innerHTML = '';
 
+    // components가 배열이 아닌 경우 처리
+    if (!components) {
+        componentsList.innerHTML = '<p>활성성분 정보가 없습니다.</p>';
+        return;
+    }
+
+    if (typeof components === 'string') {
+        components = [components];
+    }
+
+    // components가 객체인 경우 배열로 변환
+    if (typeof components === 'object' && components !== null && !Array.isArray(components)) {
+        console.log('활성성분이 객체 형식입니다. 배열로 변환합니다:', components);
+        components = Object.values(components);
+    }
+
+    if (!Array.isArray(components)) {
+        console.warn('활성성분이 배열 형식이 아닙니다:', components);
+        componentsList.innerHTML = '<p>활성성분 정보가 없습니다.</p>';
+        return;
+    }
+
+    if (components.length === 0) {
+        componentsList.innerHTML = '<p>활성성분 정보가 없습니다.</p>';
+        return;
+    }
+
     components.forEach(component => {
         const componentItem = document.createElement('div');
         componentItem.className = 'component-item';
@@ -588,19 +615,61 @@ function displayEffects(benefits, sideEffects) {
     benefitsList.innerHTML = '';
     sideEffectsList.innerHTML = '';
 
-    benefits.forEach(benefit => {
-        const benefitItem = document.createElement('div');
-        benefitItem.className = 'effect-item benefit';
-        benefitItem.innerHTML = `<span class="effect-icon">✅</span>${benefit}`;
-        benefitsList.appendChild(benefitItem);
-    });
+    // benefits 배열 검증
+    if (!benefits) {
+        benefitsList.innerHTML = '<p>효능 정보가 없습니다.</p>';
+    } else {
+        if (typeof benefits === 'string') {
+            benefits = [benefits];
+        }
+        // benefits가 객체인 경우 배열로 변환
+        if (typeof benefits === 'object' && benefits !== null && !Array.isArray(benefits)) {
+            console.log('효능이 객체 형식입니다. 배열로 변환합니다:', benefits);
+            benefits = Object.values(benefits);
+        }
+        if (!Array.isArray(benefits)) {
+            console.warn('효능이 배열 형식이 아닙니다:', benefits);
+            benefitsList.innerHTML = '<p>효능 정보가 없습니다.</p>';
+            benefits = [];
+        }
+    }
 
-    sideEffects.forEach(sideEffect => {
-        const sideEffectItem = document.createElement('div');
-        sideEffectItem.className = 'effect-item side-effect';
-        sideEffectItem.innerHTML = `<span class="effect-icon">⚠️</span>${sideEffect}`;
-        sideEffectsList.appendChild(sideEffectItem);
-    });
+    // sideEffects 배열 검증
+    if (!sideEffects) {
+        sideEffectsList.innerHTML = '<p>부작용 정보가 없습니다.</p>';
+    } else {
+        if (typeof sideEffects === 'string') {
+            sideEffects = [sideEffects];
+        }
+        // sideEffects가 객체인 경우 배열로 변환
+        if (typeof sideEffects === 'object' && sideEffects !== null && !Array.isArray(sideEffects)) {
+            console.log('부작용이 객체 형식입니다. 배열로 변환합니다:', sideEffects);
+            sideEffects = Object.values(sideEffects);
+        }
+        if (!Array.isArray(sideEffects)) {
+            console.warn('부작용이 배열 형식이 아닙니다:', sideEffects);
+            sideEffectsList.innerHTML = '<p>부작용 정보가 없습니다.</p>';
+            sideEffects = [];
+        }
+    }
+
+    if (Array.isArray(benefits) && benefits.length > 0) {
+        benefits.forEach(benefit => {
+            const benefitItem = document.createElement('div');
+            benefitItem.className = 'effect-item benefit';
+            benefitItem.innerHTML = `<span class="effect-icon">✅</span>${benefit}`;
+            benefitsList.appendChild(benefitItem);
+        });
+    }
+
+    if (Array.isArray(sideEffects) && sideEffects.length > 0) {
+        sideEffects.forEach(sideEffect => {
+            const sideEffectItem = document.createElement('div');
+            sideEffectItem.className = 'effect-item side-effect';
+            sideEffectItem.innerHTML = `<span class="effect-icon">⚠️</span>${sideEffect}`;
+            sideEffectsList.appendChild(sideEffectItem);
+        });
+    }
 }
 
 // 요리법 표시 (간단한 목록 스타일)
@@ -609,6 +678,35 @@ function displayRecipes(recipes) {
     if (!recipesList) return;
     
     recipesList.innerHTML = '';
+
+    // recipes가 배열이 아닌 경우 처리
+    if (!recipes) {
+        recipesList.innerHTML = '<p>요리법 정보가 없습니다.</p>';
+        return;
+    }
+
+    // recipes가 문자열인 경우 배열로 변환
+    if (typeof recipes === 'string') {
+        recipes = [recipes];
+    }
+
+    // recipes가 객체인 경우 배열로 변환
+    if (typeof recipes === 'object' && recipes !== null && !Array.isArray(recipes)) {
+        console.log('요리법이 객체 형식입니다. 배열로 변환합니다:', recipes);
+        recipes = Object.entries(recipes).map(([key, value]) => `**${key}**: ${value}`);
+    }
+
+    // recipes가 배열이 아닌 경우
+    if (!Array.isArray(recipes)) {
+        console.warn('요리법이 배열 형식이 아닙니다:', recipes);
+        recipesList.innerHTML = '<p>요리법 정보가 없습니다.</p>';
+        return;
+    }
+
+    if (recipes.length === 0) {
+        recipesList.innerHTML = '<p>요리법 정보가 없습니다.</p>';
+        return;
+    }
 
     recipes.forEach((recipe, index) => {
         const recipeItem = document.createElement('div');
@@ -817,7 +915,32 @@ function displayUsageTips(tips) {
     
     tipsContainer.innerHTML = '';
 
-    if (!tips || tips.length === 0) {
+    // tips가 배열이 아닌 경우 처리
+    if (!tips) {
+        tipsContainer.innerHTML = '<p>활용 팁 정보가 없습니다.</p>';
+        return;
+    }
+
+    // tips가 문자열인 경우 배열로 변환
+    if (typeof tips === 'string') {
+        tips = [tips];
+    }
+
+    // tips가 객체인 경우 배열로 변환
+    if (typeof tips === 'object' && tips !== null && !Array.isArray(tips)) {
+        console.log('활용 팁이 객체 형식입니다. 배열로 변환합니다:', tips);
+        // 객체의 값들을 배열로 변환 (키: 값 형식으로 표시)
+        tips = Object.entries(tips).map(([key, value]) => `**${key}**: ${value}`);
+    }
+
+    // tips가 배열이 아닌 경우 (예외 처리)
+    if (!Array.isArray(tips)) {
+        console.warn('활용 팁이 배열 형식이 아닙니다:', tips);
+        tipsContainer.innerHTML = '<p>활용 팁 정보가 없습니다.</p>';
+        return;
+    }
+
+    if (tips.length === 0) {
         tipsContainer.innerHTML = '<p>활용 팁 정보가 없습니다.</p>';
         return;
     }

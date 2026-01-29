@@ -18,7 +18,7 @@ const USERS_FILE = path.join(__dirname, '../data/users.json');
 
 // Gemini API 설정
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
 
 function readUsers() {
     if (!fs.existsSync(USERS_FILE)) return [];
@@ -32,6 +32,9 @@ function writeUsers(users) {
 
 // 서비스 이용 횟수 추적 모듈
 const { incrementServiceUsage, SERVICE_TYPES } = require('../utils/serviceUsageTracker');
+
+// AI 요청 큐 모듈
+const aiRequestQueue = require('../utils/aiRequestQueue');
 
 // AI 영양제 추천 API
 router.post('/recommend', async (req, res) => {
@@ -697,22 +700,28 @@ function generateBasicSupplementRecommendations(data) {
     return supplements.slice(0, 6);
 }
 
-// Gemini API 호출 함수
-async function sendPromptToGemini(prompt) {
+// Gemini API 호출 함수 (큐 적용)
+async function sendPromptToGemini(prompt, metadata = {}) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 302000); // 302초 타임아웃
 
     try {
-        const response = await axios.post(
-            GEMINI_API_URL,
-            {
-                contents: [{ parts: [{ text: prompt }] }]
+        // AI 요청 큐에 추가하여 순차 처리
+        const response = await aiRequestQueue.add(
+            async () => {
+                return await axios.post(
+                    GEMINI_API_URL,
+                    {
+                        contents: [{ parts: [{ text: prompt }] }]
+                    },
+                    {
+                        headers: { "Content-Type": "application/json" },
+                        timeout: 300000,
+                        signal: controller.signal
+                    }
+                );
             },
-            {
-                headers: { "Content-Type": "application/json" },
-                timeout: 300000,
-                signal: controller.signal
-            }
+            { type: 'supplement-detail', ...metadata }
         );
         
         clearTimeout(timeoutId);
@@ -751,12 +760,19 @@ async function sendPromptToGemini(prompt) {
     } catch (error) {
         clearTimeout(timeoutId);
         
+        console.error('sendPromptToGemini 오류:', error.message);
+        
         if (error.response) {
             console.error('Gemini API HTTP 오류:', error.response.status, error.response.data);
         }
         
         if (error.name === 'AbortError') {
             throw new Error('요청 시간이 초과되었습니다.');
+        }
+        
+        // 에러 메시지를 더 명확하게
+        if (error.message.includes('candidates')) {
+            throw new Error('AI 응답 형식이 올바르지 않습니다. 잠시 후 다시 시도해주세요.');
         }
         
         throw error;

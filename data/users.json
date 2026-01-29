@@ -1205,44 +1205,58 @@
       ]
     },
     "serviceUsage": {
-      "mealPlan": 34,
+      "mealPlan": 35,
       "restaurantRecommendation": 32,
-      "supplementRecommendation": 187,
+      "supplementRecommendation": 192,
       "ingredientAnalysis": 26,
       "mini-game": 125,
-      "lastUpdated": "2026-01-13T06:45:05.860Z"
+      "lastUpdated": "2026-01-29T05:38:58.951Z"
     },
     "profile": {
-      "age": "22",
-      "gender": "female",
-      "height": "150",
-      "weight": "40",
-      "allergies": [],
+      "age": "25",
+      "gender": "male",
+      "height": "174",
+      "weight": "76",
+      "allergies": [
+        "none"
+      ],
+      "bmi_value": "",
       "illnesses": [
-        "diabetes",
-        "anemia",
-        "gastritis",
-        "ibs"
+        "none"
       ],
       "biomarkers": [
         "none"
       ],
+      "iron_value": "",
+      "zinc_value": "",
+      "hba1c_value": "",
       "supplements": [
         "none"
       ],
-      "meal_purpose": "muscle_gain",
-      "meals_per_day": "1",
-      "activity_level": "sedentary",
-      "sleep_patterns": "less_than_6",
+      "calcium_value": "",
+      "meals_per_day": "2",
+      "activity_level": "light",
+      "sleep_patterns": "6_to_8",
       "smoking_status": "non_smoker",
-      "eating_patterns": "irregular",
-      "alcohol_consumption": "frequent",
-      "specific_biomarkers": {},
-      "other_allergies_text": "프로폴리스",
+      "eating_patterns": "intermittent_fasting",
+      "magnesium_value": "",
+      "potassium_value": "",
+      "vitamin_a_value": "",
+      "vitamin_d_value": "",
+      "vitamin_e_value": "",
+      "vitamin_k_value": "",
+      "alcohol_consumption": "none",
+      "blood_glucose_value": "",
+      "triglycerides_value": "",
+      "other_allergies_text": "",
       "other_illnesses_text": "",
-      "specific_supplements": {},
+      "hdl_cholesterol_value": "",
+      "ldl_cholesterol_value": "",
       "other_biomarkers_text": "",
-      "other_supplements_text": ""
+      "other_supplements_text": "",
+      "total_cholesterol_value": "",
+      "blood_pressure_systolic_value": "",
+      "blood_pressure_diastolic_value": ""
     },
     "profileCompletionReward": true,
     "profileCompletionDate": "2025-07-25T05:25:20.553Z",

@@ -69,7 +69,7 @@ class GeminiAnalyzer {
             this.mockMode = false;
             this.genAI = new GoogleGenerativeAI(this.apiKey);
             this.model = this.genAI.getGenerativeModel({ 
-                model: 'gemini-2.5-flash',
+                model: 'gemini-3-flash-preview',
                 // 로그 레벨 설정 (가능한 경우)
                 generationConfig: {
                     temperature: 0.7,

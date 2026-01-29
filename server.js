@@ -313,9 +313,9 @@ if (!GEMINI_API_KEY) {
   console.log("✅ Gemini API 키가 설정되었습니다. 실제 API 기능을 사용합니다.");
 }
 
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-// 추천식단 전용 Gemini 2.5 Pro API URL
-const GEMINI_MEAL_PLAN_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
+// 추천식단 전용 Gemini 3 Flash Preview API URL
+const GEMINI_MEAL_PLAN_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
 
 // 서비스 이용 횟수 추적 모듈
 const {
@@ -325,6 +325,29 @@ const {
 
 // 포인트 서비스 모듈
 const PointsService = require("./utils/pointsService");
+
+// AI 요청 큐 모듈
+const aiRequestQueue = require("./utils/aiRequestQueue");
+
+// AI 큐 상태 조회 엔드포인트 (관리자용)
+app.get("/api/ai-queue/status", (req, res) => {
+  try {
+    const status = aiRequestQueue.getStatus();
+    const stats = aiRequestQueue.getStats();
+    
+    res.json({
+      success: true,
+      status,
+      stats,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 
 // AI API 호출 (추천식단 - Gemini 2.5 Pro 사용)
 app.post(
@@ -354,16 +377,23 @@ app.post(
     }
 
     try {
-      console.log("🍽️ 추천식단 생성 - Gemini 2.5 Pro 모델 사용");
-      const response = await axios.post(
-        GEMINI_MEAL_PLAN_API_URL,
-        {
-          contents: [{ parts: [{ text: prompt }] }],
+      console.log("🍽️ 추천식단 생성 - Gemini 3 Flash Preview 모델 사용");
+      
+      // AI 요청 큐에 추가하여 순차 처리
+      const response = await aiRequestQueue.add(
+        async () => {
+          return await axios.post(
+            GEMINI_MEAL_PLAN_API_URL,
+            {
+              contents: [{ parts: [{ text: prompt }] }],
+            },
+            {
+              headers: { "Content-Type": "application/json" },
+              timeout: 300000, // 300초 타임아웃
+            }
+          );
         },
-        {
-          headers: { "Content-Type": "application/json" },
-          timeout: 300000, // 300초 타임아웃
-        }
+        { type: 'meal-plan', userId: req.session?.user?.id }
       );
 
       // 응답 캐싱 (1시간)
@@ -416,15 +446,21 @@ app.post(
     }
 
     try {
-      const response = await axios.post(
-        GEMINI_API_URL,
-        {
-          contents: [{ parts: [{ text: prompt }] }],
+      // AI 요청 큐에 추가하여 순차 처리
+      const response = await aiRequestQueue.add(
+        async () => {
+          return await axios.post(
+            GEMINI_API_URL,
+            {
+              contents: [{ parts: [{ text: prompt }] }],
+            },
+            {
+              headers: { "Content-Type": "application/json" },
+              timeout: 300000, // 300초 타임아웃
+            }
+          );
         },
-        {
-          headers: { "Content-Type": "application/json" },
-          timeout: 300000, // 300초 타임아웃
-        }
+        { type: 'supplement-recommendation', userId: req.session?.user?.id }
       );
 
       // 응답 캐싱 (2시간)
@@ -477,15 +513,21 @@ app.post("/api/analyze-ingredient", validateInput.aiApi, async (req, res) => {
   }
 
   try {
-    const response = await axios.post(
-      GEMINI_API_URL,
-      {
-        contents: [{ parts: [{ text: prompt }] }],
+    // AI 요청 큐에 추가하여 순차 처리
+    const response = await aiRequestQueue.add(
+      async () => {
+        return await axios.post(
+          GEMINI_API_URL,
+          {
+            contents: [{ parts: [{ text: prompt }] }],
+          },
+          {
+            headers: { "Content-Type": "application/json" },
+            timeout: 300000, // 300초 타임아웃
+          }
+        );
       },
-      {
-        headers: { "Content-Type": "application/json" },
-        timeout: 300000, // 300초 타임아웃
-      }
+      { type: 'ingredient-analysis', userId: req.session?.user?.id, ingredient }
     );
 
     // Gemini API 응답에서 텍스트 추출
