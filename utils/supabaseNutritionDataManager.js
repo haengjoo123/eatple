@@ -5,7 +5,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const NutritionInfo = require("../models/NutritionInfo");
-const { normalizePostMedia } = require("./mediaNormalizer");
+const SupabaseImageManager = require("./supabaseImageManager");
 const path = require("path");
 
 // 로그용 데이터 정리 헬퍼 함수 (긴 base64 데이터 등을 간략화)
@@ -63,8 +63,81 @@ class SupabaseNutritionDataManager {
     }
     
     this.supabase = createClient(supabaseUrl, supabaseServiceKey);
+    this.imageManager = new SupabaseImageManager();
     
     console.log('📁 SupabaseNutritionDataManager 초기화 완료');
+  }
+
+  /**
+   * base64 이미지를 Supabase Storage에 업로드
+   * @param {string} dataUrl - data URL 형식의 이미지
+   * @param {string} folder - 업로드할 폴더 (기본값: 'posts')
+   * @returns {Promise<string|null>} 업로드된 이미지 URL 또는 null
+   */
+  async uploadBase64Image(dataUrl, folder = 'posts') {
+    try {
+      if (!dataUrl || !dataUrl.startsWith('data:')) {
+        return dataUrl; // data URL이 아니면 그대로 반환
+      }
+
+      // data URL 파싱
+      const match = /^data:([^;,]+)?(;base64)?,(.*)$/s.exec(dataUrl);
+      if (!match) return dataUrl;
+
+      const mimeType = match[1] || 'image/png';
+      const isBase64 = Boolean(match[2]);
+      const dataPart = match[3];
+      
+      const buffer = isBase64 
+        ? Buffer.from(dataPart, 'base64') 
+        : Buffer.from(decodeURIComponent(dataPart), 'utf8');
+
+      // 파일명 생성
+      const ext = mimeType.split('/')[1] || 'png';
+      const originalName = `image_${Date.now()}.${ext}`;
+
+      // Supabase Storage에 업로드
+      const result = await this.imageManager.uploadImage(buffer, originalName, mimeType, folder);
+      
+      if (result.success) {
+        console.log(`✅ 이미지 업로드 성공: ${result.url}`);
+        return result.url;
+      } else {
+        console.error(`❌ 이미지 업로드 실패:`, result.error);
+        return dataUrl; // 실패 시 원본 반환
+      }
+    } catch (error) {
+      console.error('이미지 업로드 오류:', error);
+      return dataUrl; // 오류 시 원본 반환
+    }
+  }
+
+  /**
+   * content 내의 모든 base64 이미지를 Supabase Storage에 업로드
+   * @param {string} content - HTML 콘텐츠
+   * @param {string} folder - 업로드할 폴더
+   * @returns {Promise<string>} 변환된 콘텐츠
+   */
+  async replaceBase64ImagesInContent(content, folder = 'posts') {
+    if (!content || !content.includes('data:')) {
+      return content;
+    }
+
+    const imgRegex = /<img[^>]+src="(data:[^"]+)"[^>]*>/gi;
+    const matches = [...content.matchAll(imgRegex)];
+    
+    let updatedContent = content;
+    
+    for (const match of matches) {
+      const originalDataUrl = match[1];
+      const uploadedUrl = await this.uploadBase64Image(originalDataUrl, folder);
+      
+      if (uploadedUrl !== originalDataUrl) {
+        updatedContent = updatedContent.replace(originalDataUrl, uploadedUrl);
+      }
+    }
+    
+    return updatedContent;
   }
 
   /**
@@ -679,44 +752,33 @@ class SupabaseNutritionDataManager {
    */
   async createNutritionInfo(nutritionData) {
     try {
-      // base64 -> URL 정규화
-      const projectRoot = path.join(__dirname, '..');
-      const normalized = await normalizePostMedia({
-        title: nutritionData.title || '',
-        summary: nutritionData.summary || '',
-        content: nutritionData.content || '',
-        sourceType: nutritionData.sourceType || 'manual',
-        sourceName: nutritionData.sourceName || 'Admin',
-        sourceUrl: nutritionData.sourceUrl || null,
-        publishedDate: nutritionData.publishedDate || new Date().toISOString(),
-        trustScore: nutritionData.trustScore || 80,
-        thumbnailUrl: nutritionData.thumbnailUrl || null,
-        imageUrl: nutritionData.imageUrl || null,
-        category: nutritionData.category,
-      }, projectRoot);
+      // base64 이미지를 Supabase Storage에 업로드
+      const content = await this.replaceBase64ImagesInContent(nutritionData.content || '', 'posts');
+      const thumbnailUrl = await this.uploadBase64Image(nutritionData.thumbnailUrl || null, 'posts');
+      const imageUrl = await this.uploadBase64Image(nutritionData.imageUrl || null, 'posts');
 
       // 카테고리 ID 조회 및 검증
-      const categoryId = await this.getCategoryIdByName(normalized.category);
-      console.log(`[POSTING DEBUG] 카테고리 매핑: "${normalized.category}" -> "${categoryId}"`);
+      const categoryId = await this.getCategoryIdByName(nutritionData.category);
+      console.log(`[POSTING DEBUG] 카테고리 매핑: "${nutritionData.category}" -> "${categoryId}"`);
       
       if (!categoryId) {
-        throw new Error(`카테고리를 찾을 수 없습니다: "${normalized.category}"`);
+        throw new Error(`카테고리를 찾을 수 없습니다: "${nutritionData.category}"`);
       }
 
       // 새 포스트 데이터 구성
       const newPost = {
-        title: normalized.title,
-        summary: normalized.summary,
-        content: normalized.content,
-        source_type: normalized.sourceType,
-        source_name: normalized.sourceName,
-        source_url: normalized.sourceUrl,
-        published_date: normalized.publishedDate,
+        title: nutritionData.title || '',
+        summary: nutritionData.summary || '',
+        content: content,
+        source_type: nutritionData.sourceType || 'manual',
+        source_name: nutritionData.sourceName || 'Admin',
+        source_url: nutritionData.sourceUrl || null,
+        published_date: nutritionData.publishedDate || new Date().toISOString(),
         collected_date: new Date().toISOString(),
-        trust_score: normalized.trustScore,
+        trust_score: nutritionData.trustScore || 80,
         view_count: 0,
-        thumbnail_url: normalized.thumbnailUrl,
-        image_url: normalized.imageUrl,
+        thumbnail_url: thumbnailUrl,
+        image_url: imageUrl,
         category_id: categoryId,
         is_active: true
       };
@@ -724,7 +786,7 @@ class SupabaseNutritionDataManager {
       console.log(`[POSTING DEBUG] 생성할 포스트 데이터:`, {
         title: newPost.title,
         category_id: newPost.category_id,
-        category_name: normalized.category
+        category_name: nutritionData.category
       });
       
       // 포스트 생성
@@ -906,45 +968,22 @@ class SupabaseNutritionDataManager {
    */
   async createPost(postData, adminInfo) {
     try {
-      
-      // base64 -> URL 정규화
-      const projectRoot = path.join(__dirname, '..');
-      let normalized;
-      try {
-        normalized = await normalizePostMedia({
-          title: postData.title,
-          summary: postData.summary,
-          content: postData.content,
-          sourceUrl: postData.sourceUrl || null,
-          sourceName: postData.sourceName || null,
-          imageUrl: postData.imageUrl || null,
-          thumbnailUrl: postData.thumbnailUrl || null,
-        }, projectRoot);
-      } catch (normalizeError) {
-        console.error(`❌ 미디어 정규화 오류:`, normalizeError);
-        // 정규화 실패 시 원본 데이터 사용
-        normalized = {
-          title: postData.title,
-          summary: postData.summary,
-          content: postData.content,
-          sourceUrl: postData.sourceUrl || null,
-          sourceName: postData.sourceName || null,
-          imageUrl: postData.imageUrl || null,
-          thumbnailUrl: postData.thumbnailUrl || null,
-        };
-      }
+      // base64 이미지를 Supabase Storage에 업로드
+      const content = await this.replaceBase64ImagesInContent(postData.content || '', 'posts');
+      const thumbnailUrl = await this.uploadBase64Image(postData.thumbnailUrl || null, 'posts');
+      const imageUrl = await this.uploadBase64Image(postData.imageUrl || null, 'posts');
 
       // 새 포스팅 데이터 생성
       const now = new Date().toISOString();
       const newPost = {
-        title: normalized.title,
-        summary: normalized.summary,
-        content: normalized.content,
-        source_url: normalized.sourceUrl,
-        source_name: normalized.sourceName,
+        title: postData.title,
+        summary: postData.summary,
+        content: content,
+        source_url: postData.sourceUrl || null,
+        source_name: postData.sourceName || null,
         category_id: postData.categoryId,
-        image_url: normalized.imageUrl || null,
-        thumbnail_url: normalized.thumbnailUrl || null,
+        image_url: imageUrl,
+        thumbnail_url: thumbnailUrl,
         is_draft: postData.isDraft || false,
         admin_id: adminInfo.id,
         admin_name: adminInfo.name,

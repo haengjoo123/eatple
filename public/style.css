@@ -13433,6 +13433,10 @@ input[type="email"]:focus:invalid {
     font-size: 0.8rem;
     flex-shrink: 1;
   }
+  
+  .category-tab .tab-text {
+    font-size: 0.8rem;
+  }
 
   .cta-button {
     padding: 10px 20px;
@@ -15197,9 +15201,17 @@ input[type="email"]:focus:invalid {
 
   .category-tab {
     min-width: auto;
-    padding: 5px;
-    font-size: 1rem;
+    padding: 5px 8px;
+    font-size: 0.8rem;
     flex-shrink: 1;
+  }
+  
+  .category-tab .tab-text {
+    font-size: 0.8rem;
+  }
+  
+  .category-tab .tab-icon {
+    font-size: 0.95rem;
   }
 
   .cta-button {
