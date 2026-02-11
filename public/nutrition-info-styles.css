@@ -272,6 +272,92 @@ body.nutrition-info-page .container {
   font-weight: 500;
 }
 
+/* 클릭 가능한 태그 스타일 */
+.nutrition-tag.clickable-tag {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nutrition-tag.clickable-tag:hover {
+  background: #4a69bd;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(74, 105, 189, 0.3);
+}
+
+/* 활성 태그 필터 표시기 */
+.active-tag-filter {
+  background: #f0f4ff;
+  border-bottom: 1px solid #d6e0f5;
+  padding: 10px 0;
+  animation: fadeInDown 0.3s ease;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.active-tag-filter-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  line-height: 1;
+}
+
+.active-tag-filter-label {
+  font-size: 0.9rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.active-tag-filter-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  background: #4a69bd;
+  color: #ffffff;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.active-tag-filter-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: #718096;
+  border: 1px solid #cbd5e0;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.active-tag-filter-clear:hover {
+  background: #e53e3e;
+  color: #ffffff;
+  border-color: #e53e3e;
+  transform: none;
+  box-shadow: none;
+}
+
 /* 메타 정보 */
 .nutrition-card-footer {
   display: flex;

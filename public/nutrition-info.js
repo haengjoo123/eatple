@@ -27,6 +27,7 @@ class NutritionInfoManager {
         const urlParams = new URLSearchParams(window.location.search);
         const nutritionId = urlParams.get('id');
         const category = urlParams.get('category');
+        const tags = urlParams.get('tags');
         
         if (nutritionId) {
             this.loadSingleNutritionInfo(nutritionId);
@@ -34,9 +35,17 @@ class NutritionInfoManager {
             // 카테고리 파라미터가 있으면 필터 적용
             if (category) {
                 this.currentFilters.category = decodeURIComponent(category);
-                this.currentPage = 1; // 카테고리 변경 시 첫 페이지로
+                this.currentPage = 1;
                 // UI에서 해당 카테고리 버튼 활성화
                 this.activateCategoryButton(decodeURIComponent(category));
+            }
+            // 태그 파라미터가 있으면 태그 필터 적용
+            if (tags) {
+                const decodedTag = decodeURIComponent(tags);
+                this.currentFilters.tags = decodedTag;
+                this.currentPage = 1;
+                // 태그 필터 UI 표시
+                this.showActiveTagFilter(decodedTag);
             }
             this.loadNutritionInfo();
         }
@@ -58,6 +67,11 @@ class NutritionInfoManager {
         this.pageNumbers = document.getElementById('pageNumbers');
         this.retryBtn = document.getElementById('retryBtn');
         this.errorMessage = document.getElementById('errorMessage');
+
+        // 태그 필터 관련 요소들
+        this.activeTagFilter = document.getElementById('activeTagFilter');
+        this.activeTagName = document.getElementById('activeTagName');
+        this.clearTagFilterBtn = document.getElementById('clearTagFilter');
     }
 
     bindEvents() {
@@ -77,6 +91,11 @@ class NutritionInfoManager {
 
         // 재시도 이벤트
         this.retryBtn.addEventListener('click', () => this.loadNutritionInfo());
+
+        // 태그 필터 해제 버튼 이벤트
+        if (this.clearTagFilterBtn) {
+            this.clearTagFilterBtn.addEventListener('click', () => this.clearTagFilter());
+        }
         
         // 페이지 언로드 시 리소스 정리
         window.addEventListener('beforeunload', () => this.cleanup());
@@ -219,11 +238,85 @@ class NutritionInfoManager {
             delete this.currentFilters.category;
         }
         
+        // 카테고리 변경 시 태그 필터도 해제
+        this.hideActiveTagFilter();
+        delete this.currentFilters.tags;
+        
         // 페이지를 1로 리셋
         this.currentPage = 1;
         
+        // URL 파라미터 정리 (태그 파라미터 제거)
+        this.updateUrlParams();
+        
         // 영양정보 다시 로드
         this.loadNutritionInfo();
+    }
+
+    // 태그 클릭 시 해당 태그로 필터링하는 메서드
+    filterByTag(tagName) {
+        // 태그 필터 적용
+        this.currentFilters.tags = tagName;
+        this.currentPage = 1;
+        
+        // 태그 필터 UI 표시
+        this.showActiveTagFilter(tagName);
+        
+        // URL 파라미터 업데이트
+        this.updateUrlParams();
+        
+        // 영양정보 다시 로드
+        this.loadNutritionInfo();
+    }
+
+    // 태그 필터 해제 메서드
+    clearTagFilter() {
+        // 태그 필터 제거
+        delete this.currentFilters.tags;
+        this.currentPage = 1;
+        
+        // 태그 필터 UI 숨김
+        this.hideActiveTagFilter();
+        
+        // URL 파라미터 업데이트
+        this.updateUrlParams();
+        
+        // 영양정보 다시 로드
+        this.loadNutritionInfo();
+    }
+
+    // 활성 태그 필터 UI 표시
+    showActiveTagFilter(tagName) {
+        if (this.activeTagFilter && this.activeTagName) {
+            this.activeTagName.textContent = `#${tagName}`;
+            this.activeTagFilter.style.display = 'block';
+        }
+    }
+
+    // 활성 태그 필터 UI 숨김
+    hideActiveTagFilter() {
+        if (this.activeTagFilter) {
+            this.activeTagFilter.style.display = 'none';
+        }
+    }
+
+    // URL 파라미터를 현재 필터 상태에 맞게 업데이트 (페이지 새로고침 없이)
+    updateUrlParams() {
+        const url = new URL(window.location);
+        
+        // 기존 파라미터 제거
+        url.searchParams.delete('tags');
+        url.searchParams.delete('category');
+        
+        // 현재 필터에 맞게 파라미터 설정
+        if (this.currentFilters.tags) {
+            url.searchParams.set('tags', this.currentFilters.tags);
+        }
+        if (this.currentFilters.category) {
+            url.searchParams.set('category', this.currentFilters.category);
+        }
+        
+        // 브라우저 URL 업데이트 (페이지 새로고침 없이)
+        window.history.replaceState({}, '', url);
     }
 
     // URL 파라미터로 전달된 카테고리에 해당하는 버튼을 활성화
@@ -434,7 +527,7 @@ class NutritionInfoManager {
                 <h3 class="nutrition-card-title">${this.escapeHtml(item.title)}</h3>
                 <p class="nutrition-card-summary">${this.escapeHtml(item.summary)}</p>
                 <div class="nutrition-card-tags">
-                    ${item.tags.slice(0, 5).map(tag => `<span class="nutrition-tag">#${this.escapeHtml(tag)}</span>`).join('')}
+                    ${item.tags.slice(0, 5).map(tag => `<span class="nutrition-tag clickable-tag" data-tag="${this.escapeHtml(tag)}">#${this.escapeHtml(tag)}</span>`).join('')}
                 </div>
                 <div class="nutrition-card-footer">
                     <div class="nutrition-card-stats">
@@ -466,6 +559,16 @@ class NutritionInfoManager {
                 e.stopPropagation();
                 if (item.sourceUrl) {
                     window.open(item.sourceUrl, '_blank', 'noopener,noreferrer');
+                }
+                return;
+            }
+            // 태그 클릭 시 해당 태그로 필터링 (상세 페이지 이동 방지)
+            const clickedTag = e.target.closest('.clickable-tag');
+            if (clickedTag) {
+                e.stopPropagation();
+                const tagName = clickedTag.getAttribute('data-tag');
+                if (tagName) {
+                    this.filterByTag(tagName);
                 }
                 return;
             }
