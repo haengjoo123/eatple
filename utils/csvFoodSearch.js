@@ -2,310 +2,222 @@ const fs = require('fs');
 const path = require('path');
 const csv = require('csv-parser');
 
+// Keep only the best requested results. Loading every CSV row into a process-wide
+// array used more than 150 MB of heap after a single food search.
+function compareCandidates(a, b) {
+  if (a.score !== b.score) return a.score - b.score;
+  if (a.nameLength !== b.nameLength) return b.nameLength - a.nameLength;
+  return b.index - a.index;
+}
+
+function addCandidate(heap, candidate, limit) {
+  if (heap.length < limit) {
+    heap.push(candidate);
+    let index = heap.length - 1;
+    while (index > 0) {
+      const parent = Math.floor((index - 1) / 2);
+      if (compareCandidates(heap[index], heap[parent]) >= 0) break;
+      [heap[index], heap[parent]] = [heap[parent], heap[index]];
+      index = parent;
+    }
+    return;
+  }
+
+  if (compareCandidates(candidate, heap[0]) <= 0) return;
+  heap[0] = candidate;
+  let index = 0;
+  while (true) {
+    const left = index * 2 + 1;
+    const right = left + 1;
+    let worst = index;
+    if (left < heap.length && compareCandidates(heap[left], heap[worst]) < 0) worst = left;
+    if (right < heap.length && compareCandidates(heap[right], heap[worst]) < 0) worst = right;
+    if (worst === index) break;
+    [heap[index], heap[worst]] = [heap[worst], heap[index]];
+    index = worst;
+  }
+}
+
 class CSVFoodSearch {
-  constructor() {
-    this.csvFilePath = path.join(__dirname, '식품의약품안전처_통합식품영양성분정보_20250630.csv');
-    this.foodData = [];
-    this.isLoaded = false;
-    this.loadPromise = null;
+  constructor(csvFilePath = path.join(__dirname, '식품의약품안전처_통합식품영양성분정보_20250630.csv')) {
+    this.csvFilePath = csvFilePath;
   }
 
-  async loadCSV() {
-    // 이미 로딩 중이거나 완료된 경우 기존 Promise 반환
-    if (this.loadPromise) {
-      return this.loadPromise;
+  async *readRows() {
+    const source = fs.createReadStream(this.csvFilePath, { encoding: 'utf8' });
+    const parser = csv();
+    source.on('error', error => parser.destroy(error));
+    source.pipe(parser);
+
+    try {
+      for await (const row of parser) yield row;
+    } finally {
+      source.destroy();
+      parser.destroy();
     }
-
-    if (this.isLoaded) {
-      return Promise.resolve(this.foodData);
-    }
-
-    this.loadPromise = new Promise((resolve, reject) => {
-      const results = [];
-      
-      if (!fs.existsSync(this.csvFilePath)) {
-        reject(new Error(`CSV 파일을 찾을 수 없습니다: ${this.csvFilePath}`));
-        return;
-      }
-
-      fs.createReadStream(this.csvFilePath, { encoding: 'utf8' })
-        .pipe(csv())
-        .on('data', (data) => {
-          // 통합식품영양성분정보 CSV 구조에 맞게 데이터 정제 및 구조화
-          const processedData = {
-            식품코드: data.식품코드 || '',
-            식품명: data.식품명 || '',
-            에너지: data['에너지(kcal)'] || '',
-            단백질: data['단백질(g)'] || '',
-            지방: data['지방(g)'] || '',
-            탄수화물: data['탄수화물(g)'] || '',
-            당류: data['당류(g)'] || '',
-            나트륨: data['나트륨(mg)'] || '',
-            콜레스테롤: data['콜레스테롤(mg)'] || '',
-            포화지방산: data['포화지방산(g)'] || '',
-            트랜스지방산: data['트랜스지방산(g)'] || '',
-            식품중량: data.식품중량 || '',
-            제조사명: data.제조사명 || '',
-            유통업체명: data.유통업체명 || '',
-            업체명: data.업체명 || '',
-            수입업체명: data.수입업체명 || '',
-            식품대분류명: data.데이터구분명 || '',
-            식품중분류명: data.출처명 || '',
-            식품소분류명: data.원산지국명 || '',
-            일회섭취참고량: data.영양성분함량기준량 || '',
-            데이터기준일자: data.데이터기준일자 || '',
-            출처: data.출처명 || '식품의약품안전처',
-            수분: data['수분(g)'] || '',
-            회분: data['회분(g)'] || '',
-            식이섬유: data['식이섬유(g)'] || '',
-            칼슘: data['칼슘(mg)'] || '',
-            철: data['철(mg)'] || '',
-            인: data['인(mg)'] || '',
-            칼륨: data['칼륨(mg)'] || '',
-            비타민A: data['비타민 A(μg RAE)'] || '',
-            레티놀: data['레티놀(μg)'] || '',
-            베타카로틴: data['베타카로틴(μg)'] || '',
-            티아민: data['티아민(mg)'] || '',
-            리보플라빈: data['리보플라빈(mg)'] || '',
-            니아신: data['니아신(mg)'] || '',
-            비타민C: data['비타민 C(mg)'] || '',
-            비타민D: data['비타민 D(μg)'] || '',
-            폐기율: data['폐기율(%)'] || '',
-            수입여부: data.수입여부 || '',
-            원산지국명: data.원산지국명 || '',
-            품목제조보고번호: data.품목제조보고번호 || '',
-            데이터생성방법명: data.데이터생성방법명 || '',
-            데이터생성일자: data.데이터생성일자 || ''
-          };
-          results.push(processedData);
-        })
-        .on('end', () => {
-          this.foodData = results;
-          this.isLoaded = true;
-          console.log(`[CSVFoodSearch] CSV 로드 완료: ${results.length}개 항목`);
-          resolve(results);
-        })
-        .on('error', (error) => {
-          console.error('[CSVFoodSearch] CSV 로드 실패:', error);
-          reject(error);
-        });
-    });
-
-    return this.loadPromise;
   }
 
-  /**
-   * 검색어와 식품명의 유사도 점수 계산
-   * @param {string} searchTerm - 검색어
-   * @param {string} foodName - 식품명
-   * @returns {number} - 유사도 점수 (높을수록 더 유사)
-   */
+  normalizeRow(data) {
+    return {
+      식품코드: data.식품코드 || '',
+      식품명: data.식품명 || '',
+      에너지: data['에너지(kcal)'] || '',
+      단백질: data['단백질(g)'] || '',
+      지방: data['지방(g)'] || '',
+      탄수화물: data['탄수화물(g)'] || '',
+      당류: data['당류(g)'] || '',
+      나트륨: data['나트륨(mg)'] || '',
+      콜레스테롤: data['콜레스테롤(mg)'] || '',
+      포화지방산: data['포화지방산(g)'] || '',
+      트랜스지방산: data['트랜스지방산(g)'] || '',
+      식품중량: data.식품중량 || '',
+      제조사명: data.제조사명 || '',
+      유통업체명: data.유통업체명 || '',
+      업체명: data.업체명 || '',
+      수입업체명: data.수입업체명 || '',
+      식품대분류명: data.데이터구분명 || '',
+      식품중분류명: data.출처명 || '',
+      식품소분류명: data.원산지국명 || '',
+      일회섭취참고량: data.영양성분함량기준량 || '',
+      데이터기준일자: data.데이터기준일자 || '',
+      출처: data.출처명 || '식품의약품안전처',
+      수분: data['수분(g)'] || '',
+      회분: data['회분(g)'] || '',
+      식이섬유: data['식이섬유(g)'] || '',
+      칼슘: data['칼슘(mg)'] || '',
+      철: data['철(mg)'] || '',
+      인: data['인(mg)'] || '',
+      칼륨: data['칼륨(mg)'] || '',
+      비타민A: data['비타민 A(μg RAE)'] || '',
+      레티놀: data['레티놀(μg)'] || '',
+      베타카로틴: data['베타카로틴(μg)'] || '',
+      티아민: data['티아민(mg)'] || '',
+      리보플라빈: data['리보플라빈(mg)'] || '',
+      니아신: data['니아신(mg)'] || '',
+      비타민C: data['비타민 C(mg)'] || '',
+      비타민D: data['비타민 D(μg)'] || '',
+      폐기율: data['폐기율(%)'] || '',
+      수입여부: data.수입여부 || '',
+      원산지국명: data.원산지국명 || '',
+      품목제조보고번호: data.품목제조보고번호 || '',
+      데이터생성방법명: data.데이터생성방법명 || '',
+      데이터생성일자: data.데이터생성일자 || ''
+    };
+  }
+
   calculateSimilarityScore(searchTerm, foodName) {
     const search = searchTerm.toLowerCase();
     const food = foodName.toLowerCase();
-    
-    // 정확한 일치 (가장 높은 점수)
+
     if (food === search) return 100;
-    
-    // 검색어가 식품명의 시작 부분에 있는 경우
     if (food.startsWith(search)) return 90;
-    
-    // 검색어가 식품명에 포함된 경우
-    if (food.includes(search)) {
-      const index = food.indexOf(search);
-      // 앞쪽에 있을수록 높은 점수
-      return 80 - (index * 2);
-    }
-    
-    // 검색어의 각 단어가 식품명에 포함된 경우
-    const searchWords = search.split(/\s+/).filter(word => word.length > 0);
-    const foodWords = food.split(/\s+/).filter(word => word.length > 0);
-    
+    if (food.includes(search)) return 80 - (food.indexOf(search) * 2);
+
+    const searchWords = search.split(/\s+/).filter(Boolean);
+    const foodWords = food.split(/\s+/).filter(Boolean);
     let matchedWords = 0;
     for (const searchWord of searchWords) {
-      if (foodWords.some(foodWord => foodWord.includes(searchWord))) {
-        matchedWords++;
-      }
+      if (foodWords.some(foodWord => foodWord.includes(searchWord))) matchedWords++;
     }
-    
-    if (matchedWords > 0) {
-      return 60 + (matchedWords / searchWords.length) * 20;
-    }
-    
-    // 부분 일치 (글자 단위)
+    if (matchedWords > 0) return 60 + (matchedWords / searchWords.length) * 20;
+
     let partialMatch = 0;
-    for (let i = 0; i < search.length; i++) {
-      if (food.includes(search[i])) {
-        partialMatch++;
-      }
+    for (const char of search) {
+      if (food.includes(char)) partialMatch++;
     }
-    
-    if (partialMatch > 0) {
-      return (partialMatch / search.length) * 40;
-    }
-    
-    return 0;
+    return partialMatch > 0 ? (partialMatch / search.length) * 40 : 0;
   }
 
-  // 개선된 부분일치 검색
   async search(keyword, options = {}) {
     const { limit = 5000, exactMatch = false, includePartial = true } = options;
-    
-    // CSV가 로드되지 않은 경우 로드
-    if (!this.isLoaded) {
-      await this.loadCSV();
-    }
-
     const searchTerm = keyword.toLowerCase().trim();
-    if (!searchTerm) return [];
+    const resultLimit = Number.isFinite(Number(limit))
+      ? Math.max(0, Math.min(5000, Math.trunc(Number(limit)))) : 0;
+    if (!searchTerm || resultLimit === 0) return [];
 
-    console.log(`[CSVFoodSearch] 검색 시작: "${keyword}" (${exactMatch ? '정확일치' : '부분일치'})`);
+    const searchWords = searchTerm.split(/\s+/).filter(Boolean);
+    const best = [];
+    let matchCount = 0;
+    let index = 0;
 
-    let results = [];
-    
-    if (exactMatch) {
-      // 정확일치 검색
-      results = this.foodData.filter(item => {
-        const foodName = (item.식품명 || '').toLowerCase();
-        return foodName === searchTerm;
-      });
-    } else {
-      // 부분일치 검색 (개선된 로직)
-      results = this.foodData.filter(item => {
-        const foodName = (item.식품명 || '').toLowerCase();
-        
-        // 1. 정확한 포함 검색
-        if (foodName.includes(searchTerm)) return true;
-        
-        // 2. 단어 단위 검색
-        const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0);
-        const foodWords = foodName.split(/\s+/).filter(word => word.length > 0);
-        
-        for (const searchWord of searchWords) {
-          if (foodWords.some(foodWord => foodWord.includes(searchWord))) {
-            return true;
+    for await (const row of this.readRows()) {
+      const foodName = (row.식품명 || '').toLowerCase();
+      let matches = exactMatch ? foodName === searchTerm : foodName.includes(searchTerm);
+      if (!exactMatch && !matches) {
+        const foodWords = foodName.split(/\s+/).filter(Boolean);
+        matches = searchWords.some(word => foodWords.some(foodWord => foodWord.includes(word)));
+        if (!matches && includePartial) {
+          let partialMatch = 0;
+          for (const char of searchTerm) {
+            if (foodName.includes(char)) partialMatch++;
           }
+          matches = partialMatch / searchTerm.length >= 0.3;
         }
-        
-        // 3. 부분 일치 검색 (includePartial이 true인 경우)
-        if (includePartial) {
-          let matchCount = 0;
-          for (let i = 0; i < searchTerm.length; i++) {
-            if (foodName.includes(searchTerm[i])) {
-              matchCount++;
-            }
-          }
-          // 30% 이상 일치하면 포함 (더 관대하게)
-          if (matchCount / searchTerm.length >= 0.3) {
-            return true;
-          }
-        }
-        
-        return false;
-      });
-    }
-
-    // 유사도 점수 계산 및 정렬
-    results = results.map(item => ({
-      ...item,
-      similarityScore: this.calculateSimilarityScore(searchTerm, item.식품명 || '')
-    }));
-
-    // 유사도 점수로 정렬 (높은 점수 우선)
-    results.sort((a, b) => {
-      if (b.similarityScore !== a.similarityScore) {
-        return b.similarityScore - a.similarityScore;
       }
-      
-      // 점수가 같으면 식품명 길이로 정렬 (짧은 것 우선)
-      return (a.식품명 || '').length - (b.식품명 || '').length;
-    });
 
-    // 유사도 점수가 너무 낮은 결과 제거 (5점 미만으로 완화)
-    results = results.filter(item => item.similarityScore >= 5);
+      if (matches) {
+        const score = this.calculateSimilarityScore(searchTerm, row.식품명 || '');
+        if (score >= 5) {
+          matchCount++;
+          addCandidate(best, { row, score, nameLength: (row.식품명 || '').length, index }, resultLimit);
+        }
+      }
+      index++;
+    }
 
-    const limitedResults = results.slice(0, limit);
-    console.log(`[CSVFoodSearch] 검색 완료: ${limitedResults.length}개 결과 반환 (전체 ${results.length}개 중)`);
-    
-    // 유사도 점수 제거하고 반환
-    return limitedResults.map(item => {
-      const { similarityScore, ...rest } = item;
-      return rest;
-    });
+    best.sort((a, b) => compareCandidates(b, a));
+    console.log(`[CSVFoodSearch] 검색 완료: ${best.length}개 결과 반환 (전체 ${matchCount}개 중)`);
+    return best.map(({ row }) => this.normalizeRow(row));
   }
 
-  // 특정 식품의 상세 정보 조회
   async getDetail(foodCode, foodName, manufacturer) {
-    if (!this.isLoaded) {
-      await this.loadCSV();
+    let nameAndManufacturer = null;
+    let nameOnly = null;
+
+    for await (const row of this.readRows()) {
+      if (foodCode && row.식품코드 === foodCode) return this.normalizeRow(row);
+      if (foodName && row.식품명 === foodName) {
+        if (!nameOnly) nameOnly = row;
+        if (manufacturer && row.제조사명 === manufacturer && !nameAndManufacturer) {
+          nameAndManufacturer = row;
+          if (!foodCode) return this.normalizeRow(row);
+        }
+        if (!foodCode && !manufacturer) return this.normalizeRow(row);
+      }
     }
 
-    // 식품코드로 먼저 검색
-    if (foodCode) {
-      const result = this.foodData.find(item => item.식품코드 === foodCode);
-      if (result) return result;
-    }
-
-    // 식품명과 제조사명으로 정확일치 검색
-    if (foodName && manufacturer) {
-      const result = this.foodData.find(item => 
-        item.식품명 === foodName && 
-        item.제조사명 === manufacturer
-      );
-      if (result) return result;
-    }
-
-    // 식품명으로만 검색 (제조사명이 없는 경우)
-    if (foodName) {
-      const result = this.foodData.find(item => item.식품명 === foodName);
-      if (result) return result;
-    }
-
-    return null;
+    return nameAndManufacturer ? this.normalizeRow(nameAndManufacturer)
+      : nameOnly ? this.normalizeRow(nameOnly) : null;
   }
 
-  // 통계 정보
   async getStats() {
-    if (!this.isLoaded) {
-      await this.loadCSV();
+    const categories = {};
+    let totalItems = 0;
+    let lastUpdated = 'Unknown';
+
+    for await (const row of this.readRows()) {
+      if (totalItems === 0) lastUpdated = row.데이터기준일자 || 'Unknown';
+      const category = row.데이터구분명 || '기타';
+      categories[category] = (categories[category] || 0) + 1;
+      totalItems++;
     }
 
-    const categories = {};
-    this.foodData.forEach(item => {
-      const category = item.식품대분류명 || '기타';
-      categories[category] = (categories[category] || 0) + 1;
-    });
-
-    return {
-      totalItems: this.foodData.length,
-      categories: categories,
-      lastUpdated: this.foodData[0]?.데이터기준일자 || 'Unknown'
-    };
+    return { totalItems, categories, lastUpdated };
   }
 
-  // 검색 통계 정보
   async getSearchStats(keyword) {
-    if (!this.isLoaded) {
-      await this.loadCSV();
+    const searchTerm = keyword.toLowerCase().trim();
+    const categories = {};
+    let totalMatches = 0;
+
+    for await (const row of this.readRows()) {
+      if (!(row.식품명 || '').toLowerCase().includes(searchTerm)) continue;
+      const category = row.데이터구분명 || '기타';
+      categories[category] = (categories[category] || 0) + 1;
+      totalMatches++;
     }
 
-    const searchTerm = keyword.toLowerCase().trim();
-    const allResults = this.foodData.filter(item => {
-      const foodName = (item.식품명 || '').toLowerCase();
-      return foodName.includes(searchTerm);
-    });
-
-    const categories = {};
-    allResults.forEach(item => {
-      const category = item.식품대분류명 || '기타';
-      categories[category] = (categories[category] || 0) + 1;
-    });
-
-    return {
-      keyword: keyword,
-      totalMatches: allResults.length,
-      categories: categories
-    };
+    return { keyword, totalMatches, categories };
   }
 }
 

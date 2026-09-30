@@ -866,7 +866,7 @@ function getHealthConcernLabel(key) {
  * @returns {Array} 필터링된 제품 배열
  */
 function filterProductsByNewOrder(products, healthGoals, dosagePreference, avoidIngredients = [], supplementName = null, options = {}) {
-    let filteredProducts = [...products];
+    let filteredProducts = products;
     
     // 1단계: 건강고민 매칭
     if (healthGoals && healthGoals.length > 0) {
@@ -910,6 +910,12 @@ function filterProductsByNewOrder(products, healthGoals, dosagePreference, avoid
         filteredProducts = filterProductsBySupplementName(filteredProducts, supplementName, similarityOptions);
     }
     
+    // The caller also uses this limit when no supplement name was supplied.
+    // Apply it after all filters so broad searches cannot return every product.
+    if (Number.isInteger(options.maxResults) && options.maxResults >= 0) {
+        return filteredProducts.slice(0, options.maxResults);
+    }
+
     return filteredProducts;
 }
 
