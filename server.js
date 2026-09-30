@@ -5,6 +5,7 @@ const { generateText, resolveOpenAIModel, isOpenAIConfigured } = require("./util
 require("dotenv").config();
 const path = require("path");
 const session = require("express-session");
+const MemoryStore = require("memorystore")(session);
 const multer = require("multer");
 const {
   generalLimiter,
@@ -40,7 +41,13 @@ app.use(cors({
 }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000 }));
-const sessionMiddleware = session(getSessionConfig());
+const sessionMiddleware = session({
+  ...getSessionConfig(),
+  store: new MemoryStore({
+    checkPeriod: 10 * 60 * 1000,
+    max: 1000,
+  }),
+});
 app.use(sessionMiddleware);
 
 // URL 리라이트 미들웨어: .html 확장자 제거

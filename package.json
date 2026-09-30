@@ -25,6 +25,7 @@
         "express-session": "^1.18.1",
         "google-auth-library": "^9.15.1",
         "helmet": "^8.1.0",
+        "memorystore": "^1.6.8",
         "multer": "^2.0.2",
         "node-cache": "^5.1.2",
         "node-cron": "^4.2.1",
