@@ -868,16 +868,12 @@ function cleanupSecurityData() {
   }
 }
 
-// 메모리 정리 함수 (개선된 버전)
-function performMemoryCleanup() {
+// 주기적으로 오래된 연결과 과도하게 쌓인 캐시만 정리
+function performPeriodicMaintenance() {
   try {
-    console.log("🧹 메모리 정리 시작...");
-
-    // 메모리 사용량 체크
-    const memoryInfo = memoryMonitor.checkMemoryUsage();
-
-    // 캐시 정리
-    cacheManager.cleanup();
+    if (cacheManager.getStats().totalKeys > 500) {
+      cacheManager.cleanup();
+    }
 
     // 모니터링 시스템 정리
     if (
@@ -901,30 +897,8 @@ function performMemoryCleanup() {
       console.log(`비활성 WebSocket 연결 ${closedConnections}개 정리됨`);
     }
 
-    // 메모리 사용량이 높으면 가비지 컬렉션 강제 실행 (임계값 상향 조정)
-    if (memoryInfo.usagePercent > 0.90 && global.gc) {
-      global.gc();
-      console.log("가비지 컬렉션 강제 실행 완료");
-    } else if (!global.gc && memoryInfo.usagePercent > 0.90) {
-      console.log("ℹ️ 가비지 컬렉션을 사용하려면 --expose-gc 플래그로 Node.js를 시작하세요");
-    }
-
-    // 정리 후 메모리 사용량 확인
-    const afterCleanup = memoryMonitor.getMemoryUsage();
-    console.log(
-      `메모리 정리 완료: ${afterCleanup.usagePercent * 100}% (${
-        afterCleanup.heapUsed
-      }MB / ${afterCleanup.heapTotal}MB)`
-    );
-
-    // 메모리 사용량이 여전히 높으면 권장사항 출력 (임계값을 90%로 상향 조정)
-    if (afterCleanup.usagePercent > 0.90) {
-      const recommendations =
-        memoryMonitor.getOptimizationRecommendations(afterCleanup);
-      console.warn("⚠️ 메모리 최적화 권장사항:", recommendations);
-    }
   } catch (error) {
-    console.error("❌ 메모리 정리 실패:", error);
+    console.error("❌ 주기적 정리 실패:", error);
   }
 }
 
@@ -1040,15 +1014,9 @@ if (require.main === module) server.listen(PORT, async () => {
   // 서버 시작 시 초기화 작업 수행
   console.log("🚀 서버 초기화 시작...");
 
-  // 초기 메모리 상태 확인 (프로덕션에서는 간단히만)
-  if (process.env.NODE_ENV !== 'production') {
-    const initialMemory = memoryMonitor.getMemoryUsage();
-    console.log(
-      `초기 메모리 사용량: ${initialMemory.usagePercent * 100}% (${
-        initialMemory.heapUsed
-      }MB / ${initialMemory.heapTotal}MB)`
-    );
-  }
+  const initialMemory = memoryMonitor.getMemoryUsage();
+  const limitLabel = initialMemory.memoryLimit === null ? '한도 확인 불가' : `${initialMemory.memoryLimit}MB`;
+  console.log(`초기 프로세스 메모리: ${initialMemory.rss}MB / ${limitLabel}`);
 
   // 기존 사용자들의 일일 한도 업데이트 (함수 삭제됨)
   // updateDailyLimits();
@@ -1061,25 +1029,11 @@ if (require.main === module) server.listen(PORT, async () => {
   // 1시간마다 보안 데이터 정리
   setInterval(cleanupSecurityData, 60 * 60 * 1000);
 
-  // 메모리 모니터링 시작 (5분마다 체크)
-  setInterval(() => {
-    memoryMonitor.checkMemoryUsage();
-  }, 5 * 60 * 1000);
+  // 실제 프로세스 RSS를 컨테이너 한도와 비교하여 2분마다 확인
+  memoryMonitor.checkMemoryUsage();
+  setInterval(() => memoryMonitor.checkMemoryUsage(), 2 * 60 * 1000);
 
-  // 5분마다 메모리 정리 실행 (더 자주 정리)
-  setInterval(performMemoryCleanup, 5 * 60 * 1000);
-  
-  // 추가: 메모리 사용량이 높을 때 더 자주 체크
-  setInterval(() => {
-    const memoryInfo = memoryMonitor.checkMemoryUsage();
-    if (memoryInfo.usagePercent > 0.8) {
-      console.log(`⚠️ 높은 메모리 사용량 감지: ${memoryInfo.usagePercent * 100}% - 추가 정리 실행`);
-      performMemoryCleanup();
-    }
-  }, 2 * 60 * 1000); // 2분마다 체크
-
-  // 초기 메모리 정리 실행
-  setTimeout(performMemoryCleanup, 5000);
+  setInterval(performPeriodicMaintenance, 5 * 60 * 1000);
 
 
   console.log("✅ 서버 초기화 완료 - 모든 스케줄러가 시작되었습니다.");

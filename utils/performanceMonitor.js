@@ -9,6 +9,7 @@
  */
 
 const { createClient } = require('@supabase/supabase-js');
+const { getMemoryMonitor } = require('./memoryMonitor');
 const fs = require('fs');
 const path = require('path');
 
@@ -242,6 +243,7 @@ class PerformanceMonitor {
     collectSystemMetrics() {
         const timestamp = new Date().toISOString();
         const memoryUsage = process.memoryUsage();
+        const memoryInfo = getMemoryMonitor().getMemoryUsage();
         const uptime = process.uptime();
         
         const systemMetrics = {
@@ -251,7 +253,9 @@ class PerformanceMonitor {
                 heapTotal: memoryUsage.heapTotal,
                 heapUsed: memoryUsage.heapUsed,
                 external: memoryUsage.external,
-                arrayBuffers: memoryUsage.arrayBuffers
+                arrayBuffers: memoryUsage.arrayBuffers,
+                limit: memoryInfo.memoryLimit === null ? null : memoryInfo.memoryLimit * 1024 * 1024,
+                usagePercent: memoryInfo.usagePercent
             },
             uptime,
             cpu: process.cpuUsage(),
@@ -268,11 +272,6 @@ class PerformanceMonitor {
             this.metrics.systemMetrics.delete(oldestKey);
         }
         
-        // Check for memory issues (disabled to reduce log noise)
-        // const memoryUsagePercent = memoryUsage.heapUsed / memoryUsage.heapTotal;
-        // if (memoryUsagePercent > 0.95) {
-        //     this.sendAlert('high_memory_usage', { usage: memoryUsagePercent, metrics: systemMetrics });
-        // }
     }
 
     /**

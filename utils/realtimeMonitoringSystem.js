@@ -10,6 +10,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 const { getMonitor } = require('./performanceMonitor');
+const { getMemoryMonitor } = require('./memoryMonitor');
 const fs = require('fs');
 const path = require('path');
 
@@ -95,8 +96,7 @@ class RealtimeMonitoringSystem {
     startHealthChecks() {
         // 메모리 사용량이 높을 때는 헬스 체크 빈도 줄이기
         const getCheckInterval = () => {
-            const memUsage = process.memoryUsage();
-            const memUsagePercent = memUsage.heapUsed / memUsage.heapTotal;
+            const memUsagePercent = getMemoryMonitor().getMemoryUsage().usagePercent;
             
             if (memUsagePercent > 0.9) {
                 return 60000; // 1분 (메모리 부족 시)
@@ -299,8 +299,7 @@ class RealtimeMonitoringSystem {
             const uptime = process.uptime();
             const cpuUsage = process.cpuUsage();
             
-            // Calculate memory usage percentage (rough estimate)
-            const memoryUsagePercent = memoryUsage.heapUsed / memoryUsage.heapTotal;
+            const memoryUsagePercent = getMemoryMonitor().getMemoryUsage().usagePercent;
             
             let status = 'healthy';
             let warnings = [];
@@ -508,11 +507,10 @@ class RealtimeMonitoringSystem {
             }
         });
         
-        // WebSocket 클라이언트들에게 알림 (메모리 사용량이 높지 않을 때만)
-        const memUsage = process.memoryUsage();
-        const memUsagePercent = memUsage.heapUsed / memUsage.heapTotal;
-        
-        if (memUsagePercent < 0.9) {
+        // 프로세스 메모리가 실제 한도에 근접할 때만 WebSocket 전송을 중단
+        const memUsagePercent = getMemoryMonitor().getMemoryUsage().usagePercent;
+
+        if (memUsagePercent === null || memUsagePercent < 0.9) {
             this.notifyWebSocketClients(event, data);
         }
     }

@@ -2,8 +2,30 @@
  * 메모리 모니터링 및 최적화 유틸리티
  */
 
+const fs = require('fs');
+
+function detectMemoryLimitBytes() {
+    // Render 등 Linux 컨테이너의 실제 메모리 한도 (cgroup v2 / v1)
+    for (const file of [
+        '/sys/fs/cgroup/memory.max',
+        '/sys/fs/cgroup/memory/memory.limit_in_bytes'
+    ]) {
+        try {
+            const limit = Number(fs.readFileSync(file, 'utf8').trim());
+            if (Number.isSafeInteger(limit) && limit > 0) return limit;
+        } catch (_) {
+            // 컨테이너가 아니거나 다른 cgroup 버전이면 다음 방법으로 확인
+        }
+    }
+
+    const limit = process.constrainedMemory?.();
+    return Number.isSafeInteger(limit) && limit > 0 ? limit : null;
+}
+
 class MemoryMonitor {
-    constructor() {
+    constructor({ memoryLimitBytes = detectMemoryLimitBytes(), getProcessMemoryUsage = () => process.memoryUsage() } = {}) {
+        this.memoryLimitBytes = memoryLimitBytes;
+        this.getProcessMemoryUsage = getProcessMemoryUsage;
         this.alertThresholds = {
             warning: 0.85,  // 85% (경고)
             critical: 0.95  // 95% (긴급 조치)
@@ -22,15 +44,22 @@ class MemoryMonitor {
      * 현재 메모리 사용량 조회
      */
     getMemoryUsage() {
-        const usage = process.memoryUsage();
-        const usagePercent = usage.heapUsed / usage.heapTotal;
+        const usage = this.getProcessMemoryUsage();
+        const usagePercent = this.memoryLimitBytes > 0
+            ? usage.rss / this.memoryLimitBytes
+            : null;
+        const heapUsagePercent = usage.heapTotal > 0
+            ? usage.heapUsed / usage.heapTotal
+            : 0;
         
         return {
             heapUsed: Math.round(usage.heapUsed / 1024 / 1024), // MB
             heapTotal: Math.round(usage.heapTotal / 1024 / 1024), // MB
             rss: Math.round(usage.rss / 1024 / 1024), // MB
             external: Math.round(usage.external / 1024 / 1024), // MB
-            usagePercent: Math.round(usagePercent * 100) / 100,
+            memoryLimit: this.memoryLimitBytes > 0 ? Math.round(this.memoryLimitBytes / 1024 / 1024) : null,
+            usagePercent: usagePercent === null ? null : Math.round(usagePercent * 100) / 100,
+            heapUsagePercent: Math.round(heapUsagePercent * 100) / 100,
             status: this.getMemoryStatus(usagePercent)
         };
     }
@@ -39,6 +68,9 @@ class MemoryMonitor {
      * 메모리 상태 판단
      */
     getMemoryStatus(usagePercent) {
+        if (usagePercent === null || !Number.isFinite(usagePercent)) {
+            return 'unknown';
+        }
         if (usagePercent >= this.alertThresholds.critical) {
             return 'critical';
         } else if (usagePercent >= this.alertThresholds.warning) {
@@ -90,6 +122,7 @@ class MemoryMonitor {
                     timestamp: new Date().toISOString(),
                     memory: {
                         rss: memoryInfo.rss * 1024 * 1024,
+                        limit: this.memoryLimitBytes,
                         heapTotal: memoryInfo.heapTotal * 1024 * 1024,
                         heapUsed: memoryInfo.heapUsed * 1024 * 1024,
                         external: memoryInfo.external * 1024 * 1024,
@@ -142,81 +175,20 @@ class MemoryMonitor {
     async emergencyCleanup() {
         
         try {
-            // 캐시 매니저 정리
             const { getCacheManager } = require('./cacheManager');
             const cacheManager = getCacheManager();
-            
-            // 긴급 상황에서는 단계적 캐시 정리
-            cacheManager.emergencyOptimization();
-            
-            // 메모리 사용량 재확인
-            let memoryCheck = this.getMemoryUsage();
-            
-            // 여전히 높으면 전체 캐시 삭제
-            if (memoryCheck.usagePercent > 0.85) {
-                cacheManager.invalidateCache('all');
-            }
-            
-            // 다른 캐시 매니저들도 정리
-            try {
-                const nutritionDataManager = require('./nutritionDataManager');
-                if (nutritionDataManager && typeof nutritionDataManager.invalidateCache === 'function') {
-                    nutritionDataManager.invalidateCache();
+            if (cacheManager.getStats().totalKeys > 0) {
+                cacheManager.emergencyOptimization();
+
+                // 캐시 정리 후에도 임계 상태라면 남은 메모리 캐시를 비움
+                if (this.getMemoryUsage().status === 'critical' &&
+                    cacheManager.getStats().totalKeys > 0) {
+                    cacheManager.invalidateCache('all');
                 }
-            } catch (error) {
-                console.log('영양 데이터 캐시 정리 건너뜀:', error.message);
             }
-            
-            try {
-                const fileCacheManager = require('./fileCacheManager');
-                if (fileCacheManager && typeof fileCacheManager.clearAll === 'function') {
-                    await fileCacheManager.clearAll();
-                }
-                
-                // 대용량 영양정보 캐시 파일 삭제
-                const fs = require('fs').promises;
-                const path = require('path');
-                const cacheDir = path.join(__dirname, '../data/cache');
-                
-                try {
-                    const files = await fs.readdir(cacheDir);
-                    let deletedSize = 0;
-                    
-                    for (const file of files) {
-                        if (file.includes('nutrition_detail') && file.endsWith('.json')) {
-                            const filePath = path.join(cacheDir, file);
-                            const stats = await fs.stat(filePath);
-                            
-                            // 5MB 이상 파일 삭제
-                            if (stats.size > 5 * 1024 * 1024) {
-                                await fs.unlink(filePath);
-                                deletedSize += stats.size;
-                            }
-                        }
-                    }
-                    
-                    if (deletedSize > 0) {
-                        console.log(`🗑️ 대용량 영양정보 캐시 파일 정리: ${Math.round(deletedSize / 1024 / 1024)}MB 절약`);
-                    }
-                } catch (cacheError) {
-                    console.log('영양정보 캐시 파일 정리 중 오류:', cacheError.message);
-                }
-                
-            } catch (error) {
-                console.log('파일 캐시 정리 건너뜀:', error.message);
-            }
-            
-            // 가비지 컬렉션 강제 실행
-            if (global.gc) {
-                global.gc();
-                console.log('가비지 컬렉션 강제 실행 완료');
-            } else {
-                console.log('가비지 컬렉션을 사용하려면 --expose-gc 플래그로 Node.js를 시작하세요');
-            }
-            
-            // 메모리 사용량 재확인
+
             const afterCleanup = this.getMemoryUsage();
-            console.log(`긴급 정리 후 메모리 사용량: ${afterCleanup.usagePercent * 100}%`);
+            console.log(`긴급 정리 후 프로세스 메모리: ${afterCleanup.rss}MB / ${afterCleanup.memoryLimit}MB`);
             
         } catch (error) {
             console.error('긴급 메모리 정리 실패:', error);
@@ -263,22 +235,18 @@ class MemoryMonitor {
      */
     getOptimizationRecommendations(memoryInfo) {
         const recommendations = [];
-        
-        // 임계값 상향 조정: 95% 이상일 때만 high priority 경고
-        if (memoryInfo.usagePercent > 0.95) {
+
+        if (memoryInfo.status === 'critical') {
             recommendations.push({
                 priority: 'high',
-                action: 'immediate_cleanup',
-                description: '즉시 캐시 정리 및 가비지 컬렉션 실행 필요'
+                action: 'investigate_process_memory',
+                description: '프로세스 RSS가 메모리 한도에 근접했습니다. 활성 요청과 메모리 사용 추이를 확인하세요'
             });
-        }
-        
-        // 임계값 상향 조정: 90% 이상일 때만 medium priority 경고
-        if (memoryInfo.usagePercent > 0.90 && memoryInfo.usagePercent <= 0.95) {
+        } else if (memoryInfo.status === 'warning') {
             recommendations.push({
                 priority: 'medium',
-                action: 'reduce_cache_ttl',
-                description: '캐시 TTL 단축으로 메모리 사용량 감소'
+                action: 'monitor_process_memory',
+                description: '프로세스 RSS 사용량과 증가 추이를 확인하세요'
             });
         }
         
@@ -306,5 +274,6 @@ function getMemoryMonitor() {
 
 module.exports = {
     MemoryMonitor,
-    getMemoryMonitor
+    getMemoryMonitor,
+    detectMemoryLimitBytes
 };

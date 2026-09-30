@@ -394,23 +394,19 @@ class CacheManager {
                 maxMemoryMB: 100,
                 minHitRate: 70
             },
-            warnings: this.generateHealthWarnings(stats, memoryUsageMB)
+            warnings: this.generateHealthWarnings(stats)
         };
     }
 
-    generateHealthWarnings(stats, memoryUsageMB) {
+    generateHealthWarnings(stats) {
         const warnings = [];
         
         if (stats.totalKeys > 1000) {
             warnings.push('High number of cached keys - consider memory optimization');
         }
         
-        if (memoryUsageMB > 100) {
-            warnings.push('High memory usage - consider reducing cache TTL');
-        }
-        
         const hitRate = parseFloat(stats.hitRate);
-        if (hitRate < 70) {
+        if (stats.totalKeys > 0 && stats.hits + stats.misses > 0 && hitRate < 70) {
             warnings.push('Low cache hit rate - review caching strategy');
         }
         
