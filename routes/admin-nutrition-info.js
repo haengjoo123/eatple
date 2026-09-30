@@ -5,11 +5,11 @@
 
 const express = require('express');
 const router = express.Router();
-const SupabaseNutritionDataManager = require('../utils/supabaseNutritionDataManager');
+const { getSupabaseNutritionDataManager } = require('../utils/supabaseNutritionDataManager');
 const PermanentStorageManager = require('../utils/permanentStorageManager');
 
 // Supabase 기반 영양 정보 데이터 매니저 인스턴스
-const nutritionDataManager = new SupabaseNutritionDataManager();
+const nutritionDataManager = getSupabaseNutritionDataManager();
 
 // 영구 저장소 관리자 인스턴스
 const permanentStorageManager = new PermanentStorageManager();

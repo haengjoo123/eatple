@@ -113,10 +113,9 @@ app.use("/api/contact", require("./routes/contact"));
 app.use("/api/points", require("./routes/points"));
 app.use("/api/games", require("./routes/games"));
 // 영양 정보 관련 유틸리티들 (Supabase 데이터 전용)
-const SupabaseNutritionDataManager = require("./utils/supabaseNutritionDataManager");
+const { getSupabaseNutritionDataManager } = require("./utils/supabaseNutritionDataManager");
 
-// 인스턴스 생성 (Supabase 사용)
-const supabaseNutritionDataManager = new SupabaseNutritionDataManager();
+const supabaseNutritionDataManager = getSupabaseNutritionDataManager();
 
 // 추천 서비스 초기화
 const NutritionRecommendationService = require("./utils/nutritionRecommendationService");
@@ -135,12 +134,12 @@ app.use("/api/admin/manual-posting", require("./routes/admin-manual-posting"));
 app.use("/api/admin/monitoring", require("./routes/monitoring"));
 
 // RSS 피드 라우트
-const rssRouter = require("./routes/rss")();
+const rssRouter = require("./routes/rss")(supabaseNutritionDataManager);
 app.use("/rss", rssRouter);
 app.use("/rss.xml", rssRouter);
 
 // 사이트맵 라우트
-const sitemapRouter = require("./routes/sitemap")();
+const sitemapRouter = require("./routes/sitemap")(supabaseNutritionDataManager);
 app.use("/sitemap.xml", sitemapRouter);
 // 잇플스토어 일시 비활성화 - 재활성화시 주석 해제
 // app.use("/api/admin/products", require("./routes/admin-products"));

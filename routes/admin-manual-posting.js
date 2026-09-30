@@ -7,14 +7,13 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const axios = require('axios');
-const SupabaseNutritionDataManager = require('../utils/supabaseNutritionDataManager');
+const { getSupabaseNutritionDataManager } = require('../utils/supabaseNutritionDataManager');
 const CategoryTagManager = require('../utils/categoryTagManager');
-const SupabaseImageManager = require('../utils/supabaseImageManager');
 
 // 서비스 인스턴스 생성
-const nutritionDataManager = new SupabaseNutritionDataManager();
+const nutritionDataManager = getSupabaseNutritionDataManager();
 const categoryTagManager = new CategoryTagManager();
-const imageManager = new SupabaseImageManager();
+const imageManager = nutritionDataManager.imageManager;
 
 // Multer 설정 (메모리 저장)
 const upload = multer({

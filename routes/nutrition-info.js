@@ -5,11 +5,10 @@
 
 const express = require('express');
 const router = express.Router();
-const SupabaseNutritionDataManager = require('../utils/supabaseNutritionDataManager');
+const { getSupabaseNutritionDataManager } = require('../utils/supabaseNutritionDataManager');
 
 module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, recommendationService) => {
-    // Supabase 기반 데이터 매니저 초기화
-    const supabaseDataManager = new SupabaseNutritionDataManager();
+    const supabaseDataManager = nutritionDataManager || getSupabaseNutritionDataManager();
 
     // 헬퍼 함수들
     const parseFiltersAndPagination = (query) => {

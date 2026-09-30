@@ -1109,4 +1109,14 @@ class SupabaseNutritionDataManager {
   }
 }
 
+let sharedNutritionDataManager;
+
+function getSupabaseNutritionDataManager() {
+  if (!sharedNutritionDataManager) {
+    sharedNutritionDataManager = new SupabaseNutritionDataManager();
+  }
+  return sharedNutritionDataManager;
+}
+
 module.exports = SupabaseNutritionDataManager;
+module.exports.getSupabaseNutritionDataManager = getSupabaseNutritionDataManager;

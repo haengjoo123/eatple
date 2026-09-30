@@ -1,4 +1,4 @@
-const SupabaseNutritionDataManager = require('./supabaseNutritionDataManager');
+const { getSupabaseNutritionDataManager } = require('./supabaseNutritionDataManager');
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -7,7 +7,7 @@ const path = require('path');
  */
 class CategoryTagManager {
     constructor() {
-        this.supabaseNutritionDataManager = new SupabaseNutritionDataManager();
+        this.supabaseNutritionDataManager = getSupabaseNutritionDataManager();
         this.dataPath = path.join(__dirname, "../data/nutrition");
         this.categoriesFile = path.join(this.dataPath, "categories.json");
         this.tagsFile = path.join(this.dataPath, "tags.json");

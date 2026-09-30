@@ -5,10 +5,10 @@
 
 const express = require('express');
 const router = express.Router();
-const SupabaseNutritionDataManager = require('../utils/supabaseNutritionDataManager');
+const { getSupabaseNutritionDataManager } = require('../utils/supabaseNutritionDataManager');
 
-module.exports = () => {
-    const supabaseDataManager = new SupabaseNutritionDataManager();
+module.exports = (dataManager) => {
+    const supabaseDataManager = dataManager || getSupabaseNutritionDataManager();
 
     /**
      * 사이트맵 생성
