@@ -1174,7 +1174,6 @@ async function sendPromptToServer(promptText) {
         signal: controller.signal,
       }
     );
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -1182,38 +1181,17 @@ async function sendPromptToServer(promptText) {
     }
     const data = await response.json();
 
-    let mealPlanText = "";
-    if (data && data.candidates && data.candidates.length > 0) {
-      const candidate = data.candidates[0];
-      if (
-        candidate.content &&
-        candidate.content.parts &&
-        candidate.content.parts.length > 0
-      ) {
-        const part = candidate.content.parts[0];
-        if (part.text) {
-          mealPlanText = part.text;
-        }
-      }
-    }
-
-    if (mealPlanText) {
-      return mealPlanText;
-    } else {
-      if (data && data.promptFeedback && data.promptFeedback.blockReason) {
-        console.error("API call blocked:", data.promptFeedback);
-        throw new Error(
-          `식단 생성 요청이 거부되었습니다. 이유: ${data.promptFeedback.blockReason}`
-        );
-      }
-      console.error("Invalid response structure from server:", data);
+    if (typeof data.text !== "string" || !data.text.trim()) {
       throw new Error("응답 형식이 올바르지 않거나 내용이 비어있습니다.");
     }
+    return data.text;
   } catch (error) {
     if (error.name === "AbortError") {
       throw new Error("요청 시간이 초과되었습니다.");
     }
     throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

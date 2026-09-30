@@ -14,4 +14,14 @@ function adminAuth(req, res, next) {
   }
 }
 
-module.exports = { requireLogin, adminAuth }; 
+async function establishSession(req, user) {
+  await new Promise((resolve, reject) => {
+    req.session.regenerate(error => error ? reject(error) : resolve());
+  });
+  req.session.user = user;
+  await new Promise((resolve, reject) => {
+    req.session.save(error => error ? reject(error) : resolve());
+  });
+}
+
+module.exports = { requireLogin, adminAuth, establishSession };

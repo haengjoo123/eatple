@@ -60,6 +60,31 @@ class ImageOptimizer {
     }
   }
 
+  resolveUploadPath(value) {
+    if (typeof value !== 'string' || !value || !/\.(jpe?g|png|webp|gif|avif|tiff?)$/i.test(value)) {
+      throw new Error('유효한 업로드 이미지 경로가 필요합니다.');
+    }
+    const root = path.resolve(__dirname, '../public/uploads');
+    const normalized = value.replace(/\\/g, '/').replace(/^(?:\/|public\/)?uploads\//, '');
+    const resolved = path.resolve(root, normalized);
+    const withinRoot = candidate => {
+      const relative = path.relative(root, candidate);
+      return relative && relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+    };
+    if (!withinRoot(resolved)) throw new Error('업로드 폴더 밖의 파일에는 접근할 수 없습니다.');
+    // Also reject paths through symbolic links outside the upload directory.
+    let existing = resolved;
+    while (!fs.existsSync(existing)) existing = path.dirname(existing);
+    const real = fs.realpathSync(existing);
+    if (real !== root && !withinRoot(real)) throw new Error('유효하지 않은 이미지 경로입니다.');
+    return resolved;
+  }
+
+  async getImageMetadata(input) {
+    const { width, height, format, size } = await sharp(input).metadata();
+    return { width, height, format, size: size ?? fs.statSync(input).size };
+  }
+
   getOptimizedFileName(originalName, format = 'jpeg') {
     const ext = format === 'jpeg' ? 'jpg' : format;
     const baseName = path.basename(originalName, path.extname(originalName));

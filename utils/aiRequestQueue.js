@@ -19,6 +19,9 @@ class AIRequestQueue {
         
         // 대기 중인 요청 큐
         this.queue = [];
+        this.maxQueueSize = options.maxQueueSize || 100;
+        this.waitSamples = 0;
+        this.processSamples = 0;
         
         // 통계 정보
         this.stats = {
@@ -43,6 +46,9 @@ class AIRequestQueue {
      * @returns {Promise} 요청 결과
      */
     async add(requestFn, metadata = {}) {
+        if (this.queue.length >= this.maxQueueSize) {
+            throw new Error('AI 요청 대기열이 가득 찼습니다. 잠시 후 다시 시도해주세요.');
+        }
         const requestId = this.generateRequestId();
         const enqueuedAt = Date.now();
 
@@ -73,6 +79,7 @@ class AIRequestQueue {
             };
 
             this.queue.push(queueItem);
+            this.stats.currentQueueSize = this.queue.length;
             
             // 피크 큐 사이즈 업데이트
             if (this.queue.length > this.stats.peakQueueSize) {
@@ -124,23 +131,31 @@ class AIRequestQueue {
 
         const startTime = Date.now();
 
-        // 요청 타임아웃 설정
-        const requestTimeoutId = setTimeout(() => {
-            this.stats.timeoutRequests++;
-            reject(new Error('AI 요청 처리 시간이 초과되었습니다.'));
-        }, this.requestTimeout);
+        // Reject the running task itself so its slot is released even if the provider hangs.
+        const controller = new AbortController();
+        let requestTimeoutId;
+        let timedOut = false;
+        const timeout = new Promise((_, rejectTimeout) => {
+            requestTimeoutId = setTimeout(() => {
+                timedOut = true;
+                this.stats.timeoutRequests++;
+                rejectTimeout(new Error('AI 요청 처리 시간이 초과되었습니다.'));
+                controller.abort();
+            }, this.requestTimeout);
+        });
 
         try {
             // 실제 AI 요청 실행
-            const result = await requestFn();
+            const result = await Promise.race([
+                Promise.resolve().then(() => requestFn(controller.signal)),
+                timeout
+            ]);
             
             // 타임아웃 해제
             clearTimeout(requestTimeoutId);
 
             // 처리 시간 계산
             const processTime = Date.now() - startTime;
-            this.updateAverageProcessTime(processTime);
-
             this.stats.successfulRequests++;
 
             if (this.enableLogging) {
@@ -152,7 +167,7 @@ class AIRequestQueue {
             // 타임아웃 해제
             clearTimeout(requestTimeoutId);
 
-            this.stats.failedRequests++;
+            if (!timedOut) this.stats.failedRequests++;
 
             if (this.enableLogging) {
                 console.error(`[AI Queue] 요청 실패: ${id} - ${error.message}`);
@@ -160,6 +175,8 @@ class AIRequestQueue {
 
             reject(error);
         } finally {
+            clearTimeout(requestTimeoutId);
+            this.updateAverageProcessTime(Date.now() - startTime);
             // 활성 요청 수 감소
             this.activeRequests--;
 
@@ -198,7 +215,7 @@ class AIRequestQueue {
      * @param {number} waitTime - 대기 시간 (ms)
      */
     updateAverageWaitTime(waitTime) {
-        const totalRequests = this.stats.successfulRequests + this.stats.failedRequests;
+        const totalRequests = ++this.waitSamples;
         if (totalRequests > 0) {
             this.stats.averageWaitTime = 
                 (this.stats.averageWaitTime * (totalRequests - 1) + waitTime) / totalRequests;
@@ -212,7 +229,7 @@ class AIRequestQueue {
      * @param {number} processTime - 처리 시간 (ms)
      */
     updateAverageProcessTime(processTime) {
-        const totalRequests = this.stats.successfulRequests + this.stats.failedRequests;
+        const totalRequests = ++this.processSamples;
         if (totalRequests > 0) {
             this.stats.averageProcessTime = 
                 (this.stats.averageProcessTime * (totalRequests - 1) + processTime) / totalRequests;
@@ -262,7 +279,6 @@ class AIRequestQueue {
         });
 
         this.queue = [];
-        this.activeRequests = 0;
         this.stats.currentQueueSize = 0;
 
         if (this.enableLogging) {
@@ -274,6 +290,8 @@ class AIRequestQueue {
      * 통계 초기화
      */
     resetStats() {
+        this.waitSamples = 0;
+        this.processSamples = 0;
         this.stats = {
             totalRequests: 0,
             successfulRequests: 0,
@@ -300,3 +318,4 @@ const aiRequestQueue = new AIRequestQueue({
 });
 
 module.exports = aiRequestQueue;
+module.exports.AIRequestQueue = AIRequestQueue;

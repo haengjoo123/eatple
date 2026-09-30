@@ -1,21 +1,19 @@
 const express = require("express");
-const fs = require("fs");
-const path = require("path");
 const bcrypt = require("bcrypt");
-const session = require("express-session");
+const { randomUUID } = require('crypto');
+const { renderOAuthSuccess } = require('../utils/oauthResponse');
 const { OAuth2Client } = require("google-auth-library");
 const { createClient } = require('@supabase/supabase-js');
-const { getCacheManager } = require("../utils/cacheManager");
-const cacheManager = getCacheManager();
+const { readUsers, writeUsers } = require('../utils/userStore');
+const { adminAuth, requireLogin, establishSession } = require('../utils/authMiddleware');
+const { authLimiter } = require('../utils/securityMiddleware');
 const router = express.Router();
+
+router.use(['/signup', '/login', '/reset-password', '/resend-email', '/update-password', '/change-password'], authLimiter);
 
 // UUID 생성 함수
 function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
+  return randomUUID();
 }
 
 // 카카오 리다이렉트 URI 생성 헬퍼 함수 (프록시 환경 지원)
@@ -37,8 +35,6 @@ function getKakaoRedirectUri(req) {
   return `${finalProtocol}://${host}/api/auth/kakao/callback`;
 }
 
-const USERS_FILE = path.join(__dirname, "../data/users.json");
-
 // Supabase 클라이언트 초기화 (성능 최적화 옵션 추가)
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
@@ -58,10 +54,10 @@ if (!supabaseUrl || !supabaseKey) {
   console.error('SUPABASE_KEY:', supabaseKey ? '***설정됨***' : '설정되지 않음');
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey, {
+const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseKey, {
   auth: {
-    autoRefreshToken: true, // 자동 토큰 갱신 활성화로 세션 지속성 향상
-    persistSession: true,   // 세션 지속성 활성화로 로그인 상태 유지
+    autoRefreshToken: false,
+    persistSession: false,
     detectSessionInUrl: false, // URL에서 세션 감지 비활성화 (프로덕션에서 문제 방지)
   },
   global: {
@@ -83,126 +79,52 @@ const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET;
 
 // 세션 미들웨어는 server.js에서 설정한다고 가정
 
-// 유저 데이터 읽기/쓰기 함수 (캐싱 적용)
-function readUsers() {
-  // 캐시에서 먼저 확인
-  const cachedUsers = cacheManager.getUserData('all_users');
-  if (cachedUsers) {
-    return cachedUsers;
-  }
-  
-  // 캐시에 없으면 파일에서 읽기
-  if (!fs.existsSync(USERS_FILE)) {
-    const emptyUsers = [];
-    cacheManager.cacheUserData('all_users', emptyUsers, 300); // 5분 캐싱
-    return emptyUsers;
-  }
-  
-  const data = fs.readFileSync(USERS_FILE, "utf-8");
-  const parsed = JSON.parse(data);
-  let users;
-  
-  // users가 객체(users 필드)면 배열로 변환해서 반환
-  if (parsed.users && typeof parsed.users === "object") {
-    users = Object.values(parsed.users);
+// Authentication changes a Supabase client's current session; never share it between requests.
+function createAuthClient() {
+  return createClient(supabaseUrl, supabaseKey, {
+    auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false }
+  });
+}
+
+// OAuth calls may take time. Merge only identity fields into freshly read user data.
+function saveAuthUser(user) {
+  const users = readUsers();
+  const providerKey = { google: 'googleId', kakao: 'kakaoId', naver: 'naverId', email: 'supabaseId' }[user.authType];
+  let existing = users.find(candidate => candidate.id === user.id ||
+    (providerKey && user[providerKey] && candidate[providerKey] === user[providerKey]));
+  if (existing) {
+    for (const field of ['email', 'name', 'picture', 'authType', 'supabaseId', 'googleId', 'kakaoId', 'naverId', 'emailConfirmed']) {
+      if (user[field] !== undefined) existing[field] = user[field];
+    }
   } else {
-    // 배열 형태면 그대로 반환
-    users = Array.isArray(parsed) ? parsed : [];
+    existing = { ...user };
+    users.push(existing);
   }
-  
-  // 캐시에 저장 (5분)
-  cacheManager.cacheUserData('all_users', users, 300);
-  return users;
+  writeUsers(users);
+  return existing;
 }
 
-function writeUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-  // 캐시 무효화
-  cacheManager.invalidateUserCache('all_users');
-  // 새 데이터로 캐시 업데이트
-  cacheManager.cacheUserData('all_users', users, 300);
-}
-
-// 사용자 데이터 처리를 비동기로 수행하는 함수
+// Save the verified identity without overwriting profile or point updates made during authentication.
 async function processUserDataAsync(user) {
-  return new Promise(async (resolve) => {
-    // 백그라운드에서 사용자 데이터 처리
-    setImmediate(async () => {
-      try {
-        const users = readUsers();
-        let existingUser = users.find(u => u.email === user.email);
-        
-        if (!existingUser) {
-          // 새 사용자 생성
-          const newUser = {
-            id: user.id,
-            email: user.email,
-            authType: "email",
-            emailConfirmed: true,
-            createdAt: new Date().toISOString(),
-            supabaseId: user.id,
-            isAdmin: false,
-            role: null
-          };
-          
-          // Supabase users 테이블에 사용자 정보 저장
-          try {
-            const { error: tableError } = await supabase
-              .from('users')
-              .insert({
-                id: user.id,
-                email: user.email,
-                auth_type: 'email',
-                profile: {},
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
-            
-            if (tableError) {
-              console.error("Supabase users 테이블 저장 오류:", tableError);
-            } else {
-              console.log("Supabase users 테이블 저장 성공");
-            }
-          } catch (supabaseErr) {
-            console.error("Supabase 연동 오류:", supabaseErr);
-          }
-          
-          users.push(newUser);
-          writeUsers(users);
-          
-          console.log("이메일 로그인 시 새 사용자 저장:", newUser.id);
-          resolve(newUser);
-        } else {
-          // 기존 사용자 정보 업데이트
-          existingUser.emailConfirmed = user.email_confirmed_at ? true : false;
-          existingUser.supabaseId = user.id;
-          
-          // isAdmin과 role 필드가 없으면 기본값 설정
-          if (existingUser.isAdmin === undefined) {
-            existingUser.isAdmin = false;
-          }
-          if (existingUser.role === undefined) {
-            existingUser.role = null;
-          }
-          
-          writeUsers(users);
-          
-          // 기존 사용자 정보 업데이트 완료
-          resolve(existingUser);
-        }
-      } catch (error) {
-        console.error("사용자 데이터 처리 오류:", error);
-        // 오류 시 기본 사용자 데이터 반환
-        resolve({
-          id: user.id,
-          email: user.email,
-          authType: "email",
-          emailConfirmed: true,
-          isAdmin: false,
-          role: null
-        });
-      }
-    });
+  const users = readUsers();
+  const existing = users.find(candidate => candidate.id === user.id || candidate.supabaseId === user.id);
+  if (!existing) {
+    try {
+      const { error } = await supabase.from('users').insert({
+        id: user.id, email: user.email, auth_type: 'email', profile: {},
+        created_at: new Date().toISOString(), updated_at: new Date().toISOString()
+      });
+      if (error) console.error('Supabase users 저장 오류:', error.message);
+    } catch (error) {
+      console.error('Supabase users 저장 오류:', error.message);
+    }
+  }
+  return saveAuthUser({
+    ...(existing || { id: user.id, createdAt: new Date().toISOString(), isAdmin: false, role: null }),
+    email: user.email,
+    authType: existing?.authType || 'email',
+    emailConfirmed: !!user.email_confirmed_at,
+    supabaseId: user.id
   });
 }
 
@@ -212,7 +134,7 @@ router.post("/signup", async (req, res) => {
     const { email, password } = req.body;
     
     // 입력값 검증
-    if (!email || !password) {
+    if (typeof email !== 'string' || !email.trim() || typeof password !== 'string' || !password) {
       return res.status(400).json({ 
         success: false, 
         error: "이메일과 비밀번호를 입력하세요." 
@@ -237,7 +159,7 @@ router.post("/signup", async (req, res) => {
     }
 
     // Supabase를 통한 회원가입
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await createAuthClient().auth.signUp({
       email: email,
       password: password,
       options: {
@@ -297,7 +219,7 @@ router.post("/login", async (req, res) => {
     }
     
     // 입력값 검증
-    if (!email || !password) {
+    if (typeof email !== 'string' || !email.trim() || typeof password !== 'string' || !password) {
       console.log('로그인 실패: 입력값 누락');
       return res.status(400).json({ 
         success: false, 
@@ -315,17 +237,23 @@ router.post("/login", async (req, res) => {
     }
 
     // Supabase를 통한 로그인 (타임아웃 설정)
-    const loginPromise = supabase.auth.signInWithPassword({
+    const loginPromise = createAuthClient().auth.signInWithPassword({
       email: email,
       password: password
     });
     
     // 10초 타임아웃 설정
+    let loginTimeout;
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('로그인 요청 시간 초과')), 10000);
+      loginTimeout = setTimeout(() => reject(new Error('로그인 요청 시간 초과')), 10000);
     });
-    
-    const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
+    let loginResult;
+    try {
+      loginResult = await Promise.race([loginPromise, timeoutPromise]);
+    } finally {
+      clearTimeout(loginTimeout);
+    }
+    const { data, error } = loginResult;
 
     if (error) {
       console.error('Supabase login error:', error);
@@ -354,7 +282,7 @@ router.post("/login", async (req, res) => {
     
     // 세션 설정을 먼저 수행
     const sessionUser = { 
-      id: user.id, 
+      id: userData.id,
       email: user.email, 
       authType: "email",
       emailConfirmed: user.email_confirmed_at ? true : false,
@@ -362,20 +290,11 @@ router.post("/login", async (req, res) => {
       role: userData.role || null
     };
     
-    req.session.user = sessionUser;
-    
-    // 세션을 명시적으로 저장 (Render 환경에서 필요할 수 있음)
-    req.session.save((err) => {
-      if (err) {
-        console.error('세션 저장 오류:', err);
-      } else {
-        console.log('세션 저장 성공');
-      }
-    });
-    
+    await establishSession(req, sessionUser);
+
     // 즉시 응답 반환
     const responseUser = { 
-      id: user.id, 
+      id: userData.id,
       email: user.email, 
       authType: "email",
       emailConfirmed: user.email_confirmed_at ? true : false,
@@ -416,7 +335,7 @@ router.post("/reset-password", async (req, res) => {
       });
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await createAuthClient().auth.resetPasswordForEmail(email, {
       redirectTo: `${req.protocol}://${req.get('host')}/reset-password.html`
     });
 
@@ -454,7 +373,7 @@ router.post("/resend-email", async (req, res) => {
       });
     }
 
-    const { error } = await supabase.auth.resend({
+    const { error } = await createAuthClient().auth.resend({
       type: 'signup',
       email: email,
       options: {
@@ -485,92 +404,22 @@ router.post("/resend-email", async (req, res) => {
 });
 
 // 이메일 인증 완료 후 사용자 정보 동기화
-router.post("/sync-email-user", async (req, res) => {
+router.post('/sync-email-user', async (req, res) => {
   try {
     const { access_token } = req.body;
-    
-    if (!access_token) {
-      return res.status(400).json({ error: "액세스 토큰이 필요합니다." });
+    if (typeof access_token !== 'string' || !access_token) {
+      return res.status(400).json({ error: '액세스 토큰이 필요합니다.' });
     }
-    
-    // Supabase에서 사용자 정보 가져오기
-    const { data: { user }, error } = await supabase.auth.getUser(access_token);
-    
-    if (error || !user) {
-      console.error("사용자 정보 가져오기 오류:", error);
-      return res.status(400).json({ error: "사용자 정보를 가져올 수 없습니다." });
+    const { data, error } = await supabase.auth.getUser(access_token);
+    if (error || !data?.user?.email_confirmed_at) {
+      return res.status(400).json({ error: '이메일 인증 정보를 확인할 수 없습니다.' });
     }
-    
-    // 이메일 인증이 완료되지 않은 경우
-    if (!user.email_confirmed_at) {
-      return res.status(400).json({ error: "이메일 인증이 완료되지 않았습니다." });
-    }
-    
-    // 로컬 JSON 파일에서 기존 사용자 확인
-    const users = readUsers();
-    let existingUser = users.find(u => u.email === user.email && u.authType === "email");
-    
-         if (!existingUser) {
-       // 새 사용자 생성
-       const newUser = {
-         id: user.id,
-         email: user.email,
-         authType: "email",
-         emailConfirmed: true,
-         createdAt: new Date().toISOString(),
-         supabaseId: user.id
-       };
-       
-       // Supabase users 테이블에 사용자 정보 저장
-       try {
-         const { error: tableError } = await supabase
-           .from('users')
-           .insert({
-             id: user.id,
-             email: user.email,
-             auth_type: 'email',
-             profile: {},
-             created_at: new Date().toISOString(),
-             updated_at: new Date().toISOString()
-           });
-         
-         if (tableError) {
-           console.error("Supabase users 테이블 저장 오류:", tableError);
-         } else {
-           console.log("Supabase users 테이블 저장 성공");
-         }
-       } catch (supabaseErr) {
-         console.error("Supabase 연동 오류:", supabaseErr);
-       }
-       
-       users.push(newUser);
-       writeUsers(users);
-       
-       console.log("이메일 인증 완료된 새 사용자 저장:", newUser.id);
-       
-       res.json({ 
-         success: true, 
-         message: "사용자 정보가 동기화되었습니다.",
-         user: newUser
-       });
-    } else {
-      // 기존 사용자 업데이트
-      existingUser.emailConfirmed = true;
-      existingUser.supabaseId = user.id;
-      writeUsers(users);
-      
-      console.log("기존 사용자 이메일 인증 상태 업데이트:", existingUser.id);
-      
-      res.json({ 
-        success: true, 
-        message: "사용자 정보가 업데이트되었습니다.",
-        user: existingUser
-      });
-    }
-    
-  } catch (err) {
-    console.error("사용자 동기화 서버 오류:", err);
-    res.status(500).json({ error: "서버 오류가 발생했습니다." });
+    const user = await processUserDataAsync(data.user);
+    res.json({ success: true, message: '사용자 정보가 동기화되었습니다.',
+      user: { id: user.id, email: user.email, authType: user.authType, emailConfirmed: user.emailConfirmed } });
+  } catch (error) {
+    console.error('사용자 동기화 오류:', error.message);
+    res.status(500).json({ error: '서버 오류가 발생했습니다.' });
   }
 });
 
@@ -585,7 +434,7 @@ router.post("/update-password", async (req, res) => {
       passwordLength: newPassword ? newPassword.length : 0
     });
     
-    if (!accessToken || !newPassword) {
+    if (typeof accessToken !== 'string' || !accessToken || typeof refreshToken !== 'string' || !refreshToken || typeof newPassword !== 'string' || !newPassword) {
       return res.status(400).json({ 
         success: false, 
         error: "필수 정보가 누락되었습니다." 
@@ -601,7 +450,7 @@ router.post("/update-password", async (req, res) => {
     }
 
     // 임시 Supabase 클라이언트 생성 (토큰 포함)
-    const tempSupabase = createClient(supabaseUrl, supabaseKey);
+    const tempSupabase = createAuthClient();
     
     // 세션 설정
     const { data: sessionData, error: sessionError } = await tempSupabase.auth.setSession({
@@ -654,27 +503,13 @@ router.post("/update-password", async (req, res) => {
   }
 });
 
-// 로그아웃
-router.post("/logout", async (req, res) => {
-  try {
-    // Supabase 세션 종료
-    const { error } = await supabase.auth.signOut();
-    
-    if (error) {
-      console.error('Supabase logout error:', error);
-    }
-    
-    // Express 세션 종료
-    req.session.destroy(() => {
-      res.json({ success: true });
-    });
-  } catch (err) {
-    console.error('Logout error:', err);
-    // 세션은 여전히 종료
-    req.session.destroy(() => {
-      res.json({ success: true });
-    });
-  }
+// Supabase authentication clients are request-local; terminate only this Express session.
+router.post('/logout', (req, res) => {
+  req.session.destroy(error => {
+    if (error) return res.status(500).json({ success: false, error: '로그아웃에 실패했습니다.' });
+    res.clearCookie('mealplan_session', { path: '/', ...(process.env.SESSION_COOKIE_DOMAIN ? { domain: process.env.SESSION_COOKIE_DOMAIN } : {}) });
+    res.json({ success: true });
+  });
 });
 
 // Google OAuth 로그인
@@ -754,8 +589,7 @@ router.post("/google", async (req, res) => {
         console.error("Supabase 연동 오류:", supabaseErr);
       }
       
-      users.push(user);
-      writeUsers(users);
+      user = saveAuthUser(user);
       console.log("새 구글 사용자 생성 (UUID):", user.id);
     } else {
       // 기존 사용자 정보 업데이트
@@ -805,18 +639,18 @@ router.post("/google", async (req, res) => {
         }
       }
       
-      writeUsers(users);
+      user = saveAuthUser(user);
     }
 
     // 세션에 사용자 정보 저장
-    req.session.user = {
+    await establishSession(req, {
       id: user.id,
       name: user.name || user.email,
       email: user.email,
       authType: "google",
       isAdmin: user.isAdmin || false,
       role: user.role || null
-    };
+    });
 
     res.json({
       success: true,
@@ -902,26 +736,25 @@ router.post("/kakao", async (req, res) => {
         authType: "kakao",
         createdAt: new Date().toISOString(),
       };
-      users.push(user);
-      writeUsers(users);
+      user = saveAuthUser(user);
       console.log("새 카카오 사용자 생성 (UUID):", user.id);
     } else {
       // 기존 사용자 정보 업데이트
       user.name = nickname || user.name;
       user.email = email || user.email;
       user.picture = profileImage || user.picture;
-      writeUsers(users);
+      user = saveAuthUser(user);
     }
 
     // 세션에 사용자 정보 저장
-    req.session.user = {
+    await establishSession(req, {
       id: user.id,
       name: user.name,
       email: user.email,
       authType: "kakao",
       isAdmin: user.isAdmin || false,
       role: user.role || null
-    };
+    });
 
     res.json({
       success: true,
@@ -953,7 +786,7 @@ router.get("/kakao/callback", async (req, res) => {
       return res.send(`
         <script>
           if (window.opener) {
-            window.opener.postMessage('social_login_failed', '*');
+            window.opener.postMessage('social_login_failed', window.location.origin);
             window.close();
           } else {
             window.location.href = '/login.html?error=kakao_auth_failed';
@@ -967,7 +800,7 @@ router.get("/kakao/callback", async (req, res) => {
       return res.send(`
         <script>
           if (window.opener) {
-            window.opener.postMessage('social_login_failed', '*');
+            window.opener.postMessage('social_login_failed', window.location.origin);
             window.close();
           } else {
             window.location.href = '/login.html?error=no_auth_code';
@@ -976,8 +809,6 @@ router.get("/kakao/callback", async (req, res) => {
       `);
     }
 
-    console.log("Received kakao auth code:", code);
-    console.log("Using KAKAO_REST_API_KEY:", process.env.KAKAO_REST_API_KEY);
     
     // 리다이렉트 URI 생성
     const redirectUri = getKakaoRedirectUri(req);
@@ -1096,8 +927,7 @@ router.get("/kakao/callback", async (req, res) => {
          console.error("Supabase 연동 오류:", supabaseErr);
        }
       
-      users.push(user);
-      writeUsers(users);
+      user = saveAuthUser(user);
       console.log("Created new kakao user (UUID):", user.id);
     } else {
       // 기존 사용자 정보 업데이트
@@ -1147,12 +977,12 @@ router.get("/kakao/callback", async (req, res) => {
          }
        }
       
-      writeUsers(users);
+      user = saveAuthUser(user);
       console.log("Updated existing kakao user:", user.id);
     }
 
     // 4. 세션에 사용자 정보 저장
-    req.session.user = {
+    await establishSession(req, {
       id: user.id,
       name: user.name,
       email: user.email,
@@ -1160,40 +990,11 @@ router.get("/kakao/callback", async (req, res) => {
       kakaoId: user.kakaoId, // 카카오 ID 추가
       isAdmin: user.isAdmin || false,
       role: user.role || null
-    };
+    });
 
-    console.log("Session user set:", req.session.user);
 
     // 5. 팝업에서 부모창으로 메시지 전송 후 닫기 또는 현재 창에서 리다이렉트
-    res.send(`
-      <script>
-        if (window.opener) {
-          // 사용자 정보를 포함한 메시지 전송
-          window.opener.postMessage({
-            type: 'social_login_success',
-            user: {
-              id: '${user.id}',
-              name: '${user.name || ''}',
-              email: '${user.email || ''}',
-              authType: 'kakao',
-              kakaoId: '${user.kakaoId}',
-              isAdmin: ${user.isAdmin || false},
-              role: '${user.role || ''}'
-            }
-          }, '*');
-          window.close();
-        } else {
-          // 현재 창에서 이동 - 회원가입 여부 확인
-          const isSignup = sessionStorage.getItem('socialSignup');
-          if (isSignup) {
-            sessionStorage.removeItem('socialSignup');
-            window.location.href = '/index.html?signup=success&provider=kakao';
-          } else {
-            window.location.href = '/index.html?login=success';
-          }
-        }
-      </script>
-    `);
+    res.send(renderOAuthSuccess(req.session.user));
   } catch (error) {
     console.error("Kakao callback error:", error);
     if (error.response) {
@@ -1202,7 +1003,7 @@ router.get("/kakao/callback", async (req, res) => {
     res.send(`
       <script>
         if (window.opener) {
-          window.opener.postMessage('social_login_failed', '*');
+          window.opener.postMessage('social_login_failed', window.location.origin);
           window.close();
         } else {
           window.location.href = '/login.html?error=callback_failed';
@@ -1273,7 +1074,7 @@ router.get("/check-username", (req, res) => {
 });
 
 // 가입자 목록 반환 (비밀번호 제외) - Supabase 연동
-router.get("/users", async (req, res) => {
+router.get("/users", adminAuth, async (req, res) => {
   try {
     // Supabase users 테이블에서 사용자 목록 조회
     const { data: supabaseUsers, error } = await supabase
@@ -1352,7 +1153,7 @@ router.get("/users", async (req, res) => {
 });
 
 // 관리자: 사용자 삭제 - Supabase 연동
-router.delete("/users/:id", async (req, res) => {
+router.delete("/users/:id", adminAuth, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -1390,47 +1191,41 @@ router.delete("/users/:id", async (req, res) => {
 });
 
 // 비밀번호 변경
-router.post("/change-password", async (req, res) => {
-  if (!req.session.user) {
-    return res
-      .status(401)
-      .json({ success: false, message: "로그인이 필요합니다." });
+router.post('/change-password', requireLogin, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (typeof currentPassword !== 'string' || !currentPassword || typeof newPassword !== 'string' || newPassword.length < 8 || newPassword.length > 20) {
+      return res.status(400).json({ success: false, message: '현재 비밀번호와 8~20자의 새 비밀번호를 입력하세요.' });
+    }
+    const user = readUsers().find(candidate => candidate.id === req.session.user.id);
+    if (!user) return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+    if (req.session.user.authType === 'email') {
+      const client = createAuthClient();
+      const { data, error } = await client.auth.signInWithPassword({ email: user.email, password: currentPassword });
+      if (error || !data?.user || data.user.id !== (user.supabaseId || user.id)) {
+        return res.status(401).json({ success: false, message: '현재 비밀번호가 올바르지 않습니다.' });
+      }
+      const { error: updateError } = await client.auth.updateUser({ password: newPassword });
+      if (updateError) throw updateError;
+    } else if (user.authType === 'local' || (!user.authType && typeof user.password === 'string')) {
+      if (typeof user.password !== 'string' || !await bcrypt.compare(currentPassword, user.password)) {
+        return res.status(401).json({ success: false, message: '현재 비밀번호가 올바르지 않습니다.' });
+      }
+      const hashed = await bcrypt.hash(newPassword, 10);
+      const users = readUsers();
+      const latest = users.find(candidate => candidate.id === user.id);
+      if (!latest) return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+      latest.password = hashed;
+      writeUsers(users);
+    } else {
+      return res.status(400).json({ success: false, message: '소셜 계정의 비밀번호는 해당 서비스에서 변경해주세요.' });
+    }
+    await establishSession(req, req.session.user);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('비밀번호 변경 오류:', error.message);
+    res.status(500).json({ success: false, message: '비밀번호 변경 중 오류가 발생했습니다.' });
   }
-
-  // Google 사용자는 비밀번호 변경 불가
-  if (req.session.user.authType === "google") {
-    return res.status(400).json({
-      success: false,
-      message: "구글 계정은 비밀번호 변경이 불가능합니다.",
-    });
-  }
-
-  const { currentPassword, newPassword } = req.body;
-  if (!currentPassword || !newPassword) {
-    return res
-      .status(400)
-      .json({ success: false, message: "모든 항목을 입력하세요." });
-  }
-  const users = readUsers();
-  const userIdx = users.findIndex(
-    (u) => u.username === req.session.user.username
-  );
-  if (userIdx === -1) {
-    return res
-      .status(404)
-      .json({ success: false, message: "사용자를 찾을 수 없습니다." });
-  }
-  const user = users[userIdx];
-  const match = await bcrypt.compare(currentPassword, user.password);
-  if (!match) {
-    return res
-      .status(401)
-      .json({ success: false, message: "현재 비밀번호가 올바르지 않습니다." });
-  }
-  const hashed = await bcrypt.hash(newPassword, 10);
-  users[userIdx].password = hashed;
-  writeUsers(users);
-  res.json({ success: true });
 });
 
 // 네이버 Client ID 제공 API
@@ -1512,26 +1307,25 @@ router.post("/naver", async (req, res) => {
         authType: "naver",
         createdAt: new Date().toISOString(),
       };
-      users.push(user);
-      writeUsers(users);
+      user = saveAuthUser(user);
       console.log("새 네이버 사용자 생성 (UUID):", user.id);
     } else {
       // 기존 사용자 정보 업데이트
       user.name = nickname || user.name;
       user.email = email || user.email;
       user.picture = profileImage || user.picture;
-      writeUsers(users);
+      user = saveAuthUser(user);
     }
 
     // 세션에 사용자 정보 저장
-    req.session.user = {
+    await establishSession(req, {
       id: user.id,
       name: user.name,
       email: user.email,
       authType: "naver",
       isAdmin: user.isAdmin || false,
       role: user.role || null
-    };
+    });
 
     res.json({
       success: true,
@@ -1596,7 +1390,7 @@ router.get("/naver/callback", async (req, res) => {
       return res.send(`
         <script>
           if (window.opener) {
-            window.opener.postMessage('social_login_failed', '*');
+            window.opener.postMessage('social_login_failed', window.location.origin);
             window.close();
           } else {
             window.location.href = '/login.html?error=naver_auth_failed';
@@ -1610,7 +1404,7 @@ router.get("/naver/callback", async (req, res) => {
       return res.send(`
         <script>
           if (window.opener) {
-            window.opener.postMessage('social_login_failed', '*');
+            window.opener.postMessage('social_login_failed', window.location.origin);
             window.close();
           } else {
             window.location.href = '/login.html?error=no_auth_code';
@@ -1619,7 +1413,6 @@ router.get("/naver/callback", async (req, res) => {
       `);
     }
 
-    console.log("Received naver auth code:", code);
     console.log("Using NAVER_CLIENT_ID:", NAVER_CLIENT_ID);
     console.log(
       "Redirect URI:",
@@ -1737,8 +1530,7 @@ router.get("/naver/callback", async (req, res) => {
          console.error("Supabase 연동 오류:", supabaseErr);
        }
       
-      users.push(user);
-      writeUsers(users);
+      user = saveAuthUser(user);
       console.log("Created new naver user (UUID):", user.id);
     } else {
       // 기존 사용자 정보 업데이트
@@ -1788,12 +1580,12 @@ router.get("/naver/callback", async (req, res) => {
          }
        }
       
-      writeUsers(users);
+      user = saveAuthUser(user);
       console.log("Updated existing naver user:", user.id);
     }
 
     // 4. 세션에 사용자 정보 저장
-    req.session.user = {
+    await establishSession(req, {
       id: user.id,
       name: user.name,
       email: user.email,
@@ -1801,40 +1593,11 @@ router.get("/naver/callback", async (req, res) => {
       naverId: user.naverId, // 네이버 ID 추가
       isAdmin: user.isAdmin || false,
       role: user.role || null
-    };
+    });
 
-    console.log("Session user set:", req.session.user);
 
     // 5. 팝업에서 부모창으로 메시지 전송 후 닫기 또는 현재 창에서 리다이렉트
-    res.send(`
-      <script>
-        if (window.opener) {
-          // 사용자 정보를 포함한 메시지 전송
-          window.opener.postMessage({
-            type: 'social_login_success',
-            user: {
-              id: '${user.id}',
-              name: '${user.name || ''}',
-              email: '${user.email || ''}',
-              authType: 'naver',
-              naverId: '${user.naverId}',
-              isAdmin: ${user.isAdmin || false},
-              role: '${user.role || ''}'
-            }
-          }, '*');
-          window.close();
-        } else {
-          // 현재 창에서 이동 - 회원가입 여부 확인
-          const isSignup = sessionStorage.getItem('socialSignup');
-          if (isSignup) {
-            sessionStorage.removeItem('socialSignup');
-            window.location.href = '/index.html?signup=success&provider=naver';
-          } else {
-            window.location.href = '/index.html?login=success';
-          }
-        }
-      </script>
-    `);
+    res.send(renderOAuthSuccess(req.session.user));
   } catch (error) {
     console.error("Naver callback error:", error);
     if (error.response) {
@@ -1843,7 +1606,7 @@ router.get("/naver/callback", async (req, res) => {
     res.send(`
       <script>
         if (window.opener) {
-          window.opener.postMessage('social_login_failed', '*');
+          window.opener.postMessage('social_login_failed', window.location.origin);
           window.close();
         } else {
           window.location.href = '/login.html?error=callback_failed';

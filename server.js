@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const axios = require("axios");
+const { generateText, resolveOpenAIModel, isOpenAIConfigured } = require("./utils/openaiClient");
 require("dotenv").config();
 const path = require("path");
 const session = require("express-session");
@@ -9,139 +9,45 @@ const multer = require("multer");
 const {
   generalLimiter,
   securityHeaders,
-  contentFilter,
   validateInput,
 } = require("./utils/securityMiddleware");
 const cacheManager = require("./utils/cacheManager");
-const imageOptimizer = require("./utils/imageOptimizer");
+const ImageOptimizer = require('./utils/imageOptimizer');
+const imageOptimizer = new ImageOptimizer();
+const { adminAuth } = require('./utils/authMiddleware');
+const { getSessionConfig, createOriginChecker } = require('./utils/httpSecurity');
+const { createMonitoringWebSocket } = require('./utils/monitoringWebSocket');
 // const supabaseService = require("./utils/supabaseService"); // 더 이상 사용하지 않음 (로컬 데이터 사용)
 // const { updateDailyLimits } = require("./utils/userDataMigration"); // 파일 삭제됨
 
 const app = express();
 
-// HTTP 요청 크기 제한 증가
-app.use((req, res, next) => {
-  // 헤더 크기 제한 해제
-  if (req.connection.server) {
-    req.connection.server.maxHeadersCount = 0;
-  }
-  next();
-});
-
-// 보안 헤더 적용 (강화)
+// Render terminates TLS at its proxy; trust only the nearest hop in production.
+app.set('trust proxy', process.env.NODE_ENV === 'production' ? 1 : false);
 app.use(securityHeaders);
-
-// 콘텐츠 필터링 적용 (AI API에만 적용)
-app.use("/api/generate-meal-plan", contentFilter.preventSqlInjection);
-app.use("/api/generate-meal-plan", contentFilter.preventXSS);
-// 관리자 API는 보안 미들웨어에서 자체적으로 처리
-
-// 전역 레이트 리미팅 적용 (강화)
 app.use(generalLimiter);
-
-// CORS 설정: 개발 및 프로덕션 환경 모두 허용
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // 개발 환경에서는 모든 origin 허용
-      if (process.env.NODE_ENV !== "production") {
-        return callback(null, true);
-      }
-      
-      // 프로덕션 환경에서 허용할 origin 목록
-      const allowedOrigins = [
-        "http://localhost:3000",
-        "https://eatple.onrender.com",
-        "https://eatple.net",
-        "https://www.eatple.net",
-        process.env.FRONTEND_URL, // 환경변수로 프론트엔드 URL 설정 가능
-        // Render의 자동 생성 도메인도 허용
-        /^https:\/\/.*\.onrender\.com$/
-      ];
-      
-      // origin이 없거나 허용 목록에 있으면 허용
-      if (!origin || allowedOrigins.some(allowed => {
-        if (typeof allowed === 'string') {
-          return allowed === origin;
-        } else if (allowed instanceof RegExp) {
-          return allowed.test(origin);
-        }
-        return false;
-      })) {
-        callback(null, true);
-      } else {
-        console.log('CORS blocked origin:', origin);
-        callback(new Error('CORS policy violation'));
-      }
-    },
-    methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
-    credentials: true,
-    optionsSuccessStatus: 200 // 일부 브라우저 호환성을 위해
-  })
-);
-app.use(bodyParser.json({ limit: "50mb" })); // 요청 크기 제한 증가
-app.use(
-  bodyParser.urlencoded({
-    extended: true,
-    limit: "50mb",
-    parameterLimit: 100000,
-  })
-);
-
-// 세션 미들웨어 적용 (Render 환경 최적화)
-const sessionConfig = {
-  secret: process.env.SESSION_SECRET || "mealplan_secret_key_enhanced",
-  resave: false,
-  saveUninitialized: false,
-  name: "mealplan_session",
-  rolling: true, // 매 요청마다 세션 갱신
-  // Render 환경에서 세션 지속성을 위한 설정
-  proxy: true, // 프록시 뒤에서 실행될 때 필요
-  cookie: {
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24, // 24시간
-  }
-};
-
-// Render 환경에서는 secure와 sameSite 설정을 조건부로 적용
-if (process.env.NODE_ENV === "production") {
-  sessionConfig.cookie.secure = true;
-  // Render 환경에서는 sameSite를 none으로 명시적 설정
-  sessionConfig.cookie.sameSite = "none";
-  // 새 도메인(apex 및 www) 모두에서 세션 공유를 위해 최상위 도메인 설정
-  sessionConfig.cookie.domain = ".eatple.net";
-} else {
-  sessionConfig.cookie.secure = false;
-  sessionConfig.cookie.sameSite = "lax";
-}
-
-// console.log('세션 설정:', {
-//   nodeEnv: process.env.NODE_ENV,
-//   render: process.env.RENDER,
-//   cookieConfig: sessionConfig.cookie
-// });
-
-// 세션 미들웨어 적용
-app.use(session(sessionConfig));
-
-// 세션 디버깅 미들웨어 (개발 환경에서만 활성화) - 로그 비활성화
-// if (process.env.NODE_ENV !== 'production') {
-//   app.use((req, res, next) => {
-//     console.log('세션 상태:', {
-//       sessionId: req.sessionID,
-//       hasSession: !!req.session,
-//       hasUser: !!req.session?.user,
-//       cookie: req.headers.cookie
-//     });
-//     next();
-//   });
-// }
+const isAllowedOrigin = createOriginChecker();
+app.use(cors({
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) return callback(null, true);
+    const error = new Error('허용되지 않은 요청 출처입니다.');
+    error.status = 403;
+    callback(error);
+  },
+  methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH', 'OPTIONS'],
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000 }));
+const sessionMiddleware = session(getSessionConfig());
+app.use(sessionMiddleware);
 
 // URL 리라이트 미들웨어: .html 확장자 제거
 // 1. .html로 끝나는 URL을 확장자 없는 URL로 301 리다이렉트
 app.use((req, res, next) => {
-  if (req.path.endsWith('.html')) {
-    const newPath = req.path.slice(0, -5); // .html 제거
+  if (['GET', 'HEAD'].includes(req.method) && req.path.endsWith('.html')) {
+    const newPath = '/' + req.path.slice(0, -5).replace(/^\/+/, '');
     return res.redirect(301, newPath + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : ''));
   }
   next();
@@ -251,11 +157,11 @@ app.get("/api/admin/cache-stats", (req, res) => {
     return res.status(403).json({ error: "관리자 권한이 필요합니다." });
   }
 
-  const stats = cacheManager.getCacheStats();
+  const stats = cacheManager.getStats();
   res.json({
     success: true,
     stats,
-    memoryUsage: cacheManager.getMemoryUsage(),
+    memoryUsage: process.memoryUsage(),
   });
 });
 
@@ -265,32 +171,28 @@ app.post("/api/admin/cache-invalidate", (req, res) => {
   }
 
   const { type, key } = req.body;
-  const success = cacheManager.invalidateCache(type, key);
+  if (typeof type !== 'string' || (key !== undefined && typeof key !== 'string')) {
+    return res.status(400).json({ success: false, error: '유효한 캐시 종류와 키가 필요합니다.' });
+  }
+  const removed = key ? cacheManager.delete(type, key) : cacheManager.invalidateCache(type);
 
   res.json({
-    success,
-    message: success ? "캐시 무효화 완료" : "캐시 무효화 실패",
+    success: true,
+    removed,
+    message: '캐시 무효화 완료',
   });
 });
 
 app.post(
   "/api/admin/optimize-images",
-  validateInput.aiApi, // 입력 검증
+  adminAuth,
   async (req, res) => {
-    if (
-      !req.session ||
-      !req.session.user ||
-      req.session.user.role !== "admin"
-    ) {
-      return res.status(403).json({ error: "관리자 권한이 필요합니다." });
-    }
-
     const { inputPath, outputPath, options } = req.body;
 
     try {
-      const result = await imageOptimizer.optimizeImage(
-        inputPath,
-        outputPath,
+      const result = await imageOptimizer.optimizeAndSave(
+        imageOptimizer.resolveUploadPath(inputPath),
+        imageOptimizer.resolveUploadPath(outputPath),
         options
       );
       res.json(result);
@@ -308,10 +210,8 @@ app.get("/api/admin/image-score/:imagePath(*)", (req, res) => {
     return res.status(403).json({ error: "관리자 권한이 필요합니다." });
   }
 
-  const imagePath = req.params.imagePath;
-
-  imageOptimizer
-    .calculateImageScore(imagePath)
+  Promise.resolve()
+    .then(() => imageOptimizer.getImageMetadata(imageOptimizer.resolveUploadPath(req.params.imagePath)))
     .then((result) => {
       res.json(result);
     })
@@ -323,30 +223,11 @@ app.get("/api/admin/image-score/:imagePath(*)", (req, res) => {
     });
 });
 
-// 환경 변수에서 API 키들 가져오기
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const KAKAO_MAP_API_KEY =
-  process.env.KAKAO_MAP_API_KEY;
+const KAKAO_MAP_API_KEY = process.env.KAKAO_MAP_API_KEY;
 
-console.log("🔍 환경 변수 상태 확인:");
-console.log("- GEMINI_API_KEY:", GEMINI_API_KEY ? "설정됨" : "설정되지 않음");
-console.log(
-  "- KAKAO_MAP_API_KEY:",
-  KAKAO_MAP_API_KEY ? "설정됨" : "설정되지 않음"
-);
-
-if (!GEMINI_API_KEY) {
-  console.error(
-    "Gemini API 키가 설정되지 않았습니다. .env 파일에 GEMINI_API_KEY를 추가하세요."
-  );
-  console.warn("⚠️  Mock 모드로 실행됩니다. 실제 API 기능이 제한됩니다.");
-} else {
-  console.log("✅ Gemini API 키가 설정되었습니다. 실제 API 기능을 사용합니다.");
-}
-
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
-// 추천식단 전용 Gemini 3 Flash Preview API URL
-const GEMINI_MEAL_PLAN_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
+// AI credentials stay on the server. Missing configuration fails AI requests explicitly.
+console.log("- OPENAI_API_KEY:", isOpenAIConfigured() ? "설정됨" : "설정되지 않음");
+console.log("- OPENAI_RESPONSES_MODEL:", resolveOpenAIModel());
 
 // 서비스 이용 횟수 추적 모듈
 const {
@@ -360,8 +241,13 @@ const PointsService = require("./utils/pointsService");
 // AI 요청 큐 모듈
 const aiRequestQueue = require("./utils/aiRequestQueue");
 
+function generationResponse(result) {
+  // Older cached browser scripts read candidates; keep this response alias during migration.
+  return { ...result, candidates: [{ content: { parts: [{ text: result.text }] } }] };
+}
+
 // AI 큐 상태 조회 엔드포인트 (관리자용)
-app.get("/api/ai-queue/status", (req, res) => {
+app.get("/api/ai-queue/status", adminAuth, (req, res) => {
   try {
     const status = aiRequestQueue.getStatus();
     const stats = aiRequestQueue.getStats();
@@ -380,7 +266,7 @@ app.get("/api/ai-queue/status", (req, res) => {
   }
 });
 
-// AI API 호출 (추천식단 - Gemini 2.5 Pro 사용)
+// AI API 호출 (추천식단 - OpenAI GPT-6 Luna 사용)
 app.post(
   "/api/generate-meal-plan",
   validateInput.aiApi, // 입력 검증 적용
@@ -395,7 +281,7 @@ app.post(
 
     // 더 정확한 캐시 키 생성 (전체 프롬프트의 해시 사용)
     const crypto = require("crypto");
-    const cacheKey = `meal_plan_${crypto
+    const cacheKey = `meal_plan_${resolveOpenAIModel()}_${crypto
       .createHash("sha256")
       .update(prompt)
       .digest("hex")}`;
@@ -408,48 +294,34 @@ app.post(
     }
 
     try {
-      console.log("🍽️ 추천식단 생성 - Gemini 3 Flash Preview 모델 사용");
+      console.log("🍽️ 추천식단 생성 - OpenAI GPT-6 Luna 모델 사용");
       
       // AI 요청 큐에 추가하여 순차 처리
-      const response = await aiRequestQueue.add(
-        async () => {
-          return await axios.post(
-            GEMINI_MEAL_PLAN_API_URL,
-            {
-              contents: [{ parts: [{ text: prompt }] }],
-            },
-            {
-              headers: { "Content-Type": "application/json" },
-              timeout: 300000, // 300초 타임아웃
-            }
-          );
-        },
+      const response = generationResponse(await aiRequestQueue.add(
+        (signal) => generateText(prompt, { signal, timeout: 300000 }),
         { type: 'meal-plan', userId: req.session?.user?.id }
-      );
+      ));
 
       // 응답 캐싱 (1시간)
-      cacheManager.set('api', cacheKey, response.data, {}, 3600);
+      cacheManager.set('api', cacheKey, response, {}, 3600);
 
       // 로그인한 사용자인 경우 서비스 이용 횟수 증가
       if (req.session && req.session.user) {
         incrementServiceUsage(req.session.user.id, SERVICE_TYPES.MEAL_PLAN);
       }
 
-      res.json(response.data);
+      res.json(response);
     } catch (error) {
       console.error(
-        "Gemini API 오류:",
-        error.response ? error.response.data : error.message
+        "OpenAI API 오류:",
+        error.message
       );
-      res.status(500).json({
-        error: "Gemini API 호출 실패",
-        details: error.response ? error.response.data : error.message,
-      });
+      res.status(error.status || 500).json({ error: error.message, code: error.code || "AI_FAILED" });
     }
   }
 );
 
-// 영양제 추천용 Gemini API 엔드포인트
+// 영양제 추천용 OpenAI API 엔드포인트
 app.post(
   "/api/generate-supplement-recommendation",
   validateInput.aiApi,
@@ -464,7 +336,7 @@ app.post(
 
     // 더 정확한 캐시 키 생성 (전체 프롬프트의 해시 사용)
     const crypto = require("crypto");
-    const cacheKey = `supplement_${crypto
+    const cacheKey = `supplement_${resolveOpenAIModel()}_${crypto
       .createHash("sha256")
       .update(prompt)
       .digest("hex")}`;
@@ -478,40 +350,26 @@ app.post(
 
     try {
       // AI 요청 큐에 추가하여 순차 처리
-      const response = await aiRequestQueue.add(
-        async () => {
-          return await axios.post(
-            GEMINI_API_URL,
-            {
-              contents: [{ parts: [{ text: prompt }] }],
-            },
-            {
-              headers: { "Content-Type": "application/json" },
-              timeout: 300000, // 300초 타임아웃
-            }
-          );
-        },
+      const response = generationResponse(await aiRequestQueue.add(
+        (signal) => generateText(prompt, { signal, timeout: 300000 }),
         { type: 'supplement-recommendation', userId: req.session?.user?.id }
-      );
+      ));
 
       // 응답 캐싱 (2시간)
-      cacheManager.set('api', cacheKey, response.data, {}, 7200);
+      cacheManager.set('api', cacheKey, response, {}, 7200);
 
-      res.json(response.data);
+      res.json(response);
     } catch (error) {
       console.error(
-        "영양제 추천 Gemini API 오류:",
-        error.response ? error.response.data : error.message
+        "영양제 추천 OpenAI API 오류:",
+        error.message
       );
-      res.status(500).json({
-        error: "영양제 추천 API 호출 실패",
-        details: error.response ? error.response.data : error.message,
-      });
+      res.status(error.status || 500).json({ error: error.message, code: error.code || "AI_FAILED" });
     }
   }
 );
 
-// AI 식재료 분석용 Gemini API 엔드포인트 (보안 강화)
+// AI 식재료 분석용 OpenAI API 엔드포인트 (보안 강화)
 app.post("/api/analyze-ingredient", validateInput.aiApi, async (req, res) => {
   const { ingredient, prompt } = req.body;
 
@@ -532,9 +390,7 @@ app.post("/api/analyze-ingredient", validateInput.aiApi, async (req, res) => {
   }
 
   // 캐시 키 생성
-  const cacheKey = `ingredient_${Buffer.from(ingredient + prompt)
-    .toString("base64")
-    .substring(0, 50)}`;
+  const cacheKey = `ingredient_${resolveOpenAIModel()}_${require("crypto").createHash("sha256").update(JSON.stringify([ingredient, prompt])).digest("hex")}`;
 
   // 캐시에서 응답 확인
   const cachedResponse = cacheManager.get('api', cacheKey);
@@ -546,23 +402,12 @@ app.post("/api/analyze-ingredient", validateInput.aiApi, async (req, res) => {
   try {
     // AI 요청 큐에 추가하여 순차 처리
     const response = await aiRequestQueue.add(
-      async () => {
-        return await axios.post(
-          GEMINI_API_URL,
-          {
-            contents: [{ parts: [{ text: prompt }] }],
-          },
-          {
-            headers: { "Content-Type": "application/json" },
-            timeout: 300000, // 300초 타임아웃
-          }
-        );
-      },
+      (signal) => generateText(prompt, { signal, timeout: 300000 }),
       { type: 'ingredient-analysis', userId: req.session?.user?.id, ingredient }
     );
 
-    // Gemini API 응답에서 텍스트 추출
-    const generatedText = response.data.candidates[0].content.parts[0].text;
+    // OpenAI API 응답에서 텍스트 추출
+    const generatedText = response.text;
 
     // 로그인한 사용자인 경우 서비스 이용 횟수 증가
     if (req.session && req.session.user) {
@@ -603,13 +448,10 @@ app.post("/api/analyze-ingredient", validateInput.aiApi, async (req, res) => {
     }
   } catch (error) {
     console.error(
-      "식재료 분석 Gemini API 오류:",
-      error.response ? error.response.data : error.message
+      "식재료 분석 OpenAI API 오류:",
+      error.message
     );
-    res.status(500).json({
-      error: "식재료 분석 API 호출 실패",
-      details: error.response ? error.response.data : error.message,
-    });
+    res.status(error.status || 500).json({ error: error.message, code: error.code || "AI_FAILED" });
   }
 });
 
@@ -643,7 +485,7 @@ app.get("/api/kakao-rest-key", (req, res) => {
 });
 
 // 환경변수 상태 확인 엔드포인트 (디버깅용)
-app.get("/api/env-status", (req, res) => {
+app.get("/api/env-status", adminAuth, (req, res) => {
   res.json({
     KAKAO_MAP_API_KEY: KAKAO_MAP_API_KEY ? "설정됨" : "설정되지 않음",
     KAKAO_REST_API_KEY: process.env.KAKAO_REST_API_KEY ? "설정됨" : "설정되지 않음",
@@ -671,7 +513,7 @@ const upload = multer({
 });
 
 // 이미지 업로드 엔드포인트 (최적화 포함)
-app.post("/api/upload-images", upload.array("images", 10), async (req, res) => {
+app.post("/api/upload-images", adminAuth, upload.array("images", 10), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: "업로드할 이미지가 없습니다." });
@@ -695,24 +537,13 @@ app.post("/api/upload-images", upload.array("images", 10), async (req, res) => {
         const fileName = `${crypto.randomUUID()}.jpg`; // 모든 이미지를 jpg로 통일
         const filePath = path.join(uploadsDir, fileName);
 
-        // 이미지 최적화 시도 (sharp가 설치되어 있는 경우)
-        try {
-          const ImageOptimizer = require("./utils/imageOptimizer");
-          const optimizer = new ImageOptimizer();
-
-          await optimizer.optimizeAndSave(file.buffer, filePath, {
-            maxWidth: 1200,
-            maxHeight: 800,
-            quality: 85,
-            format: "jpeg",
-          });
-
-          console.log(`이미지 최적화 완료: ${fileName}`);
-        } catch (optimizeError) {
-          // 최적화 실패 시 원본 저장
-          console.warn("이미지 최적화 실패, 원본 저장:", optimizeError.message);
-          fs.writeFileSync(filePath, file.buffer);
-        }
+        // Only persist successfully decoded images; never publish arbitrary original bytes.
+        await imageOptimizer.optimizeAndSave(file.buffer, filePath, {
+          maxWidth: 1200,
+          maxHeight: 800,
+          quality: 85,
+          format: 'jpeg'
+        });
 
         // 웹에서 접근 가능한 URL 생성
         const imageUrl = `/uploads/products/${fileName}`;
@@ -725,7 +556,7 @@ app.post("/api/upload-images", upload.array("images", 10), async (req, res) => {
 
     if (imageUrls.length === 0) {
       return res
-        .status(500)
+        .status(400)
         .json({ error: "모든 이미지 처리에 실패했습니다." });
     }
 
@@ -1132,22 +963,18 @@ const PORT = process.env.PORT || 3000;
 
 // HTTP 서버 생성 (WebSocket 지원을 위해)
 const http = require("http");
-const WebSocket = require("ws");
 const server = http.createServer(app);
 
 // WebSocket 서버 설정
-const wss = new WebSocket.Server({
-  server,
-  path: "/monitoring-ws",
-});
+const wss = createMonitoringWebSocket(server, sessionMiddleware, isAllowedOrigin);
 
 // 실시간 모니터링 시스템 초기화
 const {
-  RealtimeMonitoringSystem,
+  getRealtimeMonitoring,
 } = require("./utils/realtimeMonitoringSystem");
 const { getMemoryMonitor } = require("./utils/memoryMonitor");
 
-const monitoringSystem = new RealtimeMonitoringSystem();
+const monitoringSystem = getRealtimeMonitoring();
 const memoryMonitor = getMemoryMonitor();
 
 // WebSocket 연결 처리 (메모리 최적화)
@@ -1193,11 +1020,10 @@ wss.on("connection", (ws, req) => {
 app.locals.monitoringSystem = monitoringSystem;
 
 // HTTP 파서 옵션 설정
-server.maxHeaderSize = 10 * 1024 * 1024; // 10MB 헤더 크기 제한
 server.headersTimeout = 60000; // 60초 헤더 타임아웃
 server.requestTimeout = 300000; // 5분 요청 타임아웃
 
-server.listen(PORT, async () => {
+if (require.main === module) server.listen(PORT, async () => {
   console.log(`서버가 http://localhost:${PORT} 에서 실행 중`);
   console.log(`WebSocket 모니터링: ws://localhost:${PORT}/monitoring-ws`);
 
@@ -1258,3 +1084,5 @@ server.listen(PORT, async () => {
 
   console.log("✅ 서버 초기화 완료 - 모든 스케줄러가 시작되었습니다.");
 });
+
+module.exports = { app, server, wss };

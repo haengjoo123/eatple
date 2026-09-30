@@ -1,5 +1,5 @@
-const fs = require('fs');
 const path = require('path');
+const { readUsers, writeUsers } = require('./userStore');
 
 /**
  * 포인트 관리 서비스
@@ -23,14 +23,7 @@ class PointsService {
      */
     static readUsersData() {
         try {
-            const data = fs.readFileSync(this.USERS_FILE_PATH, 'utf8');
-            const parsed = JSON.parse(data);
-            // users 필드가 객체면 배열로 변환
-            if (parsed.users && typeof parsed.users === 'object') {
-                return Object.values(parsed.users);
-            }
-            // 배열 형태면 그대로 반환
-            return Array.isArray(parsed) ? parsed : [];
+            return readUsers(this.USERS_FILE_PATH);
         } catch (error) {
             console.error('사용자 데이터 읽기 오류:', error);
             throw new Error('사용자 데이터를 읽을 수 없습니다.');
@@ -42,7 +35,7 @@ class PointsService {
      */
     static saveUsersData(usersData) {
         try {
-            fs.writeFileSync(this.USERS_FILE_PATH, JSON.stringify(usersData, null, 2));
+            writeUsers(usersData, this.USERS_FILE_PATH);
         } catch (error) {
             console.error('사용자 데이터 저장 오류:', error);
             throw new Error('사용자 데이터를 저장할 수 없습니다.');
@@ -133,8 +126,6 @@ class PointsService {
             }
             
             return hasChanges;
-            
-            return hasChanges;
         } catch (error) {
             console.error('일일 한도 초기화 오류:', error);
             return false;
@@ -152,14 +143,19 @@ class PointsService {
      */
     static earnPoints(userId, points, source = 'game', description = '', bypassDailyLimit = false) {
         const { user, usersData } = this.findUser(userId);
+        const result = this.applyPointsAward(user, points, source, description, bypassDailyLimit);
+        this.saveUsersData(usersData);
+        return result;
+    }
+
+    // Mutate an already loaded user so an award and its one-time flag can be saved together.
+    static applyPointsAward(user, points, source = 'game', description = '', bypassDailyLimit = false) {
+        if (!Number.isSafeInteger(points) || points <= 0) {
+            throw new Error('적립할 포인트는 0보다 큰 정수여야 합니다.');
+        }
         
         // 일일 한도 확인 및 초기화
         this.checkAndResetDailyLimit(user);
-        
-        // 포인트 유효성 검사
-        if (points <= 0) {
-            throw new Error('적립할 포인트는 0보다 커야 합니다.');
-        }
 
         let actualPoints = points;
         let dailyEarnedIncrement = 0;
@@ -201,9 +197,6 @@ class PointsService {
         
         user.gamePoints.history.push(transaction);
         
-        // 데이터 저장
-        this.saveUsersData(usersData);
-        
         return {
             success: true,
             earnedPoints: actualPoints,
@@ -227,8 +220,8 @@ class PointsService {
         const { user, usersData } = this.findUser(userId);
         
         // 포인트 유효성 검사
-        if (points <= 0) {
-            throw new Error('사용할 포인트는 0보다 커야 합니다.');
+        if (!Number.isSafeInteger(points) || points <= 0) {
+            throw new Error('사용할 포인트는 0보다 큰 정수여야 합니다.');
         }
 
         // 보유 포인트 확인
@@ -365,12 +358,12 @@ class PointsService {
      */
     static validateGameScore(gameScore, gameType, playTime) {
         // 기본 검증
-        if (typeof gameScore !== 'number' || gameScore < 0) {
+        if (!Number.isSafeInteger(gameScore) || gameScore < 0) {
             console.warn(`점수 검증 실패 - 유효하지 않은 점수: ${gameScore}`);
             return { valid: false, reason: '유효하지 않은 점수입니다.' };
         }
 
-        if (typeof playTime !== 'number' || playTime < 0) {
+        if (!Number.isFinite(playTime) || playTime < 0) {
             console.warn(`점수 검증 실패 - 유효하지 않은 플레이 시간: ${playTime}`);
             return { valid: false, reason: '유효하지 않은 플레이 시간입니다.' };
         }

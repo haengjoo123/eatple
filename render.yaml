@@ -14,12 +14,14 @@ services:
         value: true
       - key: SESSION_SECRET
         generateValue: true
+      - key: OPENAI_RESPONSES_MODEL
+        value: gpt-6-luna
       # 아래 환경변수들은 Render 대시보드에서 직접 설정해야 합니다
       # - key: SUPABASE_URL
       #   sync: false
       # - key: SUPABASE_KEY
       #   sync: false
-      # - key: GEMINI_API_KEY
+      # - key: OPENAI_API_KEY
       #   sync: false
       # - key: GOOGLE_CLIENT_ID
       #   sync: false

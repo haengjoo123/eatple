@@ -31,6 +31,15 @@ const generalLimiter = rateLimit({
   }
 });
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: '인증 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }
+});
+
 // 게임 점수 제출에 대한 레이트 리미팅
 const gameScoreLimiter = rateLimit({
   windowMs: 60 * 1000, // 1분
@@ -44,7 +53,7 @@ const gameScoreLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => {
     // 사용자별로 제한 (IPv6 호환)
-    return req.session?.user?.id || ipKeyGenerator(req);
+    return req.session?.user?.id || ipKeyGenerator(req.ip);
   }
 });
 
@@ -60,7 +69,7 @@ const pointsLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => {
-    return req.session?.user?.id || ipKeyGenerator(req);
+    return req.session?.user?.id || ipKeyGenerator(req.ip);
   }
 });
 
@@ -76,7 +85,7 @@ const gameSessionLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => {
-    return req.session?.user?.id || ipKeyGenerator(req);
+    return req.session?.user?.id || ipKeyGenerator(req.ip);
   }
 });
 
@@ -96,7 +105,7 @@ const validateInput = {
       });
     }
     
-    if (typeof score !== 'number' || score < 0) {
+    if (!Number.isSafeInteger(score) || score < 0) {
       return res.status(400).json({
         success: false,
         error: '유효한 점수가 필요합니다.'
@@ -110,7 +119,7 @@ const validateInput = {
       });
     }
     
-    if (typeof playTime !== 'number' || playTime < 0) {
+    if (!Number.isFinite(playTime) || playTime < 0) {
       return res.status(400).json({
         success: false,
         error: '유효한 플레이 시간이 필요합니다.'
@@ -147,7 +156,7 @@ const validateInput = {
   points: (req, res, next) => {
     const { points } = req.body;
     
-    if (typeof points !== 'number' || points <= 0) {
+    if (!Number.isSafeInteger(points) || points <= 0) {
       return res.status(400).json({
         success: false,
         error: '유효한 포인트 값이 필요합니다.'
@@ -158,28 +167,6 @@ const validateInput = {
       return res.status(400).json({
         success: false,
         error: '포인트 값이 너무 큽니다.'
-      });
-    }
-    
-    next();
-  },
-  
-  // AI API 검증
-  aiApi: (req, res, next) => {
-    const { prompt } = req.body;
-    
-    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: '유효한 프롬프트가 필요합니다.'
-      });
-    }
-    
-    // 프롬프트 길이 제한 (10,000자)
-    if (prompt.length > 10000) {
-      return res.status(400).json({
-        success: false,
-        error: '프롬프트가 너무 깁니다.'
       });
     }
     
@@ -209,128 +196,23 @@ const validateInput = {
     next();
   },
 
-  // AI API 입력 검증 (완화)
+  // AI prompts are text, not SQL. Quotes and ordinary words must remain valid.
   aiApi: (req, res, next) => {
     const { prompt, ingredient } = req.body;
-    
-    // 식재료 분석 API와 식단 생성 API는 더 관대한 검증 적용
-    if (req.path === '/api/analyze-ingredient' || req.path === '/api/generate-meal-plan') {
-      // 기본적인 XSS 방지만 적용
-      if (prompt && typeof prompt === 'string') {
-        const dangerousPatterns = /<script|javascript:|on\w+\s*=|data:text\/html/i;
-        if (dangerousPatterns.test(prompt)) {
-          return res.status(400).json({
-            success: false,
-            error: '유효하지 않은 입력이 감지되었습니다.'
-          });
-        }
-        
-        // 프롬프트 길이 제한
-        if (prompt.length > 10000) { // 식단 생성은 더 긴 프롬프트 허용
-          return res.status(400).json({
-            success: false,
-            error: '프롬프트가 너무 깁니다.'
-          });
-        }
-      }
-      
-      // 식재료명 검증 (완화)
-      if (ingredient && typeof ingredient === 'string') {
-        const dangerousPatterns = /<script|javascript:|on\w+\s*=|data:text\/html/i;
-        if (dangerousPatterns.test(ingredient)) {
-          return res.status(400).json({
-            success: false,
-            error: '유효하지 않은 식재료명이 감지되었습니다.'
-          });
-        }
-        
-        if (ingredient.length > 200) {
-          return res.status(400).json({
-            success: false,
-            error: '식재료명이 너무 깁니다.'
-          });
-        }
-      }
-      
-      return next();
+    if (typeof prompt !== 'string' || !prompt.trim()) {
+      return res.status(400).json({ error: '유효한 프롬프트가 필요합니다.' });
     }
-    
-    // 다른 AI API는 기존 검증 적용
-    // 프롬프트 검증
-    if (prompt && typeof prompt === 'string') {
-      // XSS 방지를 위한 특수문자 필터링
-      const dangerousPatterns = /<script|javascript:|on\w+\s*=|data:text\/html/i;
-      if (dangerousPatterns.test(prompt)) {
-        return res.status(400).json({
-          success: false,
-          error: '유효하지 않은 입력이 감지되었습니다.'
-        });
-      }
-      
-      // SQL 인젝션 방지
-      const sqlKeywords = ['union', 'select', 'insert', 'update', 'delete', 'drop', 'create', 'alter', 'exec', 'execute', 'script', 'declare', 'cast', 'convert', 'information_schema', 'database', 'table', 'user', 'password', 'admin', 'or', 'and', 'from', 'where', 'group', 'order', 'having', 'limit'];
-      const sqlOperators = [' or ', ' and ', '--', '/*', '*/', ';', '=', '>', '<', '>=', '<=', '<>', '!='];
-      const specialChars = ["'", '"', '`', ';', '-', '/', '*'];
-      
-      const lowerPrompt = prompt.toLowerCase();
-      
-      // SQL 키워드 검사
-      for (const keyword of sqlKeywords) {
-        if (lowerPrompt.includes(keyword)) {
-          return res.status(400).json({
-            success: false,
-            error: '유효하지 않은 입력이 감지되었습니다.'
-          });
-        }
-      }
-      
-      // SQL 연산자 검사
-      for (const operator of sqlOperators) {
-        if (lowerPrompt.includes(operator)) {
-          return res.status(400).json({
-            success: false,
-            error: '유효하지 않은 입력이 감지되었습니다.'
-          });
-        }
-      }
-      
-      // 특수 문자 검사
-      for (const char of specialChars) {
-        if (lowerPrompt.includes(char)) {
-          return res.status(400).json({
-            success: false,
-            error: '유효하지 않은 입력이 감지되었습니다.'
-          });
-        }
-      }
-      
-      // 프롬프트 길이 제한
-      if (prompt.length > 2000) {
-        return res.status(400).json({
-          success: false,
-          error: '프롬프트가 너무 깁니다.'
-        });
-      }
+    if (prompt.length > 10000) {
+      return res.status(400).json({ error: '프롬프트가 너무 깁니다.' });
     }
-    
-    // 식재료 검증
-    if (ingredient && typeof ingredient === 'string') {
-      const dangerousPatterns = /<script|javascript:|on\w+\s*=|data:text\/html/i;
-      if (dangerousPatterns.test(ingredient)) {
-        return res.status(400).json({
-          success: false,
-          error: '유효하지 않은 식재료명이 감지되었습니다.'
-        });
-      }
-      
-      if (ingredient.length > 100) {
-        return res.status(400).json({
-          success: false,
-          error: '식재료명이 너무 깁니다.'
-        });
-      }
+    const dangerousPatterns = /<script|javascript:|on\w+\s*=|data:text\/html/i;
+    if (dangerousPatterns.test(prompt)) {
+      return res.status(400).json({ error: '유효하지 않은 입력이 감지되었습니다.' });
     }
-    
+    if (ingredient !== undefined &&
+        (typeof ingredient !== 'string' || ingredient.length > 200 || dangerousPatterns.test(ingredient))) {
+      return res.status(400).json({ error: '유효하지 않은 식재료명입니다.' });
+    }
     next();
   }
 };
@@ -353,7 +235,7 @@ const securityHeaders = (req, res, next) => {
   
   // 추가 보안 헤더
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googleapis.com https://accounts.google.com https://gstatic.com https://*.gstatic.com https://cdn.jsdelivr.net https://unpkg.com https://dapi.kakao.com http://dapi.kakao.com https://*.kakao.com http://*.kakao.com https://kakao.com http://kakao.com https://*.daumcdn.net http://*.daumcdn.net https://daumcdn.net http://daumcdn.net https://t1.kakaocdn.net https://*.kakaocdn.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://accounts.google.com https://gstatic.com https://*.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https: http: https://images.unsplash.com https://img.youtube.com https://cdn.jsdelivr.net https://*.kakao.com http://*.kakao.com https://*.daumcdn.net http://*.daumcdn.net https://gstatic.com https://*.gstatic.com https://developers.kakao.com https://t1.kakaocdn.net https://*.kakaocdn.net; font-src 'self' https://fonts.gstatic.com https://gstatic.com https://*.gstatic.com https://cdn.jsdelivr.net; frame-src 'self' https://accounts.google.com https://*.google.com https://coupa.ng https://*.coupa.ng https://ads-partners.coupang.com https://*.coupang.com https://partners.coupangcdn.com https://*.coupangcdn.com; connect-src 'self' https://generativelanguage.googleapis.com https://www.googleapis.com https://accounts.google.com https://oauth2.googleapis.com https://eutils.ncbi.nlm.nih.gov https://newsapi.org https://cdn.jsdelivr.net https://dapi.kakao.com http://dapi.kakao.com https://*.kakao.com http://*.kakao.com https://kakao.com http://kakao.com https://*.daumcdn.net http://*.daumcdn.net https://daumcdn.net http://daumcdn.net https://kapi.kakao.com https://t1.kakaocdn.net https://*.kakaocdn.net https://*.onrender.com;");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googleapis.com https://accounts.google.com https://gstatic.com https://*.gstatic.com https://cdn.jsdelivr.net https://unpkg.com https://dapi.kakao.com http://dapi.kakao.com https://*.kakao.com http://*.kakao.com https://kakao.com http://kakao.com https://*.daumcdn.net http://*.daumcdn.net https://daumcdn.net http://daumcdn.net https://t1.kakaocdn.net https://*.kakaocdn.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://accounts.google.com https://gstatic.com https://*.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https: http: https://images.unsplash.com https://img.youtube.com https://cdn.jsdelivr.net https://*.kakao.com http://*.kakao.com https://*.daumcdn.net http://*.daumcdn.net https://gstatic.com https://*.gstatic.com https://developers.kakao.com https://t1.kakaocdn.net https://*.kakaocdn.net; font-src 'self' https://fonts.gstatic.com https://gstatic.com https://*.gstatic.com https://cdn.jsdelivr.net; frame-src 'self' https://accounts.google.com https://*.google.com https://coupa.ng https://*.coupa.ng https://ads-partners.coupang.com https://*.coupang.com https://partners.coupangcdn.com https://*.coupangcdn.com; connect-src 'self' https://www.googleapis.com https://accounts.google.com https://oauth2.googleapis.com https://eutils.ncbi.nlm.nih.gov https://newsapi.org https://cdn.jsdelivr.net https://dapi.kakao.com http://dapi.kakao.com https://*.kakao.com http://*.kakao.com https://kakao.com http://kakao.com https://*.daumcdn.net http://*.daumcdn.net https://daumcdn.net http://daumcdn.net https://kapi.kakao.com https://t1.kakaocdn.net https://*.kakaocdn.net https://*.onrender.com;");
   res.setHeader('Permissions-Policy', 'geolocation=(self), microphone=(), camera=()');
   
   next();
@@ -664,6 +546,7 @@ const validateSession = (req, res, next) => {
 };
 
 module.exports = {
+  authLimiter,
   generalLimiter,
   gameScoreLimiter,
   pointsLimiter,

@@ -14,59 +14,18 @@ const aiRequestQueue = require("../utils/aiRequestQueue");
 // 카카오 REST API 키
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY || "test_key";
 
-// Gemini API 설정
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
+const { generateText } = require("../utils/openaiClient");
 
 // Google Places API 설정
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 
-// Gemini API 호출 함수 (큐 적용)
-async function callGeminiAPI(prompt, metadata = {}) {
-  try {
-    console.log("🤖 Gemini API 호출 시작...");
-
-    // API 키 확인
-    if (!GEMINI_API_KEY || GEMINI_API_KEY === "your_gemini_api_key_here") {
-      console.error("❌ Gemini API 키가 설정되지 않았습니다.");
-      throw new Error("Gemini API 키가 설정되지 않았습니다.");
-    }
-
-    // AI 요청 큐에 추가하여 순차 처리
-    const response = await aiRequestQueue.add(
-      async () => {
-        return await axios.post(
-          GEMINI_API_URL,
-          {
-            contents: [
-              {
-                parts: [
-                  {
-                    text: prompt,
-                  },
-                ],
-              },
-            ],
-            // Google Search 도구 제거 - 직접 API로 데이터 수집
-          },
-          {
-            headers: { "Content-Type": "application/json" },
-            timeout: 200000, // 타임아웃 단축 (Google Search 불필요)
-          }
-        );
-      },
-      { type: 'restaurant-recommendation', ...metadata }
-    );
-
-    console.log("✅ Gemini API 응답 수신");
-    return response.data.candidates[0].content.parts[0].text;
-  } catch (error) {
-    console.error(
-      "❌ Gemini API 호출 오류:",
-      error.response ? error.response.data : error.message
-    );
-    throw error;
-  }
+// AI requests use the shared queue and propagate cancellation to OpenAI.
+async function callOpenAI(prompt, metadata = {}) {
+  const response = await aiRequestQueue.add(
+    (signal) => generateText(prompt, { signal, timeout: 200000, json: true }),
+    { type: "restaurant-recommendation", ...metadata }
+  );
+  return response.text;
 }
 
 // AI 추천 시스템 (Google Search API 활용)
@@ -180,9 +139,9 @@ RESPONSE FORMAT: JSON ONLY
 }
 `;
 
-    // Gemini API 호출
+    // OpenAI API 호출
     console.log("🤖 AI 추천 분석 시작...");
-    const aiResponse = await callGeminiAPI(prompt);
+    const aiResponse = await callOpenAI(prompt);
     console.log("📝 AI 응답 수신, JSON 파싱 시작...");
 
     // JSON 파싱

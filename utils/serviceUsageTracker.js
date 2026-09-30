@@ -1,37 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-
-const USERS_FILE = path.join(__dirname, '../data/users.json');
-
-// 사용자 데이터 읽기
-function readUsers() {
-    if (!fs.existsSync(USERS_FILE)) {
-        return [];
-    }
-
-    const data = fs.readFileSync(USERS_FILE, 'utf-8');
-
-    // 파일이 비어있는 경우 빈 배열 반환
-    if (!data.trim()) {
-        return [];
-    }
-
-    try {
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Failed to parse users.json:', error);
-        console.error('Raw data:', data);
-        return []; // 파싱 실패 시 빈 배열을 반환하여 서버 다운 방지
-    }
-}
-
-// 사용자 데이터 쓰기
-function writeUsers(users) {
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
-}
+const { readUsers, writeUsers } = require('./userStore');
 
 // 서비스 이용 횟수 증가
 function incrementServiceUsage(userId, serviceType) {
+    if (!Object.values(SERVICE_TYPES).includes(serviceType)) return false;
     const users = readUsers();
     const userIndex = users.findIndex(u => u.id === userId);
     
@@ -55,22 +26,19 @@ function incrementServiceUsage(userId, serviceType) {
     // 해당 서비스 이용 횟수 증가
     if (serviceType === 'mini-game') {
         // mini-game은 특별 처리
-        users[userIndex].serviceUsage['mini-game']++;
+        users[userIndex].serviceUsage['mini-game'] = (users[userIndex].serviceUsage['mini-game'] || 0) + 1;
         users[userIndex].serviceUsage.lastUpdated = new Date().toISOString();
         
         writeUsers(users);
         console.log(`사용자 ${userId}의 ${serviceType} 이용 횟수 증가: ${users[userIndex].serviceUsage['mini-game']}`);
         return true;
-    } else if (users[userIndex].serviceUsage[serviceType] !== undefined) {
-        users[userIndex].serviceUsage[serviceType]++;
+    } else {
+        users[userIndex].serviceUsage[serviceType] = (users[userIndex].serviceUsage[serviceType] || 0) + 1;
         users[userIndex].serviceUsage.lastUpdated = new Date().toISOString();
         
         writeUsers(users);
         console.log(`사용자 ${userId}의 ${serviceType} 이용 횟수 증가: ${users[userIndex].serviceUsage[serviceType]}`);
         return true;
-    } else {
-        console.error(`알 수 없는 서비스 타입: ${serviceType}`);
-        return false;
     }
 }
 
@@ -144,11 +112,9 @@ async function getAllUsersServiceUsage() {
         };
         
         // 전체 통계에 추가
-        stats.serviceUsage.mealPlan += usage.mealPlan;
-        stats.serviceUsage.restaurantRecommendation += usage.restaurantRecommendation;
-        stats.serviceUsage.supplementRecommendation += usage.supplementRecommendation;
-        stats.serviceUsage.ingredientAnalysis += usage.ingredientAnalysis;
-        stats.serviceUsage['mini-game'] += usage['mini-game'];
+        for (const type of Object.values(SERVICE_TYPES)) {
+            stats.serviceUsage[type] += usage[type] || 0;
+        }
         
         // 개별 사용자 정보 추가
         stats.userDetails.push({
@@ -175,4 +141,4 @@ module.exports = {
     getUserServiceUsage,
     getAllUsersServiceUsage,
     SERVICE_TYPES
-}; 
+};

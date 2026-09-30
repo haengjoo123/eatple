@@ -40,18 +40,23 @@
 ## 설치 및 설정
 
 ### 1. 의존성 설치
+Node.js 22 이상을 사용합니다.
+
 ```bash
-npm install
+npm ci
 ```
 
 ### 2. 환경 변수 설정
-프로젝트 루트에 `.env` 파일을 생성하고 다음 환경 변수를 설정하세요:
+프로젝트 루트의 `.env.example`을 `.env`로 복사한 뒤 실제 값을 설정하세요.
+`SUPABASE_URL`, `SUPABASE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`는 서버 초기화에 필요합니다.
+서비스 역할 키는 서버에서만 사용하고 브라우저에 전달하지 마세요.
 
 ```env
 
 
-# Gemini API 키 (Google AI Studio에서 발급)
-GEMINI_API_KEY=your_gemini_api_key_here
+# OpenAI API 키 (서버에서만 사용)
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_RESPONSES_MODEL=gpt-6-luna
 
 # News API 키 (NewsAPI.org에서 발급)
 NEWS_API_KEY=your_news_api_key_here
@@ -60,23 +65,29 @@ NEWS_API_KEY=your_news_api_key_here
 KAKAO_REST_API_KEY=your_kakao_rest_api_key_here
 
 # 카카오 지도 API 키 (기본값 제공)
-KAKAO_MAP_API_KEY=085770d2077b87b5e25d90791d9712a7
+KAKAO_MAP_API_KEY=your_kakao_javascript_key
 
 # 서버 포트
 PORT=3000
 
 # 세션 시크릿
-SESSION_SECRET=mealplan_secret_key
+SESSION_SECRET=your_long_random_secret
 ```
 
 ### 3. API 키 발급 방법
 
 
 
-#### Gemini API 키
-1. [Google AI Studio](https://aistudio.google.com/)에 접속
+#### OpenAI API 키
+1. [OpenAI API 설정](https://platform.openai.com/api-keys)에 접속
 2. API 키 생성
-3. 생성된 키를 `GEMINI_API_KEY`에 설정
+3. 생성된 키를 `OPENAI_API_KEY`에 설정
+
+AI 모델은 `OPENAI_RESPONSES_MODEL=gpt-6-luna`를 사용합니다. 기존 Gemini 키는 사용하지 않습니다.
+로컬 `.env` 또는 배포 서버에 OpenAI 키를 설정하고 서버를 다시 시작하세요.
+키가 없으면 AI 요청은 503 오류를 반환하며, 임의의 추천으로 대체하지 않습니다.
+식단·영양제 생성 API는 `{ text, model }`을 반환하고, 식재료 분석의 `{ result }` 형식은 유지합니다.
+브라우저에 캐시된 이전 화면을 위해 `candidates` 텍스트 필드도 호환용으로 함께 반환합니다.
 
 #### 카카오 REST API 키
 1. [카카오 개발자 센터](https://developers.kakao.com/)에 접속
@@ -100,6 +111,31 @@ npm start
 ```
 
 서버가 `http://localhost:3000`에서 실행됩니다.
+
+프로덕션에서는 `SESSION_SECRET`이 필수입니다. 쿠키는 기본적으로 접속한 호스트에만
+설정되므로 localhost와 onrender.com에서도 사용할 수 있습니다. 본인 소유의 하위
+도메인끼리 세션을 공유해야 할 때만 `SESSION_COOKIE_DOMAIN`을 설정하세요.
+추가 프론트엔드 출처는 `FRONTEND_URL`로 명시합니다.
+
+### 5. 변경 검증
+
+```bash
+npm run check
+npm test
+```
+
+테스트는 임시 사용자 파일과 모의 외부 API를 사용합니다. 관리자 권한, 로그인 세션
+분리, 비밀번호 변경, 프로필 초기화, 보상 포인트, 파일 저장 실패, AI 요청 시간 초과를
+검증하며 실제 회원 데이터나 외부 서비스에는 쓰지 않습니다.
+
+사용자·포인트 데이터는 여전히 `data/users.json`에 저장되므로 서버 한 개와 지속 가능한
+저장 공간이 필요합니다. 파일 저장 중단에 대비해 임시 파일을 쓴 후 교체하지만, 여러
+서버 간 동시 쓰기를 지원하는 데이터베이스 트랜잭션을 대체하지는 않습니다.
+프로필은 로컬 값을 우선 사용하며 Supabase 저장 성공 여부는 `cloudSynced`로 반환합니다.
+프로필 초기화는 Supabase 초기화에 성공한 뒤 로컬에도 반영합니다.
+
+`.env`는 Git 추적 대상에서 제외합니다. 과거 커밋에 실제 키가 들어갔다면 추적을
+해제해도 기록은 남으므로 해당 서비스에서 키를 교체해야 합니다.
 
 ## 식당 추천 시스템 사용법
 
@@ -145,7 +181,7 @@ npm start
 - **카카오 지도 API** - 지도 및 위치 서비스
 
 ### AI 서비스
-- **Google Gemini API** - AI 추천 시스템 (Google Search 도구 포함)
+- **OpenAI Responses API (`gpt-6-luna`)** - 식단·영양제·식당 추천 및 식재료 분석
 - **카카오 REST API** - 식당 검색
 
 ## 프로젝트 구조

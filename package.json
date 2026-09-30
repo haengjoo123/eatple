@@ -5,12 +5,13 @@
     "main": "server.js",
     "scripts": {
         "start": "node --expose-gc server.js",
-        "test": "jest",
-        "migrate-supabase-to-local": "node scripts/migrate-supabase-to-local.js",
-        "migrate-inline-images-to-urls": "node scripts/migrate-inline-images-to-urls.js"
+        "test": "jest --runInBand",
+        "check": "node scripts/check-syntax.js"
+    },
+    "engines": {
+        "node": ">=22"
     },
     "dependencies": {
-        "@google/generative-ai": "^0.24.1",
         "@supabase/supabase-js": "^2.54.0",
         "axios": "^1.6.0",
         "bcrypt": "^6.0.0",

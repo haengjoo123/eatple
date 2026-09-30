@@ -1,4 +1,9 @@
 # Dependencies
+.env
+.env.*
+!.env.example
+data/users.json.*.tmp
+
 node_modules/
 npm-debug.log*
 yarn-debug.log*

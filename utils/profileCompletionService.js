@@ -1,6 +1,5 @@
-const fs = require('fs');
-const path = require('path');
 const PointsService = require('./pointsService');
+const { readUsers, writeUsers } = require('./userStore');
 
 /**
  * 프로필 완성도 관리 서비스
@@ -11,7 +10,7 @@ class ProfileCompletionService {
      * 사용자 데이터 파일 경로
      */
     static get USERS_FILE_PATH() {
-        return path.join(__dirname, '../data/users.json');
+        return PointsService.USERS_FILE_PATH;
     }
 
     /**
@@ -54,12 +53,10 @@ class ProfileCompletionService {
      */
     static readUsersData() {
         try {
-            const data = fs.readFileSync(this.USERS_FILE_PATH, 'utf8');
-            const parsed = JSON.parse(data);
-            return Array.isArray(parsed) ? parsed : [];
+            return readUsers(this.USERS_FILE_PATH);
         } catch (error) {
             console.error('사용자 데이터 읽기 오류:', error);
-            return [];
+            throw error;
         }
     }
 
@@ -68,7 +65,7 @@ class ProfileCompletionService {
      */
     static saveUsersData(usersData) {
         try {
-            fs.writeFileSync(this.USERS_FILE_PATH, JSON.stringify(usersData, null, 2));
+            writeUsers(usersData, this.USERS_FILE_PATH);
         } catch (error) {
             console.error('사용자 데이터 저장 오류:', error);
             throw new Error('사용자 데이터를 저장할 수 없습니다.');
@@ -81,8 +78,6 @@ class ProfileCompletionService {
      * @returns {Object} 완성도 정보
      */
     static calculateCompletionPercentage(profile) {
-        console.log('프로필 완성도 계산 시작:', profile);
-        
         if (!profile || typeof profile !== 'object') {
             console.log('프로필이 없거나 유효하지 않음');
             return {
@@ -108,8 +103,6 @@ class ProfileCompletionService {
             
             // 필드 값이 존재하고 유효한지 체크
             const isCompleted = this.isFieldCompleted(field, fieldValue);
-            
-            console.log(`필드 ${field}: 값=${JSON.stringify(fieldValue)}, 완성=${isCompleted}`);
             
             if (isCompleted) {
                 completedFields.push({
@@ -226,14 +219,7 @@ class ProfileCompletionService {
      */
     static checkAndRewardCompletion(userId, profile) {
         try {
-            const usersData = this.readUsersData();
-            const userIndex = usersData.findIndex(user => user.id === userId);
-            
-            if (userIndex === -1) {
-                throw new Error('사용자를 찾을 수 없습니다.');
-            }
-
-            const user = usersData[userIndex];
+            const { user, usersData } = PointsService.findUser(userId);
             
             // 프로필 완성도 계산
             const completionInfo = this.calculateCompletionPercentage(profile);
@@ -245,8 +231,8 @@ class ProfileCompletionService {
             if (completionInfo.isComplete && !hasReceivedReward) {
                 try {
                     // 포인트 지급 (일일 한도 무시)
-                    const rewardResult = PointsService.earnPoints(
-                        userId,
+                    const rewardResult = PointsService.applyPointsAward(
+                        user,
                         this.COMPLETION_REWARD_POINTS,
                         'profile-completion',
                         `프로필 완성 보상 ${this.COMPLETION_REWARD_POINTS}포인트 지급`,

@@ -397,6 +397,7 @@ async function handlePendingProfileAsync(pending) {
 
 // 팝업에서 로그인 성공 메시지 수신 시 메인 페이지로 이동
 window.addEventListener('message', function(event) {
+  if (event.origin !== window.location.origin) return;
   console.log('Received message from popup:', event.data);
   
   if (event.data && event.data.type === 'social_login_success') {

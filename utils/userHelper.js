@@ -1,30 +1,4 @@
-const fs = require("fs");
-const path = require("path");
-
-const USERS_FILE = path.join(__dirname, "../data/users.json");
-
-// 사용자 데이터 읽기
-function readUsers() {
-  if (!fs.existsSync(USERS_FILE)) {
-    return [];
-  }
-
-  try {
-    const data = fs.readFileSync(USERS_FILE, "utf-8");
-    const parsed = JSON.parse(data);
-
-    // users가 객체(users 필드)면 배열로 변환해서 반환
-    if (parsed.users && typeof parsed.users === "object") {
-      return Object.values(parsed.users);
-    } else {
-      // 배열 형태면 그대로 반환
-      return Array.isArray(parsed) ? parsed : [];
-    }
-  } catch (error) {
-    console.error("사용자 데이터 읽기 오류:", error);
-    return [];
-  }
-}
+const { readUsers } = require('./userStore');
 
 // 사용자 ID로 사용자 정보 조회
 function getUserById(userId) {

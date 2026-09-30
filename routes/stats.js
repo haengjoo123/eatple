@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { getUserServiceUsage, getAllUsersServiceUsage } = require('../utils/serviceUsageTracker');
+const { requireLogin, adminAuth } = require('../utils/authMiddleware');
 
 // 사용자별 서비스 이용 통계 조회
-router.get('/user/:userId', (req, res) => {
+router.get('/user/:userId', requireLogin, (req, res) => {
+    if (req.session.user.id !== req.params.userId && req.session.user.role !== 'admin') {
+        return res.status(403).json({ error: '다른 사용자의 통계를 조회할 수 없습니다.' });
+    }
     try {
         const { userId } = req.params;
         const usage = getUserServiceUsage(userId);
@@ -24,7 +28,7 @@ router.get('/user/:userId', (req, res) => {
 });
 
 // 전체 서비스 이용 통계 조회 (관리자용)
-router.get('/all', async (req, res) => {
+router.get('/all', adminAuth, async (req, res) => {
     try {
         const stats = await getAllUsersServiceUsage();
         
@@ -58,4 +62,4 @@ router.get('/my', (req, res) => {
     }
 });
 
-module.exports = router; 
+module.exports = router;

@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
-const axios = require('axios');
+const { readUsers, writeUsers } = require('../utils/userStore');
+const { generateText, isOpenAIConfigured, AIServiceError } = require('../utils/openaiClient');
 const { requireLogin } = require('../utils/authMiddleware');
 
 // 식약처 API 관련 모듈
@@ -13,22 +12,6 @@ const {
     filterProductsByNewOrder,  // 새로운 매칭 순서 함수 추가
     formatProductForFrontend 
 } = require('../utils/healthKeywordMatcher');
-
-const USERS_FILE = path.join(__dirname, '../data/users.json');
-
-// Gemini API 설정
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
-
-function readUsers() {
-    if (!fs.existsSync(USERS_FILE)) return [];
-    const data = fs.readFileSync(USERS_FILE, 'utf-8');
-    return JSON.parse(data);
-}
-
-function writeUsers(users) {
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-}
 
 // 서비스 이용 횟수 추적 모듈
 const { incrementServiceUsage, SERVICE_TYPES } = require('../utils/serviceUsageTracker');
@@ -42,8 +25,8 @@ router.post('/recommend', async (req, res) => {
         const { healthGoals, preferences, avoidIngredients, otherAllergy, currentMedications, reactionDetails, profile } = req.body;
         
         // API 키 확인
-        if (!GEMINI_API_KEY) {
-            return res.status(500).json({ 
+        if (!isOpenAIConfigured()) {
+            return res.status(503).json({
                 error: 'AI 서비스가 현재 이용 불가합니다. 나중에 다시 시도해주세요.' 
             });
         }
@@ -67,7 +50,7 @@ router.post('/recommend', async (req, res) => {
         res.json(recommendations);
     } catch (error) {
         console.error('영양제 추천 오류:', error.message);
-        res.status(500).json({ 
+        res.status(error.status || 500).json({
             error: 'AI 영양제 추천 서비스에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.' 
         });
     }
@@ -522,261 +505,13 @@ function getCurrentSupplementsKorean(supplements) {
     return supplementMap[supplements] || supplements;
 }
 
-// 기본 영양제 추천 함수 (백업용)
-function generateBasicSupplementRecommendations(data) {
-    const { healthGoals, profile } = data;
-    const supplements = [];
-    
-    // 기본 건강 관리 영양소
-    supplements.push({
-        name: "멀티비타민",
-        category: "비타민",
-        dosage: "1정",
-        timing: {
-            when: "식후",
-            frequency: "1일 1회",
-            duration: "지속 복용"
-        },
-        benefits: [
-            "전반적인 건강 유지",
-            "면역력 강화",
-            "피로 개선"
-        ],
-        scientificRationale: [
-            "현대인의 불규칙한 식습관으로 인한 기본 영양소 부족을 보충합니다.",
-            "다양한 비타민과 미네랄의 시너지 효과로 전반적인 건강을 증진시킵니다.",
-            "식품으로만 섭취하기 어려운 영양소들을 효율적으로 보충할 수 있습니다."
-        ],
-        priority: "essential",
-        safetyNotes: null,
-        interactions: null,
-        expectedResults: "1개월 이내 피로감 개선, 2개월 이내 전반적인 컨디션 향상"
-    });
-    
-    // 건강 고민별 추천
-    if (healthGoals) {
-        // 면역력 관련
-        if (healthGoals.includes('immunity')) {
-            supplements.push({
-                name: "비타민 C",
-                category: "비타민",
-                dosage: "1000mg",
-                timing: {
-                    when: "식후",
-                    frequency: "1일 1회",
-                    duration: "지속 복용"
-                },
-                benefits: [
-                    "면역력 강화",
-                    "항산화 작용",
-                    "콜라겐 생성"
-                ],
-                scientificRationale: [
-                    "면역세포 기능 향상과 감염 예방에 도움을 줍니다.",
-                    "항산화 작용으로 자유라디칼을 제거하여 세포 손상을 방지합니다.",
-                    "콜라겐 합성을 촉진하여 피부와 혈관 건강을 개선합니다."
-                ],
-                priority: "essential",
-                safetyNotes: null,
-                interactions: null,
-                expectedResults: "2-3주 이내 감염 저항성 향상"
-            });
-        }
-        
-        // 피로 관련
-        if (healthGoals.includes('fatigue')) {
-            supplements.push({
-                name: "비타민 B 복합체",
-                category: "비타민",
-                dosage: "1캡슐",
-                timing: {
-                    when: "아침",
-                    frequency: "1일 1회",
-                    duration: "지속 복용"
-                },
-                benefits: [
-                    "에너지 생성",
-                    "피로 회복",
-                    "신경 기능 개선"
-                ],
-                scientificRationale: [
-                    "에너지 대사 과정에서 필수 코엔자임으로 작용합니다.",
-                    "탄수화물, 지방, 단백질 대사를 촉진하여 에너지 생성을 돕습니다.",
-                    "신경 전달물질 합성에 관여하여 피로 회복과 집중력 향상에 기여합니다."
-                ],
-                priority: "essential",
-                safetyNotes: null,
-                interactions: null,
-                expectedResults: "1-2주 이내 피로감 개선"
-            });
-        }
-        
-        // 뼈 건강 관련
-        if (healthGoals.includes('bone')) {
-            supplements.push({
-                name: "칼슘+비타민D",
-                category: "미네랄",
-                dosage: "칼슘 500mg + 비타민D 400IU",
-                timing: {
-                    when: "식후",
-                    frequency: "1일 1회",
-                    duration: "지속 복용"
-                },
-                benefits: [
-                    "뼈 건강 유지",
-                    "골밀도 개선",
-                    "칼슘 흡수 증진"
-                ],
-                scientificRationale: [
-                    "뼈 형성과 칼슘 흡수에 필수적인 영양소입니다.",
-                    "비타민D는 칼슘의 장 흡수를 촉진하여 골밀도 증가에 기여합니다.",
-                    "골다공증 예방과 근육 기능 개선에 효과적입니다."
-                ],
-                priority: "essential",
-                safetyNotes: null,
-                interactions: null,
-                expectedResults: "3-6개월 이내 골밀도 개선"
-            });
-        }
-        
-        // 눈 건강 관련
-        if (healthGoals.includes('eye')) {
-            supplements.push({
-                name: "루테인",
-                category: "기타",
-                dosage: "20mg",
-                timing: {
-                    when: "식후",
-                    frequency: "1일 1회",
-                    duration: "지속 복용"
-                },
-                benefits: [
-                    "눈 피로 개선",
-                    "시력 보호",
-                    "황반 건강"
-                ],
-                scientificRationale: [
-                    "황반부 보호와 블루라이트 차단에 도움을 줍니다.",
-                    "항산화 작용으로 망막 세포 손상을 방지합니다.",
-                    "나이 관련 황반변성 예방에 효과적입니다."
-                ],
-                priority: "recommended",
-                safetyNotes: null,
-                interactions: null,
-                expectedResults: "4-6주 이내 눈 피로감 개선"
-            });
-        }
-        
-        // 심혈관 건강 관련
-        if (healthGoals.includes('cholesterol') || healthGoals.includes('blood_pressure')) {
-            supplements.push({
-                name: "오메가-3",
-                category: "오메가",
-                dosage: "1000mg",
-                timing: {
-                    when: "식후",
-                    frequency: "1일 1회",
-                    duration: "지속 복용"
-                },
-                benefits: [
-                    "심혈관 건강",
-                    "콜레스테롤 개선",
-                    "혈압 조절"
-                ],
-                scientificRationale: [
-                    "혈관 건강과 염증 감소에 도움을 줍니다.",
-                    "오메가-3 지방산이 혈중 중성지방을 감소시킵니다.",
-                    "심혈관 질환 위험 감소와 혈압 조절에 기여합니다."
-                ],
-                priority: "essential",
-                safetyNotes: null,
-                interactions: null,
-                expectedResults: "2-3개월 이내 혈관 건강 개선"
-            });
-        }
-    }
-    
-    // 최대 6개로 제한
-    return supplements.slice(0, 6);
-}
-
-// Gemini API 호출 함수 (큐 적용)
-async function sendPromptToGemini(prompt, metadata = {}) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 302000); // 302초 타임아웃
-
-    try {
-        // AI 요청 큐에 추가하여 순차 처리
-        const response = await aiRequestQueue.add(
-            async () => {
-                return await axios.post(
-                    GEMINI_API_URL,
-                    {
-                        contents: [{ parts: [{ text: prompt }] }]
-                    },
-                    {
-                        headers: { "Content-Type": "application/json" },
-                        timeout: 300000,
-                        signal: controller.signal
-                    }
-                );
-            },
-            { type: 'supplement-detail', ...metadata }
-        );
-        
-        clearTimeout(timeoutId);
-        
-        if (!response.data) {
-            throw new Error("Gemini API 응답이 비어있습니다.");
-        }
-
-        let responseText = '';
-        if (response.data.candidates && response.data.candidates.length > 0) {
-            const candidate = response.data.candidates[0];
-            
-            if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
-                const part = candidate.content.parts[0];
-                
-                if (part.text) {
-                    responseText = part.text;
-                } else {
-                    throw new Error('part.text가 없습니다.');
-                }
-            } else {
-                throw new Error('content.parts가 없거나 비어있습니다.');
-            }
-        } else {
-            throw new Error('candidates가 없거나 비어있습니다.');
-        }
-
-        if (responseText) {
-            return responseText;
-        } else {
-            if (response.data.promptFeedback && response.data.promptFeedback.blockReason) {
-                throw new Error(`영양제 추천 요청이 거부되었습니다. 이유: ${response.data.promptFeedback.blockReason}`);
-            }
-            throw new Error("응답 형식이 올바르지 않거나 내용이 비어있습니다.");
-        }
-    } catch (error) {
-        clearTimeout(timeoutId);
-        
-        console.error('sendPromptToGemini 오류:', error.message);
-        
-        if (error.response) {
-            console.error('Gemini API HTTP 오류:', error.response.status, error.response.data);
-        }
-        
-        if (error.name === 'AbortError') {
-            throw new Error('요청 시간이 초과되었습니다.');
-        }
-        
-        // 에러 메시지를 더 명확하게
-        if (error.message.includes('candidates')) {
-            throw new Error('AI 응답 형식이 올바르지 않습니다. 잠시 후 다시 시도해주세요.');
-        }
-        
-        throw error;
-    }
+// OpenAI 호출에 공통 요청 큐를 적용합니다.
+async function sendPromptToOpenAI(prompt, metadata = {}) {
+    const response = await aiRequestQueue.add(
+        (signal) => generateText(prompt, { signal, timeout: 300000, json: true }),
+        { type: "supplement-detail", ...metadata }
+    );
+    return response.text;
 }
 
 // AI 영양제 추천 생성 함수
@@ -795,82 +530,22 @@ async function generateAIRecommendations(data) {
             profile
         });
         
-        // Gemini API 호출
-        const aiResponse = await sendPromptToGemini(prompt);
+        // OpenAI API 호출
+        const aiResponse = await sendPromptToOpenAI(prompt);
         
-        // JSON 응답 파싱
+        // A malformed AI answer must not become a fabricated health recommendation.
         let recommendations;
         try {
-            console.log('AI 응답 원문:', aiResponse);
-            
-            // 여러 방법으로 JSON 파싱 시도
-            let jsonString = '';
-            
-            // 1. 코드 블록 추출 시도
-            const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/);
-            if (jsonMatch) {
-                jsonString = jsonMatch[1].trim();
-                console.log('JSON 코드 블록 추출됨:', jsonString);
-            } else {
-                // 2. 백틱 제거 후 시도
-                jsonString = aiResponse.replace(/```json|```/g, '').trim();
-                console.log('백틱 제거 후:', jsonString);
-            }
-            
-            // 3. 중괄호 사이의 내용 추출 시도
-            if (!jsonString || jsonString.length === 0) {
-                const braceMatch = aiResponse.match(/\{[\s\S]*\}/);
-                if (braceMatch) {
-                    jsonString = braceMatch[0];
-                    console.log('중괄호 내용 추출됨:', jsonString);
-                }
-            }
-            
-            // 4. 여전히 없으면 전체 응답 사용
-            if (!jsonString || jsonString.length === 0) {
-                jsonString = aiResponse;
-                console.log('전체 응답 사용:', jsonString);
-            }
-            
-            // JSON 파싱 시도
-            recommendations = JSON.parse(jsonString);
-            console.log('JSON 파싱 성공');
-            
-        } catch (parseError) {
-            console.error('JSON 파싱 오류:', parseError.message);
-            console.error('파싱 실패한 응답:', aiResponse);
-            
-            // 백업 응답 생성
-            console.log('백업 응답 생성 중...');
-            recommendations = {
-                personalizedAnalysis: {
-                    healthProfile: "개인 정보를 바탕으로 맞춤형 영양제를 추천하고 있습니다.",
-                    nutritionalGaps: "선택하신 건강 고민을 해결하기 위한 영양소 분석을 진행했습니다.",
-                    recommendationStrategy: "안전하고 효과적인 영양제 조합을 제안합니다."
-                },
-                supplements: generateBasicSupplementRecommendations(data),
-                safetyProtocol: {
-                    generalPrecautions: [
-                        "권장량을 초과하여 복용하지 마세요",
-                        "다른 약물과 함께 복용 시 의사와 상담하세요"
-                    ],
-                    medicalConsultation: "기존 질환이 있거나 약물 복용 중인 경우 의사와 상담하세요",
-                    emergencySignals: "알레르기 반응, 심한 복통, 호흡곤란 등의 증상이 나타날 경우 즉시 복용을 중단하고 의료진에게 연락하세요"
-                }
-            };
+            recommendations = JSON.parse(aiResponse.trim().replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim());
+        } catch {
+            throw new AIServiceError('AI 영양제 추천 응답을 해석하지 못했습니다. 다시 시도해주세요.', 'INVALID_AI_RESULT');
         }
-        
-        // 응답 검증
-        if (!recommendations || typeof recommendations !== 'object') {
-            console.error('AI 응답 형식이 올바르지 않습니다:', typeof recommendations);
-            throw new Error('AI 응답 형식이 올바르지 않습니다.');
+        if (!recommendations || typeof recommendations !== 'object' ||
+            !Array.isArray(recommendations.supplements)) {
+            throw new AIServiceError('AI 영양제 추천 형식이 올바르지 않습니다.', 'INVALID_AI_RESULT');
         }
-        
+
         // 필수 필드 확인 및 기본값 설정
-        if (!recommendations.supplements) {
-            console.log('supplements 필드 없음, 빈 배열로 초기화');
-            recommendations.supplements = [];
-        }
         if (!recommendations.summary) {
             console.log('summary 필드 없음, 기본값으로 초기화');
             recommendations.summary = '개인 맞춤 영양제 추천 결과입니다.';
@@ -1169,4 +844,4 @@ router.post('/search-by-supplement-name', async (req, res) => {
     }
 });
 
-module.exports = router; 
+module.exports = router;

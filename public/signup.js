@@ -681,6 +681,7 @@ async function handleNaverSignup() {
 
 // 팝업에서 로그인/회원가입 결과 메시지 수신 처리 (카카오/네이버 공통)
 window.addEventListener("message", function (event) {
+  if (event.origin !== window.location.origin) return;
   const msgEl = document.getElementById("signupMsg");
 
   // 구조화된 성공 메시지 처리

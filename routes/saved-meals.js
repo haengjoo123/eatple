@@ -1,18 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
-const USERS_FILE = path.join(__dirname, '../data/users.json');
-
-function readUsers() {
-  if (!fs.existsSync(USERS_FILE)) return [];
-  const data = fs.readFileSync(USERS_FILE, 'utf-8');
-  return JSON.parse(data);
-}
-
-function writeUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-}
+const { readUsers, writeUsers } = require('../utils/userStore');
 
 // 저장된 식단 목록 조회
 router.get('/', (req, res) => {
@@ -68,4 +56,4 @@ router.delete('/:mealId', (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router; 
+module.exports = router;

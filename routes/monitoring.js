@@ -6,6 +6,8 @@
 
 const express = require('express');
 const router = express.Router();
+const { adminAuth } = require('../utils/authMiddleware');
+router.use(adminAuth);
 const { getMonitor } = require('../utils/performanceMonitor');
 const { getRealtimeMonitoring } = require('../utils/realtimeMonitoringSystem');
 
