@@ -1028,31 +1028,6 @@ class RestaurantRecommendation {
         
         // 로딩 시작
         this.setLoadingState(true);
-        this.updateLoadingProgress('주변 식당 검색 중...', 0);
-        
-        // 진행 상황 업데이트를 위한 타이머 설정
-        const progressTimer = setInterval(() => {
-            const loading = document.getElementById('loading');
-            if (loading && loading.style.display === 'none') {
-                clearInterval(progressTimer);
-                return;
-            }
-            
-            // 현재 단계에 따라 메시지 업데이트
-            const currentTime = Date.now();
-            const elapsed = Math.floor((currentTime - startTime) / 1000);
-            
-            if (elapsed > 30) {
-                this.updateLoadingProgress('AI 추천 분석 중...', 2);
-            } else if (elapsed > 15) {
-                this.updateLoadingProgress('실시간 정보 검색 중...', 1);
-            } else {
-                this.updateLoadingProgress('주변 식당 검색 중...', 0);
-            }
-        }, 3000);
-        
-        const startTime = Date.now();
-        
         try {
             // 사용자 프로필 구성
             const userProfile = {
@@ -1109,10 +1084,6 @@ class RestaurantRecommendation {
             console.error('추천 오류:', error);
             this.showMessage('서버 연결 오류가 발생했습니다.', 'error');
         } finally {
-            // 타이머 정리
-            if (typeof progressTimer !== 'undefined') {
-                clearInterval(progressTimer);
-            }
             this.setLoadingState(false);
         }
     }
@@ -1131,6 +1102,8 @@ class RestaurantRecommendation {
         
         if (loading) {
             loading.style.display = isLoading ? 'block' : 'none';
+            if (isLoading) this.aiLoading = EatpleAILoading.mount(loading, { feature: 'restaurant' });
+            else { this.aiLoading?.destroy(); this.aiLoading = null; }
         }
         
         // 로딩 시작할 때 5단계로 이동
@@ -1138,38 +1111,11 @@ class RestaurantRecommendation {
             if (step4) step4.style.display = 'none';
             if (step5) step5.style.display = 'block';
             if (resultContainer) resultContainer.style.display = 'none';
+        } else if (step5?.style.display === 'block' && resultContainer?.style.display !== 'block') {
+            this.showStep(4);
         }
     }
 
-    // 로딩 진행 상황 업데이트
-    updateLoadingProgress(message, step) {
-        const loading = document.getElementById('loading');
-        if (loading) {
-            const steps = [
-                '🔍 주변 식당 검색 중...',
-                '📊 실시간 정보 검색 중...',
-                '🤖 AI 추천 분석 중...',
-            ];
-            
-            let html = '<div class="restaurant-loading-spinner"></div>';
-            steps.forEach((stepText, index) => {
-                const isActive = index === step;
-                const isCompleted = index < step;
-                const status = isCompleted ? 'completed' : isActive ? 'active' : 'pending';
-                
-                html += `
-                    <div class="restaurant-loading-step ${status}">
-                        <span class="restaurant-step-icon">
-                            ${isCompleted ? '✅' : isActive ? '🔄' : '⏳'}
-                        </span>
-                        <span class="restaurant-step-text">${stepText}</span>
-                    </div>
-                `;
-            });
-            
-            loading.innerHTML = html;
-        }
-    }
 
     // 추천 결과 표시
     displayRecommendations(result) {

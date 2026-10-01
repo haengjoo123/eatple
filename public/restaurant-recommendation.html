@@ -26,6 +26,8 @@
     <meta name="twitter:description" content="AI가 추천하는 건강한 맛집 찾기" />
     
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="ai-loading.css">
+    <script src="ai-loading.js" defer></script>
     <!-- 카카오맵 API를 비동기 방식으로 로드 -->
     <script>
         // 카카오맵 API 비동기 로딩
@@ -525,17 +527,10 @@
             </div>
         </div>
 
-        <!-- 5단계: 로딩 -->
+        <!-- 공통 AI 로딩 화면 -->
         <div class="step-content" id="step5">
             <div class="step-container">
-                <div class="step-title">⏳ AI 추천 분석 중...</div>
-                <div class="step-description">
-                    <p>입력하신 정보를 바탕으로 최적의 식당을 찾고 있습니다.</p>
-                </div>
-                
-                <div id="loading" class="restaurant-loading" style="display: none;">
-                    <div class="restaurant-loading-spinner"></div>
-                </div>
+                <div id="loading" class="restaurant-loading" style="display: none;"></div>
             </div>
         </div>
 

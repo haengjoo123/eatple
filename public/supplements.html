@@ -26,6 +26,10 @@
     <meta name="twitter:description" content="식약처 승인 건강기능식품 42,000개 중에서 AI가 추천하는 맞춤 영양제" />
     
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="ai-loading.css">
+    <script src="ai-loading.js" defer></script>
+    <link rel="stylesheet" href="smart-intake.css">
+    <script src="smart-intake.js" defer></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
@@ -1705,374 +1709,25 @@
       }
 
       // 질문 렌더링
-      function renderSupplementQuestion(slideFromRight = true) {
-        console.log("renderQuestion 함수 호출됨");
-        const container = document.getElementById("supplementQuestionForm");
-        console.log("supplementQuestionForm 컨테이너:", container);
-        const q = getCurrentSupplementQuestion();
-        console.log("현재 질문:", q);
-
-        if (!q) {
-          console.log("질문이 없음, 함수 종료");
-          return;
-        }
-
-        // 컨테이너에 슬라이드 애니메이션을 위한 구조 추가
-        if (!container.querySelector(".question-container")) {
-          container.innerHTML = '<div class="question-container"></div>';
-        }
-
-        const slideContainer = container.querySelector(".question-container");
-
-        // 특정성분 기피 질문인지 확인하여 클래스 추가
-        const isAvoidIngredientsQuestion = q.key === "avoid_ingredients";
-        const optionsClass = isAvoidIngredientsQuestion
-          ? "preference-options two-columns"
-          : "preference-options";
-
-        // 슬라이드 방향에 따른 초기 클래스 설정
-        const initialSlideClass = slideFromRight
-          ? "slide-in-from-right"
-          : "slide-in-from-left";
-
-        // 질문 렌더링
-        let html = `
-                <div class="preference-question-block question-slide ${initialSlideClass}">
-                    <div class="mypage-progress-bar-container">
-                        <div class="mypage-progress-bar integrated-progress-bar" style="width: 0%;">
-                            <span class="mypage-progress-bar-label integrated-progress-bar-label">0%</span>
-                        </div>
-                    </div>
-                    <div class="preference-question-label">${q.label}</div>
-                    <div class="preference-question-description">${q.description}</div>
-                    <div class="${optionsClass}">
-            `;
-
-        if (q.type === "single" || q.type === "multi") {
-          q.options.forEach((opt) => {
-            const selected = (
-              q.type === "multi"
-                ? (questionAnswers[q.key] || []).includes(opt.value)
-                : questionAnswers[q.key] === opt.value
-            )
-              ? "selected"
-              : "";
-            html += `<div class="preference-option-btn ${selected}" data-value="${opt.value}">${opt.label}</div>`;
-          });
-        } else if (q.type === "text") {
-          html += `<textarea class="preference-text-input" placeholder="${
-            q.placeholder || ""
-          }">${questionAnswers[q.key] || ""}</textarea>`;
-        }
-
-        html += "</div>";
-
-        // 기타 입력 (특정 성분 기피 질문)
-        if (q.hasOtherInput) {
-          const showOther = (questionAnswers[q.key] || []).includes("other");
-          html += `<div class="preference-other-input" style="margin-top:1em;${
-            showOther ? "" : "display:none;"
-          }">
-                    <input type="text" id="other_allergy_text" placeholder="기타 피하고 싶은 성분을 입력해주세요">
-                </div>`;
-        }
-
-        // 텍스트 입력 필드 (약물, 부작용 질문)
-        if (q.hasTextInput) {
-          const showTextInput = questionAnswers[q.key] === "yes";
-          let labelText = "";
-          if (q.textInputKey === "current_medications") {
-            labelText = "복용 중인 약물을 상세히 입력해주세요";
-          } else if (q.textInputKey === "reaction_details") {
-            labelText = "경험하신 부작용을 상세히 입력해주세요";
-          }
-          html += `<div class="preference-text-input-container" style="margin-top:1.5em;${
-            showTextInput ? "" : "display:none;"
-          }">
-                    <label for="${
-                      q.textInputKey
-                    }" class="preference-input-label">${labelText}</label>
-                    <textarea id="${q.textInputKey}" placeholder="${
-            q.textInputPlaceholder
-          }" class="preference-text-input">${
-            questionAnswers[q.textInputKey] || ""
-          }</textarea>
-                </div>`;
-        }
-
-        html += "</div>";
-
-        slideContainer.innerHTML = html;
-
-        // 하단 고정 버튼 컨테이너 준비
-        let navBtnsFixed = document.querySelector(".preference-nav-btns-fixed");
-        if (!navBtnsFixed) {
-          navBtnsFixed = document.createElement("div");
-          navBtnsFixed.className = "preference-nav-btns-fixed";
-          document.body.appendChild(navBtnsFixed);
-        }
-
-        // 버튼 렌더링
-        let btnsHtml = "";
-        if (currentQuestionStep > 0) {
-          btnsHtml +=
-            '<button type="button" class="preference-prev-btn">이전</button>';
-        } else {
-          btnsHtml +=
-            '<button type="button" class="preference-prev-btn" onclick="goToProfileStep()">프로필 수정</button>';
-        }
-        if (isLastSupplementQuestion()) {
-          btnsHtml +=
-            '<button type="button" class="preference-complete-btn">완료</button>';
-        } else {
-          btnsHtml +=
-            '<button type="button" class="preference-next-btn">다음</button>';
-        }
-        navBtnsFixed.innerHTML = btnsHtml;
-        navBtnsFixed.style.display = "flex";
-
-        // 이벤트 바인딩
-        bindQuestionEvents(slideContainer, navBtnsFixed, q);
-
-        // 슬라이드 인 애니메이션 트리거
-        setTimeout(() => {
-          const newSlide = slideContainer.querySelector(
-            ".preference-question-block"
-          );
-          newSlide.classList.remove(
-            "slide-in-from-right",
-            "slide-in-from-left"
-          );
-          newSlide.classList.add("slide-current");
-        }, 50);
-
-        // 프로그레스 바 업데이트
-        setTimeout(() => {
-          updateIntegratedProgress();
-        }, 100);
-      }
-
-      // 이벤트 바인딩
-      function bindQuestionEvents(slideContainer, navBtnsFixed, q) {
-        // 옵션 버튼 이벤트
-        slideContainer
-          .querySelectorAll(".preference-option-btn")
-          .forEach((btn) => {
-            btn.onclick = () => {
-              if (q.type === "multi") {
-                questionAnswers[q.key] = questionAnswers[q.key] || [];
-
-                if (btn.dataset.value === "none") {
-                  // '없음' 선택 시 다른 모든 버튼 해제
-                  if (btn.classList.contains("selected")) {
-                    questionAnswers[q.key] = [];
-                    slideContainer
-                      .querySelectorAll(".preference-option-btn")
-                      .forEach((b) => b.classList.remove("selected"));
-                  } else {
-                    questionAnswers[q.key] = ["none"];
-                    slideContainer
-                      .querySelectorAll(".preference-option-btn")
-                      .forEach((b) => b.classList.remove("selected"));
-                    btn.classList.add("selected");
-                  }
-                } else {
-                  // 다른 옵션 선택 시 '없음' 해제
-                  const noneBtn = slideContainer.querySelector(
-                    '.preference-option-btn[data-value="none"]'
-                  );
-                  if (noneBtn) {
-                    noneBtn.classList.remove("selected");
-                    questionAnswers[q.key] = questionAnswers[q.key].filter(
-                      (v) => v !== "none"
-                    );
-                  }
-
-                  if (questionAnswers[q.key].includes(btn.dataset.value)) {
-                    questionAnswers[q.key] = questionAnswers[q.key].filter(
-                      (v) => v !== btn.dataset.value
-                    );
-                    btn.classList.remove("selected");
-                  } else {
-                    questionAnswers[q.key].push(btn.dataset.value);
-                    btn.classList.add("selected");
-                  }
-                }
-
-                // 기타 입력 토글
-                if (q.hasOtherInput) {
-                  const otherInput = slideContainer.querySelector(
-                    ".preference-other-input"
-                  );
-                  if (btn.dataset.value === "other") {
-                    otherInput.style.display = "block";
-                  } else if (!questionAnswers[q.key].includes("other")) {
-                    otherInput.style.display = "none";
-                  }
-                }
-              } else {
-                // 단일 선택
-                slideContainer
-                  .querySelectorAll(".preference-option-btn")
-                  .forEach((b) => b.classList.remove("selected"));
-                questionAnswers[q.key] = btn.dataset.value;
-                btn.classList.add("selected");
-
-                // 텍스트 입력 필드 토글 (약물, 부작용 질문)
-                if (q.hasTextInput) {
-                  const textInputDiv = slideContainer.querySelector(
-                    ".preference-text-input-container"
-                  );
-                  if (btn.dataset.value === "yes") {
-                    textInputDiv.style.display = "block";
-                    const textarea = textInputDiv.querySelector("textarea");
-                    if (textarea) {
-                      textarea.focus();
-                    }
-                  } else {
-                    textInputDiv.style.display = "none";
-                    questionAnswers[q.textInputKey] = "";
-                    const textarea = textInputDiv.querySelector("textarea");
-                    if (textarea) {
-                      textarea.value = "";
-                    }
-                  }
-                }
-              }
-            };
-          });
-
-        // 텍스트 입력 이벤트
-        const textInput = slideContainer.querySelector(
-          ".preference-text-input"
-        );
-        if (textInput) {
-          textInput.oninput = (e) => {
-            if (q.textInputKey) {
-              questionAnswers[q.textInputKey] = e.target.value;
-            } else {
-              questionAnswers[q.key] = e.target.value;
-            }
-          };
-        }
-
-        // 기타 입력 이벤트
-        const otherInput = slideContainer.querySelector("#other_allergy_text");
-        if (otherInput) {
-          otherInput.value = questionAnswers.other_allergy_text || "";
-          otherInput.oninput = (e) => {
-            questionAnswers.other_allergy_text = e.target.value;
-          };
-        }
-
-        // 네비게이션 버튼 이벤트
-        const prevBtn = navBtnsFixed.querySelector(".preference-prev-btn");
-        if (prevBtn) {
-          // 첫 번째 질문에서는 프로필 수정 버튼으로 작동
-          if (currentQuestionStep === 0) {
-            prevBtn.onclick = () => {
-              goToProfileStep();
-            };
-          } else {
-            // 두 번째 질문부터는 이전 질문으로 이동
-            prevBtn.onclick = () => {
-              const currentSlide = slideContainer.querySelector(
-                ".preference-question-block"
-              );
-              currentSlide.classList.remove("slide-current");
-              currentSlide.classList.add("slide-out-right");
-              setTimeout(() => {
-                currentQuestionStep--;
-                renderSupplementQuestion(false); // 왼쪽에서 슬라이드 인
-              }, 300);
-            };
-          }
-        }
-
-        const nextBtn = navBtnsFixed.querySelector(".preference-next-btn");
-        if (nextBtn) {
-          nextBtn.onclick = () => {
-            // 유효성 검사
-            if (!validateQuestion(q)) {
-              return;
-            }
-
-            const currentSlide = slideContainer.querySelector(
-              ".preference-question-block"
-            );
-            currentSlide.classList.remove("slide-current");
-            currentSlide.classList.add("slide-out-left");
-            setTimeout(() => {
-              currentQuestionStep++;
-              renderSupplementQuestion(true); // 오른쪽에서 슬라이드 인
-            }, 300);
-          };
-        }
-
-        const completeBtn = navBtnsFixed.querySelector(
-          ".preference-complete-btn"
-        );
-        if (completeBtn) {
-          completeBtn.onclick = () => {
-            // 유효성 검사
-            if (!validateQuestion(q)) {
-              return;
-            }
-
-            // 마지막 슬라이드 아웃 애니메이션
-            const currentSlide = slideContainer.querySelector(
-              ".preference-question-block"
-            );
-            currentSlide.classList.remove("slide-current");
-            currentSlide.classList.add("slide-out-left");
-            setTimeout(() => {
-              // 질문 완료 처리
-              completeQuestions();
-            }, 300);
-          };
-        }
-      }
-
-      // 마지막 질문인지 확인
-      function isLastSupplementQuestion() {
-        return currentQuestionStep === allQuestions.length - 1;
-      }
-
-      // 질문 유효성 검사
-      function validateQuestion(q) {
-        if (
-          q.type === "multi" &&
-          (!questionAnswers[q.key] || questionAnswers[q.key].length === 0)
-        ) {
-          alert("하나 이상 선택해주세요.");
-          return false;
-        }
-        if (q.type === "single" && !questionAnswers[q.key]) {
-          alert("선택해주세요.");
-          return false;
-        }
-        if (q.type === "text" && !q.optional && !questionAnswers[q.key]) {
-          alert("입력해주세요.");
-          return false;
-        }
-        if (
-          q.hasOtherInput &&
-          questionAnswers[q.key] &&
-          questionAnswers[q.key].includes("other") &&
-          !questionAnswers.other_allergy_text
-        ) {
-          alert("기타 피하고 싶은 성분을 입력해주세요.");
-          return false;
-        }
-        if (
-          q.hasTextInput &&
-          questionAnswers[q.key] === "yes" &&
-          !questionAnswers[q.textInputKey]
-        ) {
-          alert("자세한 내용을 입력해주세요.");
-          return false;
-        }
-        return true;
+      function renderSupplementQuestion() {
+        document.querySelector('.preference-nav-btns-fixed')?.remove();
+        const order = ['pregnancy_status', 'medications', 'past_reactions', 'digestive_issues', 'avoid_ingredients', 'vegetarian', 'supplement_form', 'budget'];
+        allQuestions.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+        const copy = {
+          pregnancy_status: ['임신·수유 중이거나 계획이 있나요?', '추천 시 주의할 성분을 확인하기 위해 묻는 질문이에요.', '임신·수유'],
+          medications: ['지금 복용 중인 약이 있나요?', '약과 영양제를 함께 복용할 때 참고할 정보예요.', '복용 중인 약'],
+          past_reactions: ['영양제 복용 후 불편했던 적이 있나요?', '비슷한 성분을 추천할 때 경험한 증상을 참고해요.', '과거 부작용'],
+          digestive_issues: ['복용할 때 신경 쓰이는 점이 있나요?', '소화와 삼키기 편한 형태를 고려해요.', '복용 시 불편함'],
+          avoid_ingredients: ['피하고 싶은 성분이 있나요?', '해당되는 성분을 모두 선택하거나 ‘없음’을 골라주세요.', '피할 성분'],
+          vegetarian: ['채식 기준이 있나요?', '캡슐과 원료의 동물성 성분을 고려해요.', '채식 기준'],
+          supplement_form: ['어떤 형태가 먹기 편한가요?', '선호가 없으면 ‘무관’을 선택해주세요.', '복용 형태'],
+          budget: ['한 달 예산은 어느 정도인가요?', '꾸준히 복용하기 편한 가격대를 선택해주세요.', '월 예산'],
+        };
+        const questions = allQuestions.map(q => ({ ...q, title: copy[q.key][0], description: copy[q.key][1], shortLabel: copy[q.key][2], otherPlaceholder: '예: 땅콩, 대두 등', otherKey: 'other_allergy_text' }));
+        EatpleIntake.mount({ target: '#supplementQuestionForm', questions, answers: questionAnswers,
+          index: currentQuestionStep, onIndex: index => { currentQuestionStep = index; },
+          onBack: goToProfileStep, onComplete: completeQuestions,
+          title: '나에게 맞는 영양제', submitLabel: '이 조건으로 추천받기' });
       }
 
       // 질문 완료 처리
@@ -2200,9 +1855,9 @@
             input.focus();
             const label = input.previousElementSibling;
             if (label && label.tagName === "LABEL") {
-              alert(`${label.textContent}를 입력해주세요.`);
+              EatpleIntake.showProfileError(section, `${label.textContent}를 입력해주세요.`);
             } else {
-              alert("필수 정보를 모두 입력해주세요.");
+              EatpleIntake.showProfileError(section, "필수 정보를 모두 입력해주세요.");
             }
             return false;
           }
@@ -2212,21 +1867,21 @@
         const age = section.querySelector("#age");
         if (age && (age.value < 1 || age.value > 120)) {
           age.focus();
-          alert("나이를 올바르게 입력해주세요 (1-120세).");
+          EatpleIntake.showProfileError(section, "나이를 올바르게 입력해주세요 (1-120세).");
           return false;
         }
 
         const height = section.querySelector("#height");
         if (height && (height.value < 100 || height.value > 250)) {
           height.focus();
-          alert("키를 올바르게 입력해주세요 (100-250cm).");
+          EatpleIntake.showProfileError(section, "키를 올바르게 입력해주세요 (100-250cm).");
           return false;
         }
 
         const weight = section.querySelector("#weight");
         if (weight && (weight.value < 20 || weight.value > 200)) {
           weight.focus();
-          alert("체중을 올바르게 입력해주세요 (20-200kg).");
+          EatpleIntake.showProfileError(section, "체중을 올바르게 입력해주세요 (20-200kg).");
           return false;
         }
 
@@ -2244,7 +1899,7 @@
           for (let groupName of requiredOptionGroups) {
             const group = section.querySelector(`[data-name="${groupName}"]`);
             if (group && !group.querySelector(".option.selected")) {
-              alert(
+              EatpleIntake.showProfileError(section,
                 `${group.previousElementSibling.textContent}를 선택해주세요.`
               );
               return false;
@@ -2760,7 +2415,6 @@
             currentStep++;
             updateStep();
             currentQuestionStep = 0;
-            renderSupplementQuestion();
             return;
           }
 
@@ -2780,7 +2434,7 @@
               navBtnsFixed.style.display = "none";
             }
             currentQuestionStep = 0;
-            questionAnswers = {};
+            // 돌아왔을 때 답변을 다시 입력하지 않도록 보존합니다.
           }
 
           currentStep--;
@@ -3006,86 +2660,9 @@
         const loadingDiv = document.getElementById("recommendationsLoading");
         const recommendationsDiv = document.getElementById("recommendations");
 
-        // 단계별 로딩 표시
-        loadingDiv.innerHTML = `
-                <div class="multi-step-loading">
-                    <div class="loading-step step1 active" role="status" aria-live="polite">
-                        <span class="loading-icon"><span class="loading-spinner step-loading"></span><span class="loading-check" style="display:none">✔️</span></span>
-                        <div class="loading-step-texts">
-                            <div class="loading-title">개인 정보 분석 중입니다...</div>
-                            <div class="loading-desc">건강 목표와 프로필 정보를 종합하고 있어요.</div>
-                        </div>
-                    </div>
-                    <div class="loading-step step2" role="status" aria-live="polite">
-                        <span class="loading-icon"><span class="loading-spinner step-loading" style="display:none"></span><span class="loading-check" style="display:none">✔️</span></span>
-                        <div class="loading-step-texts">
-                            <div class="loading-title">AI가 영양제를 분석하고 있어요...</div>
-                            <div class="loading-desc">최적의 영양제 조합을 찾고 있습니다.</div>
-                        </div>
-                    </div>
-                    <div class="loading-step step3" role="status" aria-live="polite">
-                        <span class="loading-icon"><span class="loading-spinner step-loading" style="display:none"></span></span>
-                        <div class="loading-step-texts">
-                            <div class="loading-title">맞춤 추천을 완성하고 있어요...</div>
-                            <div class="loading-desc">개인별 주의사항과 복용법을 정리 중입니다. 최대 2분이 소요될 수 있습니다.</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
         loadingDiv.style.display = "block";
+        const aiLoading = EatpleAILoading.mount(loadingDiv, { feature: 'supplement' });
         recommendationsDiv.innerHTML = "";
-
-        // 첫 번째 스피너에 step-loading 클래스 추가
-        setTimeout(() => {
-          const step1Spinner = document.querySelector(
-            ".step1 .loading-spinner"
-          );
-          if (step1Spinner) {
-            step1Spinner.classList.add("step-loading");
-          }
-        }, 100);
-
-        // 단계별 전환 (10초씩)
-        setTimeout(() => {
-          const step1Spinner = document.querySelector(
-            ".step1 .loading-spinner"
-          );
-          const step1Check = document.querySelector(".step1 .loading-check");
-          const step1 = document.querySelector(".step1");
-          const step2 = document.querySelector(".step2");
-          const step2Spinner = document.querySelector(
-            ".step2 .loading-spinner"
-          );
-          if (step1Spinner && step1Check && step1 && step2 && step2Spinner) {
-            step1Spinner.style.display = "none";
-            step1Check.style.display = "inline-block";
-            step1.classList.remove("active");
-            step2.classList.add("active");
-            step2Spinner.style.display = "inline-block";
-            step2Spinner.classList.add("step-loading");
-          }
-        }, 8000);
-
-        setTimeout(() => {
-          const step2Spinner = document.querySelector(
-            ".step2 .loading-spinner"
-          );
-          const step2Check = document.querySelector(".step2 .loading-check");
-          const step2 = document.querySelector(".step2");
-          const step3 = document.querySelector(".step3");
-          const step3Spinner = document.querySelector(
-            ".step3 .loading-spinner"
-          );
-          if (step2Spinner && step2Check && step2 && step3 && step3Spinner) {
-            step2Spinner.style.display = "none";
-            step2Check.style.display = "inline-block";
-            step2.classList.remove("active");
-            step3.classList.add("active");
-            step3Spinner.style.display = "inline-block";
-            step3Spinner.classList.add("step-loading");
-          }
-        }, 16000);
 
         try {
           console.log("🚀 영양제 추천 요청 시작");
@@ -3125,6 +2702,7 @@
           const recommendations = await response.json();
           console.log("✅ 추천 결과 수신:", recommendations);
 
+          aiLoading.setStatus('관련 제품 정보를 확인하고 있어요');
           // 각 영양제별로 정부승인 제품을 가져와서 추천 결과에 추가 (병렬 처리로 최적화)
           if (recommendations.supplements && recommendations.supplements.length > 0) {
             console.log("🔍 각 영양제별 정부승인 제품 검색 시작 (병렬 처리)");
@@ -3169,6 +2747,7 @@
                     </div>
                 `;
         } finally {
+          aiLoading.destroy();
           loadingDiv.style.display = "none";
         }
       }

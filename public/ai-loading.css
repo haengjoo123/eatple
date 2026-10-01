@@ -1,0 +1,47 @@
+/* Shared AI wait state. Namespaced to isolate existing page loading styles. */
+.eatple-ai-loading-host { width: 100%; }
+.eatple-ai-loading {
+    --wait-ink: #243958;
+    --wait-blue: #4a69bd;
+    box-sizing: border-box;
+    width: min(100%, 660px);
+    margin: 16px auto;
+    padding: 30px 44px 34px;
+    border: 1px solid #dfe7f1;
+    border-radius: 28px;
+    background: #f8faff;
+    color: var(--wait-ink);
+    text-align: center;
+    font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+}
+.eatple-ai-loading *, .eatple-ai-loading *::before, .eatple-ai-loading *::after { box-sizing: border-box; }
+.eatple-ai-loading__identity { display: flex; align-items: center; gap: 18px; }
+.eatple-ai-loading__identity img { display: block; object-fit: contain; width: 72px; height: 28px; }
+.eatple-ai-loading__identity-line { height: 1px; flex: 1; background: #dfe7f1; }
+.eatple-ai-loading__illustration { width: 196px; height: 196px; margin: 16px auto 10px; }
+.eatple-ai-loading__plate { display: block; width: 100%; height: 100%; color: var(--wait-blue); }
+.eatple-ai-loading__orbit { transform-origin: 110px 110px; animation: eatple-wait-orbit 6s linear infinite; }
+.eatple-ai-loading .eatple-ai-loading__title, #meal_plan_content .eatple-ai-loading__title { font-size: clamp(23px, 3.6vw, 30px); font-weight: 700; line-height: 1.45; letter-spacing: -.8px; white-space: pre-line; color: var(--wait-ink); padding: 0; margin: 0 0 12px; border: 0; }
+.eatple-ai-loading .eatple-ai-loading__description { font-size: 14px; line-height: 1.7; color: #526783; margin: 0; padding: 0; word-break: keep-all; }
+.eatple-ai-loading__chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 22px 0 28px; }
+.eatple-ai-loading__chip { display: inline-block; font-size: 12px; font-weight: 500; line-height: 1.5; padding: 7px 12px; color: #38548c; background: #eaf0fb; border-radius: 999px; }
+.eatple-ai-loading__activity { width: min(100%, 260px); height: 3px; background: #dfe7f5; border-radius: 6px; overflow: hidden; margin: 0 auto; }
+.eatple-ai-loading__activity span { display: block; width: 40%; height: 100%; border-radius: inherit; background: var(--wait-blue); animation: eatple-wait-travel 2.4s ease-in-out infinite; }
+.eatple-ai-loading .eatple-ai-loading__status { font-size: 13px; font-weight: 600; color: #38548c; margin: 15px 0 0; padding: 0; line-height: 1.6; }
+.eatple-ai-loading .eatple-ai-loading__note { font-size: 12px; color: #60728c; line-height: 1.7; margin: 7px 0 0; padding: 0; word-break: keep-all; }
+/* Existing hosts have feature-specific padding; normalize only while this UI is mounted. */
+#recommendationsLoading.eatple-ai-loading-host, #loading.eatple-ai-loading-host, #loadingSection.eatple-ai-loading-host, #meal_plan_content.eatple-ai-loading-host { padding: 0; background: transparent; border: 0; }
+@keyframes eatple-wait-orbit { to { transform: rotate(360deg); } }
+@keyframes eatple-wait-travel { 0% { transform: translateX(-110%); } 100% { transform: translateX(360%); } }
+@media (max-width: 480px) {
+    .eatple-ai-loading { padding: 24px 20px 28px; border-radius: 22px; margin: 12px auto; }
+    .eatple-ai-loading__illustration { width: 168px; height: 168px; margin-top: 16px; }
+    .eatple-ai-loading .eatple-ai-loading__title, #meal_plan_content .eatple-ai-loading__title { font-size: 24px; }
+    .eatple-ai-loading .eatple-ai-loading__description { font-size: 13px; }
+    .eatple-ai-loading__chips { gap: 6px; margin: 20px 0 24px; }
+    .eatple-ai-loading__chip { padding: 6px 10px; font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .eatple-ai-loading__orbit, .eatple-ai-loading__activity span { animation: none; }
+    .eatple-ai-loading__activity span { width: 100%; opacity: .55; }
+}

@@ -46,7 +46,6 @@ function showSection(sectionId, isProfileSection = false) {
     }
     // 식단 구성 섹션 진입 시 첫 질문 렌더링
     if (sectionId === "meal_form") {
-      mealAnswers = {};
       mealStep = 0;
       // 첫 번째 질문은 애니메이션 없이 바로 표시
       setTimeout(() => {
@@ -220,7 +219,7 @@ function nextProfileSection(currentSection) {
     if (missingFields.length > 0) {
       msg += "\n\n입력되지 않은 항목: \n- " + missingFields.join("\n- ");
     }
-    alert(msg);
+    EatpleIntake.showProfileError(currentSectionElement, msg);
   }
 }
 
@@ -505,267 +504,41 @@ function getCurrentQuestion() {
 }
 
 function renderMealQuestion() {
-  const container = document.getElementById("dynamicMealForm");
-  const q = getCurrentQuestion();
-  if (!q) return;
-
-  // 컨테이너에 직접 meal-question-block 생성
-  container.innerHTML = '';
-
-  // 로그인 상태 확인
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const isLoggedIn = !!user;
-
-  // 문항만 렌더링
-  let html = `<div class="meal-question-block meal-question-slide slide-current" data-question-key="${q.key}"><div class="meal-question-label">${q.label}</div><div class="meal-options">`;
-  q.options.forEach((opt) => {
-    const selected = (
-      q.type === "multi"
-        ? (mealAnswers[q.key] || []).includes(opt.value)
-        : mealAnswers[q.key] === opt.value
-    )
-      ? "selected"
-      : "";
-    
-    // preferred_ingredients와 cooking_methods 질문에 대해서 작은 버튼 클래스 사용
-    const buttonClass =
-      q.key === "preferred_ingredients" || q.key === "cooking_methods"
-        ? "meal-block-btn-small"
-        : "meal-block-btn";
-    
-    // 비로그인 상태에서 dishes_per_meal의 3개, 4개 옵션 차단
-    const isRestrictedOption = !isLoggedIn && q.key === "dishes_per_meal" && (opt.value === "3" || opt.value === "4");
-    
-    if (isRestrictedOption) {
-      // 제한된 옵션은 비활성화 스타일로 렌더링
-      html += `<div class="${buttonClass} login-restricted" data-value="${opt.value}" style="position: relative; opacity: 0.6; pointer-events: none;">
-        ${opt.label}
-        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.8); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: #666;">🔒</div>
-      </div>`;
-    } else {
-      html += `<div class="${buttonClass} ${selected}" data-value="${opt.value}">${opt.label}</div>`;
-    }
-  });
-  html += "</div>";
-  if (q.hasOtherInput) {
-    // 기타 입력 버튼이 선택된 경우에만 입력창 보이도록
-    const showOther = (mealAnswers[q.key] || []).includes(
-      "other_ingredients_toggle"
-    );
-    html += `<div class="meal-other-input" style="margin-top:1em;${
-      showOther ? "" : "display:none;"
-    }">
-      <input type="text" id="other_ingredients_text" placeholder="기타 재료를 입력해주세요 (쉼표로 구분)">
-    </div>`;
-  }
-  html += "</div>";
-
-  container.innerHTML = html;
-
-  // 옵션 개수에 따라 many-options 클래스 추가
-  const block = container.querySelector(".meal-question-block");
-  if (q.options.length >= 8) {
-    block.classList.add("many-options");
-  } else {
-    block.classList.remove("many-options");
-  }
-
-  // 하단 고정 버튼 컨테이너 준비
-  let navBtnsFixed = document.querySelector(".meal-nav-btns-fixed");
-  if (!navBtnsFixed) {
-    navBtnsFixed = document.createElement("div");
-    navBtnsFixed.className = "meal-nav-btns-fixed";
-    document.body.appendChild(navBtnsFixed);
-  }
-  // 버튼 렌더링
-  let btnsHtml = "";
-  if (mealStep > 0)
-    btnsHtml += '<button type="button" class="meal-prev-btn">이전</button>';
-  if (isLastQuestion()) {
-    btnsHtml +=
-      '<button type="button" class="meal-submit-btn">식단 생성</button>';
-  } else {
-    btnsHtml += '<button type="button" class="meal-next-btn">다음</button>';
-  }
-  navBtnsFixed.innerHTML = btnsHtml;
-
-  // 이벤트 바인딩 (문항)
-  container
-    .querySelectorAll(".meal-block-btn, .meal-block-btn-small")
-    .forEach((btn) => {
-      btn.onclick = () => {
-        // 제한된 옵션 클릭 시 토스트 메시지 표시
-        if (btn.classList.contains('login-restricted')) {
-          showMealPlanToast('🔑 해당 옵션은 로그인 후 이용할 수 있습니다');
-          return;
-        }
-        
-        if (q.type === "multi") {
-          mealAnswers[q.key] = mealAnswers[q.key] || [];
-          if (mealAnswers[q.key].includes(btn.dataset.value)) {
-            mealAnswers[q.key] = mealAnswers[q.key].filter(
-              (v) => v !== btn.dataset.value
-            );
-            btn.classList.remove("selected");
-          } else {
-            mealAnswers[q.key].push(btn.dataset.value);
-            btn.classList.add("selected");
-          }
-          // 기타 입력 토글
-          if (q.hasOtherInput) {
-            const otherInput =
-              container.querySelector(".meal-other-input");
-            if (btn.dataset.value === "other_ingredients_toggle") {
-              // other_ingredients_toggle 버튼을 클릭했을 때 토글
-              if (mealAnswers[q.key].includes("other_ingredients_toggle")) {
-                otherInput.style.display = "block";
-              } else {
-                otherInput.style.display = "none";
-              }
-            } else if (
-              !mealAnswers[q.key].includes("other_ingredients_toggle")
-            ) {
-              otherInput.style.display = "none";
-            }
-          }
-        } else {
-          // 단일 선택의 경우 모든 버튼에서 selected 클래스 제거
-          container
-            .querySelectorAll(".meal-block-btn")
-            .forEach((b) => b.classList.remove("selected"));
-          mealAnswers[q.key] = btn.dataset.value;
-          btn.classList.add("selected");
-        }
-        // renderMealQuestion() 호출 제거 - DOM을 다시 렌더링하지 않음
-      };
-    });
-  if (q.hasOtherInput) {
-    const otherInput = container.querySelector("#other_ingredients_text");
-    if (otherInput) {
-      otherInput.value = mealAnswers.other_ingredients_text || "";
-      otherInput.oninput = (e) => {
-        mealAnswers.other_ingredients_text = e.target.value;
-      };
-    }
-  }
-
-  // 이벤트 바인딩 (하단 고정 버튼)
-  const prevBtn = navBtnsFixed.querySelector(".meal-prev-btn");
-  if (prevBtn)
-    prevBtn.onclick = () => {
-      // 이전 버튼 클릭 시 오른쪽으로 슬라이드
-      const currentSlide = container.querySelector(".meal-question-slide");
-      currentSlide.classList.remove("slide-current");
-      currentSlide.classList.add("slide-out-right");
-      setTimeout(() => {
-        mealStep--;
-        // 이전 단계로 갈 때도 일주일 식단 선택 시 현재식사시간 질문만 건너뛰기
-        while (
-          mealAnswers.meal_period === "week" &&
-          mealQuestions[mealStep] &&
-          mealQuestions[mealStep].key === "meal_times"
-        ) {
-          mealStep--;
-        }
-        renderMealQuestion();
-      }, 300);
-    };
-
-  const nextBtn = navBtnsFixed.querySelector(".meal-next-btn");
-  if (nextBtn)
-    nextBtn.onclick = () => {
-      // 유효성 검사
-      if (
-        q.type === "multi" &&
-        (!mealAnswers[q.key] || mealAnswers[q.key].length === 0)
-      ) {
-        alert("하나 이상 선택해주세요.");
-        return;
-      }
-      if (q.type === "single" && !mealAnswers[q.key]) {
-        alert("선택해주세요.");
-        return;
-      }
-      if (
-        q.hasOtherInput &&
-        mealAnswers[q.key] &&
-        mealAnswers[q.key].includes("other_ingredients_toggle") &&
-        !mealAnswers.other_ingredients_text
-      ) {
-        alert("기타 재료를 입력해주세요.");
-        return;
-      }
-      // 다음 버튼 클릭 시에는 다음 문항만 보여주고, AI 식단 생성은 하지 않는다.
-      if (!isLastQuestion()) {
-        const currentSlide = container.querySelector(
-          ".meal-question-slide"
-        );
-        currentSlide.classList.remove("slide-current");
-        currentSlide.classList.add("slide-out-left");
-        setTimeout(() => {
-          mealStep++;
-          // 다음 질문이 현재식사시간이고 일주일 식단을 선택했다면 meal_times만 건너뛰기
-          while (
-            mealAnswers.meal_period === "week" &&
-            mealQuestions[mealStep] &&
-            mealQuestions[mealStep].key === "meal_times"
-          ) {
-            mealStep++;
-          }
-          renderMealQuestion();
-        }, 300);
-      }
-    };
-
-  const submitBtn = navBtnsFixed.querySelector(".meal-submit-btn");
-  if (submitBtn)
-    submitBtn.onclick = () => {
-      // 유효성 검사
-      if (
-        q.type === "multi" &&
-        (!mealAnswers[q.key] || mealAnswers[q.key].length === 0)
-      ) {
-        alert("하나 이상 선택해주세요.");
-        return;
-      }
-      if (q.type === "single" && !mealAnswers[q.key]) {
-        alert("선택해주세요.");
-        return;
-      }
-      if (
-        q.hasOtherInput &&
-        mealAnswers[q.key] &&
-        mealAnswers[q.key].includes("other_ingredients_toggle") &&
-        !mealAnswers.other_ingredients_text
-      ) {
-        alert("기타 재료를 입력해주세요.");
-        return;
-      }
-      submitDynamicMealForm();
-    };
-}
-
-// 마지막 질문인지 확인하는 함수
-function isLastQuestion() {
-  // 일주일 식단을 선택한 경우 현재식사시간(meal_times) 질문만 제외한 마지막 질문
-  if (mealAnswers.meal_period === "week") {
-    // meal_times를 제외한 문항들의 인덱스 배열 생성
-    const filteredIndexes = mealQuestions
-      .map((q, idx) => ({ q, idx }))
-      .filter((obj) => obj.q.key !== "meal_times")
-      .map((obj) => obj.idx);
-    // 현재 mealStep이 meal_times를 제외한 문항 중 마지막 인덱스와 같은지 비교
-    return mealStep === filteredIndexes[filteredIndexes.length - 1];
-  }
-  // 하루 식단을 선택한 경우 모든 질문
-  return mealStep === mealQuestions.length - 1;
+  document.querySelector('.meal-nav-btns-fixed')?.remove();
+  const copy = {
+    meal_period: ['어느 정도의 식단이 필요한가요?', '한 끼 메뉴부터 일주일 계획까지 준비해드려요.', '식단 범위'],
+    meal_times: ['언제 먹을 식사인가요?', '식사 시간에 맞춰 메뉴와 양을 구성해요.', '식사 시간'],
+    budget: ['한 끼에 얼마를 생각하고 있나요?', '재료를 준비할 때의 예산을 기준으로 골라주세요.', '한 끼 예산'],
+    kitchen_appliances: ['어떤 조리 도구를 사용할 수 있나요?', '실제로 만들 수 있는 조리법을 추천하기 위해 필요해요.', '조리 도구'],
+    preferred_ingredients: ['사용하고 싶은 재료가 있나요?', '냉장고에 있는 재료나 좋아하는 재료를 골라주세요.', '선호 재료'],
+    cooking_methods: ['어떤 조리법을 좋아하나요?', '선호가 없으면 다양한 조리법으로 구성해요.', '조리법'],
+    dishes_per_meal: ['한 끼를 몇 가지 메뉴로 구성할까요?', '밥과 반찬처럼 함께 먹을 메뉴 개수예요.', '메뉴 개수'],
+    cuisine_style: ['어떤 음식 스타일이 좋나요?', '하나만 골라도, 여러 스타일을 섞어도 좋아요.', '음식 스타일'],
+  };
+  const loggedIn = !!JSON.parse(localStorage.getItem('user') || 'null');
+  const questions = mealQuestions.map(q => ({
+    ...q, title: copy[q.key][0], description: copy[q.key][1], shortLabel: copy[q.key][2],
+    optional: ['preferred_ingredients', 'cooking_methods', 'cuisine_style'].includes(q.key),
+    when: q.key === 'meal_times' ? answers => answers.meal_period !== 'week' : undefined,
+    otherValue: 'other_ingredients_toggle', otherKey: 'other_ingredients_text',
+    options: q.options.map(opt => ({ ...opt,
+      label: q.key === 'meal_period' && opt.value === 'day' ? '한 끼' : opt.label,
+      description: q.key === 'meal_period' ? (opt.value === 'day' ? '지금 필요한 식사 메뉴' : '7일 동안의 아침·점심·저녁') : undefined,
+      disabled: !loggedIn && q.key === 'dishes_per_meal' && ['3', '4'].includes(opt.value),
+    })),
+  }));
+  const active = questions.filter(q => !q.when || q.when(mealAnswers));
+  EatpleIntake.mount({ target: '#dynamicMealForm', questions, answers: mealAnswers,
+    index: Math.max(0, active.findIndex(q => q.key === mealQuestions[mealStep]?.key)),
+    onIndex: index => { mealStep = index; }, onBack: () => showSection('profile'),
+    onComplete: submitDynamicMealForm, title: '나만의 식단 구성', submitLabel: '이 조건으로 식단 만들기' });
 }
 
 function submitDynamicMealForm() {
   // 마지막 질문(single 타입)에서 선택값이 mealAnswers에 반드시 반영되도록 보강
   const q = getCurrentQuestion();
   if (q && q.type === "single") {
-    const selectedBtn = container.querySelector(
+    const selectedBtn = document.getElementById("dynamicMealForm").querySelector(
       ".meal-block-btn.selected, .meal-block-btn-small.selected"
     );
     if (selectedBtn) {
@@ -821,60 +594,10 @@ async function generateMealPlan(event) {
   log("Meal Config Collected:", localMealConfig, "period:", period);
   const mealPlanContent = document.getElementById("meal_plan_content");
   showSection("meal_plan");
-  mealPlanContent.innerHTML = `
-      <div class="multi-step-loading">
-        <div class="loading-step step1 active" role="status" aria-live="polite">
-          <span class="loading-icon"><span class="loading-spinner step-loading"></span><span class="loading-check" style="display:none">✔️</span></span>
-          <div class="loading-step-texts">
-            <div class="loading-title">건강 정보 분석 중입니다...</div>
-            <div class="loading-desc">신체 정보와 식단 목표를 확인하고 있어요.</div>
-          </div>
-        </div>
-        <div class="loading-step step2" role="status" aria-live="polite">
-          <span class="loading-icon"><span class="loading-spinner step-loading" style="display:none"></span><span class="loading-check" style="display:none">✔️</span></span>
-          <div class="loading-step-texts">
-            <div class="loading-title">음식 선호를 반영하고 있어요...</div>
-            <div class="loading-desc">기호와 알레르기 정보를 바탕으로 식재료를 선택 중입니다.</div>
-          </div>
-        </div>
-        <div class="loading-step step3" role="status" aria-live="polite">
-          <span class="loading-icon"><span class="loading-spinner step-loading" style="display:none"></span></span>
-          <div class="loading-step-texts">
-            <div class="loading-title">맞춤 식단 구성 중입니다...</div>
-            <div class="loading-desc">균형 있는 식단을 완성하고 있어요. 잠시만 기다려주세요! 최대 3분이 소요 될 수 있습니다.</div>
-          </div>
-        </div>
-      </div>
-    `;
-  // 단계별 전환 (10초씩)
-  setTimeout(() => {
-    const step1Spinner = document.querySelector(".step1 .loading-spinner");
-    const step1Check = document.querySelector(".step1 .loading-check");
-    const step1 = document.querySelector(".step1");
-    const step2 = document.querySelector(".step2");
-    const step2Spinner = document.querySelector(".step2 .loading-spinner");
-    if (step1Spinner && step1Check && step1 && step2 && step2Spinner) {
-      step1Spinner.style.display = "none";
-      step1Check.style.display = "inline-block";
-      step1.classList.remove("active");
-      step2.classList.add("active");
-      step2Spinner.style.display = "inline-block";
-    }
-  }, 10000);
-  setTimeout(() => {
-    const step2Spinner = document.querySelector(".step2 .loading-spinner");
-    const step2Check = document.querySelector(".step2 .loading-check");
-    const step2 = document.querySelector(".step2");
-    const step3 = document.querySelector(".step3");
-    const step3Spinner = document.querySelector(".step3 .loading-spinner");
-    if (step2Spinner && step2Check && step2 && step3 && step3Spinner) {
-      step2Spinner.style.display = "none";
-      step2Check.style.display = "inline-block";
-      step2.classList.remove("active");
-      step3.classList.add("active");
-      step3Spinner.style.display = "inline-block";
-    }
-  }, 20000);
+  const aiLoading = EatpleAILoading.mount(mealPlanContent, {
+    feature: 'meal',
+    chips: [period === 'week' ? '일주일 식단' : '한 끼 식단', '음식 취향', '영양 균형'],
+  });
   try {
     // 프롬프트 생성 함수 하나로 통일
     const promptText = generatePrompt(profileData, localMealConfig);
@@ -1131,6 +854,8 @@ async function generateMealPlan(event) {
         ? "서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요."
         : error.message
     }</div>`;
+  } finally {
+    aiLoading.destroy();
   }
 }
 

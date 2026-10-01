@@ -24,6 +24,8 @@
     <meta name="twitter:description" content="AI가 분석하는 식재료 성분과 영양 정보" />
     
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="ai-loading.css">
+    <script src="ai-loading.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 </head>
@@ -76,12 +78,7 @@
     </section>
 
     <!-- 로딩 섹션 -->
-    <section class="loading-section" id="loadingSection" style="display: none;">
-        <div class="loading-container">
-            <div class="loading-spinner"></div>
-            <p class="loading-text">AI가 식재료를 분석하고 있습니다...</p>
-        </div>
-    </section>
+    <section class="loading-section" id="loadingSection" style="display: none;"></section>
 
     <!-- 결과 섹션 -->
     <section class="result-section" id="resultSection" style="display: none;">

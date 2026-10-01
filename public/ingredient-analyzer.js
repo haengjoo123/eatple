@@ -752,12 +752,14 @@ function getSearchSuggestions(query) {
 }
 
 // 로딩 표시
+let ingredientAILoading;
 function showLoading() {
     const loadingSection = document.getElementById('loadingSection');
     const resultSection = document.getElementById('resultSection');
     
     if (loadingSection) {
         loadingSection.style.display = 'block';
+        ingredientAILoading = EatpleAILoading.mount(loadingSection, { feature: 'ingredient' });
     }
     if (resultSection) {
         resultSection.style.display = 'none';
@@ -768,6 +770,8 @@ function showLoading() {
 function hideLoading() {
     const loadingSection = document.getElementById('loadingSection');
     if (loadingSection) {
+        ingredientAILoading?.destroy();
+        ingredientAILoading = null;
         loadingSection.style.display = 'none';
     }
 }

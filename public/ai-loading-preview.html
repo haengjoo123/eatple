@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>잇플 공통 AI 로딩 미리보기</title>
+    <link rel="stylesheet" href="ai-loading.css">
+    <script src="ai-loading.js" defer></script>
+    <style>
+        body { margin: 0; background: #fff; color: #243958; font-family: 'Malgun Gothic', sans-serif; }
+        main { max-width: 760px; margin: 0 auto; padding: 42px 24px; }
+        header { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 26px; }
+        h1 { font-size: 18px; margin: 0; font-weight: 600; }
+        nav { display: flex; gap: 6px; flex-wrap: wrap; }
+        button { font: inherit; font-size: 13px; background: white; border: 1px solid #dce3ef; border-radius: 999px; color: #526783; padding: 9px 14px; cursor: pointer; }
+        button[aria-pressed="true"] { background: #4a69bd; color: white; border-color: #4a69bd; }
+        button:focus-visible { outline: 3px solid #90acee; outline-offset: 3px; }
+        footer { text-align: center; font-size: 12px; line-height: 1.8; color: #60728c; margin-top: 22px; }
+        footer a { color: #38548c; text-underline-offset: 3px; }
+        @media(max-width: 560px) { main { padding: 28px 16px; } header { flex-direction: column; align-items: flex-start; gap: 14px; } }
+    </style>
+</head>
+<body>
+<main>
+    <header><h1>공통 AI 로딩 미리보기</h1><nav aria-label="기능 선택">
+        <button type="button" data-feature="meal" aria-pressed="true">식단</button>
+        <button type="button" data-feature="ingredient" aria-pressed="false">식재료</button>
+        <button type="button" data-feature="supplement" aria-pressed="false">영양제</button>
+        <button type="button" data-feature="restaurant" aria-pressed="false">식당</button>
+    </nav></header>
+    <div id="preview"></div>
+    <footer>화면 디자인을 확인하는 미리보기입니다.<br>AI 요청이나 처리 완료율을 표시하지 않습니다.
+        <details><summary>디자인 레퍼런스</summary>
+            <a href="https://material-web.dev/components/progress/" target="_blank" rel="noopener">Material</a>의 일관된 진행 표시 ·
+            <a href="https://v10.carbondesignsystem.com/components/loading/usage/" target="_blank" rel="noopener">Carbon</a>의 상태 안내 ·
+            <a href="https://atlassian.design/components/progress-bar/usage" target="_blank" rel="noopener">Atlassian</a>의 명확한 진행 문구<br>
+            접시 일러스트는 잇플을 위해 새로 만든 SVG입니다.
+        </details>
+    </footer>
+</main>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    EatpleAILoading.mount('#preview', { feature: 'meal' });
+    document.querySelectorAll('[data-feature]').forEach(button => button.addEventListener('click', () => {
+        document.querySelectorAll('[data-feature]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+        EatpleAILoading.mount('#preview', { feature: button.dataset.feature });
+    }));
+});
+</script>
+</body>
+</html>
