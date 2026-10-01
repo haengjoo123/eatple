@@ -8,49 +8,6 @@ const NutritionInfo = require("../models/NutritionInfo");
 const SupabaseImageManager = require("./supabaseImageManager");
 const path = require("path");
 
-// 로그용 데이터 정리 헬퍼 함수 (긴 base64 데이터 등을 간략화)
-function sanitizeForLog(data, maxLength = 100) {
-  if (!data) return data;
-  
-  // 배열인 경우
-  if (Array.isArray(data)) {
-    return data.map(item => sanitizeForLog(item, maxLength));
-  }
-  
-  // 객체가 아닌 경우
-  if (typeof data !== 'object') {
-    if (typeof data === 'string') {
-      // base64 이미지 데이터 감지
-      if (data.startsWith('data:image/') || data.length > 1000) {
-        return `[${data.substring(0, 20)}...] (${data.length} chars)`;
-      } else if (data.length > maxLength) {
-        return data.substring(0, maxLength) + `... (${data.length} chars)`;
-      }
-    }
-    return data;
-  }
-  
-  // 객체인 경우
-  const sanitized = {};
-  for (const [key, value] of Object.entries(data)) {
-    if (typeof value === 'string') {
-      // base64 이미지 데이터 감지
-      if (value.startsWith('data:image/') || value.length > 1000) {
-        sanitized[key] = `[${value.substring(0, 20)}...] (${value.length} chars)`;
-      } else if (value.length > maxLength) {
-        sanitized[key] = value.substring(0, maxLength) + `... (${value.length} chars)`;
-      } else {
-        sanitized[key] = value;
-      }
-    } else if (typeof value === 'object' && value !== null) {
-      // 재귀적으로 객체 처리
-      sanitized[key] = sanitizeForLog(value, maxLength);
-    } else {
-      sanitized[key] = value;
-    }
-  }
-  return sanitized;
-}
 
 class SupabaseNutritionDataManager {
   constructor() {
@@ -100,7 +57,6 @@ class SupabaseNutritionDataManager {
       const result = await this.imageManager.uploadImage(buffer, originalName, mimeType, folder);
       
       if (result.success) {
-        console.log(`✅ 이미지 업로드 성공: ${result.url}`);
         return result.url;
       } else {
         console.error(`❌ 이미지 업로드 실패:`, result.error);
@@ -234,7 +190,6 @@ class SupabaseNutritionDataManager {
    */
   async getCategoryIdByName(categoryName) {
     try {
-      console.log(`[CATEGORY DEBUG] 카테고리 이름으로 ID 조회: "${categoryName}"`);
       
       const { data, error } = await this.supabase
         .from('categories')
@@ -248,7 +203,6 @@ class SupabaseNutritionDataManager {
       }
       
       const categoryId = data?.id || null;
-      console.log(`[CATEGORY DEBUG] 조회된 카테고리 ID: "${categoryId}"`);
       
       return categoryId;
     } catch (error) {
@@ -689,7 +643,6 @@ class SupabaseNutritionDataManager {
         console.warn('조회 기록 저장 오류 (무시):', viewLogError);
       }
       
-      console.log(`조회수 증가: ${id} -> ${newViewCount}`);
     } catch (error) {
       console.error('조회수 증가 오류:', error);
     }
@@ -707,8 +660,6 @@ class SupabaseNutritionDataManager {
    */
   async updateNutritionInfo(id, updateData) {
     try {
-      console.log(`📝 updateNutritionInfo 호출 - ID: ${id}`);
-      console.log(`📝 업데이트 데이터:`, sanitizeForLog(updateData));
       
       // camelCase를 snake_case로 변환 (이미 snake_case인 경우는 그대로 유지)
       const snakeCaseData = {};
@@ -726,9 +677,7 @@ class SupabaseNutritionDataManager {
       
       // updated_at 자동 설정
       snakeCaseData.updated_at = new Date().toISOString();
-      
-      console.log(`📝 변환된 snake_case 데이터:`, sanitizeForLog(snakeCaseData));
-      
+
       const { error } = await this.supabase
         .from('nutrition_posts')
         .update(snakeCaseData)
@@ -739,7 +688,6 @@ class SupabaseNutritionDataManager {
         throw error;
       }
       
-      console.log(`✅ updateNutritionInfo 성공 - ID: ${id}`);
       return true;
     } catch (error) {
       console.error('영양 정보 업데이트 오류:', error);
@@ -759,7 +707,6 @@ class SupabaseNutritionDataManager {
 
       // 카테고리 ID 조회 및 검증
       const categoryId = await this.getCategoryIdByName(nutritionData.category);
-      console.log(`[POSTING DEBUG] 카테고리 매핑: "${nutritionData.category}" -> "${categoryId}"`);
       
       if (!categoryId) {
         throw new Error(`카테고리를 찾을 수 없습니다: "${nutritionData.category}"`);
@@ -782,13 +729,7 @@ class SupabaseNutritionDataManager {
         category_id: categoryId,
         is_active: true
       };
-      
-      console.log(`[POSTING DEBUG] 생성할 포스트 데이터:`, {
-        title: newPost.title,
-        category_id: newPost.category_id,
-        category_name: nutritionData.category
-      });
-      
+
       // 포스트 생성
       const { data: createdPost, error } = await this.supabase
         .from('nutrition_posts')
@@ -843,7 +784,6 @@ class SupabaseNutritionDataManager {
    */
   async saveTags(postId, tagNames) {
     try {
-      console.log(`🏷️ 태그 저장 시작 - 포스트 ID: ${postId}, 태그 수: ${tagNames.length}`);
       
       // 1. 기존 태그 관계 모두 삭제
       const { error: deleteError } = await this.supabase
@@ -855,9 +795,7 @@ class SupabaseNutritionDataManager {
         console.error('기존 태그 관계 삭제 오류:', deleteError);
         throw deleteError;
       }
-      
-      console.log(`🗑️ 기존 태그 관계 삭제 완료 - 포스트 ID: ${postId}`);
-      
+
       // 2. 새로운 태그 저장 (태그가 있는 경우에만)
       if (tagNames && tagNames.length > 0) {
         for (const tagName of tagNames) {
@@ -896,9 +834,6 @@ class SupabaseNutritionDataManager {
           
           if (relationError) throw relationError;
         }
-        console.log(`✅ 태그 저장 완료 - ${tagNames.length}개`);
-      } else {
-        console.log(`ℹ️ 저장할 태그가 없음 - 포스트 ID: ${postId}`);
       }
       
     } catch (error) {
@@ -912,7 +847,6 @@ class SupabaseNutritionDataManager {
    */
   async saveRelatedProducts(postId, relatedProducts) {
     try {
-      console.log(`🔗 관련상품 저장 시작 - 포스트 ID: ${postId}, 상품 수: ${relatedProducts.length}`);
       
       // 1. 기존 관련상품 모두 삭제
       const { error: deleteError } = await this.supabase
@@ -924,9 +858,7 @@ class SupabaseNutritionDataManager {
         console.error('기존 관련상품 삭제 오류:', deleteError);
         throw deleteError;
       }
-      
-      console.log(`🗑️ 기존 관련상품 삭제 완료 - 포스트 ID: ${postId}`);
-      
+
       // 2. 새로운 관련상품 삽입 (상품이 있는 경우에만)
       if (relatedProducts && relatedProducts.length > 0) {
         const productsToInsert = relatedProducts.map((product, index) => ({
@@ -939,7 +871,6 @@ class SupabaseNutritionDataManager {
           display_order: index
         }));
         
-        console.log(`➕ 새로운 관련상품 삽입 시작 - ${productsToInsert.length}개`);
         const { error: insertError } = await this.supabase
           .from('post_related_products')
           .insert(productsToInsert);
@@ -949,9 +880,6 @@ class SupabaseNutritionDataManager {
           throw insertError;
         }
         
-        console.log(`✅ 새로운 관련상품 삽입 완료 - ${productsToInsert.length}개`);
-      } else {
-        console.log(`ℹ️ 삽입할 관련상품이 없음 - 포스트 ID: ${postId}`);
       }
       
     } catch (error) {
@@ -1007,8 +935,7 @@ class SupabaseNutritionDataManager {
         .single();
       
       if (error) throw error;
-      
-      
+
       // 태그 처리 (tags가 있는 경우)
       if (postData.tags && postData.tags.length > 0) {
         await this.saveTags(createdPost.id, postData.tags);

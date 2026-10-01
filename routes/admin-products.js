@@ -35,14 +35,8 @@ const imageUploadHandler = new ImageUploadHandler();
 
 // Admin authentication middleware
 const adminAuth = (req, res, next) => {
-    console.log('Admin auth check:', {
-        hasSession: !!req.session,
-        hasUser: !!(req.session && req.session.user),
-        user: req.session?.user
-    });
     
     if (!req.session || !req.session.user) {
-        console.log('No session or user found');
         return res.status(401).json({ 
             success: false, 
             error: '로그인이 필요합니다.' 
@@ -54,24 +48,14 @@ const adminAuth = (req, res, next) => {
         req.session.user.id === '1' ||
         req.session.user.isAdmin === true ||
         req.session.user.role === 'admin';
-    
-    console.log('Admin check result:', {
-        username: req.session.user.username,
-        id: req.session.user.id,
-        isAdmin: req.session.user.isAdmin,
-        role: req.session.user.role,
-        isAdmin: isAdmin
-    });
-    
+
     if (!isAdmin) {
-        console.log('User is not admin');
         return res.status(403).json({ 
             success: false, 
             error: '관리자 권한이 필요합니다.' 
         });
     }
     
-    console.log('Admin auth passed');
     next();
 };
 
@@ -81,7 +65,6 @@ router.use(adminAuth);
 // GET /api/admin/products - List products with pagination/filtering
 router.get('/', async (req, res) => {
     try {
-        console.log('GET /api/admin/products - 요청 파라미터:', req.query);
         
         const { 
             page = 1, 
@@ -110,17 +93,8 @@ router.get('/', async (req, res) => {
             sortOrder: order
         };
 
-        console.log('필터:', filters);
-        console.log('옵션:', options);
-
         const result = await productManager.getProducts(filters, options);
-        
-        console.log('결과:', { 
-            productsCount: result.products?.length, 
-            total: result.total,
-            page: result.page 
-        });
-        
+
         res.json({
             success: true,
             data: result.products,
@@ -205,9 +179,7 @@ router.get('/stats', async (req, res) => {
 // GET /api/admin/products/category-stats - Get category-wise statistics
 router.get('/category-stats', async (req, res) => {
     try {
-        console.log('GET /api/admin/products/category-stats - 요청 시작');
         const categoryStats = await productManager.getCategoryStats();
-        console.log('카테고리 통계 결과:', categoryStats);
         
         res.json({
             success: true,
@@ -293,7 +265,6 @@ router.get('/analytics/date-range', async (req, res) => {
 // 이 라우트는 /:id 라우트보다 먼저 정의되어야 합니다
 router.get('/today-views-detail', async (req, res) => {
     try {
-        console.log('오늘 조회수 상세 API 호출됨');
         
         const todayViewsDetail = await productManager.getTodayViewsDetail();
         
@@ -674,10 +645,6 @@ router.get('/popular', async (req, res) => {
         ProductErrorHandler.handle(error, req, res, 'GET_POPULAR_PRODUCTS');
     }
 });
-
-
-
-
 
 // GET /api/admin/products/:id/analytics/export - Export product analytics
 router.get('/:id/analytics/export', async (req, res) => {

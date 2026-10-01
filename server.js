@@ -1,3 +1,5 @@
+const { schemas, buildPrompt, buildInstructions, getMealSchema, parseResult, validateMeal, PROMPT_VERSION } = require('./utils/aiContracts');
+const { renderMealPlan } = require('./utils/mealPlanRenderer');
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -287,7 +289,7 @@ app.post(
 
     // 더 정확한 캐시 키 생성 (전체 프롬프트의 해시 사용)
     const crypto = require("crypto");
-    const cacheKey = `meal_plan_${resolveOpenAIModel()}_${crypto
+    const cacheKey = `meal_plan_${PROMPT_VERSION}_${resolveOpenAIModel()}_${crypto
       .createHash("sha256")
       .update(prompt)
       .digest("hex")}`;
@@ -295,18 +297,25 @@ app.post(
     // 캐시에서 응답 확인
     const cachedResponse = cacheManager.get('api', cacheKey);
     if (cachedResponse) {
-      console.log("✅ 캐시된 응답 사용 (완전 동일한 요청)");
       return res.json(cachedResponse);
     }
 
     try {
-      console.log("🍽️ 추천식단 생성 - OpenAI GPT-6 Luna 모델 사용");
       
       // AI 요청 큐에 추가하여 순차 처리
-      const response = generationResponse(await aiRequestQueue.add(
-        (signal) => generateText(prompt, { signal, timeout: 300000 }),
+      let input;
+      try { input = JSON.parse(prompt); } catch { input = { request: prompt }; }
+      if (!input || typeof input !== 'object' || Array.isArray(input)) {
+        return res.status(400).json({ error: '식단 입력 형식이 올바르지 않습니다.' });
+      }
+      const mealSchema = getMealSchema(input);
+      const generated = await aiRequestQueue.add(
+        (signal) => generateText(buildPrompt('meal', input), { signal, timeout: 300000,
+          schema: mealSchema, schemaName: 'meal', instructions: buildInstructions('meal') }),
         { type: 'meal-plan', userId: req.session?.user?.id }
-      ));
+      );
+      const data = validateMeal(parseResult(generated.text, 'meal'), input);
+      const response = { ...generationResponse({ ...generated, text: renderMealPlan(data, input.meal_period === 'week') }), data };
 
       // 응답 캐싱 (1시간)
       cacheManager.set('api', cacheKey, response, {}, 3600);
@@ -342,7 +351,7 @@ app.post(
 
     // 더 정확한 캐시 키 생성 (전체 프롬프트의 해시 사용)
     const crypto = require("crypto");
-    const cacheKey = `supplement_${resolveOpenAIModel()}_${crypto
+    const cacheKey = `supplement_${PROMPT_VERSION}_${resolveOpenAIModel()}_${crypto
       .createHash("sha256")
       .update(prompt)
       .digest("hex")}`;
@@ -350,16 +359,17 @@ app.post(
     // 캐시에서 응답 확인
     const cachedResponse = cacheManager.get('api', cacheKey);
     if (cachedResponse) {
-      console.log("✅ 캐시된 영양제 추천 응답 사용 (완전 동일한 요청)");
       return res.json(cachedResponse);
     }
 
     try {
       // AI 요청 큐에 추가하여 순차 처리
       const response = generationResponse(await aiRequestQueue.add(
-        (signal) => generateText(prompt, { signal, timeout: 300000 }),
+        (signal) => generateText(buildPrompt('supplements', { request: prompt }), { signal, timeout: 300000, schema: schemas.supplements, schemaName: 'supplements', instructions: buildInstructions('supplements') }),
         { type: 'supplement-recommendation', userId: req.session?.user?.id }
       ));
+
+      response.data = parseResult(response.text, 'supplements');
 
       // 응답 캐싱 (2시간)
       cacheManager.set('api', cacheKey, response, {}, 7200);
@@ -396,62 +406,25 @@ app.post("/api/analyze-ingredient", validateInput.aiApi, async (req, res) => {
   }
 
   // 캐시 키 생성
-  const cacheKey = `ingredient_${resolveOpenAIModel()}_${require("crypto").createHash("sha256").update(JSON.stringify([ingredient, prompt])).digest("hex")}`;
+  const cacheKey = `ingredient_${PROMPT_VERSION}_${resolveOpenAIModel()}_${require("crypto").createHash("sha256").update(JSON.stringify([ingredient, prompt])).digest("hex")}`;
 
   // 캐시에서 응답 확인
   const cachedResponse = cacheManager.get('api', cacheKey);
   if (cachedResponse) {
-    console.log("✅ 캐시된 식재료 분석 응답 사용");
     return res.json(cachedResponse);
   }
 
   try {
     // AI 요청 큐에 추가하여 순차 처리
     const response = await aiRequestQueue.add(
-      (signal) => generateText(prompt, { signal, timeout: 300000 }),
+      (signal) => generateText(buildPrompt('ingredient', { ingredient, request: prompt }), { signal, timeout: 300000, schema: schemas.ingredient, schemaName: 'ingredient', instructions: buildInstructions('ingredient') }),
       { type: 'ingredient-analysis', userId: req.session?.user?.id, ingredient }
     );
 
-    // OpenAI API 응답에서 텍스트 추출
-    const generatedText = response.text;
-
-    // 로그인한 사용자인 경우 서비스 이용 횟수 증가
-    if (req.session && req.session.user) {
-      incrementServiceUsage(
-        req.session.user.id,
-        SERVICE_TYPES.INGREDIENT_ANALYSIS
-      );
-    }
-
-    // JSON 파싱 시도
-    try {
-      const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsedResult = JSON.parse(jsonMatch[0]);
-        const result = { result: parsedResult };
-
-        // 응답 캐싱 (3시간)
-        cacheManager.set('api', cacheKey, result, {}, 10800);
-
-        res.json(result);
-      } else {
-        // JSON이 아닌 경우 텍스트 그대로 반환
-        const result = { result: { text: generatedText } };
-
-        // 응답 캐싱 (3시간)
-        cacheManager.set('api', cacheKey, result, {}, 10800);
-
-        res.json(result);
-      }
-    } catch (parseError) {
-      console.error("JSON 파싱 오류:", parseError);
-      const result = { result: { text: generatedText } };
-
-      // 응답 캐싱 (3시간)
-      cacheManager.set('api', cacheKey, result, {}, 10800);
-
-      res.json(result);
-    }
+    const result = { result: parseResult(response.text, 'ingredient') };
+    cacheManager.set('api', cacheKey, result, {}, 10800);
+    if (req.session?.user) incrementServiceUsage(req.session.user.id, SERVICE_TYPES.INGREDIENT_ANALYSIS);
+    res.json(result);
   } catch (error) {
     console.error(
       "식재료 분석 OpenAI API 오류:",
@@ -461,13 +434,8 @@ app.post("/api/analyze-ingredient", validateInput.aiApi, async (req, res) => {
   }
 });
 
-
-
 // 카카오 지도 API 키 제공 엔드포인트
 app.get("/api/kakao-map-key", (req, res) => {
-  console.log("🔑 카카오맵 API 키 요청 받음");
-  console.log("📡 요청 도메인:", req.get('origin') || req.get('host'));
-  console.log("🔑 API 키 상태:", KAKAO_MAP_API_KEY ? "설정됨" : "설정되지 않음");
   
   if (!KAKAO_MAP_API_KEY) {
     console.error("❌ 카카오맵 API 키가 설정되지 않았습니다!");
@@ -688,7 +656,6 @@ app.post("/api/products", async (req, res) => {
       summary,
     } = req.body;
 
-    // 디버깅 로그 추가
     console.log("🔍 [DEBUG] POST /api/products 받은 데이터:", req.body);
     console.log(
       "🔍 [DEBUG] originalPrice:",
@@ -746,7 +713,6 @@ app.put("/api/products/:id", async (req, res) => {
       summary,
     } = req.body;
 
-    // 디버깅 로그 추가
     console.log("🔍 [DEBUG] PUT /api/products/:id 받은 데이터:", req.body);
     console.log(
       "🔍 [DEBUG] originalPrice:",
@@ -868,7 +834,6 @@ function cleanupSecurityData() {
       suspiciousActivityDetector,
     } = require("./utils/securityMiddleware");
     suspiciousActivityDetector.cleanupOldActivity();
-    console.log("보안 데이터 정리 완료:", new Date().toISOString());
   } catch (error) {
     console.error("보안 데이터 정리 실패:", error);
   }
@@ -915,7 +880,6 @@ function initializeSecurityData() {
       suspiciousActivityDetector,
     } = require("./utils/securityMiddleware");
     suspiciousActivityDetector.initializeActivityData();
-    console.log("의심스러운 활동 데이터 초기화 완료");
   } catch (error) {
     console.error("의심스러운 활동 데이터 초기화 실패:", error);
   }
@@ -959,7 +923,6 @@ const memoryMonitor = getMemoryMonitor();
 
 // WebSocket 연결 처리 (메모리 최적화)
 wss.on("connection", (ws, req) => {
-  console.log("🔌 모니터링 WebSocket 클라이언트 연결됨");
 
   // 클라이언트를 모니터링 시스템에 등록
   if (
@@ -980,7 +943,6 @@ wss.on("connection", (ws, req) => {
 
   // 연결 해제 처리
   ws.on("close", () => {
-    console.log("🔌 모니터링 WebSocket 클라이언트 연결 해제됨");
     clearInterval(pingInterval);
   });
 
@@ -1040,7 +1002,6 @@ if (require.main === module) server.listen(PORT, async () => {
   setInterval(() => memoryMonitor.checkMemoryUsage(), 2 * 60 * 1000);
 
   setInterval(performPeriodicMaintenance, 5 * 60 * 1000);
-
 
   console.log("✅ 서버 초기화 완료 - 모든 스케줄러가 시작되었습니다.");
 });

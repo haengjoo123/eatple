@@ -166,7 +166,6 @@ class CSVFoodSearch {
     }
 
     best.sort((a, b) => compareCandidates(b, a));
-    console.log(`[CSVFoodSearch] 검색 완료: ${best.length}개 결과 반환 (전체 ${matchCount}개 중)`);
     return best.map(({ row }) => this.normalizeRow(row));
   }
 

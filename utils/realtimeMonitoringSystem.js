@@ -50,7 +50,6 @@ class RealtimeMonitoringSystem {
             this.webSocketClients.delete(ws);
         });
         
-        console.log(`WebSocket 클라이언트 추가됨. 총 ${this.webSocketClients.size}개 연결`);
     }
     
     /**
@@ -67,11 +66,7 @@ class RealtimeMonitoringSystem {
         
         const removedCount = this.webSocketClients.size - activeClients.size;
         this.webSocketClients = activeClients;
-        
-        if (removedCount > 0) {
-            console.log(`비활성 WebSocket 클라이언트 ${removedCount}개 정리됨`);
-        }
-        
+
         return removedCount;
     }
 

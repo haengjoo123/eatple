@@ -85,7 +85,6 @@ class FileCacheManager {
             const expiry = this.memoryCacheExpiry.get(key);
             if (expiry && Date.now() < expiry) {
                 this.stats.hits++;
-                console.log(`[MEMORY CACHE HIT] ${key}`);
                 return this.memoryCache.get(key);
             } else {
                 // 만료된 메모리 캐시 제거
@@ -338,10 +337,7 @@ class FileCacheManager {
                 cleanedCount++;
             }
         }
-        
-        if (cleanedCount > 0) {
-            console.log(`[MEMORY CACHE CLEANUP] ${cleanedCount}개 만료된 항목 제거`);
-        }
+
     }
 
     /**

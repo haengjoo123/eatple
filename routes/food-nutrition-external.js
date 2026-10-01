@@ -27,7 +27,6 @@ router.get('/search', async (req, res) => {
     }
     
     try {
-        console.log(`[food-nutrition-external] CSV 검색 요청: ${productName}`);
         
         const searchLimit = limit ? parseInt(limit) : 200;
         const result = await csvSearch.search(productName.trim(), { 
@@ -43,7 +42,6 @@ router.get('/search', async (req, res) => {
             });
         }
         
-        console.log(`[food-nutrition-external] CSV에서 ${result.length}개 결과 반환`);
         res.json({ success: true, data: result, source: 'csv' });
     } catch (error) {
         console.error('[food-nutrition-external] CSV 검색 오류:', error);
@@ -76,7 +74,6 @@ router.get('/exact-search', async (req, res) => {
     }
     
     try {
-        console.log(`[food-nutrition-external] CSV 정확일치 검색 요청: ${productName}`);
         
         const result = await csvSearch.search(productName.trim(), { 
             limit: 100,
@@ -91,7 +88,6 @@ router.get('/exact-search', async (req, res) => {
             });
         }
         
-        console.log(`[food-nutrition-external] CSV 정확일치에서 ${result.length}개 결과 반환`);
         res.json({ success: true, data: result, source: 'csv-exact' });
     } catch (error) {
         console.error('[food-nutrition-external] CSV 정확일치 검색 오류:', error);
@@ -117,7 +113,6 @@ router.get('/detail', async (req, res) => {
     }
     
     try {
-        console.log(`[food-nutrition-external] CSV 상세정보 요청: ${foodName || foodCode}, 제조사: ${manufacturer || '없음'}`);
         
         const result = await csvSearch.getDetail(foodCode, foodName, manufacturer);
         
@@ -128,7 +123,6 @@ router.get('/detail', async (req, res) => {
             });
         }
         
-        console.log(`[food-nutrition-external] CSV 상세정보 반환: ${result.식품명} (${result.제조사명})`);
         res.json({ success: true, data: result, source: 'csv' });
     } catch (error) {
         console.error('[food-nutrition-external] CSV 상세정보 조회 오류:', error);
@@ -145,11 +139,9 @@ router.get('/detail', async (req, res) => {
  */
 router.get('/stats', async (req, res) => {
     try {
-        console.log('[food-nutrition-external] CSV 통계 정보 요청');
         
         const stats = await csvSearch.getStats();
         
-        console.log('[food-nutrition-external] CSV 통계 정보 반환');
         res.json({ success: true, data: stats, source: 'csv' });
     } catch (error) {
         console.error('[food-nutrition-external] CSV 통계 정보 조회 오류:', error);
@@ -175,11 +167,9 @@ router.get('/search-stats', async (req, res) => {
     }
     
     try {
-        console.log(`[food-nutrition-external] 검색 통계 요청: ${keyword}`);
         
         const stats = await csvSearch.getSearchStats(keyword.trim());
         
-        console.log(`[food-nutrition-external] 검색 통계 반환: ${stats.totalMatches}개 결과`);
         res.json({ success: true, data: stats, source: 'csv' });
     } catch (error) {
         console.error('[food-nutrition-external] 검색 통계 조회 오류:', error);

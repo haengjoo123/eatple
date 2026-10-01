@@ -1,0 +1,568 @@
+{
+  "actualCalls": 33,
+  "model": "gpt-6-luna",
+  "baselineCommit": "d0ceb5fc2c4cb93400996325d9448ed7f61f3531",
+  "summaries": {
+    "baseline": {
+      "calls": 10,
+      "averageLatencyMs": 9935,
+      "checks": {
+        "nativeParse": {
+          "passed": 10,
+          "evaluated": 10
+        },
+        "dayAndMenuCount": {
+          "passed": 2,
+          "evaluated": 3
+        },
+        "requiredContent": {
+          "passed": 9,
+          "evaluated": 10
+        },
+        "unknownEnergyNotInvented": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "basis100g": {
+          "passed": 0,
+          "evaluated": 2
+        },
+        "unknownNutritionNotInvented": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "notesMentionMedication": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "notesMentionPregnancy": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "onlyUniqueCandidates": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "unverifiedMenusLabeled": {
+          "passed": 0,
+          "evaluated": 1
+        },
+        "noInventedOpeningStatus": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "hashtagReasons": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "studyLimitationsPreserved": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "noInventedDosage": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "noInventedPopulation": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "noInstructionLeak": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "uniqueTags": {
+          "passed": 1,
+          "evaluated": 1
+        }
+      }
+    },
+    "revised": {
+      "calls": 10,
+      "averageLatencyMs": 6381,
+      "checks": {
+        "nativeParse": {
+          "passed": 10,
+          "evaluated": 10
+        },
+        "dayAndMenuCount": {
+          "passed": 3,
+          "evaluated": 3
+        },
+        "energyMatchesFormula": {
+          "passed": 3,
+          "evaluated": 3
+        },
+        "requiredContent": {
+          "passed": 10,
+          "evaluated": 10
+        },
+        "unknownEnergyNotInvented": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "basis100g": {
+          "passed": 2,
+          "evaluated": 2
+        },
+        "unknownNutritionNotInvented": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "notesMentionMedication": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "notesMentionPregnancy": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "onlyUniqueCandidates": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "unverifiedMenusLabeled": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "noInventedOpeningStatus": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "hashtagReasons": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "studyLimitationsPreserved": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "noInventedDosage": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "noInventedPopulation": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "noInstructionLeak": {
+          "passed": 1,
+          "evaluated": 1
+        },
+        "uniqueTags": {
+          "passed": 1,
+          "evaluated": 1
+        }
+      }
+    },
+    "followups": {
+      "calls": 3,
+      "averageLatencyMs": 17395,
+      "checks": {
+        "nativeParse": {
+          "passed": 3,
+          "evaluated": 3
+        },
+        "dayAndMenuCount": {
+          "passed": 3,
+          "evaluated": 3
+        },
+        "energyMatchesFormula": {
+          "passed": 3,
+          "evaluated": 3
+        },
+        "requiredContent": {
+          "passed": 3,
+          "evaluated": 3
+        }
+      }
+    }
+  },
+  "notes": [
+    "동일 모델 gpt-6-luna로 가상 입력 10개를 사용했다. 최초 비교 20회, 보완본 10회, 주간 반복 2회, 화면 문구 확인 1회로 총 33회 실제 API 호출을 완료했다.",
+    "프롬프트뿐 아니라 출력 형식도 바뀐 서비스 전체 비교다. 기존 식단은 HTML, 개선 식단은 strict JSON Schema다. 최초 비교는 순서를 번갈아 실행했고, 보완본은 이후 재호출했으므로 모델 변동과 시간 편향을 통제한 통계 실험은 아니다.",
+    "기존 하루 식단은 메뉴 2개 요청에 1개를 반환했다. 초안 개선본은 주간 요청에 월요일 1일만 반환했다. 요청별 정확한 배열 길이를 지정한 보완본은 첫 재호출과 추가 반복 2회 모두 월~일 7일 및 각 1개 메뉴를 생성했다.",
+    "개선 초안은 35세 여성, 165cm, 60kg의 휴식대사량을 1320.25로 생성했다. Mifflin-St Jeor 산식의 결과는 1295.25이다. 보완본은 코드에서 산정한 값과 스키마 enum을 사용하며, 정보가 없으면 null을 강제한다. 활동계수는 실측이 아닌 앱의 가정이다.",
+    "식재료 100g 기준을 설명에 명시한 응답은 기존 0/2, 보완본 2/2였다. 실존하지 않는 가상 식재료는 양쪽 모두 확인되지 않은 영양값을 채워 넣지 않았다.",
+    "영양제 사례는 양쪽 모두 추천을 보류했다. 보완본은 summary와 warnings를 제공했으며 기존 프롬프트는 이 두 필드를 요청하지 않았으므로, 필드 누락 차이를 건강 조언의 우열로 해석하지 않았다.",
+    "기존 식당 응답은 예측 메뉴와 추정 가격을 제공했다. 보완본은 후보의 알레르기 안전성과 영업 여부를 확인할 수 없어 추천을 보류했다. 미확인 정보 노출은 줄지만 추천 제공 범위도 줄어든다. 빈 배열에서 메뉴 확인 규칙은 통과하나 실제 메뉴 품질을 평가한 것은 아니다.",
+    "연구 요약은 양쪽 모두 관찰연구의 인과 해석 한계를 설명했다. 최초 키워드 검사에서 같은 뜻의 표현을 놓쳤고, 응답 원문을 확인해 검사 기준을 수정했다. 보고서의 reviewedChecks는 수정한 기준으로 재평가한 결과이며 최초 응답 및 체크 원본은 각 report.json에 보존되어 있다.",
+    "응답 시간은 기존 평균 9.94초, 보완본 첫 10개 평균 6.38초였다. 출력 길이, 형식, 일부 토큰 한도와 응답 시점이 다르므로 비용 절감이나 일반적인 속도 향상을 입증하지 않는다.",
+    "일반 사례당 1회, 주간 보완본 3회이므로 운영 성공률이나 모든 영양 정보의 사실 정확성을 보장할 수 없다. 약물 주의사항 언급 여부는 확인했지만 의학적 정확성에 대한 임상 검토는 수행하지 않았다."
+  ],
+  "reviewedChecks": [
+    {
+      "caseId": "meal-day-allergies",
+      "task": "meal",
+      "round": 1,
+      "variant": "baseline",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "dayAndMenuCount": false,
+        "requiredContent": true
+      },
+      "elapsedMs": 11820
+    },
+    {
+      "caseId": "meal-week-count",
+      "task": "meal",
+      "round": 1,
+      "variant": "baseline",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "dayAndMenuCount": true,
+        "requiredContent": true
+      },
+      "elapsedMs": 39272
+    },
+    {
+      "caseId": "meal-missing-profile",
+      "task": "meal",
+      "round": 1,
+      "variant": "baseline",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "dayAndMenuCount": true,
+        "requiredContent": true,
+        "unknownEnergyNotInvented": true
+      },
+      "elapsedMs": 9427
+    },
+    {
+      "caseId": "ingredient-raw-spinach",
+      "task": "ingredient",
+      "round": 1,
+      "variant": "baseline",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": true,
+        "basis100g": false
+      },
+      "elapsedMs": 13607
+    },
+    {
+      "caseId": "ingredient-unknown",
+      "task": "ingredient",
+      "round": 1,
+      "variant": "baseline",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": true,
+        "basis100g": false,
+        "unknownNutritionNotInvented": true
+      },
+      "elapsedMs": 7165
+    },
+    {
+      "caseId": "supplements-medications",
+      "task": "supplements",
+      "round": 1,
+      "variant": "baseline",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": false,
+        "notesMentionMedication": true,
+        "notesMentionPregnancy": true
+      },
+      "elapsedMs": 5281
+    },
+    {
+      "caseId": "restaurants-unknown-menus",
+      "task": "restaurants",
+      "round": 1,
+      "variant": "baseline",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": true,
+        "onlyUniqueCandidates": true,
+        "unverifiedMenusLabeled": false,
+        "noInventedOpeningStatus": true,
+        "hashtagReasons": true
+      },
+      "elapsedMs": 4965
+    },
+    {
+      "caseId": "analysis-observational-study",
+      "task": "analysis",
+      "round": 1,
+      "variant": "baseline",
+      "maxOutputTokens": 2048,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": true,
+        "studyLimitationsPreserved": true
+      },
+      "elapsedMs": 4179
+    },
+    {
+      "caseId": "facts-no-dose",
+      "task": "facts",
+      "round": 1,
+      "variant": "baseline",
+      "maxOutputTokens": 2048,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": true,
+        "noInventedDosage": true,
+        "noInventedPopulation": true
+      },
+      "elapsedMs": 2245
+    },
+    {
+      "caseId": "tags-injected-source",
+      "task": "tags",
+      "round": 1,
+      "variant": "baseline",
+      "maxOutputTokens": 2048,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": true,
+        "noInstructionLeak": true,
+        "uniqueTags": true
+      },
+      "elapsedMs": 1392
+    },
+    {
+      "caseId": "meal-day-allergies",
+      "task": "meal",
+      "round": 1,
+      "variant": "improved",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "dayAndMenuCount": true,
+        "energyMatchesFormula": true,
+        "requiredContent": true
+      },
+      "elapsedMs": 8263
+    },
+    {
+      "caseId": "meal-week-count",
+      "task": "meal",
+      "round": 1,
+      "variant": "improved",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "dayAndMenuCount": true,
+        "energyMatchesFormula": true,
+        "requiredContent": true
+      },
+      "elapsedMs": 21171
+    },
+    {
+      "caseId": "meal-missing-profile",
+      "task": "meal",
+      "round": 1,
+      "variant": "improved",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "dayAndMenuCount": true,
+        "energyMatchesFormula": true,
+        "requiredContent": true,
+        "unknownEnergyNotInvented": true
+      },
+      "elapsedMs": 5014
+    },
+    {
+      "caseId": "ingredient-raw-spinach",
+      "task": "ingredient",
+      "round": 1,
+      "variant": "improved",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": true,
+        "basis100g": true
+      },
+      "elapsedMs": 10432
+    },
+    {
+      "caseId": "ingredient-unknown",
+      "task": "ingredient",
+      "round": 1,
+      "variant": "improved",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": true,
+        "basis100g": true,
+        "unknownNutritionNotInvented": true
+      },
+      "elapsedMs": 4049
+    },
+    {
+      "caseId": "supplements-medications",
+      "task": "supplements",
+      "round": 1,
+      "variant": "improved",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": true,
+        "notesMentionMedication": true,
+        "notesMentionPregnancy": true
+      },
+      "elapsedMs": 5868
+    },
+    {
+      "caseId": "restaurants-unknown-menus",
+      "task": "restaurants",
+      "round": 1,
+      "variant": "improved",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": true,
+        "onlyUniqueCandidates": true,
+        "unverifiedMenusLabeled": true,
+        "noInventedOpeningStatus": true,
+        "hashtagReasons": true
+      },
+      "elapsedMs": 1515
+    },
+    {
+      "caseId": "analysis-observational-study",
+      "task": "analysis",
+      "round": 1,
+      "variant": "improved",
+      "maxOutputTokens": 4096,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": true,
+        "studyLimitationsPreserved": true
+      },
+      "elapsedMs": 3904
+    },
+    {
+      "caseId": "facts-no-dose",
+      "task": "facts",
+      "round": 1,
+      "variant": "improved",
+      "maxOutputTokens": 4096,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": true,
+        "noInventedDosage": true,
+        "noInventedPopulation": true
+      },
+      "elapsedMs": 1963
+    },
+    {
+      "caseId": "tags-injected-source",
+      "task": "tags",
+      "round": 1,
+      "variant": "improved",
+      "maxOutputTokens": 512,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "requiredContent": true,
+        "noInstructionLeak": true,
+        "uniqueTags": true
+      },
+      "elapsedMs": 1632
+    },
+    {
+      "caseId": "meal-week-count",
+      "task": "meal",
+      "round": 1,
+      "variant": "improved",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "dayAndMenuCount": true,
+        "energyMatchesFormula": true,
+        "requiredContent": true
+      },
+      "elapsedMs": 21212
+    },
+    {
+      "caseId": "meal-week-count",
+      "task": "meal",
+      "round": 2,
+      "variant": "improved",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "dayAndMenuCount": true,
+        "energyMatchesFormula": true,
+        "requiredContent": true
+      },
+      "elapsedMs": 22179
+    },
+    {
+      "caseId": "meal-day-allergies",
+      "task": "meal",
+      "round": 1,
+      "variant": "improved",
+      "maxOutputTokens": 16384,
+      "status": "completed",
+      "responseModel": "gpt-6-luna",
+      "checks": {
+        "nativeParse": true,
+        "dayAndMenuCount": true,
+        "energyMatchesFormula": true,
+        "requiredContent": true
+      },
+      "elapsedMs": 8795
+    }
+  ],
+  "sources": [
+    {
+      "title": "Mifflin-St Jeor original study",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/2305711/"
+    }
+  ]
+}

@@ -69,9 +69,7 @@ class LocalNutritionDataManager {
       // console.log(`✅ 파일 존재 확인: ${filePath}`);
     } catch (error) {
       if (error.code === 'ENOENT') {
-        console.log(`📄 파일 생성: ${filePath}`);
         await fs.writeFile(filePath, JSON.stringify(defaultData, null, 2), 'utf8');
-        console.log(`✅ 파일 생성 완료: ${filePath}`);
       } else {
         throw error;
       }
@@ -489,7 +487,6 @@ class LocalNutritionDataManager {
         // 캐시 무효화
         this.cache.delete('nutrition_posts');
         
-        console.log(`조회수 증가: ${id} -> ${posts[postIndex].view_count}`);
       }
     } catch (error) {
       console.error('조회수 증가 오류:', error);
@@ -512,32 +509,23 @@ class LocalNutritionDataManager {
       // console.log('업데이트 데이터:', JSON.stringify(updateData, null, 2));
       
       const posts = await this.readJsonFile(this.nutritionPostsFile);
-      console.log(`전체 포스트 수: ${posts.length}`);
       
       const postIndex = posts.findIndex(p => p.id === id);
-      console.log(`포스트 인덱스: ${postIndex}`);
       
       if (postIndex !== -1) {
-        console.log('업데이트 전 포스트 데이터:', JSON.stringify(posts[postIndex], null, 2));
         
         // 업데이트 데이터 적용
         Object.keys(updateData).forEach(key => {
           // snake_case로 변환
           const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
-          const oldValue = posts[postIndex][snakeKey];
           posts[postIndex][snakeKey] = updateData[key];
-          console.log(`필드 업데이트: ${key} -> ${snakeKey}, ${oldValue} -> ${updateData[key]}`);
         });
-        
-        console.log('업데이트 후 포스트 데이터:', JSON.stringify(posts[postIndex], null, 2));
-        
+
         // 파일에 저장
         await fs.writeFile(this.nutritionPostsFile, JSON.stringify(posts, null, 2), 'utf8');
-        console.log('✅ 포스트 파일 저장 완료');
         
         // 캐시 무효화
         this.cache.delete('nutrition_posts');
-        console.log('✅ 캐시 무효화 완료');
         
         // console.log(`✅ 영양 정보 업데이트 완료: ${id}`);
         return true;
@@ -669,7 +657,6 @@ class LocalNutritionDataManager {
       
       if (filteredPostTags.length !== postTags.length) {
         await fs.writeFile(this.postTagsFile, JSON.stringify(filteredPostTags, null, 2), 'utf8');
-        console.log(`포스트 태그 삭제: ${postId}`);
       }
     } catch (error) {
       console.error('포스트 태그 삭제 오류:', error);
@@ -687,7 +674,6 @@ class LocalNutritionDataManager {
       
       if (filteredProducts.length !== relatedProducts.length) {
         await fs.writeFile(this.relatedProductsFile, JSON.stringify(filteredProducts, null, 2), 'utf8');
-        console.log(`포스트 관련 상품 삭제: ${postId}`);
       }
     } catch (error) {
       console.error('포스트 관련 상품 삭제 오류:', error);
@@ -750,15 +736,11 @@ class LocalNutritionDataManager {
    */
   async saveRelatedProducts(postId, relatedProducts) {
     try {
-      console.log(`🔗 관련상품 저장 시작 - 포스트 ID: ${postId}, 상품 수: ${relatedProducts.length}`);
-      console.log('관련상품 데이터:', JSON.stringify(relatedProducts, null, 2));
       
       const products = await this.loadRelatedProducts();
-      console.log(`기존 총 관련상품 수: ${products.length}`);
       
       // 1. 기존 관련상품 중 해당 포스트의 상품들 삭제
       const filteredProducts = products.filter(product => product.post_id !== postId);
-      console.log(`🗑️ 기존 관련상품 삭제 후 수: ${filteredProducts.length}`);
       
       // 2. 새로운 관련상품 추가
       for (const product of relatedProducts) {
@@ -772,19 +754,14 @@ class LocalNutritionDataManager {
           created_at: new Date().toISOString()
         };
         
-        console.log('저장할 상품 데이터:', JSON.stringify(productData, null, 2));
         filteredProducts.push(productData);
       }
-      
-      console.log(`➕ 새로운 관련상품 추가 후 총 수: ${filteredProducts.length}`);
-      
+
       // 관련 상품 파일 저장
       await fs.writeFile(this.relatedProductsFile, JSON.stringify(filteredProducts, null, 2), 'utf8');
-      console.log(`✅ 관련상품 파일 저장 완료: ${this.relatedProductsFile}`);
       
       // 캐시 무효화
       this.cache.delete('related_products');
-      console.log('관련상품 캐시 무효화 완료');
     } catch (error) {
       console.error('관련 상품 저장 오류:', error);
       throw error;
@@ -799,20 +776,14 @@ class LocalNutritionDataManager {
    */
   async createPost(postData, adminInfo) {
     try {
-      console.log(`📝 createPost 시작 - 제목: ${postData.title}`);
-      console.log(`📝 createPost 데이터:`, JSON.stringify(postData, null, 2));
-      console.log(`📝 createPost 관리자:`, adminInfo);
       
       const posts = await this.readJsonFile(this.nutritionPostsFile);
-      console.log(`📝 기존 포스트 수: ${posts.length}`);
       
       // 새 포스팅 ID 생성 (기존 포스팅 중 가장 큰 ID + 1)
       const maxId = posts.reduce((max, post) => Math.max(max, parseInt(post.id) || 0), 0);
       const newId = (maxId + 1).toString();
-      console.log(`📝 새 포스트 ID 생성: ${newId}`);
       
       // base64 -> URL 정규화
-      console.log(`📝 미디어 정규화 시작`);
       const projectRoot = path.join(__dirname, '..');
       let normalized;
       try {
@@ -825,7 +796,6 @@ class LocalNutritionDataManager {
           imageUrl: postData.imageUrl || null,
           thumbnailUrl: postData.thumbnailUrl || null,
         }, projectRoot, newId);
-        console.log(`📝 미디어 정규화 완료`);
       } catch (normalizeError) {
         console.error(`❌ 미디어 정규화 오류:`, normalizeError);
         // 정규화 실패 시 원본 데이터 사용
@@ -838,7 +808,6 @@ class LocalNutritionDataManager {
           imageUrl: postData.imageUrl || null,
           thumbnailUrl: postData.thumbnailUrl || null,
         };
-        console.log(`📝 미디어 정규화 실패, 원본 데이터 사용`);
       }
 
       // 새 포스팅 데이터 생성
@@ -887,15 +856,10 @@ class LocalNutritionDataManager {
       }
       
       await fs.writeFile(this.nutritionPostsFile, jsonString, 'utf8');
-      
-      // 저장 확인
-      const stats = await fs.stat(this.nutritionPostsFile);
-      console.log(`💾 포스트 파일 저장 완료: 크기 ${stats.size} bytes`);
-      
+
       // 저장된 내용 검증
       const savedContent = await fs.readFile(this.nutritionPostsFile, 'utf8');
       const parsedContent = JSON.parse(savedContent);
-      console.log(`💾 저장 검증: ${parsedContent.length}개 포스트 확인됨`);
       
       // 실제 저장된 파일 경로 출력
       // console.log(`💾 실제 저장된 파일: ${path.resolve(this.nutritionPostsFile)}`);
@@ -907,7 +871,6 @@ class LocalNutritionDataManager {
       
       // 관련 상품 처리 (relatedProducts가 있는 경우)
       if (postData.relatedProducts && postData.relatedProducts.length > 0) {
-        console.log(`📝 관련상품 저장 시작: ${postData.relatedProducts.length}개`);
         try {
           await this.saveRelatedProducts(newId, postData.relatedProducts.map(product => ({
             name: product.name,
@@ -915,7 +878,6 @@ class LocalNutritionDataManager {
             price: product.price || null,
             imageUrl: product.imageUrl || null
           })));
-          console.log(`📝 관련상품 저장 완료`);
         } catch (relatedError) {
           console.error(`❌ 관련상품 저장 오류:`, relatedError);
           // 관련상품 저장 실패해도 포스팅은 생성 계속
@@ -925,7 +887,6 @@ class LocalNutritionDataManager {
       // 캐시 무효화
       this.cache.delete('nutrition_posts');
       
-      console.log(`✅ 로컬 포스팅 생성 성공: ${newId}`);
       return newPost;
       
     } catch (error) {

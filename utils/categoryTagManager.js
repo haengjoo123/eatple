@@ -86,7 +86,6 @@ class CategoryTagManager {
                 throw error;
             }
             
-            console.log(`[CATEGORY DEBUG] 새 카테고리 생성: "${data.name}" -> ID: "${data.id}"`);
             return data;
         } catch (error) {
             console.error('카테고리 생성 중 오류:', error);
@@ -167,7 +166,6 @@ class CategoryTagManager {
      */
     async updateCategoryPostCount(categoryId) {
         try {
-            console.log(`📊 카테고리 포스팅 수 업데이트 시작 - 카테고리 ID: ${categoryId}`);
             
             // 로컬 데이터에서 포스팅 수 계산
             const localPosts = await this.supabaseNutritionDataManager.getNutritionInfoList({}, { limit: 10000 });
@@ -178,8 +176,6 @@ class CategoryTagManager {
                 const postData = typeof post.toJSON === 'function' ? post.toJSON() : post;
                 return postData.category === categoryId || postData.category_id === categoryId;
             }).length;
-
-            console.log(`📊 로컬 데이터에서 계산된 포스팅 수: ${activePostsCount}`);
 
             // 로컬 카테고리 데이터 업데이트
             const categories = await this.getCategories();
@@ -192,9 +188,6 @@ class CategoryTagManager {
                 // 로컬 카테고리 파일 업데이트
                 await fs.writeFile(this.categoriesFile, JSON.stringify(categories, null, 2), 'utf8');
                 
-                console.log(`✅ 로컬 카테고리 ${categoryId} 포스팅 수 업데이트: ${activePostsCount}`);
-            } else {
-                console.log(`⚠️ 카테고리 ${categoryId}를 찾을 수 없음`);
             }
 
         } catch (error) {

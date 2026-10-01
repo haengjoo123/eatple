@@ -91,8 +91,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
                 pagination: paginationData,
                 cached: false
             };
-            
-            
+
             // HTTP 캐시 헤더 설정 (성능 최적화)
             try {
                 // 영양정보 목록은 5분 캐시, 1분 stale-while-revalidate
@@ -347,10 +346,8 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
      */
     router.get('/bookmarks', async (req, res) => {
         try {
-            console.log('[BOOKMARK API] 북마크 목록 조회 시작');
             
             if (!req.session.user) {
-                console.log('[BOOKMARK API] 로그인되지 않은 사용자');
                 return res.status(401).json({
                     success: false,
                     error: '로그인이 필요합니다'
@@ -361,13 +358,10 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 20;
 
-            console.log(`[BOOKMARK API] 사용자 ID: ${userId}, 페이지: ${page}, 제한: ${limit}`);
-
             // 사용자 선호도 가져오기 (에러 처리 강화)
             let userPrefs;
             try {
                 userPrefs = await recommendationService.getUserPreferences(userId);
-                console.log('[BOOKMARK API] 사용자 선호도 조회 성공:', userPrefs);
             } catch (prefError) {
                 console.error('[BOOKMARK API] 사용자 선호도 조회 실패:', prefError);
                 return res.status(500).json({
@@ -379,10 +373,8 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
 
             // interactions의 bookmarks 속성 안전하게 접근
             const bookmarkIds = userPrefs?.interactions?.bookmarks || [];
-            console.log(`[BOOKMARK API] 북마크 ID 목록: ${JSON.stringify(bookmarkIds)}`);
 
             if (bookmarkIds.length === 0) {
-                console.log('[BOOKMARK API] 북마크가 없음');
                 return res.json({
                     success: true,
                     data: [],
@@ -401,21 +393,15 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             
             for (const id of bookmarkIds) {
                 try {
-                    console.log(`[BOOKMARK API] 북마크 정보 조회 중 ${id}`);
                     const info = await supabaseDataManager.getNutritionInfoById(id);
                     if (info && info.isActive) {
                         validBookmarkedInfo.push(info.toJSON());
-                        console.log(`[BOOKMARK API] 북마크 정보 추가됨 ${id}`);
-                    } else {
-                        console.log(`[BOOKMARK API] 비활성이거나 없는 정보: ${id}`);
                     }
                 } catch (error) {
-                    console.log(`[BOOKMARK API] 북마크된 정보 ID ${id}를 찾을 수 없습니다:`, error.message);
                 }
             }
 
             const actualBookmarkedCount = validBookmarkedInfo.length;
-            console.log(`[BOOKMARK API] 실제 북마크 정보 개수: ${actualBookmarkedCount}`);
 
             // 실제 개수로 페이지네이션 계산
             const totalCount = actualBookmarkedCount;
@@ -425,8 +411,6 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             
             // 페이지네이션 적용
             const paginatedBookmarkedInfo = validBookmarkedInfo.slice(startIndex, endIndex);
-
-            console.log(`[BOOKMARK API] 페이지네이션된 북마크 정보 개수: ${paginatedBookmarkedInfo.length}`);
 
             res.json({
                 success: true,
@@ -455,10 +439,8 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
      */
     router.get('/bookmarks/count', async (req, res) => {
         try {
-            console.log('[BOOKMARK COUNT API] 북마크 개수 조회 시작');
             
             if (!req.session.user) {
-                console.log('[BOOKMARK COUNT API] 로그인되지 않은 사용자');
                 return res.status(401).json({
                     success: false,
                     error: '로그인이 필요합니다'
@@ -466,13 +448,11 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             }
 
             const userId = req.session.user.id;
-            console.log(`[BOOKMARK COUNT API] 사용자 ID: ${userId}`);
 
             // 사용자 선호도 가져오기
             let userPrefs;
             try {
                 userPrefs = await recommendationService.getUserPreferences(userId);
-                console.log('[BOOKMARK COUNT API] 사용자 선호도 조회 성공');
             } catch (prefError) {
                 console.error('[BOOKMARK COUNT API] 사용자 선호도 조회 실패:', prefError);
                 return res.status(500).json({
@@ -484,10 +464,8 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
 
             // 북마크 ID 목록 가져오기
             const bookmarkIds = userPrefs?.interactions?.bookmarks || [];
-            console.log(`[BOOKMARK COUNT API] 북마크 ID 목록: ${JSON.stringify(bookmarkIds)}`);
 
             if (bookmarkIds.length === 0) {
-                console.log('[BOOKMARK COUNT API] 북마크가 없음');
                 return res.json({
                     success: true,
                     count: 0
@@ -503,11 +481,8 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
                         actualCount++;
                     }
                 } catch (error) {
-                    console.log(`[BOOKMARK COUNT API] 북마크된 정보 ID ${id}를 찾을 수 없습니다:`, error.message);
                 }
             }
-
-            console.log(`[BOOKMARK COUNT API] 실제 북마크 개수: ${actualCount}`);
 
             res.json({
                 success: true,

@@ -1,3 +1,4 @@
+const { schemas, buildPrompt, buildInstructions, parseResult, invalidResult } = require('../utils/aiContracts');
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
@@ -22,273 +23,44 @@ const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 // AI requests use the shared queue and propagate cancellation to OpenAI.
 async function callOpenAI(prompt, metadata = {}) {
   const response = await aiRequestQueue.add(
-    (signal) => generateText(prompt, { signal, timeout: 200000, json: true }),
+    (signal) => generateText(prompt, { signal, timeout: 200000, schema: schemas.restaurants, schemaName: 'restaurants', instructions: buildInstructions('restaurants') }),
     { type: "restaurant-recommendation", ...metadata }
   );
   return response.text;
 }
 
 // AI 추천 시스템 (Google Search API 활용)
-async function recommendRestaurantWithAI(
-  restaurants,
-  userProfile,
-  requirements
-) {
-  if (!restaurants || restaurants.length === 0) {
-    return { error: "추천할 식당이 없습니다." };
-  }
-
+async function recommendRestaurantWithAI(restaurants, userProfile, requirements) {
+  if (!restaurants?.length) return { error: "추천할 식당이 없습니다." };
   try {
-    // 사용자 프로필 정보 정리
-    const profileInfo = {
-      age: userProfile.age,
-      gender: userProfile.gender,
-      activity_level: userProfile.activity_level,
-      allergies: userProfile.allergies || [],
-      healthStatus: userProfile.healthStatus || [],
-      budget: userProfile.budget,
-      preferences: userProfile.preferences || [],
-    };
-
-    // 식당 데이터 정리 (이미 수집된 실시간 정보 포함)
-    const restaurantData = restaurants.map((restaurant) => ({
-      name: restaurant.place_name || restaurant.name,
-      address: restaurant.address_name || restaurant.address,
-      category: restaurant.category_name || restaurant.category,
-      phone: restaurant.phone || "정보 없음",
-      distance: restaurant.distance_m || restaurant.distance || "0",
-      googleRating: restaurant.googleRating || null,
-      reviewCount: restaurant.reviewCount || 0,
-      openHour: restaurant.openHour || "정보 없음",
-      googleOpeningHours: restaurant.googleOpeningHours || [],
-      isOpenNow: restaurant.isOpenNow !== null ? restaurant.isOpenNow : "정보 없음",
+    const candidates = restaurants.map((r, index) => ({
+      candidateId: String(index), name: r.place_name || r.name,
+      address: r.address_name || r.address, category: r.category_name || r.category,
+      distance: r.distance_m ?? r.distance ?? null,
+      googleRating: r.googleRating ?? null, reviewCount: r.reviewCount ?? null,
+      openHour: r.openHour ?? null, googleOpeningHours: r.googleOpeningHours || [],
+      isOpenNow: typeof r.isOpenNow === 'boolean' ? r.isOpenNow : null,
     }));
-
-    // AI 프롬프트 생성 (순수 추천 분석)
-    const prompt = `
-다음은 사용자의 프로필 정보와 주변 식당 목록입니다. 
-사용자의 건강 상태, 알레르기, 예산, 선호도를 종합적으로 고려하여 가장 적합한 식당 3개를 추천해주세요.
-
-사용자 프로필:
-${JSON.stringify(profileInfo, null, 2)}
-
-요구사항:
-${JSON.stringify(requirements, null, 2)}
-
-주변 식당 목록 (실시간 정보 포함):
-${JSON.stringify(restaurantData, null, 2)}
-
-위의 식당 목록에는 이미 다음 정보가 포함되어 있습니다:
-- 구글 리뷰 평점 (googleRating)
-- 리뷰 수 (reviewCount)  
-- 기본 영업시간 (openHour) - 카카오 API에서 제공
-- 상세 영업시간 (googleOpeningHours) - Google Places API에서 제공하는 요일별 영업시간
-- 현재 영업 중 여부 (isOpenNow) - Google Places API에서 제공
-- 전화번호 (phone)
-- 거리 정보 (distance)
-
-이 정보들을 바탕으로 사용자에게 가장 적합한 식당 3개를 추천해주세요.
-추가적인 메뉴 정보나 가격 정보는 일반적인 지식을 바탕으로 추정해서 제공해주세요.
-
-반드시 다음 JSON 형식으로만 응답해주세요. 다른 텍스트는 포함하지 마세요.
-CRITICAL: 모든 reason 필드는 문장이 아닌 한글 키워드 해시태그로만 작성하세요. 각 태그는 #로 시작하고 공백으로 구분합니다. 예: "#적당한 거리 #24시 운영 #콩나물국밥 #현재영업"
-
-{
-  "reason": "전체적인 추천 이유를 해시태그로 표시 (예: #개인화 #가까운 거리 #영업중)",
-  "recommendations": [
-    {
-      "name": "식당명",
-      "address": "주소",
-      "category": "카테고리",
-      "googleRating": "이미 제공된 구글 평점 사용 (예: 4.5, 정보 없으면 null)",
-      "distance": "거리",
-      "phone": "전화번호(정보 없으면 '정보 없음')",
-      "openHour": "영업시간(Google Places API의 상세 영업시간 정보 우선 활용, 없으면 기본 정보 사용)",
-      "reason": "이 식당을 추천하는 이유를 해시태그로만 표시 (예: #적당한 거리 #24시 운영 #콩나물국밥 #현재영업)",
-      "recommendedMenus": [
-        {"name": "추천 메뉴1", "price": "가격1"},
-        {"name": "추천 메뉴2", "price": "가격2"}
-      ],
-      "healthConsiderations": "건강상 고려사항",
-      "score": 85
-    }
-  ]
-}
-
-추천 기준:
-1. 사용자의 알레르기 정보를 고려하여 안전한 식당 우선
-2. 건강 상태에 맞는 메뉴가 있는 식당
-3. 예산 범위 내의 식당
-4. 거리와 접근성 (가까운 거리 우선)
-5. 구글 리뷰 평점이 높은 식당 우선
-6. 현재 영업 중이거나 영업시간이 적절한 식당 우선 (isOpenNow 정보 활용)
-7. 사용자 선호도와 식당 카테고리 매칭
-
-각 추천에 대해 구체적인 이유와 해당 카테고리의 일반적인 추천 메뉴를 포함해주세요.
-메뉴 가격은 해당 지역과 카테고리의 일반적인 가격대로 추정해서 제공해주세요.
-
-
-CRITICAL: 응답에는 오직 JSON만 포함해야 합니다.
-답변을 시작할 때 "알겠습니다", "네", "좋습니다" 등의 한국어 텍스트나 다른 설명은 절대 포함하지 마세요.
-응답은 반드시 { 로 시작하고 } 로 끝나야 합니다.
-
-RESPONSE FORMAT: JSON ONLY
-{
-  "reason": "전체적인 추천 이유를 해시태그로 표시 (예: #개인화 #가까운 거리 #영업중)",
-  "recommendations": [...]
-}
-`;
-
-    // OpenAI API 호출
-    console.log("🤖 AI 추천 분석 시작...");
-    const aiResponse = await callOpenAI(prompt);
-    console.log("📝 AI 응답 수신, JSON 파싱 시작...");
-
-    // JSON 파싱
-    try {
-      console.log("AI 응답 원문:", aiResponse);
-
-      // googleRating 정보 확인을 위한 로깅
-      if (aiResponse.includes("googleRating")) {
-        console.log("✅ AI 응답에 googleRating 정보 포함됨");
-      } else {
-        console.log("❌ AI 응답에 googleRating 정보 없음");
-      }
-
-      // AI 응답에서 JSON 부분 추출
-      let jsonText = aiResponse;
-
-      // 한국어 텍스트 제거 (AI가 실수로 포함한 경우)
-      jsonText = jsonText.replace(/^[^{]*/, ""); // { 이전의 모든 텍스트 제거
-      jsonText = jsonText.replace(/[^}]*$/, ""); // } 이후의 모든 텍스트 제거
-
-      // 마크다운 코드 블록 제거
-      if (jsonText.includes("```json")) {
-        const jsonMatch = jsonText.match(/```json\s*([\s\S]*?)\s*```/);
-        if (jsonMatch) {
-          jsonText = jsonMatch[1];
-          console.log("마크다운 코드 블록에서 JSON 추출됨");
-        }
-      } else if (jsonText.includes("```")) {
-        const jsonMatch = jsonText.match(/```\s*([\s\S]*?)\s*```/);
-        if (jsonMatch) {
-          jsonText = jsonMatch[1];
-          console.log("일반 코드 블록에서 JSON 추출됨");
-        }
-      }
-
-      // JSON 객체 찾기
-      const jsonStart = jsonText.indexOf("{");
-      const jsonEnd = jsonText.lastIndexOf("}");
-
-      if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-        jsonText = jsonText.substring(jsonStart, jsonEnd + 1);
-        console.log("JSON 객체 범위 추출됨");
-      }
-
-      console.log("추출된 JSON 텍스트:", jsonText);
-
-      // JSON 파싱 시도
-      let parsedRecommendation = null;
-      try {
-        parsedRecommendation = JSON.parse(jsonText);
-        console.log("✅ AI 추천 JSON 파싱 성공");
-      } catch (parseError) {
-        console.log("❌ JSON 파싱 실패:", parseError.message);
-
-        // 대안: 더 유연한 파싱 시도
-        try {
-          // 불필요한 문자 제거 후 다시 시도
-          const cleanedJson = jsonText
-            .replace(/[\n\r\t]/g, " ")
-            .replace(/,(\s*[}\]])/g, "$1") // trailing comma 제거
-            .replace(/([^\\])"/g, '$1"') // 이스케이프되지 않은 따옴표 처리
-            .replace(/,\s*}/g, "}") // 마지막 쉼표 제거
-            .replace(/,\s*]/g, "]"); // 마지막 쉼표 제거
-
-          parsedRecommendation = JSON.parse(cleanedJson);
-          console.log("✅ 정리된 JSON 파싱 성공");
-        } catch (secondError) {
-          console.log("❌ 정리된 JSON 파싱도 실패:", secondError.message);
-
-          // 마지막 시도: 더 강력한 정리
-          try {
-            const finalCleanedJson = jsonText
-              .replace(/[^\x20-\x7E]/g, "") // ASCII가 아닌 문자 제거
-              .replace(/\s+/g, " ") // 연속된 공백을 하나로
-              .replace(/,\s*([}\]])/g, "$1") // trailing comma 제거
-              .replace(/,\s*}/g, "}") // 마지막 쉼표 제거
-              .replace(/,\s*]/g, "]"); // 마지막 쉼표 제거
-
-            parsedRecommendation = JSON.parse(finalCleanedJson);
-            console.log("✅ 최종 정리된 JSON 파싱 성공");
-          } catch (finalError) {
-            console.log("❌ 최종 JSON 파싱도 실패:", finalError.message);
-            throw new Error("JSON 파싱 실패 - 모든 시도 실패");
-          }
-        }
-      }
-
-      if (parsedRecommendation) {
-        // AI 응답의 추천 결과를 원본 데이터와 연결
-        const enhancedRecommendations = (
-          parsedRecommendation.recommendations || []
-        ).map((aiRecommendation) => {
-          // 원본 데이터에서 해당 식당 찾기
-          const originalRestaurant = restaurants.find(
-            (r) =>
-              r.place_name === aiRecommendation.name ||
-              r.place_name.includes(aiRecommendation.name) ||
-              aiRecommendation.name.includes(r.place_name)
-          );
-
-          if (originalRestaurant) {
-            return {
-              ...originalRestaurant,
-              name: aiRecommendation.name,
-              address:
-                aiRecommendation.address || originalRestaurant.address_name,
-              category:
-                aiRecommendation.category || originalRestaurant.category_name,
-              googleRating: aiRecommendation.googleRating || "정보 없음",
-              distance:
-                aiRecommendation.distance || originalRestaurant.distance_km,
-              phone:
-                aiRecommendation.phone ||
-                originalRestaurant.phone ||
-                "정보 없음",
-              openHour:
-                aiRecommendation.openHour ||
-                originalRestaurant.openHour ||
-                "정보 없음",
-              reason: aiRecommendation.reason,
-              recommendedMenus: aiRecommendation.recommendedMenus || [],
-              healthConsiderations: aiRecommendation.healthConsiderations,
-              score: aiRecommendation.score || 0,
-            };
-          }
-
-          return aiRecommendation;
-        });
-
-        return {
-          success: true,
-          recommendations: enhancedRecommendations,
-          reason: parsedRecommendation.reason || "AI 추천",
-          totalRestaurants: restaurants.length,
-        };
-      } else {
-        throw new Error("JSON 파싱 실패 - 모든 패턴 시도 실패");
-      }
-    } catch (parseError) {
-      console.error("❌ AI 응답 파싱 오류:", parseError);
-      console.log("🔄 기본 추천으로 폴백...");
-      // 기본 추천으로 폴백
-      return recommendRestaurant(restaurants, userProfile, requirements);
-    }
+    const prompt = buildPrompt('restaurants', { userProfile, requirements, candidates });
+    const parsed = parseResult(await callOpenAI(prompt), 'restaurants');
+    const selected = new Set();
+    const recommendations = parsed.recommendations.map(item => {
+      const candidate = candidates.find(c => c.candidateId === item.candidateId);
+      if (!candidate || selected.has(item.candidateId)) throw invalidResult();
+      selected.add(item.candidateId);
+      const original = restaurants[Number(item.candidateId)];
+      return {
+        ...original, name: candidate.name, address: candidate.address,
+        category: candidate.category, googleRating: candidate.googleRating,
+        distance: original.distance_km ?? original.distance ?? candidate.distance,
+        phone: original.phone || '정보 없음', openHour: original.openHour || '정보 없음',
+        reason: item.reason, recommendedMenus: item.recommendedMenus,
+        healthConsiderations: item.healthConsiderations, score: item.score,
+      };
+    });
+    return { success: true, recommendations, reason: parsed.reason, totalRestaurants: restaurants.length };
   } catch (error) {
-    console.error("AI 추천 오류:", error);
-    // AI 실패 시 기본 추천으로 폴백
+    console.error('AI 추천 오류:', error.message);
     return recommendRestaurant(restaurants, userProfile, requirements);
   }
 }
@@ -299,7 +71,6 @@ async function getGoogleRating(restaurantName, lat, lng) {
     !GOOGLE_PLACES_API_KEY ||
     GOOGLE_PLACES_API_KEY === "your_google_places_api_key_here"
   ) {
-    console.log("Google Places API 키가 설정되지 않았습니다.");
     return null;
   }
 
@@ -370,7 +141,6 @@ async function getGoogleRating(restaurantName, lat, lng) {
 // 위치 기반 식당 검색 (실제 카카오 API 사용)
 async function searchNearbyRestaurants(lat, lng, radius = 1000) {
   try {
-    console.log(`카카오 API 호출: ${lat}, ${lng}, 반경 ${radius}m`);
 
     // 카카오 REST API 키 확인
     if (!KAKAO_REST_API_KEY || KAKAO_REST_API_KEY === "test_key") {
@@ -386,7 +156,6 @@ async function searchNearbyRestaurants(lat, lng, radius = 1000) {
 
     for (let page = 1; page <= maxPages; page++) {
       try {
-        console.log(`카카오 API 호출 (페이지 ${page}/${maxPages})`);
 
         const response = await axios.get(
           "https://dapi.kakao.com/v2/local/search/category.json",
@@ -408,9 +177,6 @@ async function searchNearbyRestaurants(lat, lng, radius = 1000) {
         );
 
         if (response.data && response.data.documents) {
-          console.log(
-            `페이지 ${page}: ${response.data.documents.length}개 식당 발견`
-          );
           allRestaurants.push(...response.data.documents);
 
           // 마지막 페이지이거나 더 이상 결과가 없으면 중단
@@ -418,7 +184,6 @@ async function searchNearbyRestaurants(lat, lng, radius = 1000) {
             break;
           }
         } else {
-          console.log(`페이지 ${page}: 결과 없음`);
           break;
         }
 
@@ -436,15 +201,12 @@ async function searchNearbyRestaurants(lat, lng, radius = 1000) {
     }
 
     if (allRestaurants.length > 0) {
-      console.log(`총 ${allRestaurants.length}개 식당 발견`);
 
       // 중복 제거 (ID 기준)
       const uniqueRestaurants = allRestaurants.filter(
         (restaurant, index, self) =>
           index === self.findIndex((r) => r.id === restaurant.id)
       );
-
-      console.log(`중복 제거 후 ${uniqueRestaurants.length}개 식당`);
 
       // 각 식당에 대해 추가 정보 수집
       const restaurantsWithDetails = await Promise.all(
@@ -516,7 +278,7 @@ async function searchNearbyRestaurants(lat, lng, radius = 1000) {
               googleRating: additionalInfo.googleRating || null, // Google Places API에서 가져온 평점
               reviewCount: additionalInfo.reviewCount || 0, // Google Places API에서 가져온 리뷰 수
               googleOpeningHours: additionalInfo.googleOpeningHours || [], // Google Places API에서 가져온 상세 영업시간
-              isOpenNow: additionalInfo.isOpenNow || null, // 현재 영업 중 여부
+              isOpenNow: additionalInfo.isOpenNow ?? null, // false means closed, not unknown
               // 거리 정보는 원본 미터 단위 그대로 사용 (null 처리)
               distance_m:
                 place.distance && place.distance !== "0"
@@ -555,7 +317,6 @@ async function searchNearbyRestaurants(lat, lng, radius = 1000) {
 
       return restaurantsWithDetails;
     } else {
-      console.log("카카오 API 응답에 데이터가 없습니다.");
       return [];
     }
   } catch (error) {
@@ -706,8 +467,6 @@ router.post("/search", async (req, res) => {
       return res.status(400).json({ error: "위도와 경도가 필요합니다." });
     }
 
-    console.log(`위치 기반 검색: ${latitude}, ${longitude}, 반경 ${radius}m`);
-
     // 1. 위치 기반 식당 검색
     const nearbyRestaurants = await searchNearbyRestaurants(
       latitude,
@@ -734,8 +493,6 @@ router.post("/recommend", async (req, res) => {
     if (!userProfile) {
       return res.status(400).json({ error: "사용자 프로필이 필요합니다." });
     }
-
-    console.log("AI 추천 시작:", { userProfile, requirements, searchTerm });
 
     let restaurants = [];
 
@@ -789,13 +546,6 @@ router.post("/integrated", async (req, res) => {
         .json({ error: "위도, 경도, 사용자 프로필이 필요합니다." });
     }
 
-    console.log("🚀 통합 API 시작:", {
-      latitude,
-      longitude,
-      userProfile,
-      requirements,
-    });
-
     const processSteps = {
       step1: { name: "주변 식당 검색", status: "pending" },
       step2: { name: "실시간 정보 검색", status: "pending" },
@@ -805,7 +555,6 @@ router.post("/integrated", async (req, res) => {
 
     try {
       // 1단계: 위치 기반 식당 검색 (카카오 API)
-      console.log("📍 1단계: 주변 식당 검색 시작");
       processSteps.step1.status = "processing";
 
       const nearbyRestaurants = await searchNearbyRestaurants(
@@ -825,23 +574,16 @@ router.post("/integrated", async (req, res) => {
       }
 
       processSteps.step1.status = "completed";
-      console.log(`✅ 1단계 완료: ${nearbyRestaurants.length}개 식당 발견`);
 
       // 2단계: 실시간 정보 검색 (Google Search API)
-      console.log("🔍 2단계: 실시간 정보 검색 시작");
       processSteps.step2.status = "processing";
 
       // Google Search API를 통해 실시간 정보 수집
       const restaurantsWithRealTimeInfo = nearbyRestaurants.slice(0, 60); // 최대 60개 처리
 
       processSteps.step2.status = "completed";
-      console.log(
-        `✅ 2단계 완료: ${restaurantsWithRealTimeInfo.length}개 식당 실시간 정보 수집`
-      );
-      console.log(`\n🔄 3단계로 전환 중...`);
 
       // 3단계: AI 추천
-      console.log("🤖 3단계: AI 추천 분석 시작");
       processSteps.step3.status = "processing";
 
       try {
@@ -852,10 +594,6 @@ router.post("/integrated", async (req, res) => {
         );
 
         if (recommendation.error) {
-          console.log(
-            "AI 추천 실패, 기본 추천으로 폴백:",
-            recommendation.error
-          );
           // AI 실패 시 기본 추천으로 폴백
           const fallbackRecommendation = recommendRestaurant(
             restaurantsWithRealTimeInfo,
@@ -863,10 +601,8 @@ router.post("/integrated", async (req, res) => {
             requirements
           );
           processSteps.step3.status = "completed";
-          console.log(`✅ 3단계 완료: 기본 추천 완료`);
 
           // 4단계: 거리 정보 조회 (폴백 케이스)
-          console.log("📍 4단계: 거리 정보 조회 시작 (폴백)");
           processSteps.step4.status = "processing";
 
           try {
@@ -878,7 +614,6 @@ router.post("/integrated", async (req, res) => {
               );
 
             processSteps.step4.status = "completed";
-            console.log(`✅ 4단계 완료: 거리 정보 조회 완료 (폴백)`);
 
             return res.json({
               success: true,
@@ -891,9 +626,6 @@ router.post("/integrated", async (req, res) => {
           } catch (distanceError) {
             console.error("거리 정보 조회 중 오류 (폴백):", distanceError);
             processSteps.step4.status = "completed";
-            console.log(
-              `✅ 4단계 완료: 거리 정보 조회 실패, 원본 결과 반환 (폴백)`
-            );
 
             return res.json({
               success: true,
@@ -906,10 +638,8 @@ router.post("/integrated", async (req, res) => {
         }
 
         processSteps.step3.status = "completed";
-        console.log(`✅ 3단계 완료: AI 추천 완료`);
 
         // 4단계: 거리 정보 조회
-        console.log("📍 4단계: 거리 정보 조회 시작");
         processSteps.step4.status = "processing";
 
         try {
@@ -921,7 +651,6 @@ router.post("/integrated", async (req, res) => {
             );
 
           processSteps.step4.status = "completed";
-          console.log(`✅ 4단계 완료: 거리 정보 조회 완료`);
 
           // 로그인한 사용자인 경우 서비스 이용 횟수 증가
           if (req.session && req.session.user) {
@@ -943,7 +672,6 @@ router.post("/integrated", async (req, res) => {
         } catch (distanceError) {
           console.error("거리 정보 조회 중 오류:", distanceError);
           processSteps.step4.status = "completed";
-          console.log(`✅ 4단계 완료: 거리 정보 조회 실패, 원본 결과 반환`);
 
           // 거리 정보 조회 실패 시 원본 결과 반환
           res.json({
@@ -963,10 +691,8 @@ router.post("/integrated", async (req, res) => {
           requirements
         );
         processSteps.step3.status = "completed";
-        console.log(`✅ 3단계 완료: 기본 추천 완료 (AI 오류 후)`);
 
         // 4단계: 거리 정보 조회 (AI 오류 후 폴백)
-        console.log("📍 4단계: 거리 정보 조회 시작 (AI 오류 후 폴백)");
         processSteps.step4.status = "processing";
 
         try {
@@ -978,7 +704,6 @@ router.post("/integrated", async (req, res) => {
             );
 
           processSteps.step4.status = "completed";
-          console.log(`✅ 4단계 완료: 거리 정보 조회 완료 (AI 오류 후 폴백)`);
 
           return res.json({
             success: true,
@@ -994,9 +719,6 @@ router.post("/integrated", async (req, res) => {
             distanceError
           );
           processSteps.step4.status = "completed";
-          console.log(
-            `✅ 4단계 완료: 거리 정보 조회 실패, 원본 결과 반환 (AI 오류 후 폴백)`
-          );
 
           return res.json({
             success: true,
@@ -1036,15 +758,11 @@ async function addDistanceInfoToRecommendations(
   userLng
 ) {
   try {
-    console.log("📍 추천 결과에 거리 정보 추가 중...");
-    console.log(`사용자 위치: ${userLat}, ${userLng}`);
-    console.log(`추천 식당 수: ${recommendations.length}`);
 
     const recommendationsWithDistance = await Promise.all(
       recommendations.map(async (restaurant) => {
         try {
           const restaurantName = restaurant.name || restaurant.place_name;
-          console.log(`거리 조회 중: ${restaurantName}`);
 
           // 카카오 API로 식당명 검색하여 거리 정보 가져오기
           const response = await axios.get(
@@ -1068,16 +786,6 @@ async function addDistanceInfoToRecommendations(
             const kakaoResult = response.data.documents[0];
             const distance = parseInt(kakaoResult.distance) || 0;
 
-            console.log(
-              `거리 정보 조회 성공 (${restaurantName}): ${distance}m`
-            );
-            console.log(`카카오 API 응답:`, {
-              name: kakaoResult.place_name,
-              address: kakaoResult.address_name,
-              distance: kakaoResult.distance,
-              id: kakaoResult.id,
-            });
-
             // 거리 정보 추가 (카카오 API에서 받은 m 단위 그대로 사용)
             return {
               ...restaurant,
@@ -1087,7 +795,6 @@ async function addDistanceInfoToRecommendations(
               kakao_phone: kakaoResult.phone,
             };
           } else {
-            console.log(`카카오에서 찾지 못함 (${restaurantName})`);
             // 카카오에서 찾지 못한 경우 기존 정보 유지
             return {
               ...restaurant,
@@ -1095,15 +802,7 @@ async function addDistanceInfoToRecommendations(
             };
           }
         } catch (error) {
-          console.log(
-            `거리 정보 조회 실패 (${
-              restaurant.name || restaurant.place_name
-            }):`,
-            error.message
-          );
-          if (error.response) {
-            console.log(`카카오 API 오류 응답:`, error.response.data);
-          }
+
           return {
             ...restaurant,
             distance_m: null,
@@ -1112,17 +811,8 @@ async function addDistanceInfoToRecommendations(
       })
     );
 
-    console.log(
-      `✅ 거리 정보 추가 완료: ${recommendationsWithDistance.length}개 식당`
-    );
-
     // 결과 로깅
     recommendationsWithDistance.forEach((restaurant, index) => {
-      console.log(
-        `${index + 1}. ${restaurant.name || restaurant.place_name}: ${
-          restaurant.distance_m ? `${restaurant.distance_m}m` : "정보 없음"
-        }`
-      );
     });
 
     return recommendationsWithDistance;

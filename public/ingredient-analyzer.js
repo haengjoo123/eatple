@@ -317,126 +317,20 @@ async function analyzeIngredient(ingredient) {
         });
 
         if (!response.ok) {
-            throw new Error('서버 오류가 발생했습니다.');
+            const errorData = await response.json();
+            throw new Error(errorData.error || '서버 오류가 발생했습니다.');
         }
 
         const data = await response.json();
         return data.result;
     } catch (error) {
-        // 서버 오류 시 모의 데이터 반환 (개발용)
-        console.warn('서버 연결 실패, 모의 데이터 사용:', error);
-        return generateMockData(ingredient);
+        throw error;
     }
 }
 
 // 분석 프롬프트 생성
 function generateIngredientAnalysisPrompt(ingredient) {
-    return `
-다음 식재료에 대한 상세한 분석을 JSON 형태로 제공해주세요: ${ingredient}
-
-다음 구조로 응답해주세요:
-{
-    "basic_info": {
-        "name": "식재료명",
-        "description": "간단한 설명"
-    },
-    "nutrition": {
-        "calories": "칼로리",
-        "protein": "단백질",
-        "fat": "지방",
-        "carbohydrates": "탄수화물",
-        "sugar": "당류",
-        "fiber": "식이섬유",
-        "calcium": "칼슘",
-        "iron": "철",
-        "phosphorus": "인",
-        "potassium": "칼륨",
-        "sodium": "나트륨",
-        "cholesterol": "콜레스테롤",
-        "saturated_fat": "포화지방",
-        "trans_fat": "트랜스지방"
-    },
-    "active_components": ["활성성분1", "활성성분2"],
-    "benefits": ["효능1", "효능2"],
-    "side_effects": ["부작용1", "부작용2"],
-    "recipes": ["요리법1", "요리법2"],
-    "usage_tips": ["영양소 흡수를 높이는 조리법", "신선도 유지 보관법", "조합 추천", "섭취 시 주의점", "계절별 활용법"],
-    "storage": "보관방법",
-    "additional_info": {
-        "gi": "혈당지수",
-        "season": "제철",
-        "origin": "주요 산지",
-        "compatibility": "궁합 식품",
-        "incompatibility": "상극 식품",
-        "pet_safety": "반려동물 섭취 가능여부"
-    },
-    "traditional_medicine": "한의학적 관점",
-    "allergy_info": "알레르기 유발 가능성"
-}
-`;
-}
-
-// 모의 데이터 생성 (개발용)
-function generateMockData(ingredient) {
-    const mockData = {
-        "basic_info": {
-            "name": ingredient,
-            "description": `${ingredient}은(는) 다양한 영양소를 함유한 건강한 식재료입니다.`
-        },
-        "nutrition": {
-            "calories": "150 kcal",
-            "protein": "8g",
-            "fat": "5g",
-            "carbohydrates": "20g",
-            "sugar": "3g",
-            "fiber": "4g",
-            "calcium": "50mg",
-            "iron": "2mg",
-            "phosphorus": "100mg",
-            "potassium": "300mg",
-            "sodium": "10mg",
-            "cholesterol": "0mg",
-            "saturated_fat": "1g",
-            "trans_fat": "0g"
-        },
-        "active_components": ["비타민C", "항산화물질", "식이섬유"],
-        "benefits": [
-            "면역력 증진",
-            "항산화 효과",
-            "소화 촉진",
-            "혈당 조절"
-        ],
-        "side_effects": [
-            "과다 섭취 시 복통",
-            "알레르기 반응 가능성"
-        ],
-        "recipes": [
-            "샐러드로 섭취",
-            "스무디에 활용",
-            "구이 요리",
-            "스프 재료로 활용"
-        ],
-        "usage_tips": [
-            "올리브오일과 함께 섭취하면 지용성 비타민 흡수율이 높아집니다",
-            "냉장 보관 시 키친타월로 감싸면 수분 조절에 도움이 됩니다",
-            "토마토와 함께 조리하면 항산화 효과가 배가됩니다",
-            "공복보다는 식후에 섭취하는 것이 소화에 좋습니다",
-            "겨울철에는 따뜻하게 조리해서 섭취하면 몸을 따뜻하게 해줍니다"
-        ],
-        "storage": "냉장고에서 보관하되, 신선도를 위해 1주일 이내 섭취 권장",
-        "additional_info": {
-            "gi": "낮음 (30-40)",
-            "season": "연중 구입 가능",
-            "origin": "국내산, 수입산",
-            "compatibility": "올리브오일, 견과류",
-            "incompatibility": "특별한 상극 식품 없음",
-            "pet_safety": "소량 섭취 가능, 과다 섭취 주의"
-        },
-        "traditional_medicine": "한의학적으로는 성질이 차갑고, 해독 작용이 있어 체내 독소 제거에 도움이 됩니다.",
-        "allergy_info": "드물지만 알레르기 반응이 나타날 수 있으므로 처음 섭취 시 소량부터 시작하는 것이 좋습니다."
-    };
-
-    return mockData;
+    return JSON.stringify({ ingredient });
 }
 
 // 결과 표시 함수 (새로운 탭 기반 레이아웃)

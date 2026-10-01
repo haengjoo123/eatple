@@ -1572,6 +1572,7 @@ class RestaurantRecommendation {
 
     // 식당 카드 생성
     createRestaurantCard(restaurant, index) {
+        const reasonChips = this.formatRecommendationReason(restaurant.reason);
         // AI 추천 메뉴가 있으면 표시
         const recommendedMenusHtml = restaurant.recommendedMenus && restaurant.recommendedMenus.length > 0 ?
             this.createRecommendedMenusSection(restaurant.recommendedMenus, restaurant) : '';
@@ -1598,7 +1599,7 @@ class RestaurantRecommendation {
                         <div class="restaurant-name">
                             ${index}. ${restaurant.name || restaurant.place_name}
                         </div>
-                        ${restaurant.reason ? `<div class="recommendation-reason">${this.formatRecommendationReason(restaurant.reason)}</div>` : ''}
+                        ${reasonChips ? `<div class="recommendation-reason">${reasonChips}</div>` : ''}
                     </div>
                     
                     <div class="restaurant-info">
@@ -1674,20 +1675,13 @@ class RestaurantRecommendation {
 
     // 추천 이유 키워드 블록화 처리
     formatRecommendationReason(reason) {
-        if (!reason) return '';
-        
-        // #으로 시작하는 키워드들을 찾아서 블록으로 변환
-        const keywordRegex = /#([^#\s]+)/g;
-        let keywordIndex = 0;
-        const formattedReason = reason.replace(keywordRegex, (match, keyword) => {
-            // 키워드별로 다른 색상 클래스 적용
-            const colorClasses = ['keyword-blue', 'keyword-green', 'keyword-purple', 'keyword-orange', 'keyword-pink'];
-            const colorClass = colorClasses[keywordIndex % colorClasses.length];
-            keywordIndex++;
-            return `<span class="recommendation-keyword ${colorClass}">#${keyword}</span>`;
-        });
-        
-        return formattedReason;
+        if (typeof reason !== 'string') return '';
+        const keywords = [...new Set(Array.from(reason.matchAll(/#([^#\s]+)/g), match => match[1]))];
+        const colorClasses = ['keyword-blue', 'keyword-green', 'keyword-purple', 'keyword-orange', 'keyword-pink'];
+        return keywords.map((keyword, index) => {
+            const label = keyword.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+            return `<span class="recommendation-keyword ${colorClasses[index % colorClasses.length]}">#${label}</span>`;
+        }).join(' ');
     }
 
     // 메뉴 섹션 생성
@@ -2168,4 +2162,4 @@ async function saveRestaurantProfile(event) {
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
     window.restaurantRecommendation = new RestaurantRecommendation();
-}); 
+});

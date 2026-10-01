@@ -1,3 +1,4 @@
+const { result } = require('./fixtures/aiResults');
 const express = require('express');
 const request = require('supertest');
 const axios = require('axios');
@@ -28,12 +29,12 @@ function respond(text) {
 }
 
 test('supplement recommendations preserve the frontend contract through OpenAI', async () => {
-    const answer = { supplements: [{ name: 'Vitamin D' }], summary: 'Reviewed result', warnings: [] };
+    const answer = result('supplements');
     respond(JSON.stringify(answer));
     const response = await request(app).post('/api/supplements/recommend').send({ healthGoals: [], profile: {} });
     expect(response.status).toBe(200);
     expect(response.body).toEqual(answer);
-    expect(axios.post.mock.lastCall[1]).toMatchObject({ model: 'gpt-6-luna', text: { format: { type: 'json_object' } } });
+    expect(axios.post.mock.lastCall[1]).toMatchObject({ model: 'gpt-6-luna', text: { format: { type: 'json_schema', name: 'supplements', strict: true } } });
     expect(axios.post.mock.lastCall[2].signal).toBeDefined();
 });
 

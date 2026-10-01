@@ -79,7 +79,6 @@ class ProfileCompletionService {
      */
     static calculateCompletionPercentage(profile) {
         if (!profile || typeof profile !== 'object') {
-            console.log('프로필이 없거나 유효하지 않음');
             return {
                 percentage: 0,
                 completedFields: [],
@@ -124,10 +123,6 @@ class ProfileCompletionService {
 
         const percentage = Math.round((earnedWeight / totalWeight) * 100);
         const isComplete = percentage === 100;
-
-        console.log(`완성도 계산 결과: ${percentage}% (${earnedWeight}/${totalWeight})`);
-        console.log('완성된 필드:', completedFields.map(f => f.field));
-        console.log('미완성 필드:', missingFields.map(f => f.field));
 
         return {
             percentage,

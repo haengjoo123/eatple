@@ -955,7 +955,6 @@ router.post('/wishlist', async (req, res) => {
 
 // GET /api/shop/qna/:id/access - Check access permission for secret Q&A
 router.get('/qna/:id/access', async (req, res) => {
-    console.log('QnA 접근 권한 확인 API 호출됨:', req.params.id);
     try {
         const { id } = req.params;
         
@@ -1077,7 +1076,6 @@ router.post('/qna', async (req, res) => {
             });
         }
 
-        console.log('Q&A 등록 성공:', result.data);
 
         res.json({
             success: true,

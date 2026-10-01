@@ -653,15 +653,12 @@ class NutritionDataManager {
      */
     async getUserInteractionStatus(itemId, userId) {
         try {
-            console.log(`[INTERACTION STATUS] 사용자 ${userId}의 아이템 ${itemId} 상호작용 상태 조회`);
             
             const userPreferences = await this.loadUserPreferences();
-            console.log(`[INTERACTION STATUS] 로드된 사용자 선호도:`, JSON.stringify(userPreferences, null, 2));
             
             const userPref = userPreferences[userId];
             
             if (!userPref) {
-                console.log(`[INTERACTION STATUS] 사용자 ${userId}의 선호도 데이터 없음`);
                 return {
                     bookmarked: false,
                     liked: false
@@ -671,16 +668,12 @@ class NutritionDataManager {
             // 새로운 구조 (interactions.bookmarks) 또는 기존 구조 (bookmarks) 모두 지원
             const bookmarks = userPref.interactions?.bookmarks || userPref.bookmarks || [];
             const likes = userPref.interactions?.likes || userPref.likes || [];
-            
-            console.log(`[INTERACTION STATUS] 북마크 목록: ${JSON.stringify(bookmarks)}`);
-            console.log(`[INTERACTION STATUS] 좋아요 목록: ${JSON.stringify(likes)}`);
 
             const result = {
                 bookmarked: bookmarks.includes(itemId),
                 liked: likes.includes(itemId)
             };
             
-            console.log(`[INTERACTION STATUS] 결과: ${JSON.stringify(result)}`);
             return result;
         } catch (error) {
             console.error('[INTERACTION STATUS] 사용자 상호작용 상태 조회 실패:', error);

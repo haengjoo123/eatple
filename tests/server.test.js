@@ -1,3 +1,4 @@
+const { result: aiResult } = require('./fixtures/aiResults');
 const express = require('express');
 const request = require('supertest');
 const fs = require('fs');
@@ -97,15 +98,15 @@ test('image tooling rejects files outside the upload directory', async () => {
 test('ingredient prompts with an identical prefix do not reuse each other\'s AI results', async () => {
     const axios = require('axios');
     const provider = jest.spyOn(axios, 'post')
-        .mockResolvedValueOnce(aiResponse('{"label":"first"}'))
-        .mockResolvedValueOnce(aiResponse('{"label":"second"}'));
+        .mockResolvedValueOnce(aiResponse(JSON.stringify({ ...aiResult('ingredient'), storage: 'first' })))
+        .mockResolvedValueOnce(aiResponse(JSON.stringify({ ...aiResult('ingredient'), storage: 'second' })));
     try {
         const prefix = 'Analyze this ingredient with my preferences: '.repeat(4);
         const first = { ingredient: 'apple', prompt: prefix + 'first preference' };
         const second = { ingredient: 'apple', prompt: prefix + 'second preference' };
-        expect((await request(app).post('/api/analyze-ingredient').send(first)).body.result.label).toBe('first');
-        expect((await request(app).post('/api/analyze-ingredient').send(second)).body.result.label).toBe('second');
-        expect((await request(app).post('/api/analyze-ingredient').send(first)).body.result.label).toBe('first');
+        expect((await request(app).post('/api/analyze-ingredient').send(first)).body.result.storage).toBe('first');
+        expect((await request(app).post('/api/analyze-ingredient').send(second)).body.result.storage).toBe('second');
+        expect((await request(app).post('/api/analyze-ingredient').send(first)).body.result.storage).toBe('first');
         expect(provider).toHaveBeenCalledTimes(2);
         expect(provider.mock.calls[0][2].signal).toBeDefined();
     } finally {
@@ -117,13 +118,15 @@ test.each(['/api/generate-meal-plan', '/api/generate-supplement-recommendation']
     '%s returns provider-independent text and caches only a completed answer', async (endpoint) => {
         const provider = jest.spyOn(require('axios'), 'post')
             .mockResolvedValueOnce({ data: { status: 'incomplete', output: [] } })
-            .mockResolvedValueOnce(aiResponse('A completed recommendation'));
+            .mockResolvedValueOnce(aiResponse(JSON.stringify(aiResult(endpoint.includes('meal-plan') ? 'meal' : 'supplements'))));
         const body = { prompt: `Recommendation for ${endpoint}` };
         try {
             expect((await request(app).post(endpoint).send(body)).status).toBe(502);
             const response = await request(app).post(endpoint).send(body);
             expect(response.status).toBe(200);
-            expect(response.body).toMatchObject({ text: 'A completed recommendation', model: 'gpt-6-luna' });
+            expect(response.body.model).toBe('gpt-6-luna');
+            expect(response.body.data).toEqual(aiResult(endpoint.includes('meal-plan') ? 'meal' : 'supplements'));
+            expect(typeof response.body.text).toBe('string');
             expect(response.body.candidates[0].content.parts[0].text).toBe(response.body.text);
             expect((await request(app).post(endpoint).send(body)).body).toEqual(response.body);
             expect(provider).toHaveBeenCalledTimes(2);

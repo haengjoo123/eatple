@@ -7,7 +7,6 @@ class SupabaseService {
             process.env.SUPABASE_URL,
             process.env.SUPABASE_SERVICE_ROLE_KEY
         );
-        console.log('SupabaseService 초기화됨 - 실제 Supabase 연결');
     }
 
     // 제품 목록 조회
@@ -22,7 +21,6 @@ class SupabaseService {
                 throw error;
             }
 
-            console.log(`Supabase에서 ${data.length}개 제품 조회 완료`);
             return data;
         } catch (error) {
             console.error('제품 조회 실패:', error);
@@ -43,7 +41,6 @@ class SupabaseService {
                 throw error;
             }
 
-            console.log('새 제품 생성 완료:', data);
             return data;
         } catch (error) {
             console.error('제품 생성 실패:', error);
@@ -65,7 +62,6 @@ class SupabaseService {
                 throw error;
             }
 
-            console.log('제품 업데이트 완료:', data);
             return data;
         } catch (error) {
             console.error('제품 업데이트 실패:', error);
@@ -85,7 +81,6 @@ class SupabaseService {
                 throw error;
             }
 
-            console.log('제품 삭제 완료:', productId);
             return { success: true };
         } catch (error) {
             console.error('제품 삭제 실패:', error);
@@ -103,7 +98,6 @@ class SupabaseService {
 
             if (error) {
                 if (error.code === 'PGRST116') {
-                    console.log('product_qna 테이블이 존재하지 않습니다. 빈 배열을 반환합니다.');
                     return [];
                 }
                 console.error('상품 문의 조회 중 오류:', error);
@@ -145,7 +139,6 @@ class SupabaseService {
             });
 
             const formattedData = await Promise.all(formattedDataPromises);
-            console.log(`Supabase에서 ${formattedData.length}개 상품 문의 조회 완료`);
             return formattedData;
         } catch (error) {
             console.error('상품 문의 조회 실패:', error);
@@ -200,7 +193,6 @@ class SupabaseService {
                 answeredBy: data.answered_by
             };
 
-            console.log('상품 문의 답변 업데이트 완료:', formattedData);
             return formattedData;
         } catch (error) {
             console.error('상품 문의 업데이트 실패:', error);

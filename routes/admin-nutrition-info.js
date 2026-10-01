@@ -98,8 +98,6 @@ router.get('/list', requireAdmin, async (req, res) => {
             };
         });
 
-        console.log(`[ADMIN LIST] 영양정보 목록 조회: ${enrichedData.length}개 (총 ${paginationData.totalCount || 0}개)`);
-
         res.json({
             success: true,
             data: enrichedData,
@@ -298,8 +296,6 @@ router.post('/collect', requireAdmin, async (req, res) => {
         const startTime = Date.now();
 
         console.log(`🚀 수동 수집 시작 (ID: ${collectionId})`);
-        console.log(`   소스: ${sources.join(', ')}`);
-        console.log(`   키워드: ${Array.isArray(keywords) && keywords.length > 0 ? keywords.join(', ') : '기본 키워드 사용'}`);
 
         if (immediate) {
             // 즉시 실행
@@ -396,9 +392,6 @@ router.put('/:id/status', requireAdmin, async (req, res) => {
 
         // 로그 기록
         console.log(`📝 영양 정보 상태 변경: ${id} -> ${status} (by ${req.session.user.username || req.session.user.id})`);
-        if (reason) {
-            console.log(`   사유: ${reason}`);
-        }
 
         res.json({
             success: true,
@@ -431,23 +424,14 @@ router.delete('/:id', requireAdmin, async (req, res) => {
         const { id } = req.params;
         const { permanent = false } = req.body;
 
-        console.log(`🔍 영양 정보 삭제 요청: ID=${id}, permanent=${permanent}`);
-
         // 로컬 데이터에서 영양 정보 존재 확인
         const nutritionInfo = await nutritionDataManager.getNutritionInfoById(id);
 
         if (!nutritionInfo) {
-            console.log(`❌ 영양 정보를 찾을 수 없음: ${id}`);
             
             // 디버깅을 위해 현재 존재하는 데이터 확인
             const allItems = await nutritionDataManager.getNutritionInfoList({}, { limit: 10 });
-            
-            console.log(`📊 현재 영양 정보 총 개수: ${allItems.data ? allItems.data.length : 0}`);
-            
-            if (allItems.data && allItems.data.length > 0) {
-                console.log('📋 현재 존재하는 영양 정보 ID들:', allItems.data.map(item => item.id).slice(0, 5));
-            }
-            
+
             return res.status(404).json({
                 success: false,
                 error: '해당 영양 정보를 찾을 수 없습니다.',
@@ -458,8 +442,6 @@ router.delete('/:id', requireAdmin, async (req, res) => {
                 }
             });
         }
-
-        console.log(`✅ 영양 정보 찾음: ${nutritionInfo.title || 'No title'}`);
 
         if (permanent) {
             // 영구 삭제 - 로컬 데이터에서 실제 삭제 (현재 로컬 데이터 매니저에서 삭제 기능이 없으므로 비활성화로 처리)
@@ -486,8 +468,6 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 
         // 모든 관련 캐시 무효화
         await invalidateAllNutritionCaches();
-        
-        console.log('✅ 모든 영양 정보 캐시 무효화 완료');
 
         res.json({
             success: true,
@@ -601,12 +581,10 @@ router.put('/:id/edit', requireAdmin, async (req, res) => {
         // 카테고리 및 태그 업데이트는 별도 처리 필요 (관계형 테이블)
         if (category) {
             // 카테고리 업데이트 로직 (실제 구현에서는 categories 테이블과 연동)
-            console.log(`카테고리 업데이트 필요: ${category}`);
         }
 
         if (tags && Array.isArray(tags)) {
             // 태그 업데이트 로직 (실제 구현에서는 post_tags 테이블과 연동)
-            console.log(`태그 업데이트 필요: ${tags.join(', ')}`);
         }
 
         // 모든 관련 캐시 무효화
@@ -669,7 +647,6 @@ router.post('/block-source', requireAdmin, async (req, res) => {
         const deactivatedCount = await deactivateNutritionInfoBySource(sourceUrl, sourceName);
 
         console.log(`🚫 소스 차단: ${sourceUrl || sourceName} (by ${req.session.user.username || req.session.user.id})`);
-        console.log(`   비활성화된 영양 정보: ${deactivatedCount}개`);
 
         res.json({
             success: true,
@@ -910,10 +887,8 @@ async function invalidateAllNutritionCaches() {
                 cacheManager.invalidateCache('nutrition', null);
             }
         } catch (globalCacheError) {
-            console.log('전역 캐시 매니저 무효화 건너뜀:', globalCacheError.message);
         }
         
-        console.log('🧹 모든 영양 정보 캐시 무효화 완료');
     } catch (error) {
         console.error('❌ 캐시 무효화 중 오류:', error);
     }
@@ -938,7 +913,6 @@ async function executeManualCollection(sources, keywords, maxResults, collection
         // 각 소스별로 수집 실행
         for (const source of sources) {
             try {
-                console.log(`📡 ${source} 수집 시작...`);
                 let sourceData = [];
 
                 switch (source) {
@@ -981,8 +955,6 @@ async function executeManualCollection(sources, keywords, maxResults, collection
 
                 results.sourceResults[source] = sourceData.length;
                 results.collected += sourceData.length;
-
-                console.log(`✅ ${source}: ${sourceData.length}개 수집 완료`);
 
             } catch (error) {
                 console.error(`❌ ${source} 수집 실패:`, error.message);
@@ -1278,9 +1250,7 @@ router.get('/permanent-storage/status', requireAdmin, async (req, res) => {
 router.post('/permanent-storage/refresh', requireAdmin, async (req, res) => {
     try {
         const { maxItems = 42000 } = req.body;
-        
-        console.log('영구 저장소 새로고침 요청 받음:', { maxItems });
-        
+
         const result = await permanentStorageManager.refreshAndSaveToPermanentStorage(maxItems);
         
         if (result && result.success) {

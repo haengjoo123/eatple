@@ -15,11 +15,6 @@ class SupabaseManualPostingService {
      * @returns {Promise<Object>} 생성된 포스팅 데이터
      */
     async createPost(postData, adminInfo) {
-        console.log('🔥 createPost 메서드 호출됨:', {
-            title: postData.title,
-            adminInfo: adminInfo,
-            timestamp: new Date().toISOString()
-        });
         try {
             // 포스팅 데이터 생성
             const { data: post, error: postError } = await this.supabase
@@ -46,12 +41,6 @@ class SupabaseManualPostingService {
             if (postError) {
                 throw new Error(`포스팅 생성 실패: ${postError.message}`);
             }
-
-            console.log('✅ 포스팅 DB 삽입 성공:', {
-                id: post.id,
-                title: post.title,
-                timestamp: new Date().toISOString()
-            });
 
             // 태그 연결
             if (postData.tags && postData.tags.length > 0) {
@@ -151,7 +140,6 @@ class SupabaseManualPostingService {
                 }
             }
 
-            console.log(`관련 상품 업데이트 완료: ${postId}`);
         } catch (error) {
             console.error('관련 상품 업데이트 중 오류:', error);
             throw error;
@@ -275,7 +263,6 @@ class SupabaseManualPostingService {
      */
     async attachRelatedProducts(postId, products) {
         try {
-            console.log(`관련 상품 연결 시작: ${postId}, 상품 수: ${products.length}`);
 
             for (const product of products) {
                 if (!product.name || !product.name.trim()) continue;
@@ -296,7 +283,6 @@ class SupabaseManualPostingService {
                     continue;
                 }
 
-                console.log(`✅ 관련 상품 연결 성공: ${product.name}`);
             }
         } catch (error) {
             console.error('관련 상품 연결 중 오류:', error);

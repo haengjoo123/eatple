@@ -1,7 +1,8 @@
+const { schemas, buildPrompt, buildInstructions, parseResult } = require('../utils/aiContracts');
 const express = require('express');
 const router = express.Router();
 const { readUsers, writeUsers } = require('../utils/userStore');
-const { generateText, isOpenAIConfigured, AIServiceError } = require('../utils/openaiClient');
+const { generateText, isOpenAIConfigured } = require('../utils/openaiClient');
 const { requireLogin } = require('../utils/authMiddleware');
 
 // 식약처 API 관련 모듈
@@ -168,119 +169,8 @@ router.delete('/saved-supplements/:supplementId', requireLogin, (req, res) => {
     }
 });
 
-
-
 function generateSupplementPrompt(data) {
-    const { healthGoals, preferences, avoidIngredients, otherAllergy, currentMedications, reactionDetails, profile } = data;
-    
-    let prompt = `당신은 영양제 추천 전문가입니다. 다음 정보를 바탕으로 개인 맞춤 영양제를 추천해주세요.
-
-**사용자 기본 정보:**
-- 나이: ${profile?.age || '정보 없음'}세
-- 성별: ${profile?.gender === 'male' ? '남성' : profile?.gender === 'female' ? '여성' : '정보 없음'}
-- 키: ${profile?.height || '정보 없음'}cm
-- 몸무게: ${profile?.weight || '정보 없음'}kg
-- BMI: ${profile?.height && profile?.weight ? (profile.weight / Math.pow(profile.height/100, 2)).toFixed(1) : '정보 없음'}
-
-**생활 습관:**
-- 활동량: ${getActivityLevelKorean(profile?.activity_level)}
-- 식사 패턴: ${getEatingPatternKorean(profile?.eating_patterns)}
-- 수면 패턴: ${getSleepPatternKorean(profile?.sleep_patterns)}
-- 하루 식사 횟수: ${profile?.meals_per_day || '정보 없음'}회
-- 음주 여부: ${getAlcoholKorean(profile?.alcohol_consumption)}
-- 흡연 여부: ${getSmokingKorean(profile?.smoking_status)}
-
-**건강 상태:**
-- 현재 질병: ${getIllnessesKorean(profile?.illnesses) || '없음'}
-- 건강검진 수치: ${getBiomarkersKorean(profile?.biomarkers) || '정보 없음'}
-
-**현재 복용 중인 건강기능식품:**
-${getCurrentSupplementsKorean(profile?.supplements) || '없음'}
-
-**건강 고민:**
-${healthGoals?.map(goal => `- ${getGoalKoreanName(goal)}`).join('\n') || '정보 없음'}
-
-**복용 선호도:**
-- 선호 형태: ${getFormKoreanName(preferences?.supplement_form)}
-- 채식 여부: ${getVegetarianKoreanName(preferences?.vegetarian)}
-- 월 예산: ${getBudgetKoreanName(preferences?.budget)}
-
-**기피 성분:**
-- 피하고 싶은 성분: ${Array.isArray(avoidIngredients) ? avoidIngredients.filter(a => a !== 'none').join(', ') : avoidIngredients || '없음'}
-${otherAllergy ? `- 기타 기피 성분: ${otherAllergy}` : ''}
-
-**주의사항:**
-- 임신/수유 상태: ${getPregnancyKoreanName(preferences?.pregnancy_status)}
-- 현재 복용 약물: ${currentMedications || '없음'}
-- 소화 관련 문제: ${getDigestiveKoreanName(preferences?.digestive_issues)}
-- 과거 부작용 경험: ${reactionDetails || '없음'}
-
-**요청사항:**
-당신은 임상 영양학 전문가이자 개인 맞춤 영양 컨설턴트입니다. 다음 전문적 가이드라인을 준수하여 개인 맞춤 영양제를 추천해주세요:
-
-1. **종합적 건강 평가**: 제공된 모든 생체지표, 생활습관, 건강 상태를 통합 분석하여 개인의 영양 상태를 평가하세요.
-
-2. **영양소 상호작용 분석**: 현재 복용 중인 건강기능식품과의 시너지 효과 및 길항 작용을 고려하여 중복 방지 및 흡수율 최적화를 달성하세요.
-
-3. **생리학적 맞춤 설계**: 연령, 성별, BMI, 활동량에 따른 기초대사율과 영양소 요구량을 계산하여 개인화된 용량을 제시하세요.
-
-4. **질병 예방 및 관리**: 기존 질환의 진행 억제와 동시에 건강검진 수치 개선을 위한 타겟 영양소를 우선순위화하여 추천하세요.
-
-5. **생활 패턴 최적화**: 식사 시간, 수면 주기, 운동 루틴과 연계하여 영양소 흡수율을 극대화하는 복용 타이밍을 제시하세요.
-
-6. **안전성 프로토콜**: 임신/수유, 약물 상호작용, 알레르기 반응 등 모든 금기사항을 고려한 안전한 복용 가이드라인을 제시하세요.
-
-7. **근거 기반 추천**: 각 영양제의 추천 근거를 생리학적 메커니즘과 임상 연구 결과를 바탕으로 설명하세요.
-
-8. **개인화 우선순위**: 건강 고민 해결을 위한 영양제의 중요도를 과학적으로 평가하여 3단계(필수/권장/선택)로 분류하세요.
-
-**응답 형식:** 반드시 아래와 같은 JSON 형식으로만 응답해주세요. 다른 텍스트는 포함하지 마세요.
-
-\`\`\`json
-{
-  "supplements": [
-    {
-      "name": "영양제명",
-      "category": "비타민|미네랄|오메가|프로바이오틱스|허브|기타",
-      "dosage": "용량 (단위 포함)",
-      "timing": {
-        "when": "아침|점심|저녁|식전|식후|공복|취침전",
-        "frequency": "1일 1회|1일 2회|1일 3회|주 3회",
-        "duration": "1개월|2개월|3개월|지속 복용"
-      },
-      "benefits": [
-        "주요 효능 1",
-        "주요 효능 2",
-        "주요 효능 3"
-      ],
-      "scientificRationale": [
-        "생리학적 메커니즘 설명 1",
-        "생리학적 메커니즘 설명 2",
-        "생리학적 메커니즘 설명 3"
-      ],
-      "priority": "essential|recommended|optional",
-      "safetyNotes": "일반적 주의사항 및 과도한 복용 시 주의사항 (있는 경우, 없으면 없음)",
-      "interactions": "상호작용 정보 (있는 경우, 없으면 없음)",
-      "expectedResults": "예상 효과 발현 시기 및 정도"
-    }
-  ],
-  "safetyProtocol": {
-    "generalPrecautions": [
-      "일반적 주의사항 1",
-      "일반적 주의사항 2"
-    ],
-    "emergencySignals": "즉시 복용 중단해야 할 증상들"
-  }
-}
-\`\`\`
-
-위 JSON 구조를 정확히 따라서 전문적이고 개인화된 영양제 추천을 제공해주세요.
-
-**중요한 지침:**
-- scientificRationale은 반드시 항목별로 제공하세요.
-- 각 근거는 간결하고 명확하게 작성하세요.`;
-    
-    return prompt;
+    return buildPrompt('supplements', data);
 }
 
 function getGoalKoreanName(goal) {
@@ -508,7 +398,7 @@ function getCurrentSupplementsKorean(supplements) {
 // OpenAI 호출에 공통 요청 큐를 적용합니다.
 async function sendPromptToOpenAI(prompt, metadata = {}) {
     const response = await aiRequestQueue.add(
-        (signal) => generateText(prompt, { signal, timeout: 300000, json: true }),
+        (signal) => generateText(prompt, { signal, timeout: 300000, schema: schemas.supplements, schemaName: 'supplements', instructions: buildInstructions('supplements') }),
         { type: "supplement-detail", ...metadata }
     );
     return response.text;
@@ -533,28 +423,8 @@ async function generateAIRecommendations(data) {
         // OpenAI API 호출
         const aiResponse = await sendPromptToOpenAI(prompt);
         
-        // A malformed AI answer must not become a fabricated health recommendation.
-        let recommendations;
-        try {
-            recommendations = JSON.parse(aiResponse.trim().replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim());
-        } catch {
-            throw new AIServiceError('AI 영양제 추천 응답을 해석하지 못했습니다. 다시 시도해주세요.', 'INVALID_AI_RESULT');
-        }
-        if (!recommendations || typeof recommendations !== 'object' ||
-            !Array.isArray(recommendations.supplements)) {
-            throw new AIServiceError('AI 영양제 추천 형식이 올바르지 않습니다.', 'INVALID_AI_RESULT');
-        }
+        const recommendations = parseResult(aiResponse, 'supplements');
 
-        // 필수 필드 확인 및 기본값 설정
-        if (!recommendations.summary) {
-            console.log('summary 필드 없음, 기본값으로 초기화');
-            recommendations.summary = '개인 맞춤 영양제 추천 결과입니다.';
-        }
-        if (!recommendations.warnings) {
-            console.log('warnings 필드 없음, 빈 배열로 초기화');
-            recommendations.warnings = [];
-        }
-        
         return recommendations;
         
     } catch (error) {
@@ -569,13 +439,6 @@ router.post('/government-approved-products', async (req, res) => {
     
     try {
         const { healthGoals, dosagePreference, requiredIngredients, avoidIngredients } = req.body;
-        
-        console.log('정부승인 제품 조회 요청:', {
-            healthGoals,
-            dosagePreference,
-            requiredIngredients,
-            avoidIngredients
-        });
 
         // 식약처 API 인스턴스 생성
         const foodSafetyAPI = new FoodSafetyAPI();
@@ -595,7 +458,6 @@ router.post('/government-approved-products', async (req, res) => {
 
         const allProducts = apiResponse.C003.row || [];
         const dataSource = apiResponse.C003.source || 'unknown';
-        console.log(`📊 데이터 소스: ${dataSource}, 전체 제품 수: ${allProducts.length}`);
 
         // 새로운 매칭 순서로 제품 필터링 (건강고민 → 복용선호 → 기피성분 → 유사도 매칭)
         const filteredProducts = filterProductsByNewOrder(
@@ -623,7 +485,6 @@ router.post('/government-approved-products', async (req, res) => {
         // 성능 로깅 (간단하게)
         const endTime = Date.now();
         const duration = ((endTime - startTime) / 1000).toFixed(2);
-        console.log(`✅ 정부승인 제품 조회 완료: ${formattedProducts.length}개 매칭 (전체 ${allProducts.length}개 중) - ${duration}초 소요`);
 
         res.json({
             products: formattedProducts,
@@ -781,7 +642,6 @@ router.post('/search-by-supplement-name', async (req, res) => {
 
         const allProducts = apiResponse.C003.row || [];
         const dataSource = apiResponse.C003.source || 'unknown';
-        console.log(`📊 [영양제 검색] 데이터 소스: ${dataSource}, 전체 제품 수: ${allProducts.length}`);
         
         // 새로운 매칭 순서로 제품 필터링 (건강고민 → 복용선호 → 기피성분 → 유사도 매칭)
         const filteredProducts = filterProductsByNewOrder(
@@ -811,7 +671,6 @@ router.post('/search-by-supplement-name', async (req, res) => {
         // 성능 로깅 (간단하게)
         const endTime = Date.now();
         const duration = ((endTime - startTime) / 1000).toFixed(2);
-        console.log(`✅ "${supplementName}" 검색 완료: ${formattedProducts.length}개 매칭 (전체 ${allProducts.length}개 중) - ${duration}초 소요`);
 
         res.json({
             products: formattedProducts,

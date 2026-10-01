@@ -1,0 +1,11 @@
+// Keep existing display classes; only application code produces markup.
+const escape = value => String(value ?? '정보 없음').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])).replace(/---/g, '&#45;&#45;&#45;');
+const list = (values, className, ordered = false) => `<${ordered ? 'ol' : 'ul'} class="${className}">${values.map(value => `<li>${escape(value)}</li>`).join('')}</${ordered ? 'ol' : 'ul'}>`;
+const ingredients = values => `<ul class="ingredient-list">${values.map(value => `<li class="ingredient-item"><span class="ingredient-name">${escape(value)}</span></li>`).join('')}</ul>`;
+function renderMealPlan(data, week = false) {
+    const d = data.diagnosis;
+    const diagnosis = `<div class="diagnosis"><div>상태진단</div><div>기초대사량(BMR) <span class="desc">생명 유지에 필요한 최소한의 에너지 소비량</span></div><div>${d.bmr === null ? '정보 없음' : escape(d.bmr) + 'Kcal'}</div><div>일일 에너지 요구량(TEE) <span class="desc">활동정도에 따른 하루 동안 소비하는 총 에너지양</span></div><div>${d.tee === null ? '정보 없음' : escape(d.tee) + 'Kcal'}</div><div>칼로리 배분</div><div>${escape(d.calorieAllocation)}</div><div>질병에 따른 식단 주의 사항</div><div>${escape(d.precautions)}</div><div>종합 진단</div><div>${escape(d.summary)}</div></div>`;
+    const days = data.days.map(day => `${week ? `<div class="week-day-label">${escape(day.day)}</div>` : '<div class="meal-section-title">추천식단</div>'}<div class="recommendation">${day.menus.map(m => `<div class="menu-block"><div class="menu-section-title">메뉴</div><div class="menu-name">${escape(m.name)}</div><div class="nutrition-title">영양정보 (1인분 추정)</div>${list([`칼로리: ${m.nutrition.calories}kcal`, `탄수화물: ${m.nutrition.carbohydrates}g`, `단백질: ${m.nutrition.protein}g`, `지방: ${m.nutrition.fat}g`], 'nutrition-list')}<div class="ingredient-title">재료</div><div class="main-ingredient-title">주재료</div>${ingredients(m.ingredients.main)}<div class="sauce-title">소스</div>${ingredients(m.ingredients.sauce)}<div class="etc-title">기타</div>${ingredients(m.ingredients.other)}<div class="recipe-title">레시피</div>${list(m.recipe, 'recipe-list', true)}<div class="tip-title">추가팁</div>${list(m.tips, 'tip-content')}<div class="reason-title">메뉴 추천 이유</div>${list(m.reasons, 'reason-content')}</div>`).join('')}</div>`);
+    return week ? [diagnosis, ...days].join('\n---\n') : diagnosis + days.join('');
+}
+module.exports = { renderMealPlan };

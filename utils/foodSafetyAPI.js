@@ -120,19 +120,15 @@ class FoodSafetyAPI {
     getCachedDataIgnoreExpiry() {
         try {
             if (!fs.existsSync(this.cacheFile)) {
-                console.log('📂 캐시 파일이 존재하지 않음:', this.cacheFile);
                 return null;
             }
 
-            console.log('📂 캐시 파일 읽기 시도 (만료 무시):', this.cacheFile);
             const cacheData = JSON.parse(fs.readFileSync(this.cacheFile, 'utf-8'));
             
             if (!cacheData || !cacheData.products) {
-                console.log('⚠️ 캐시 파일은 존재하지만 products 데이터가 없음');
                 return null;
             }
             
-            console.log(`📂 캐시에서 ${cacheData.products.length}개 제품 데이터 읽기 성공 (만료 무시)`);
             return cacheData.products;
         } catch (error) {
             console.error('❌ 캐시 데이터 읽기 실패:', error.message);
@@ -190,13 +186,7 @@ class FoodSafetyAPI {
         // 각 배치를 순차적으로 처리
         for (let i = 0; i < batches.length; i++) {
             const batch = batches[i];
-            const progress = Math.round(((i + 1) / batches.length) * 100);
-            
-            // 진행률 표시 (10% 단위로만)
-            if (progress % 10 === 0 || i === 0 || i === batches.length - 1) {
-                console.log(`   진행률: ${progress}% (${i + 1}/${batches.length})`);
-            }
-            
+
             // 재시도 로직 (최대 3회)
             let success = false;
             for (let attempt = 1; attempt <= 3; attempt++) {
@@ -260,7 +250,6 @@ class FoodSafetyAPI {
             if (!forceRefresh) {
                 const permanentData = this.getPermanentData();
                 if (permanentData && permanentData.length > 0) {
-                    console.log(`✅ [영구 저장소] 정부승인 제품 로드 완료 (${permanentData.length}개) - API 호출 없음`);
                     
                     return {
                         C003: {
@@ -270,17 +259,13 @@ class FoodSafetyAPI {
                         }
                     };
                 }
-                
-                console.log('⚠️ 영구 저장소에 데이터 없음. 캐시 확인 중...');
-                
+
                 // 2순위: 캐시 확인 (영구 저장소가 없는 경우)
                 const cachedData = this.getCachedData();
                 if (cachedData && cachedData.length > 0) {
-                    console.log(`✅ [캐시] 정부승인 제품 로드 완료 (${cachedData.length}개) - 영구 저장소에 자동 복사 중...`);
                     
                     // 캐시 데이터를 영구 저장소에 자동 복사
                     this.setPermanentData(cachedData);
-                    console.log('💾 캐시 데이터를 영구 저장소에 복사 완료');
                     
                     return {
                         C003: {
@@ -291,13 +276,9 @@ class FoodSafetyAPI {
                     };
                 }
                 
-                console.log('⚠️ 캐시에도 데이터 없음. API 호출 시작...');
-            } else {
-                console.log('🔄 강제 새로고침 모드 - API 호출 시작...');
             }
             
             // 먼저 소량 데이터로 전체 개수 확인
-            console.log('📡 식약처 API 연결 중...');
             const firstBatch = await this.getHealthFunctionalFoods(1, 100);
             if (!firstBatch || !firstBatch.C003) {
                 console.error('❌ API 연결 실패');
@@ -340,7 +321,6 @@ class FoodSafetyAPI {
             // 캐시와 영구 저장소 모두에 저장
             this.setCachedData(allProducts);
             this.setPermanentData(allProducts);
-            console.log('💾 [API → 영구 저장소] 데이터 저장 완료 - 다음 조회부터는 API 호출 없이 영구 저장소 사용');
 
             return result;
 
@@ -385,7 +365,6 @@ class FoodSafetyAPI {
         try {
             if (fs.existsSync(this.cacheFile)) {
                 fs.unlinkSync(this.cacheFile);
-                console.log('캐시가 삭제되었습니다.');
                 return true;
             }
             return false;
@@ -424,7 +403,6 @@ class FoodSafetyAPI {
      */
     setPermanentData(products) {
         try {
-            console.log(`💾 영구 저장소에 ${products.length}개 제품 저장 시작...`);
             
             // 메모리 절약을 위해 불필요한 필드 제거
             const optimizedProducts = products.map(product => ({
@@ -452,7 +430,6 @@ class FoodSafetyAPI {
             
             fs.writeFileSync(this.permanentFile, JSON.stringify(permanentData));
             const fileSizeMB = (fs.statSync(this.permanentFile).size / 1024 / 1024).toFixed(2);
-            console.log(`✅ 영구 저장소 저장 완료: ${optimizedProducts.length}개 제품 (${fileSizeMB}MB) - ${this.permanentFile}`);
             return true;
         } catch (error) {
             console.error('❌ 영구 저장소 데이터 저장 실패:', error.message);
@@ -466,19 +443,15 @@ class FoodSafetyAPI {
     getPermanentData() {
         try {
             if (!fs.existsSync(this.permanentFile)) {
-                console.log('📂 영구 저장소 파일이 존재하지 않음:', this.permanentFile);
                 return null;
             }
 
-            console.log('📂 영구 저장소 파일 읽기 시도:', this.permanentFile);
             const permanentData = JSON.parse(fs.readFileSync(this.permanentFile, 'utf-8'));
             
             if (!permanentData || !permanentData.products) {
-                console.log('⚠️ 영구 저장소 파일은 존재하지만 products 데이터가 없음');
                 return null;
             }
             
-            console.log(`📂 영구 저장소에서 ${permanentData.products.length}개 제품 데이터 읽기 성공`);
             return permanentData.products;
         } catch (error) {
             console.error('❌ 영구 저장소 데이터 읽기 실패:', error.message);
@@ -517,24 +490,19 @@ class FoodSafetyAPI {
      */
     copyCacheToPermanentStorage() {
         try {
-            console.log('기존 캐시 데이터를 영구 저장소로 복사합니다...');
             
             // 캐시에서 데이터 읽기
             const cachedData = this.getCachedData();
             
             if (!cachedData) {
-                console.log('캐시에 데이터가 없습니다.');
                 return null;
             }
-
-            console.log(`캐시에서 ${cachedData.length}개 제품을 발견했습니다.`);
 
             // 영구 저장소에 저장
             const saveSuccess = this.setPermanentData(cachedData);
             
             if (saveSuccess) {
                 const status = this.getPermanentStorageStatus();
-                console.log('✅ 캐시 데이터를 영구 저장소로 복사 완료:', status);
                 
                 return {
                     success: true,
@@ -559,7 +527,6 @@ class FoodSafetyAPI {
      */
     async refreshAndSaveToPermanentStorage(maxItems = 42000) {
         try {
-            console.log('API에서 새 데이터를 받아 영구 저장소에 저장을 시작합니다...');
             
             // API에서 모든 데이터 새로 받기 (강제 새로고침)
             const apiData = await this.getAllHealthFunctionalFoods(maxItems, true);
@@ -570,14 +537,12 @@ class FoodSafetyAPI {
             }
 
             const products = apiData.C003.row;
-            console.log(`API에서 ${products.length}개 제품을 받았습니다.`);
 
             // 영구 저장소에 저장
             const saveSuccess = this.setPermanentData(products);
             
             if (saveSuccess) {
                 const status = this.getPermanentStorageStatus();
-                console.log('✅ 영구 저장소 저장 완료:', status);
                 
                 return {
                     success: true,
@@ -604,7 +569,6 @@ class FoodSafetyAPI {
             const permanentData = this.getPermanentData();
             
             if (!permanentData) {
-                console.log('영구 저장소에 데이터가 없습니다.');
                 return null;
             }
 
@@ -620,9 +584,7 @@ class FoodSafetyAPI {
                 NTK_MTHD: product.NTK_MTHD,
                 IFTKN_ATNT_MATR_CN: product.IFTKN_ATNT_MATR_CN
             }));
-            
-            console.log(`✅ 영구 저장소에서 ${optimizedData.length}개 제품을 로드했습니다.`);
-            
+
             return {
                 C003: {
                     total_count: optimizedData.length,

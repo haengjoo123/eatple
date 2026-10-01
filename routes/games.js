@@ -226,11 +226,8 @@ router.post('/submit-score', requireLogin, gameScoreLimiter, validateInput.gameS
       'memory-game': 2500,
       'puzzle-game': 3000  // 퍼즐 게임 최대 점수 원래대로 복원
     };
-    
-    console.log(`점수 검증: 게임=${gameId}, 점수=${score}, 최대점수=${maxScorePerGame[gameId]}`);
-    
+
     if (score > maxScorePerGame[gameId]) {
-      console.log(`점수 초과: ${score} > ${maxScorePerGame[gameId]}`);
       return res.status(400).json({
         success: false,
         error: '게임 최대 점수를 초과했습니다.'
@@ -295,9 +292,7 @@ router.post('/submit-score', requireLogin, gameScoreLimiter, validateInput.gameS
         gameConfig: gameConfig,
         playTime: playTime
       };
-      
-      console.log('게임 점수 제출 응답 데이터:', responseData);
-      
+
       res.json(responseData);
       
     } catch (pointsError) {
@@ -428,33 +423,24 @@ router.get('/leaderboard/:gameId', requireLogin, (req, res) => {
     const { gameId } = req.params;
     const userId = req.session.user.id;
     const currentScore = req.query.currentScore ? parseInt(req.query.currentScore) : null;
-    
-    console.log('리더보드 요청 받음:', { gameId, userId, currentScore });
-    
+
     // 게임 존재 여부 확인
     if (!GAME_CONFIG[gameId]) {
-      console.log('존재하지 않는 게임:', gameId);
       return res.status(400).json({
         success: false,
         error: '존재하지 않는 게임입니다.'
       });
     }
-    
-    console.log('PointsService.getGameLeaderboard 호출 시작');
-    
+
     // PointsService를 사용하여 리더보드 데이터 조회 (현재 점수 포함)
     const leaderboard = PointsService.getGameLeaderboard(gameId, 10, userId, currentScore);
-    
-    console.log('리더보드 데이터 조회 완료:', leaderboard);
-    
+
     // 현재 사용자 표시를 위한 데이터 처리
     const processedLeaderboard = leaderboard.map(entry => ({
       ...entry,
       isCurrentUser: entry.userId === userId
     }));
-    
-    console.log('처리된 리더보드 데이터:', processedLeaderboard);
-    
+
     res.json({
       success: true,
       leaderboard: processedLeaderboard,

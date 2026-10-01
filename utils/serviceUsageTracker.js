@@ -30,14 +30,12 @@ function incrementServiceUsage(userId, serviceType) {
         users[userIndex].serviceUsage.lastUpdated = new Date().toISOString();
         
         writeUsers(users);
-        console.log(`사용자 ${userId}의 ${serviceType} 이용 횟수 증가: ${users[userIndex].serviceUsage['mini-game']}`);
         return true;
     } else {
         users[userIndex].serviceUsage[serviceType] = (users[userIndex].serviceUsage[serviceType] || 0) + 1;
         users[userIndex].serviceUsage.lastUpdated = new Date().toISOString();
         
         writeUsers(users);
-        console.log(`사용자 ${userId}의 ${serviceType} 이용 횟수 증가: ${users[userIndex].serviceUsage[serviceType]}`);
         return true;
     }
 }
@@ -81,7 +79,6 @@ async function getAllUsersServiceUsage() {
             
             if (!error && count !== null) {
                 totalUsersFromSupabase = count;
-                console.log('Supabase 사용자 수:', count);
             } else {
                 console.warn('Supabase 사용자 수 조회 실패, 로컬 파일 사용:', error);
             }

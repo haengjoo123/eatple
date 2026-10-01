@@ -53,6 +53,16 @@ test('missing credentials fail explicitly before any network request', async () 
     expect(axios.post).not.toHaveBeenCalled();
 });
 
+test('forwards a strict response schema and trusted instructions separately from user input', async () => {
+    const { schemas } = require('../utils/aiContracts');
+    axios.post.mockResolvedValue(completed([{ type: 'output_text', text: '{"tags":["칼슘"]}' }]));
+    await generateText('user content', { schema: schemas.tags, schemaName: 'tags', instructions: 'trusted rules' });
+    expect(axios.post.mock.lastCall[1]).toMatchObject({
+        input: 'user content', instructions: 'trusted rules',
+        text: { format: { type: 'json_schema', name: 'tags', strict: true, schema: schemas.tags } },
+    });
+});
+
 test.each([
     [{ response: { status: 429, data: { error: 'private prompt' } } }, 429, 'AI_RATE_LIMITED'],
     [{ response: { status: 401, data: { error: 'secret credential' } } }, 502, 'AI_UNAVAILABLE'],

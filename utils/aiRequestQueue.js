@@ -36,7 +36,7 @@ class AIRequestQueue {
         };
 
         // 로깅 활성화 여부
-        this.enableLogging = options.enableLogging !== false;
+        this.enableLogging = options.enableLogging === true;
     }
 
     /**
@@ -169,9 +169,7 @@ class AIRequestQueue {
 
             if (!timedOut) this.stats.failedRequests++;
 
-            if (this.enableLogging) {
-                console.error(`[AI Queue] 요청 실패: ${id} - ${error.message}`);
-            }
+            console.error(`[AI Queue] 요청 실패: ${id} - ${error.message}`);
 
             reject(error);
         } finally {
@@ -314,7 +312,7 @@ const aiRequestQueue = new AIRequestQueue({
     maxConcurrent: 3,           // 동시 처리 3개
     requestTimeout: 300000,     // 요청 타임아웃 5분
     queueTimeout: 600000,       // 큐 대기 타임아웃 10분
-    enableLogging: process.env.NODE_ENV !== 'production' // 개발 환경에서만 로깅
+    enableLogging: process.env.LOG_LEVEL === 'debug' // 상세 큐 로그는 명시적으로 켠 경우에만 출력
 });
 
 module.exports = aiRequestQueue;

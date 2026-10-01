@@ -111,11 +111,8 @@ router.get('/completion-status', (req, res) => {
 
 // 프로필 완성 가이드 조회
 router.get('/completion-guide', (req, res) => {
-  console.log('프로필 완성 가이드 요청 받음');
-  console.log('세션 사용자:', req.session?.user?.id);
   
   if (!req.session.user) {
-    console.log('로그인되지 않은 사용자');
     return res.status(401).json({ error: '로그인 필요' });
   }
   
@@ -123,15 +120,12 @@ router.get('/completion-guide', (req, res) => {
     const users = readUsers();
     const user = users.find(u => u.id === req.session.user.id);
     if (!user) {
-      console.log('사용자를 찾을 수 없음:', req.session.user.id);
       return res.status(404).json({ error: '사용자 없음' });
     }
     
     const profile = user.profile || {};
-    console.log('프로필 데이터:', Object.keys(profile));
     
     const guide = ProfileCompletionService.getCompletionGuide(profile);
-    console.log('가이드 생성 완료');
     
     res.json({
       success: true,

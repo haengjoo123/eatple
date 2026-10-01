@@ -56,30 +56,6 @@ function requireAdmin(req, res, next) {
     next();
 }
 
-// 로그용 데이터 정리 헬퍼 함수 (긴 base64 데이터 등을 간략화)
-function sanitizeForLog(data, maxLength = 100) {
-    if (!data) return data;
-    
-    const sanitized = {};
-    for (const [key, value] of Object.entries(data)) {
-        if (typeof value === 'string') {
-            // base64 이미지 데이터 감지 (data:image로 시작하거나 매우 긴 문자열)
-            if (value.startsWith('data:image/') || value.length > 1000) {
-                sanitized[key] = `[${value.substring(0, 20)}...] (${value.length} chars)`;
-            } else if (value.length > maxLength) {
-                sanitized[key] = value.substring(0, maxLength) + `... (${value.length} chars)`;
-            } else {
-                sanitized[key] = value;
-            }
-        } else if (typeof value === 'object' && value !== null) {
-            // 재귀적으로 객체 처리
-            sanitized[key] = sanitizeForLog(value, maxLength);
-        } else {
-            sanitized[key] = value;
-        }
-    }
-    return sanitized;
-}
 
 // ==================== 포스팅 CRUD API ====================
 
@@ -88,12 +64,6 @@ function sanitizeForLog(data, maxLength = 100) {
  * POST /api/admin/manual-posting/posts
  */
 router.post('/posts', requireAdmin, async (req, res) => {
-    console.log('🔥 포스팅 생성 요청 받음:', {
-        url: req.originalUrl,
-        method: req.method,
-        timestamp: new Date().toISOString(),
-        body: sanitizeForLog(req.body)
-    });
     try {
         const {
             title,
@@ -154,11 +124,6 @@ router.post('/posts', requireAdmin, async (req, res) => {
         };
 
         // 관련 상품 정보 처리
-        console.log('🔗 관련상품 데이터 수신:', {
-            productName1, productLink1,
-            productName2, productLink2,
-            productName3, productLink3
-        });
         
         const relatedProducts = [];
         if (productName1 && productName1.trim()) {
@@ -179,8 +144,6 @@ router.post('/posts', requireAdmin, async (req, res) => {
                 link: productLink3 ? productLink3.trim() : null
             });
         }
-        
-        console.log(`🔗 처리된 관련상품 수: ${relatedProducts.length}`, relatedProducts);
 
         // 포스팅 데이터 준비
         const postData = {
@@ -198,21 +161,13 @@ router.post('/posts', requireAdmin, async (req, res) => {
         };
 
         // 포스팅 생성
-        console.log('📝 포스팅 생성 시작:', {
-            title: postData.title,
-            relatedProductsCount: postData.relatedProducts.length,
-            adminInfo
-        });
         const newPost = await nutritionDataManager.createPost(postData, adminInfo);
-        console.log('📝 포스팅 생성 완료:', newPost.id);
 
         // 카테고리 포스팅 수 업데이트 (로컬 환경에서만)
         // Supabase 환경에서는 데이터베이스에서 직접 집계하므로 별도 업데이트 불필요
         if (!isDraft && !process.env.SUPABASE_URL) {
-            console.log(`📊 새 포스팅 카테고리 포스팅 수 업데이트 시작 - 카테고리 ID: ${finalCategoryId}`);
             try {
                 await categoryTagManager.updateCategoryPostCount(finalCategoryId);
-                console.log(`📊 새 포스팅 카테고리 포스팅 수 업데이트 완료 - 카테고리 ID: ${finalCategoryId}`);
             } catch (error) {
                 console.warn(`⚠️ 카테고리 포스팅 수 업데이트 실패 (무시): ${error.message}`);
             }
@@ -317,11 +272,6 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
         }
 
         // 관련 상품 정보 처리
-        console.log('🔗 포스팅 수정 - 관련상품 데이터 수신:', {
-            productName1, productLink1,
-            productName2, productLink2,
-            productName3, productLink3
-        });
         
         const relatedProducts = [];
         if (productName1 && productName1.trim()) {
@@ -342,15 +292,10 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
                 link: productLink3 ? productLink3.trim() : null
             });
         }
-        
-        console.log(`🔗 포스팅 수정 - 처리된 관련상품 수: ${relatedProducts.length}`, relatedProducts);
-        
+
         // 포스팅 수정 (로컬 데이터 매니저 사용)
-        console.log(`🔄 포스팅 업데이트 시작 - ID: ${id}`);
-        console.log('업데이트할 데이터:', sanitizeForLog(updates));
         
         const updateResult = await nutritionDataManager.updateNutritionInfo(id, updates);
-        console.log(`🔄 포스팅 업데이트 결과: ${updateResult}`);
         
         if (!updateResult) {
             console.error(`❌ 포스팅 업데이트 실패 - ID: ${id}`);
@@ -362,10 +307,8 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
 
         // 태그 업데이트가 있는 경우 별도 처리 (tags가 명시적으로 전달된 경우에만)
         if (tags !== undefined) {
-            console.log(`🏷️ 태그 업데이트 시작 - ID: ${id}`, tagNames);
             try {
                 await nutritionDataManager.saveTags(id, tagNames);
-                console.log(`🏷️ 태그 업데이트 완료 - ID: ${id}`);
             } catch (error) {
                 console.error(`❌ 태그 업데이트 오류 - ID: ${id}:`, error);
                 throw error;
@@ -374,10 +317,8 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
 
         // 관련 상품 정보가 제공된 경우 별도 처리
         if (productName1 !== undefined || productName2 !== undefined || productName3 !== undefined) {
-            console.log(`🔗 포스팅 수정 - 관련상품 저장 시작: ${id}`, relatedProducts);
             try {
                 await nutritionDataManager.saveRelatedProducts(id, relatedProducts);
-                console.log(`🔗 포스팅 수정 - 관련상품 저장 완료: ${id}`);
             } catch (error) {
                 console.error(`❌ 관련상품 저장 오류 - ID: ${id}:`, error);
                 throw error;
@@ -387,15 +328,11 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
         // 카테고리 포스팅 수 업데이트 (카테고리가 변경된 경우, 로컬 환경에서만)
         // Supabase 환경에서는 데이터베이스에서 직접 집계하므로 별도 업데이트 불필요
         if (finalCategoryId !== undefined && !process.env.SUPABASE_URL) {
-            console.log(`📊 카테고리 포스팅 수 업데이트 시작 - 카테고리 ID: ${finalCategoryId}`);
             try {
                 await categoryTagManager.updateCategoryPostCount(finalCategoryId);
-                console.log(`📊 카테고리 포스팅 수 업데이트 완료 - 카테고리 ID: ${finalCategoryId}`);
                 
                 if (existingPost.category_id !== finalCategoryId) {
-                    console.log(`📊 이전 카테고리 포스팅 수 업데이트 시작 - 카테고리 ID: ${existingPost.category_id}`);
                     await categoryTagManager.updateCategoryPostCount(existingPost.category_id);
-                    console.log(`📊 이전 카테고리 포스팅 수 업데이트 완료 - 카테고리 ID: ${existingPost.category_id}`);
                 }
             } catch (error) {
                 console.warn(`⚠️ 카테고리 포스팅 수 업데이트 실패 (무시): ${error.message}`);
@@ -403,9 +340,7 @@ router.put('/posts/:id', requireAdmin, async (req, res) => {
         }
 
         // 업데이트된 포스트 정보 가져오기
-        console.log(`📖 업데이트된 포스트 정보 조회 시작 - ID: ${id}`);
         const updatedPost = await nutritionDataManager.getNutritionInfoById(id);
-        console.log(`📖 업데이트된 포스트 정보 조회 완료 - ID: ${id}`);
 
         console.log(`✅ 포스팅 수정: ${id} (by ${adminInfo.name})`);
 
@@ -593,14 +528,11 @@ router.get('/posts/:id', requireAdmin, async (req, res) => {
         
         // 태그 데이터를 프론트엔드가 기대하는 형식으로 변환
         const tags = postData.tags || [];
-        console.log(`📝 포스팅 조회 - 태그 데이터:`, tags);
         const postTags = tags.map(tag => ({
             tags: {
                 name: tag
             }
         }));
-        console.log(`📝 포스팅 조회 - 변환된 post_tags:`, postTags);
-        console.log(`📝 포스팅 조회 - 관련상품 데이터:`, postData.related_products);
 
         const formattedPost = {
             id: postData.id,
@@ -695,13 +627,6 @@ router.get('/posts', requireAdmin, async (req, res) => {
         const result = await nutritionDataManager.getNutritionInfoList(nutritionFilters, pagination);
         const posts = result && result.data ? result.data : [];
         const paginationData = result && result.pagination ? result.pagination : {};
-        
-        console.log('🔍 관리자 포스팅 목록 조회 결과:', {
-            totalPosts: posts.length,
-            filters: nutritionFilters,
-            pagination: paginationData,
-            firstPost: posts[0] ? { id: posts[0].id, title: posts[0].title } : null
-        });
 
         // 카테고리 정보 로드 (한국어 이름 변환용)
         const categoryMap = {
@@ -1300,12 +1225,10 @@ router.post('/validate-url', requireAdmin, async (req, res) => {
  */
 router.get('/stats', requireAdmin, async (req, res) => {
     try {
-        console.log('📊 포스팅 통계 조회 시작...');
         
         // 전체 포스팅 수 조회 (모든 상태 포함)
         const allPosts = await nutritionDataManager.getNutritionInfoList({}, { page: 1, limit: 1000 });
         const totalPosts = allPosts && allPosts.data ? allPosts.data.length : 0;
-        console.log('📊 전체 포스팅 수:', totalPosts);
         
         // 게시된 포스팅 수 (활성화되고 임시저장이 아닌 포스팅)
         const publishedPosts = await nutritionDataManager.getNutritionInfoList(
@@ -1313,7 +1236,6 @@ router.get('/stats', requireAdmin, async (req, res) => {
             { page: 1, limit: 1000 }
         );
         const publishedCount = publishedPosts && publishedPosts.data ? publishedPosts.data.length : 0;
-        console.log('📊 게시된 포스팅 수:', publishedCount);
         
         // 임시저장 포스팅 수 (draft 상태)
         const draftPosts = await nutritionDataManager.getNutritionInfoList(
@@ -1321,7 +1243,6 @@ router.get('/stats', requireAdmin, async (req, res) => {
             { page: 1, limit: 1000 }
         );
         const draftCount = draftPosts && draftPosts.data ? draftPosts.data.length : 0;
-        console.log('📊 임시저장 포스팅 수:', draftCount);
         
         // 비활성 포스팅 수 (비활성화된 포스팅, 임시저장 제외)
         const inactivePosts = await nutritionDataManager.getNutritionInfoList(
@@ -1329,7 +1250,6 @@ router.get('/stats', requireAdmin, async (req, res) => {
             { page: 1, limit: 1000 }
         );
         const inactiveCount = inactivePosts && inactivePosts.data ? inactivePosts.data.length : 0;
-        console.log('📊 비활성 포스팅 수:', inactiveCount);
 
         // 데이터베이스에서 직접 조회하는 방법으로 변경
         const { createClient } = require('@supabase/supabase-js');
@@ -1380,8 +1300,6 @@ router.get('/stats', requireAdmin, async (req, res) => {
             todayViews: todayViews
         };
 
-        console.log('📊 최종 통계:', stats);
-
         res.json({
             success: true,
             stats: stats
@@ -1404,7 +1322,6 @@ router.get('/stats', requireAdmin, async (req, res) => {
 router.get('/views-analytics', requireAdmin, async (req, res) => {
     try {
         const days = parseInt(req.query.days) || 7;
-        console.log(`📊 조회수 분석 데이터 조회 시작 (최근 ${days}일)...`);
 
         const { createClient } = require('@supabase/supabase-js');
         const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
@@ -1421,8 +1338,6 @@ router.get('/views-analytics', requireAdmin, async (req, res) => {
         // N일 전 날짜 (한국 시간 기준)
         const kstStartDate = new Date(kstToday);
         kstStartDate.setDate(kstStartDate.getDate() - (days - 1));
-
-        console.log(`📊 조회 기간 (KST): ${kstStartDate.toISOString().split('T')[0]} ~ ${kstToday.toISOString().split('T')[0]}`);
 
         // 최근 N일 일별 조회수 집계 (오늘 포함)
         const chartData = [];
@@ -1441,8 +1356,6 @@ router.get('/views-analytics', requireAdmin, async (req, res) => {
             
             const dateStr = kstDate.toISOString().split('T')[0];
 
-            console.log(`📅 날짜 (KST): ${dateStr}, UTC 범위: ${utcStartOfDay.toISOString()} ~ ${endTime}`);
-
             // 해당 날짜의 조회수 집계
             const { data: viewsData } = await supabase
                 .from('nutrition_post_views')
@@ -1451,8 +1364,6 @@ router.get('/views-analytics', requireAdmin, async (req, res) => {
                 .lt('viewed_at', endTime);
 
             const totalViews = viewsData?.reduce((sum, item) => sum + (item.view_count || 1), 0) || 0;
-
-            console.log(`📊 ${dateStr} (KST): ${totalViews}회 (레코드 ${viewsData?.length || 0}개)`);
 
             chartData.push({
                 date: dateStr,
@@ -1483,8 +1394,6 @@ router.get('/views-analytics', requireAdmin, async (req, res) => {
             category: post.categories?.name || '미분류'
         })) || [];
 
-        console.log('📊 조회수 분석 데이터 조회 완료');
-
         res.json({
             success: true,
             chartData: chartData,
@@ -1507,7 +1416,6 @@ router.get('/views-analytics', requireAdmin, async (req, res) => {
  */
 router.get('/today-views-detail', requireAdmin, async (req, res) => {
     try {
-        console.log('📊 오늘 조회수 상세 데이터 조회 시작...');
 
         const { createClient } = require('@supabase/supabase-js');
         const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
@@ -1559,11 +1467,6 @@ router.get('/today-views-detail', requireAdmin, async (req, res) => {
         // Map을 배열로 변환하고 조회수로 정렬
         const posts = Array.from(postsMap.values()).sort((a, b) => b.todayViews - a.todayViews);
         const totalViews = posts.reduce((sum, post) => sum + post.todayViews, 0);
-
-        console.log('📊 오늘 조회수 상세 데이터 조회 완료:', {
-            totalViews,
-            postsCount: posts.length
-        });
 
         res.json({
             success: true,

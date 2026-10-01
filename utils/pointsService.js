@@ -334,17 +334,6 @@ class PointsService {
         }
         
         // 디버깅 로그 추가
-        console.log(`포인트 변환 디버깅:`, {
-            gameScore,
-            gameType,
-            scoreMultiplier: config.scoreMultiplier,
-            convertedPoints,
-            maxPoints: config.maxPoints,
-            finalPoints,
-            calculation: `${gameScore} * ${config.scoreMultiplier} = ${gameScore * config.scoreMultiplier}`,
-            floorResult: `Math.floor(${gameScore * config.scoreMultiplier}) = ${convertedPoints}`,
-            minResult: `Math.min(${convertedPoints}, ${config.maxPoints}) = ${Math.min(convertedPoints, config.maxPoints)}`
-        });
         
         return finalPoints;
     }

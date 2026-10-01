@@ -269,7 +269,6 @@ class NotificationSystem {
             `;
             
             // 실제 이메일 전송 로직 (구현 필요)
-            console.log('이메일 내용:', emailContent);
             
         } catch (error) {
             console.error('이메일 알림 전송 실패:', error);
@@ -293,7 +292,6 @@ class NotificationSystem {
 
             // 실제 webhook 전송 로직 (구현 필요)
             console.log(`🔗 Webhook 알림 전송: ${alert.error.message}`);
-            console.log('Webhook 데이터:', webhookData);
             
         } catch (error) {
             console.error('Webhook 알림 전송 실패:', error);
@@ -337,7 +335,6 @@ class NotificationSystem {
 
             // 실제 Slack 전송 로직 (구현 필요)
             console.log(`💬 Slack 알림 전송: ${alert.error.message}`);
-            console.log('Slack 메시지:', slackMessage);
             
         } catch (error) {
             console.error('Slack 알림 전송 실패:', error);

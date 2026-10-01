@@ -41,20 +41,11 @@ class ProductManager {
   async createProduct(productData) {
     try {
       // 디버깅: 받은 데이터 확인
-      console.log("🔍 [DEBUG] ProductManager.createProduct 호출됨");
-      console.log("🔍 [DEBUG] 받은 productData:", productData);
-      console.log("🔍 [DEBUG] productData.summary:", productData.summary);
-      console.log(
-        "🔍 [DEBUG] productData.summary 타입:",
-        typeof productData.summary
-      );
 
       // 종합 검증 (데이터 + 비즈니스 로직)
       await this.validateProduct(productData, false);
 
       // 상품 생성
-      console.log('🔍 [DEBUG] 받은 productData.originalPrice:', productData.originalPrice);
-      console.log('🔍 [DEBUG] originalPrice 타입:', typeof productData.originalPrice);
       
       const insertData = {
         name: productData.name.trim(),
@@ -70,11 +61,6 @@ class ProductManager {
         status: productData.status || "active",
         created_by: productData.created_by,
       };
-      
-      console.log('🔍 [DEBUG] 저장할 insertData.originalPrice:', insertData.originalPrice);
-
-      console.log("🔍 [DEBUG] DB에 삽입할 데이터:", insertData);
-      console.log("🔍 [DEBUG] insertData.summary:", insertData.summary);
 
       const { data, error } = await supabaseAdmin
         .from("products")
@@ -86,8 +72,6 @@ class ProductManager {
         console.error("🔍 [DEBUG] DB 삽입 오류:", error);
         throw new Error(`Database error: ${error.message}`);
       }
-
-      console.log("🔍 [DEBUG] DB 삽입 성공, 반환된 데이터:", data);
 
       // 캐시 무효화
       this.clearCache();
@@ -306,14 +290,6 @@ class ProductManager {
   async updateProduct(productId, updateData) {
     try {
       // 디버깅: 받은 데이터 확인
-      console.log("🔍 [DEBUG] ProductManager.updateProduct 호출됨");
-      console.log("🔍 [DEBUG] productId:", productId);
-      console.log("🔍 [DEBUG] 받은 updateData:", updateData);
-      console.log("🔍 [DEBUG] updateData.summary:", updateData.summary);
-      console.log(
-        "🔍 [DEBUG] updateData.summary 타입:",
-        typeof updateData.summary
-      );
 
       // 기존 상품 확인
       const existingProduct = await this.getProductById(productId);
@@ -340,12 +316,9 @@ class ProductManager {
       if (updateData.price !== undefined)
         updateFields.price = parseInt(updateData.price);
       if (updateData.originalPrice !== undefined) {
-        console.log('🔍 [DEBUG] 업데이트할 originalPrice:', updateData.originalPrice);
-        console.log('🔍 [DEBUG] originalPrice 타입:', typeof updateData.originalPrice);
         updateFields.originalPrice = updateData.originalPrice
           ? parseInt(updateData.originalPrice)
           : null;
-        console.log('🔍 [DEBUG] 업데이트할 originalPrice 값:', updateFields.originalPrice);
       }
       if (updateData.category !== undefined)
         updateFields.category = updateData.category.trim();
@@ -355,9 +328,6 @@ class ProductManager {
         updateFields.image_path = updateData.image_path;
       if (updateData.status !== undefined)
         updateFields.status = updateData.status;
-
-      console.log("🔍 [DEBUG] DB에 업데이트할 데이터:", updateFields);
-      console.log("🔍 [DEBUG] updateFields.summary:", updateFields.summary);
 
       const { data, error } = await supabaseAdmin
         .from("products")
@@ -370,8 +340,6 @@ class ProductManager {
         console.error("🔍 [DEBUG] DB 업데이트 오류:", error);
         throw new Error(`Database error: ${error.message}`);
       }
-
-      console.log("🔍 [DEBUG] DB 업데이트 성공, 반환된 데이터:", data);
 
       // 캐시 무효화
       this.clearCache();
@@ -689,8 +657,6 @@ class ProductManager {
 
       if (error) {
         console.error("Failed to increment view count:", error);
-      } else {
-        console.log(`✅ 상품 ${productId} 조회수 증가: ${newViewCount}`);
       }
 
       // 캐시 무효화 (조회수 변경)
@@ -1294,22 +1260,17 @@ class ProductManager {
    */
   async getProductStats() {
     try {
-      console.log("상품 통계 조회 시작...");
 
       // 총 상품 수
-      console.log("총 상품 수 조회 중...");
       const { count: totalProducts, error: totalError } = await supabaseAdmin
         .from("products")
         .select("*", { count: "exact", head: true });
 
       if (totalError) {
         console.error("총 상품 수 조회 오류:", totalError);
-      } else {
-        console.log("총 상품 수:", totalProducts);
       }
 
       // 활성 상품 수
-      console.log("활성 상품 수 조회 중...");
       const { count: activeProducts, error: activeError } = await supabaseAdmin
         .from("products")
         .select("*", { count: "exact", head: true })
@@ -1317,12 +1278,9 @@ class ProductManager {
 
       if (activeError) {
         console.error("활성 상품 수 조회 오류:", activeError);
-      } else {
-        console.log("활성 상품 수:", activeProducts);
       }
 
       // 비활성 상품 수
-      console.log("비활성 상품 수 조회 중...");
       const { count: inactiveProducts, error: inactiveError } =
         await supabaseAdmin
           .from("products")
@@ -1331,12 +1289,9 @@ class ProductManager {
 
       if (inactiveError) {
         console.error("비활성 상품 수 조회 오류:", inactiveError);
-      } else {
-        console.log("비활성 상품 수:", inactiveProducts);
       }
 
       // 카테고리 수
-      console.log("카테고리 수 조회 중...");
       const { data: categories, error: categoryError } = await supabaseAdmin
         .from("products")
         .select("category")
@@ -1348,13 +1303,11 @@ class ProductManager {
           categories.map((item) => item.category)
         );
         totalCategories = uniqueCategories.size;
-        console.log("총 카테고리 수:", totalCategories);
       } else if (categoryError) {
         console.error("카테고리 수 조회 오류:", categoryError);
       }
 
       // 총 조회수
-      console.log("총 조회수 조회 중...");
       const { data: totalViewsData, error: totalViewsError } =
         await supabaseAdmin.from("products").select("view_count");
 
@@ -1364,13 +1317,11 @@ class ProductManager {
           (sum, product) => sum + (product.view_count || 0),
           0
         );
-        console.log("총 조회수:", totalViews);
       } else if (totalViewsError) {
         console.error("총 조회수 조회 오류:", totalViewsError);
       }
 
       // 오늘 조회수 (product_analytics 테이블이 있다면)
-      console.log("오늘 조회수 조회 중...");
       let todayViews = 0;
       try {
         const today = new Date();
@@ -1384,16 +1335,11 @@ class ProductManager {
 
         if (!viewError) {
           todayViews = viewCount || 0;
-          console.log("오늘 조회수:", todayViews);
         } else {
           console.error("오늘 조회수 조회 오류:", viewError);
         }
       } catch (viewError) {
         // product_analytics 테이블이 없을 수 있으므로 에러 무시
-        console.log(
-          "오늘 조회수 조회 실패 (테이블이 없을 수 있음):",
-          viewError.message
-        );
       }
 
       const result = {
@@ -1405,7 +1351,6 @@ class ProductManager {
         todayViews: todayViews,
       };
 
-      console.log("상품 통계 조회 완료:", result);
       return result;
     } catch (error) {
       console.error("상품 통계 조회 오류:", error);
@@ -1427,7 +1372,6 @@ class ProductManager {
    */
   async getTodayViewsDetail() {
     try {
-      console.log("오늘 조회수 상세 정보 조회 시작...");
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -1456,8 +1400,6 @@ class ProductManager {
         console.error("오늘 조회수 분석 데이터 조회 오류:", analyticsError);
         throw new Error(`Analytics query error: ${analyticsError.message}`);
       }
-
-      console.log(`오늘 조회 이벤트 ${todayAnalytics?.length || 0}개 발견`);
 
       // 상품별 조회수 집계
       const productViewsMap = new Map();
@@ -1508,11 +1450,6 @@ class ProductManager {
         products,
       };
 
-      console.log("오늘 조회수 상세 정보 조회 완료:", {
-        totalViews: result.totalViews,
-        productsCount: result.products.length,
-      });
-
       return result;
     } catch (error) {
       console.error("오늘 조회수 상세 정보 조회 오류:", error);
@@ -1554,7 +1491,6 @@ class ProductManager {
    */
   async getCategoryStats() {
     try {
-      console.log("ProductManager.getCategoryStats - 시작");
       const { data, error } = await supabaseAdmin
         .from("products")
         .select("category, status, view_count, purchase_count");
@@ -1566,8 +1502,6 @@ class ProductManager {
         );
         throw new Error(`Database error: ${error.message}`);
       }
-
-      console.log("ProductManager.getCategoryStats - 조회된 데이터:", data);
 
       // 카테고리별 집계
       const categoryStats = {};
@@ -1596,7 +1530,6 @@ class ProductManager {
       });
 
       const result = Object.values(categoryStats);
-      console.log("ProductManager.getCategoryStats - 최종 결과:", result);
       return result;
     } catch (error) {
       console.error("ProductManager.getCategoryStats error:", error);
@@ -2091,7 +2024,6 @@ class ProductManager {
       // 캐시에서 먼저 확인
       const cachedData = this.cache.get("products", "event");
       if (cachedData) {
-        console.log("이벤트 상품 캐시에서 로드됨:", cachedData.length, "개");
         return {
           success: true,
           data: cachedData,
@@ -2118,7 +2050,6 @@ class ProductManager {
       let finalProducts = eventProducts || [];
       
       if (finalProducts.length === 0) {
-        console.log("이벤트 상품이 없어 할인 상품을 대체로 사용");
         
         // 할인율 10% 이상인 상품들을 이벤트 상품으로 표시
         const { data: allProducts, error: allError } = await supabaseAdmin
@@ -2148,8 +2079,6 @@ class ProductManager {
 
       // 캐시에 저장 (10분)
       this.cache.set("products", "event", sortedProducts, {}, 600);
-
-      console.log("이벤트 상품 로드됨:", sortedProducts.length, "개");
 
       return {
         success: true,

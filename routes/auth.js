@@ -40,13 +40,6 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 
 // 환경변수 확인 및 로깅 (프로덕션에서는 간단히만)
-if (process.env.NODE_ENV !== 'production') {
-  console.log('Supabase 설정 확인:');
-  console.log('- SUPABASE_URL:', supabaseUrl ? '설정됨' : '설정되지 않음');
-  console.log('- SUPABASE_KEY:', supabaseKey ? '설정됨' : '설정되지 않음');
-  console.log('- NODE_ENV:', process.env.NODE_ENV);
-  console.log('- RENDER:', process.env.RENDER);
-}
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Supabase 환경변수가 설정되지 않았습니다!');
@@ -205,22 +198,14 @@ router.post("/signup", async (req, res) => {
 
 // 이메일 기반 로그인 (Supabase)
 router.post("/login", async (req, res) => {
-  const startTime = Date.now();
   
   try {
     const { email, password } = req.body;
     
     // 로그인 시도 로그 (개발 환경에서만)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('로그인 시도:', {
-        email: email ? '***설정됨***' : '설정되지 않음',
-        passwordLength: password ? password.length : 0
-      });
-    }
-    
+
     // 입력값 검증
     if (typeof email !== 'string' || !email.trim() || typeof password !== 'string' || !password) {
-      console.log('로그인 실패: 입력값 누락');
       return res.status(400).json({ 
         success: false, 
         error: "이메일과 비밀번호를 입력하세요." 
@@ -307,19 +292,13 @@ router.post("/login", async (req, res) => {
       user: responseUser 
     });
 
-
   } catch (err) {
-    const duration = Date.now() - startTime;
     console.error('Login error:', err);
-    console.log(`로그인 실패 - 소요시간: ${duration}ms`);
     
     res.status(500).json({ 
       success: false, 
       error: "서버 오류가 발생했습니다." 
     });
-  } finally {
-    const duration = Date.now() - startTime;
-    console.log(`로그인 처리 완료 - 소요시간: ${duration}ms`);
   }
 });
 
@@ -427,13 +406,7 @@ router.post('/sync-email-user', async (req, res) => {
 router.post("/update-password", async (req, res) => {
   try {
     const { accessToken, refreshToken, newPassword } = req.body;
-    
-    console.log('비밀번호 업데이트 요청:', {
-      hasAccessToken: !!accessToken,
-      hasRefreshToken: !!refreshToken,
-      passwordLength: newPassword ? newPassword.length : 0
-    });
-    
+
     if (typeof accessToken !== 'string' || !accessToken || typeof refreshToken !== 'string' || !refreshToken || typeof newPassword !== 'string' || !newPassword) {
       return res.status(400).json({ 
         success: false, 
@@ -466,11 +439,6 @@ router.post("/update-password", async (req, res) => {
       });
     }
 
-    console.log('세션 설정 성공:', {
-      userId: sessionData.user?.id,
-      email: sessionData.user?.email
-    });
-
     // 비밀번호 업데이트
     const { data: updateData, error: updateError } = await tempSupabase.auth.updateUser({
       password: newPassword
@@ -483,11 +451,6 @@ router.post("/update-password", async (req, res) => {
         error: "비밀번호 변경 중 오류가 발생했습니다." 
       });
     }
-
-    console.log('비밀번호 업데이트 성공:', {
-      userId: updateData.user?.id,
-      email: updateData.user?.email
-    });
 
     res.json({ 
       success: true, 
@@ -562,7 +525,6 @@ router.post("/google", async (req, res) => {
           console.error("Supabase Auth 사용자 생성 오류:", supabaseError);
         } else {
           user.supabaseId = supabaseUser.user.id;
-          console.log("Supabase Auth 사용자 생성 성공:", supabaseUser.user.id);
           
           // 2. Supabase users 테이블에 사용자 정보 저장
           const { error: tableError } = await supabase
@@ -581,8 +543,6 @@ router.post("/google", async (req, res) => {
           
           if (tableError) {
             console.error("Supabase users 테이블 저장 오류:", tableError);
-          } else {
-            console.log("Supabase users 테이블 저장 성공");
           }
         }
       } catch (supabaseErr) {
@@ -590,7 +550,6 @@ router.post("/google", async (req, res) => {
       }
       
       user = saveAuthUser(user);
-      console.log("새 구글 사용자 생성 (UUID):", user.id);
     } else {
       // 기존 사용자 정보 업데이트
       user.name = name || user.name;
@@ -615,8 +574,6 @@ router.post("/google", async (req, res) => {
           
           if (updateError) {
             console.error("Supabase Auth 사용자 업데이트 오류:", updateError);
-          } else {
-            console.log("Supabase Auth 사용자 정보 업데이트 성공");
           }
           
           // 2. Supabase users 테이블 업데이트
@@ -631,8 +588,6 @@ router.post("/google", async (req, res) => {
           
           if (tableUpdateError) {
             console.error("Supabase users 테이블 업데이트 오류:", tableUpdateError);
-          } else {
-            console.log("Supabase users 테이블 업데이트 성공");
           }
         } catch (updateErr) {
           console.error("Supabase 업데이트 연동 오류:", updateErr);
@@ -679,7 +634,6 @@ router.post("/kakao", async (req, res) => {
     // 인증 코드가 있으면 액세스 토큰으로 교환
     if (code && !accessToken) {
       const redirectUri = getKakaoRedirectUri(req);
-      console.log("카카오 토큰 교환 - Redirect URI:", redirectUri);
       
       const tokenResponse = await axios.post(
         "https://kauth.kakao.com/oauth/token",
@@ -737,7 +691,6 @@ router.post("/kakao", async (req, res) => {
         createdAt: new Date().toISOString(),
       };
       user = saveAuthUser(user);
-      console.log("새 카카오 사용자 생성 (UUID):", user.id);
     } else {
       // 기존 사용자 정보 업데이트
       user.name = nickname || user.name;
@@ -809,13 +762,8 @@ router.get("/kakao/callback", async (req, res) => {
       `);
     }
 
-    
     // 리다이렉트 URI 생성
     const redirectUri = getKakaoRedirectUri(req);
-    console.log("Redirect URI:", redirectUri);
-    console.log("Request protocol:", req.protocol);
-    console.log("X-Forwarded-Proto:", req.get('X-Forwarded-Proto'));
-    console.log("Host:", req.get("host"));
 
     // 직접 토큰 교환 및 사용자 정보 조회
     const axios = require("axios");
@@ -837,7 +785,6 @@ router.get("/kakao/callback", async (req, res) => {
     );
 
     const accessToken = tokenResponse.data.access_token;
-    console.log("Got access token:", accessToken ? "✓" : "✗");
 
     // 2. 카카오 사용자 정보 조회
     const userInfoResponse = await axios.get(
@@ -856,19 +803,11 @@ router.get("/kakao/callback", async (req, res) => {
     const nickname = kakaoUser.kakao_account?.profile?.nickname;
     const profileImage = kakaoUser.kakao_account?.profile?.profile_image_url;
 
-    console.log("Kakao user info:", {
-      kakaoId,
-      nickname,
-      email: email ? "✓" : "✗",
-    });
-
     // 3. 사용자 데이터 처리
     const users = readUsers();
     let user = users.find((u) => u.kakaoId === kakaoId);
     
     // 디버깅: 사용자 검색 로그
-    console.log("카카오 ID로 사용자 검색:", kakaoId);
-    console.log("기존 사용자들:", users.map(u => ({ id: u.id, kakaoId: u.kakaoId, email: u.email })));
 
     if (!user) {
       // 새 사용자 생성 - UUID 할당
@@ -900,7 +839,6 @@ router.get("/kakao/callback", async (req, res) => {
            console.error("Supabase Auth 사용자 생성 오류:", supabaseError);
          } else {
            user.supabaseId = supabaseUser.user.id;
-           console.log("Supabase Auth 사용자 생성 성공:", supabaseUser.user.id);
            
            // 2. Supabase users 테이블에 사용자 정보 저장
            const { error: tableError } = await supabase
@@ -919,8 +857,6 @@ router.get("/kakao/callback", async (req, res) => {
            
            if (tableError) {
              console.error("Supabase users 테이블 저장 오류:", tableError);
-           } else {
-             console.log("Supabase users 테이블 저장 성공");
            }
          }
        } catch (supabaseErr) {
@@ -928,7 +864,6 @@ router.get("/kakao/callback", async (req, res) => {
        }
       
       user = saveAuthUser(user);
-      console.log("Created new kakao user (UUID):", user.id);
     } else {
       // 기존 사용자 정보 업데이트
       user.name = nickname || user.name;
@@ -953,8 +888,6 @@ router.get("/kakao/callback", async (req, res) => {
            
            if (updateError) {
              console.error("Supabase Auth 사용자 업데이트 오류:", updateError);
-           } else {
-             console.log("Supabase Auth 사용자 정보 업데이트 성공");
            }
            
            // 2. Supabase users 테이블 업데이트
@@ -969,8 +902,6 @@ router.get("/kakao/callback", async (req, res) => {
            
            if (tableUpdateError) {
              console.error("Supabase users 테이블 업데이트 오류:", tableUpdateError);
-           } else {
-             console.log("Supabase users 테이블 업데이트 성공");
            }
          } catch (updateErr) {
            console.error("Supabase 업데이트 연동 오류:", updateErr);
@@ -978,7 +909,6 @@ router.get("/kakao/callback", async (req, res) => {
        }
       
       user = saveAuthUser(user);
-      console.log("Updated existing kakao user:", user.id);
     }
 
     // 4. 세션에 사용자 정보 저장
@@ -991,7 +921,6 @@ router.get("/kakao/callback", async (req, res) => {
       isAdmin: user.isAdmin || false,
       role: user.role || null
     });
-
 
     // 5. 팝업에서 부모창으로 메시지 전송 후 닫기 또는 현재 창에서 리다이렉트
     res.send(renderOAuthSuccess(req.session.user));
@@ -1055,7 +984,6 @@ router.get("/me", (req, res) => {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
       // 토큰 검증 로직 (필요시 구현)
-      console.log('Authorization 헤더 발견:', token);
     }
     
     res.json({ loggedIn: false });
@@ -1308,7 +1236,6 @@ router.post("/naver", async (req, res) => {
         createdAt: new Date().toISOString(),
       };
       user = saveAuthUser(user);
-      console.log("새 네이버 사용자 생성 (UUID):", user.id);
     } else {
       // 기존 사용자 정보 업데이트
       user.name = nickname || user.name;
@@ -1364,15 +1291,7 @@ router.get("/check-admin", (req, res) => {
   const isAdmin = user.role === 'admin';
   
   // 관리자 권한 확인 (개발 환경에서만 로그)
-  if (process.env.NODE_ENV === 'development') {
-    console.log('관리자 권한 확인:', {
-      userId: user.id,
-      username: user.username,
-      role: user.role,
-      isAdmin: isAdmin
-    });
-  }
-  
+
   return res.json({ 
     success: true, 
     isAdmin, 
@@ -1413,12 +1332,6 @@ router.get("/naver/callback", async (req, res) => {
       `);
     }
 
-    console.log("Using NAVER_CLIENT_ID:", NAVER_CLIENT_ID);
-    console.log(
-      "Redirect URI:",
-      `${req.protocol}://${req.get("host")}/api/auth/naver/callback`
-    );
-
     // 직접 토큰 교환 및 사용자 정보 조회
     const axios = require("axios");
 
@@ -1441,7 +1354,6 @@ router.get("/naver/callback", async (req, res) => {
     );
 
     const accessToken = tokenResponse.data.access_token;
-    console.log("Got access token:", accessToken ? "✓" : "✗");
 
     // 2. 네이버 사용자 정보 조회
     const userInfoResponse = await axios.get(
@@ -1462,12 +1374,6 @@ router.get("/naver/callback", async (req, res) => {
     const email = naverUser.email;
     const nickname = naverUser.nickname || naverUser.name;
     const profileImage = naverUser.profile_image;
-
-    console.log("Naver user info:", {
-      naverId,
-      nickname,
-      email: email ? "✓" : "✗",
-    });
 
     // 3. 사용자 데이터 처리
     const users = readUsers();
@@ -1503,7 +1409,6 @@ router.get("/naver/callback", async (req, res) => {
            console.error("Supabase Auth 사용자 생성 오류:", supabaseError);
          } else {
            user.supabaseId = supabaseUser.user.id;
-           console.log("Supabase Auth 사용자 생성 성공:", supabaseUser.user.id);
            
            // 2. Supabase users 테이블에 사용자 정보 저장
            const { error: tableError } = await supabase
@@ -1522,8 +1427,6 @@ router.get("/naver/callback", async (req, res) => {
            
            if (tableError) {
              console.error("Supabase users 테이블 저장 오류:", tableError);
-           } else {
-             console.log("Supabase users 테이블 저장 성공");
            }
          }
        } catch (supabaseErr) {
@@ -1531,7 +1434,6 @@ router.get("/naver/callback", async (req, res) => {
        }
       
       user = saveAuthUser(user);
-      console.log("Created new naver user (UUID):", user.id);
     } else {
       // 기존 사용자 정보 업데이트
       user.name = nickname || user.name;
@@ -1556,8 +1458,6 @@ router.get("/naver/callback", async (req, res) => {
            
            if (updateError) {
              console.error("Supabase Auth 사용자 업데이트 오류:", updateError);
-           } else {
-             console.log("Supabase Auth 사용자 정보 업데이트 성공");
            }
            
            // 2. Supabase users 테이블 업데이트
@@ -1572,8 +1472,6 @@ router.get("/naver/callback", async (req, res) => {
            
            if (tableUpdateError) {
              console.error("Supabase users 테이블 업데이트 오류:", tableUpdateError);
-           } else {
-             console.log("Supabase users 테이블 업데이트 성공");
            }
          } catch (updateErr) {
            console.error("Supabase 업데이트 연동 오류:", updateErr);
@@ -1581,7 +1479,6 @@ router.get("/naver/callback", async (req, res) => {
        }
       
       user = saveAuthUser(user);
-      console.log("Updated existing naver user:", user.id);
     }
 
     // 4. 세션에 사용자 정보 저장
@@ -1594,7 +1491,6 @@ router.get("/naver/callback", async (req, res) => {
       isAdmin: user.isAdmin || false,
       role: user.role || null
     });
-
 
     // 5. 팝업에서 부모창으로 메시지 전송 후 닫기 또는 현재 창에서 리다이렉트
     res.send(renderOAuthSuccess(req.session.user));

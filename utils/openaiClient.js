@@ -44,7 +44,7 @@ function extractOutputText(response) {
     return text;
 }
 
-async function generateText(prompt, { signal, timeout = 60000, maxOutputTokens = 16384, json = false } = {}) {
+async function generateText(prompt, { signal, timeout = 60000, maxOutputTokens = 16384, json = false, schema, schemaName = 'result', instructions } = {}) {
     if (!isOpenAIConfigured()) {
         throw new AIServiceError('AI 서비스가 설정되지 않았습니다.', 'AI_NOT_CONFIGURED', 503);
     }
@@ -57,10 +57,12 @@ async function generateText(prompt, { signal, timeout = 60000, maxOutputTokens =
         const { data } = await axios.post(RESPONSES_URL, {
             model,
             input: prompt,
+            ...(instructions ? { instructions } : {}),
             reasoning: { effort: 'none' },
             store: false,
             max_output_tokens: maxOutputTokens,
-            ...(json ? { text: { format: { type: 'json_object' } } } : {}),
+            ...(schema ? { text: { format: { type: 'json_schema', name: schemaName, strict: true, schema } } }
+                : json ? { text: { format: { type: 'json_object' } } } : {}),
         }, {
             headers: {
                 Authorization: `Bearer ${process.env.OPENAI_API_KEY.trim()}`,

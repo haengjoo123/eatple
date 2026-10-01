@@ -75,9 +75,6 @@ function getMockNutritionData(productName) {
     return foodName.includes(searchKeyword);
   });
 
-  console.log(
-    `[foodNutritionApi] 목업 데이터 반환: ${productName} (${filteredData.length}개 결과)`
-  );
   return filteredData;
 }
 
@@ -146,12 +143,6 @@ async function searchWithTerm(
       const url = apiUrls[urlIndex];
 
       try {
-        console.log(
-          `[foodNutritionApi] API 요청 시도 ${attempt}/${maxRetries} (URL ${
-            urlIndex + 1
-          }/${apiUrls.length}): ${productName}`
-        );
-        console.log(`[foodNutritionApi] 사용 URL: ${url}`);
 
         const params = {
           serviceKey: decodeURIComponent(serviceKey), // 디코딩된 키 사용
@@ -160,14 +151,6 @@ async function searchWithTerm(
           type: "json",
           foodNm: searchTerm, // 전달받은 검색어 사용
         };
-
-        console.log("[foodNutritionApi] 요청 파라미터:", {
-          url,
-          params: {
-            ...params,
-            serviceKey: serviceKey.substring(0, 10) + "...", // 보안을 위해 일부만 로깅
-          },
-        });
 
         const response = await axios.get(url, {
           params,
@@ -186,12 +169,6 @@ async function searchWithTerm(
           },
         });
 
-        console.log("[foodNutritionApi] 응답 상태 코드:", response.status);
-        console.log(
-          "[foodNutritionApi] 응답 헤더:",
-          response.headers["content-type"]
-        );
-
         const { data } = response;
 
         // 응답이 문자열인 경우 JSON 파싱 시도
@@ -204,18 +181,9 @@ async function searchWithTerm(
               "[foodNutritionApi] JSON 파싱 오류:",
               parseErr.message
             );
-            console.log(
-              "[foodNutritionApi] 원본 응답 (처음 500자):",
-              data.substring(0, 500)
-            );
             continue; // 다음 URL 시도
           }
         }
-
-        console.log(
-          "[foodNutritionApi] 파싱된 응답 구조:",
-          Object.keys(parsedData)
-        );
 
         // API 응답 구조 검증 및 파싱
         if (!parsedData) {
@@ -227,10 +195,6 @@ async function searchWithTerm(
         if (parsedData.response) {
           const header = parsedData.response.header;
           const body = parsedData.response.body;
-
-          console.log(
-            `[foodNutritionApi] 응답 코드: ${header?.resultCode}, 메시지: ${header?.resultMsg}`
-          );
 
           if (header?.resultCode !== "00") {
             console.error(
@@ -261,20 +225,12 @@ async function searchWithTerm(
           const items = body?.items || body?.item || [];
           const itemArray = Array.isArray(items) ? items : items ? [items] : [];
 
-          console.log(
-            `[foodNutritionApi] API에서 ${itemArray.length}개 결과 수신`
-          );
-
           // 검색어를 포함하는 제품들을 필터링 (부분 일치 검색 지원)
           const searchKeyword = productName.toLowerCase().trim();
           const filteredItems = itemArray.filter((item) => {
             const foodName = (item.foodNm || item.prdlstNm || "").toLowerCase();
             return foodName.includes(searchKeyword);
           });
-
-          console.log(
-            `[foodNutritionApi] 부분 일치 필터링 후 ${filteredItems.length}개 결과 반환`
-          );
 
           return filteredItems.map((item) => ({
             식품명: item.foodNm || item.prdlstNm || "",
@@ -294,9 +250,6 @@ async function searchWithTerm(
         }
         // 직접 배열이 반환되는 경우
         else if (Array.isArray(parsedData)) {
-          console.log(
-            `[foodNutritionApi] API에서 직접 배열로 ${parsedData.length}개 결과 수신`
-          );
 
           // 검색어를 포함하는 제품들을 필터링 (부분 일치 검색 지원)
           const searchKeyword = productName.toLowerCase().trim();
@@ -304,10 +257,6 @@ async function searchWithTerm(
             const foodName = (item.foodNm || item.prdlstNm || "").toLowerCase();
             return foodName.includes(searchKeyword);
           });
-
-          console.log(
-            `[foodNutritionApi] 부분 일치 필터링 후 ${filteredItems.length}개 결과 반환`
-          );
 
           return filteredItems.map((item) => ({
             식품명: item.foodNm || item.prdlstNm || "",
@@ -330,10 +279,6 @@ async function searchWithTerm(
           console.error(
             "[foodNutritionApi] 예상치 못한 응답 구조:",
             parsedData
-          );
-          console.log(
-            "[foodNutritionApi] 전체 응답:",
-            JSON.stringify(parsedData, null, 2)
           );
           continue; // 다음 URL 시도
         }
@@ -383,15 +328,11 @@ async function searchWithTerm(
 
             // 마지막 URL이 아니면 다음 URL 시도
             if (urlIndex < apiUrls.length - 1) {
-              console.log(`[foodNutritionApi] 다음 URL 시도...`);
               continue;
             }
 
             // 모든 URL을 시도했고 아직 재시도 횟수가 남아있으면 재시도
             if (attempt < maxRetries) {
-              console.log(
-                `[foodNutritionApi] ${retryDelay / 1000}초 후 재시도...`
-              );
               await new Promise((resolve) => setTimeout(resolve, retryDelay));
               break; // 다음 재시도로
             }
@@ -401,14 +342,10 @@ async function searchWithTerm(
 
           // 마지막 URL이 아니면 다음 URL 시도
           if (urlIndex < apiUrls.length - 1) {
-            console.log(`[foodNutritionApi] 다음 URL 시도...`);
             continue;
           }
 
           if (attempt < maxRetries) {
-            console.log(
-              `[foodNutritionApi] ${retryDelay / 1000}초 후 재시도...`
-            );
             await new Promise((resolve) => setTimeout(resolve, retryDelay));
             break; // 다음 재시도로
           }
@@ -426,9 +363,6 @@ async function searchWithTerm(
 
           // 목업 데이터 사용 설정이 있으면 목업 데이터 반환
           if (useMockData) {
-            console.log(
-              "[foodNutritionApi] 목업 데이터 사용 설정이 활성화되어 목업 데이터를 반환합니다."
-            );
             return getMockNutritionData(productName);
           }
         }
@@ -438,9 +372,6 @@ async function searchWithTerm(
 
   // 목업 데이터 사용 설정이 있으면 목업 데이터 반환
   if (useMockData) {
-    console.log(
-      "[foodNutritionApi] API 호출 실패로 인해 목업 데이터를 반환합니다."
-    );
     return getMockNutritionData(productName);
   }
 
@@ -507,18 +438,11 @@ async function searchFoodNutrition(productName) {
     searchStrategies.push(productName.substring(0, 3)); // 첫 3글자
   }
 
-  console.log(`[foodNutritionApi] 검색 전략: ${searchStrategies.join(", ")}`);
-
   let allResults = [];
   const seenProducts = new Set(); // 중복 제거를 위한 Set
 
   for (let i = 0; i < searchStrategies.length; i++) {
     const searchTerm = searchStrategies[i];
-    console.log(
-      `[foodNutritionApi] 검색 전략 ${i + 1}/${
-        searchStrategies.length
-      }: "${searchTerm}"`
-    );
 
     try {
       const results = await searchWithTerm(
@@ -526,9 +450,6 @@ async function searchFoodNutrition(productName) {
         searchTerm,
         serviceKey,
         useMockData
-      );
-      console.log(
-        `[foodNutritionApi] 검색 전략 "${searchTerm}"으로 ${results.length}개 결과 발견`
       );
 
       // 중복 제거하면서 결과 누적
@@ -550,19 +471,11 @@ async function searchFoodNutrition(productName) {
   }
 
   if (allResults.length > 0) {
-    console.log(
-      `[foodNutritionApi] 총 ${allResults.length}개의 고유한 결과 발견`
-    );
     return allResults;
   }
 
-  console.log("[foodNutritionApi] 모든 검색 전략 실패");
-
   // 목업 데이터 사용 설정이 있으면 목업 데이터 반환
   if (useMockData) {
-    console.log(
-      "[foodNutritionApi] 목업 데이터 사용 설정이 활성화되어 목업 데이터를 반환합니다."
-    );
     return getMockNutritionData(productName);
   }
 

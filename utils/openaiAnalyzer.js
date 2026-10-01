@@ -1,3 +1,4 @@
+const { schemas, buildPrompt, buildInstructions, parseResult, PROMPT_VERSION } = require('./aiContracts');
 const { generateText, resolveOpenAIModel } = require("./openaiClient");
 
 class OpenAIAnalyzer {
@@ -42,7 +43,7 @@ class OpenAIAnalyzer {
      * @returns {Object} 분석 결과
      */
     async analyzeNutritionContent(content, sourceType = 'general') {
-        const cacheKey = `analysis_${resolveOpenAIModel()}_${this.hashString(content + sourceType)}`;
+        const cacheKey = `analysis_${PROMPT_VERSION}_${resolveOpenAIModel()}_${this.hashString(content + sourceType)}`;
 
         // 캐시 확인
         const cached = this.getFromCache(cacheKey);
@@ -54,9 +55,7 @@ class OpenAIAnalyzer {
 
         // Mock 모드 처리
         if (this.mockMode) {
-            if (process.env.LOG_LEVEL !== 'error' && process.env.OPENAI_LOG_LEVEL !== 'error') {
-                console.log('🔧 Mock 모드: 영양학 콘텐츠 분석 시뮬레이션');
-            }
+
             const mockResult = {
                 summary: `[Mock] ${sourceType} 소스의 영양학 콘텐츠 분석 결과입니다.`,
                 keyPoints: ['핵심 영양 정보 1', '핵심 영양 정보 2', '핵심 영양 정보 3'],
@@ -77,7 +76,7 @@ class OpenAIAnalyzer {
 
             const prompt = this.buildAnalysisPrompt(content, sourceType);
             const result = await this.executeWithRetry(() => generateText(prompt, {
-                timeout: this.config.requestTimeout, maxOutputTokens: 2048
+                timeout: this.config.requestTimeout, maxOutputTokens: 4096, schema: schemas.analysis, schemaName: 'analysis', instructions: buildInstructions('analysis')
             }));
             const analysisText = result.text;
             const parsedResult = this.parseAnalysisResponse(analysisText);
@@ -98,15 +97,13 @@ class OpenAIAnalyzer {
         }
     }
 
-
-
     /**
      * 콘텐츠에서 핵심 영양 정보 추출 (최적화 버전)
      * @param {string} content - 원본 콘텐츠
      * @returns {Object} 추출된 영양 정보
      */
     async extractNutritionFacts(content) {
-        const cacheKey = `nutrition_${resolveOpenAIModel()}_${this.hashString(content)}`;
+        const cacheKey = `nutrition_${PROMPT_VERSION}_${resolveOpenAIModel()}_${this.hashString(content)}`;
 
         // 캐시 확인
         const cached = this.getFromCache(cacheKey);
@@ -118,9 +115,7 @@ class OpenAIAnalyzer {
 
         // Mock 모드 처리
         if (this.mockMode) {
-            if (process.env.LOG_LEVEL !== 'error' && process.env.OPENAI_LOG_LEVEL !== 'error') {
-                console.log('🔧 Mock 모드: 영양 정보 추출 시뮬레이션');
-            }
+
             const mockNutritionFacts = {
                 nutrients: ["비타민D", "칼슘", "단백질", "오메가3"],
                 benefits: ["뼈 건강 개선", "면역력 강화", "심장 건강"],
@@ -139,41 +134,12 @@ class OpenAIAnalyzer {
             // 요청 제한 확인
             await this.waitForRateLimit();
 
-            const prompt = `
-다음 콘텐츠에서 영양학적 핵심 정보를 추출하여 JSON 형태로 반환해주세요.
-
-콘텐츠:
-${content}
-
-다음 형태의 JSON으로 응답해주세요:
-{
-  "nutrients": ["비타민D", "칼슘", "단백질"],
-  "benefits": ["뼈 건강 개선", "면역력 강화"],
-  "recommendations": ["하루 1000mg 섭취 권장"],
-  "warnings": ["과다 섭취 시 부작용 가능"],
-  "targetGroup": ["성인", "노인", "임산부"]
-}
-`;
-
+            const prompt = buildPrompt('facts', { content });
             const result = await this.executeWithRetry(() => generateText(prompt, {
-                timeout: this.config.requestTimeout, maxOutputTokens: 2048
+                timeout: this.config.requestTimeout, maxOutputTokens: 4096,
+                schema: schemas.facts, schemaName: 'facts', instructions: buildInstructions('facts')
             }));
-            const responseText = result.text;
-
-            // JSON 파싱 시도
-            let parsedResult;
-            try {
-                parsedResult = JSON.parse(responseText);
-            } catch (parseError) {
-                // JSON 파싱 실패 시 기본 구조 반환
-                parsedResult = {
-                    nutrients: [],
-                    benefits: [],
-                    recommendations: [],
-                    warnings: [],
-                    targetGroup: []
-                };
-            }
+            const parsedResult = parseResult(result.text, 'facts');
 
             // 결과 캐싱
             this.addToCache(cacheKey, parsedResult);
@@ -197,7 +163,7 @@ ${content}
      * @returns {Array} 생성된 태그 배열
      */
     async generateTags(content) {
-        const cacheKey = `tags_${resolveOpenAIModel()}_${this.hashString(content)}`;
+        const cacheKey = `tags_${PROMPT_VERSION}_${resolveOpenAIModel()}_${this.hashString(content)}`;
 
         // 캐시 확인
         const cached = this.getFromCache(cacheKey);
@@ -209,9 +175,7 @@ ${content}
 
         // Mock 모드 처리
         if (this.mockMode) {
-            if (process.env.LOG_LEVEL !== 'error' && process.env.OPENAI_LOG_LEVEL !== 'error') {
-                console.log('🔧 Mock 모드: 태그 생성 시뮬레이션');
-            }
+
             const mockTags = ['비타민D', '칼슘', '뼈건강', '면역력', '영양제', '건강식품', '운동', '건강관리'];
             this.addToCache(cacheKey, mockTags);
             this.updatePerformanceMetrics(100, true);
@@ -224,26 +188,12 @@ ${content}
             // 요청 제한 확인
             await this.waitForRateLimit();
 
-            const prompt = `
-다음 영양학/건강 콘텐츠를 분석하여 관련 태그를 5-8개 생성해주세요.
-태그는 한국어로, 쉼표로 구분하여 나열해주세요.
-
-콘텐츠:
-${content}
-
-예시: 비타민D, 칼슘, 뼈건강, 면역력, 영양제, 건강식품
-`;
-
+            const prompt = buildPrompt('tags', { content });
             const result = await this.executeWithRetry(() => generateText(prompt, {
-                timeout: this.config.requestTimeout, maxOutputTokens: 2048
+                timeout: this.config.requestTimeout, maxOutputTokens: 512,
+                schema: schemas.tags, schemaName: 'tags', instructions: buildInstructions('tags')
             }));
-            const tagsText = result.text;
-
-            // 쉼표로 분리하고 정리
-            const tags = tagsText.split(',')
-                .map(tag => tag.trim())
-                .filter(tag => tag.length > 0)
-                .slice(0, 8); // 최대 8개로 제한
+            const tags = [...new Set(parseResult(result.text, 'tags').tags.map(tag => tag.trim()).filter(Boolean))];
 
             // 결과 캐싱
             this.addToCache(cacheKey, tags);
@@ -271,15 +221,8 @@ ${content}
         const results = [];
         const batches = this.chunkArray(contents, this.config.batchSize);
 
-        if (process.env.LOG_LEVEL !== 'error' && process.env.OPENAI_LOG_LEVEL !== 'error') {
-            console.log(`Processing ${contents.length} contents in ${batches.length} batches...`);
-        }
-
         for (let i = 0; i < batches.length; i++) {
             const batch = batches[i];
-            if (process.env.LOG_LEVEL !== 'error' && process.env.OPENAI_LOG_LEVEL !== 'error') {
-                console.log(`Processing batch ${i + 1}/${batches.length}...`);
-            }
 
             // 배치 내 병렬 처리
             const batchPromises = batch.map(async (content, index) => {
@@ -514,9 +457,7 @@ ${content}
      */
     updateConfig(newConfig) {
         this.config = { ...this.config, ...newConfig };
-        if (process.env.LOG_LEVEL !== 'error' && process.env.OPENAI_LOG_LEVEL !== 'error') {
-            console.log('OpenAI Analyzer configuration updated:', this.config);
-        }
+
     }
 
     /**
@@ -524,9 +465,7 @@ ${content}
      */
     clearCache() {
         this.responseCache.clear();
-        if (process.env.LOG_LEVEL !== 'error' && process.env.OPENAI_LOG_LEVEL !== 'error') {
-            console.log('OpenAI Analyzer cache cleared');
-        }
+
     }
 
     /**
@@ -536,29 +475,7 @@ ${content}
      * @returns {string} 생성된 프롬프트
      */
     buildAnalysisPrompt(content, sourceType) {
-        const basePrompt = `
-다음 ${this.getSourceTypeDescription(sourceType)} 콘텐츠를 분석하여 다음 정보를 JSON 형태로 제공해주세요:
-
-콘텐츠:
-${content}
-
-다음 형태의 JSON으로 응답해주세요:
-{
-  "title": "콘텐츠의 핵심 제목 (한국어)",
-  "summary": "3-4문장의 핵심 요약 (한국어, 일반인 이해 가능)",
-  "keyPoints": ["핵심 포인트 1", "핵심 포인트 2", "핵심 포인트 3"],
-  "nutritionFacts": {
-    "nutrients": ["관련 영양소들"],
-    "benefits": ["건강상 이점들"],
-    "recommendations": ["권장사항들"]
-  },
-  "tags": ["태그1", "태그2", "태그3"],
-  "category": "건강 카테고리 중 하나 (brain_health, cancer, cardiovascular, blood_sugar, ent, energy_fatigue, eye_health, fat_loss, gut_health, anti_aging, immunity, bone_joint, kidney_urinary, liver_health, lung_respiratory, mens_health, womens_health, mental_health, muscle_exercise, oral_health, pain, pregnancy_parenting, skin_hair, sleep)",
-  "targetAudience": ["대상 독자층"],
-  "credibilityIndicators": ["신뢰성 지표들"]
-}
-`;
-        return basePrompt;
+        return buildPrompt('analysis', { content, sourceType });
     }
 
     /**
@@ -582,46 +499,9 @@ ${content}
      * @returns {Object} 파싱된 분석 결과
      */
     parseAnalysisResponse(responseText) {
-        try {
-            // JSON 블록 추출 시도
-            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                return JSON.parse(jsonMatch[0]);
-            }
-
-            // JSON 파싱 실패 시 기본 구조 반환
-            return {
-                title: "분석 결과",
-                summary: responseText.substring(0, 200) + "...",
-                keyPoints: [],
-                nutritionFacts: {
-                    nutrients: [],
-                    benefits: [],
-                    recommendations: []
-                },
-                tags: [],
-                category: "general",
-                targetAudience: [],
-                credibilityIndicators: []
-            };
-        } catch (error) {
-            console.error('Response parsing error:', error);
-            return {
-                title: "분석 오류",
-                summary: "콘텐츠 분석 중 오류가 발생했습니다.",
-                keyPoints: [],
-                nutritionFacts: {
-                    nutrients: [],
-                    benefits: [],
-                    recommendations: []
-                },
-                tags: [],
-                category: "general",
-                targetAudience: [],
-                credibilityIndicators: []
-            };
-        }
+        return parseResult(responseText, 'analysis');
     }
+
 }
 
 module.exports = OpenAIAnalyzer;

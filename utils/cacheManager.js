@@ -116,7 +116,6 @@ class CacheManager {
         
         if (namespaceKeys.length > 0) {
             this.memoryCache.del(namespaceKeys);
-            console.log(`Cleared ${namespaceKeys.length} keys from namespace: ${namespace}`);
         }
         
         return namespaceKeys.length;
@@ -128,7 +127,6 @@ class CacheManager {
     clearAll() {
         const keyCount = this.memoryCache.keys().length;
         this.memoryCache.flushAll();
-        console.log(`Cleared all cache (${keyCount} keys)`);
         return keyCount;
     }
 
@@ -230,7 +228,6 @@ class CacheManager {
         const keys = this.getKeysMatching(pattern);
         if (keys.length > 0) {
             this.memoryCache.del(keys);
-            console.log(`Invalidated ${keys.length} keys matching pattern: ${pattern}`);
         }
         return keys.length;
     }
@@ -239,7 +236,6 @@ class CacheManager {
      * Preload cache with data
      */
     async preload(namespace, dataLoader, identifiers = []) {
-        console.log(`Preloading cache for namespace: ${namespace}`);
         const results = [];
         
         for (const identifier of identifiers) {
@@ -270,7 +266,6 @@ class CacheManager {
             const refreshThreshold = originalTTL * 1000 * 0.25; // 25% of original TTL
             
             if (remainingTime < refreshThreshold) {
-                console.log(`Warming cache for ${key}`);
                 try {
                     const result = await asyncFunction();
                     this.set(namespace, identifier, result, params);
@@ -321,7 +316,6 @@ class CacheManager {
         const keysToRemove = keysWithTTL.slice(0, keys.length - maxKeys).map(item => item.key);
         this.memoryCache.del(keysToRemove);
         
-        console.log(`🧹 메모리 최적화: ${keysToRemove.length}개 키 제거 (현재: ${keys.length - keysToRemove.length}/${maxKeys})`);
         return keysToRemove.length;
     }
 
@@ -329,7 +323,6 @@ class CacheManager {
      * 긴급 메모리 최적화 (더 적극적인 정리)
      */
     emergencyOptimization() {
-        console.log('🚨 긴급 메모리 최적화 시작...');
         
         const keys = this.memoryCache.keys();
         const initialCount = keys.length;
@@ -342,21 +335,18 @@ class CacheManager {
         
         if (shortTermKeys.length > 0) {
             this.memoryCache.del(shortTermKeys);
-            console.log(`🗑️ 단기 캐시 ${shortTermKeys.length}개 정리`);
         }
         
         // 2. 검색 관련 캐시 정리
         const searchKeys = keys.filter(key => key.includes('search:') || key.includes('query:'));
         if (searchKeys.length > 0) {
             this.memoryCache.del(searchKeys);
-            console.log(`🔍 검색 캐시 ${searchKeys.length}개 정리`);
         }
         
         // 3. 통계 캐시 정리
         const statsKeys = keys.filter(key => key.includes('stats:') || key.includes('analytics:'));
         if (statsKeys.length > 0) {
             this.memoryCache.del(statsKeys);
-            console.log(`📊 통계 캐시 ${statsKeys.length}개 정리`);
         }
         
         // 4. 남은 키가 여전히 많으면 강제로 50% 제거
@@ -364,7 +354,6 @@ class CacheManager {
         if (remainingKeys.length > 200) {
             const halfKeys = remainingKeys.slice(0, Math.floor(remainingKeys.length / 2));
             this.memoryCache.del(halfKeys);
-            console.log(`⚡ 강제 정리: ${halfKeys.length}개 추가 제거`);
         }
         
         const finalCount = this.memoryCache.keys().length;
@@ -417,14 +406,12 @@ class CacheManager {
      * Cleanup method for periodic maintenance
      */
     cleanup() {
-        console.log('🧹 캐시 정리 시작...');
         
         // 메모리 최적화 실행
         const removedKeys = this.optimizeMemory(500);
         
         // 통계 정보 로그
         const stats = this.getStats();
-        console.log(`✅ 캐시 정리 완료 - 제거된 키: ${removedKeys}개, 현재 키: ${stats.totalKeys}개, 히트율: ${stats.hitRate}`);
         
         return {
             removedKeys,
@@ -437,7 +424,6 @@ class CacheManager {
      * 캐시 무효화 (긴급 메모리 정리용)
      */
     invalidateCache(type = 'all') {
-        console.log(`🗑️ 캐시 무효화 시작 - 타입: ${type}`);
         
         if (type === 'all') {
             // 전체 캐시 삭제
@@ -447,7 +433,6 @@ class CacheManager {
             // 통계 초기화
             this.stats.deletes += keyCount;
             
-            console.log(`✅ 전체 캐시 무효화 완료 - ${keyCount}개 키 삭제`);
             return keyCount;
         } else {
             // 특정 타입 캐시만 삭제
@@ -459,7 +444,6 @@ class CacheManager {
                 this.stats.deletes += targetKeys.length;
             }
             
-            console.log(`✅ ${type} 캐시 무효화 완료 - ${targetKeys.length}개 키 삭제`);
             return targetKeys.length;
         }
     }
