@@ -121,7 +121,7 @@ const supabaseNutritionDataManager = getSupabaseNutritionDataManager();
 
 // 추천 서비스 초기화
 const NutritionRecommendationService = require("./utils/nutritionRecommendationService");
-const recommendationService = new NutritionRecommendationService();
+const recommendationService = new NutritionRecommendationService(supabaseNutritionDataManager);
 
 // nutrition-info 라우터 초기화 (Supabase 사용)
 const nutritionInfoRouter = require("./routes/nutrition-info")(

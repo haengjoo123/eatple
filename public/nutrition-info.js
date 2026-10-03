@@ -132,6 +132,7 @@ class NutritionInfoManager {
 
     // 리소스 정리
     cleanup() {
+        if (this.loadController) this.loadController.abort();
         // EventSource 연결 종료
         if (this.currentEventSource) {
             this.currentEventSource.close();
@@ -407,18 +408,24 @@ class NutritionInfoManager {
     }
 
     async loadNutritionInfo() {
-        if (this.isLoading) return;
+        // Each new filter selection cancels the previous request.
+        if (this.loadController) this.loadController.abort();
+        const controller = new AbortController();
+        this.loadController = controller;
         this.isLoading = true;
         try {
-            await this.loadNutritionInfoFallback();
+            await this.loadNutritionInfoFallback(controller.signal);
         } finally {
-            this.isLoading = false;
+            if (this.loadController === controller) {
+                this.isLoading = false;
+                this.loadController = null;
+            }
         }
     }
 
     // 스트리밍 기능 제거됨
 
-    async loadNutritionInfoFallback() {
+    async loadNutritionInfoFallback(signal) {
         // 폴백에서도 스켈레톤 대신 간단한 로딩 표시
         this.showLoading();
 
@@ -432,7 +439,8 @@ class NutritionInfoManager {
             });
 
             const response = await fetch(`/api/nutrition-info?${params}`, {
-                credentials: 'include'
+                credentials: 'include',
+                signal
             });
 
             if (!response.ok) {
@@ -440,6 +448,7 @@ class NutritionInfoManager {
             }
 
             const result = await response.json();
+            if (signal?.aborted) return;
             
             if (result.success) {
                 await this.renderNutritionInfo(result.data, result.pagination);
@@ -447,6 +456,7 @@ class NutritionInfoManager {
                 throw new Error(result.error || '데이터를 불러오는데 실패했습니다.');
             }
         } catch (error) {
+            if (signal?.aborted || error.name === 'AbortError') return;
             console.error('영양 정보 로딩 오류:', error);
             this.showError(error.message);
         }

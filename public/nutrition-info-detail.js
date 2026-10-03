@@ -11,11 +11,6 @@ class NutritionInfoDetailManager {
             isBookmarked: false,
             isLiked: false
         };
-        // 클라이언트 캐시 설정 (SWR 전략)
-        // 왜: Supabase 응답 지연 시 사용자에게 즉시 콘텐츠를 보여주고, 백그라운드에서 최신화하기 위함
-        this.CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12시간 TTL
-        this.RECOMMENDATION_CACHE_TTL_MS = 30 * 60 * 1000; // 추천 정보 30분 TTL
-        
         // 영양정보 데이터
         this.nutritionInfo = null;
         
@@ -121,90 +116,28 @@ class NutritionInfoDetailManager {
 
 
     async loadNutritionInfoFallback() {
-        // 간단한 로딩 표시
         this.showLoading();
-
-        // 1) 클라이언트 캐시가 있으면 즉시 렌더 (SWR의 stale 단계)
-        const cacheKey = this.getCacheKey(this.nutritionInfoId);
-        const cached = this.readCache(cacheKey);
-        if (cached && cached.data && cached.data.title) {
-            // 클라이언트 캐시에서 조회
-            this.nutritionInfo = cached.data;
-            
-            // 캐시된 데이터로 점진적 렌더링 시작
-            await this.renderProgressively();
-        } else if (cached && cached.data && !cached.data.title) {
-            console.warn(`[CLIENT CACHE INVALID] 영양정보 ${this.nutritionInfoId} 클라이언트 캐시 데이터가 유효하지 않음`);
-            // 유효하지 않은 캐시 삭제
-            this.writeCache(cacheKey, null);
-        }
-
         try {
-            // 2) 로컬 서버 API 호출 (캐시 우선 처리됨)
-            const fetchOptions = { credentials: 'include', headers: {} };
-            if (cached && cached.etag) {
-                fetchOptions.headers['If-None-Match'] = cached.etag;
-            }
-            
-            // 로컬 서버 API 호출
-            const response = await fetch(`/api/nutrition-info/${this.nutritionInfoId}`, fetchOptions);
-
-            // 304 Not Modified는 정상 응답이므로 먼저 처리
-            if (response.status === 304 && cached && cached.data) {
-                // 변경 없음
-                // 304 응답 시에는 이미 캐시된 데이터로 렌더링 완료되었으므로 종료
-                return;
-            }
-
-            // 304가 아닌 경우에만 다른 에러 상태 확인
+            // Recheck publication status before rendering any previously viewed content.
+            const response = await fetch(`/api/nutrition-info/${this.nutritionInfoId}`, {
+                credentials: 'include',
+                cache: 'no-store'
+            });
             if (!response.ok) {
-                if (response.status === 404) {
-                    throw new Error('해당 영양 정보를 찾을 수 없습니다.');
-                }
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                throw new Error(response.status === 404
+                    ? '해당 영양 정보를 찾을 수 없습니다.'
+                    : `HTTP ${response.status}: ${response.statusText}`);
             }
-
             const result = await response.json();
-            
-            if (result.success && result.data) {
-                this.nutritionInfo = result.data;
-                
-                // 서버에서 캐시된 데이터인지 확인
-                if (result.cached) {
-                    // 서버 캐시에서 조회
-                } else {
-                    // Supabase에서 직접 조회
-                }
-                
-                // 클라이언트 캐시 업데이트
-                const etag = response.headers.get('ETag');
-                this.writeCache(cacheKey, {
-                    data: this.nutritionInfo,
-                    etag: etag || null,
-                    cachedAt: Date.now(),
-                    serverCached: result.cached || false
-                });
-                
-                // 렌더링 전 데이터 유효성 최종 확인
-                if (this.nutritionInfo && this.nutritionInfo.title) {
-                    // 새로운 데이터로 점진적 렌더링 (캐시에서 이미 렌더링했다면 업데이트)
-                    await this.renderProgressively();
-                } else {
-                    console.error('렌더링 실패: 영양정보 데이터가 유효하지 않음', this.nutritionInfo);
-                    this.showError('영양정보 데이터를 불러올 수 없습니다.');
-                }
-            } else {
-                throw new Error(result.error || '데이터를 불러오는데 실패했습니다.');
+            if (!result.success || !result.data?.title) {
+                throw new Error(result.error || '영양정보 데이터를 불러올 수 없습니다.');
             }
+            this.nutritionInfo = result.data;
+            await this.renderProgressively();
         } catch (error) {
+            this.nutritionInfo = null;
             console.error('영양 정보 상세 로딩 오류:', error);
-            if (!(cached && cached.data)) {
-                // 클라이언트 캐시도 없고 네트워크도 실패
-                this.showError(error.message);
-            } else {
-                // 클라이언트 캐시로 이미 보여주고 있는 상태라면 조용히 처리
-                // 네트워크 문제로 캐시 데이터를 표시 중
-            }
+            this.showError(error.message);
         }
     }
 
@@ -498,32 +431,6 @@ class NutritionInfoDetailManager {
         document.querySelector('.detail-actions').classList.add('progressive-fade-in');
     }
 
-    // ----- 캐시 유틸 -----
-    getCacheKey(id) {
-        return `nutritionInfoDetail:${id}`;
-    }
-
-    readCache(key) {
-        try {
-            const raw = localStorage.getItem(key);
-            if (!raw) return null;
-            const parsed = JSON.parse(raw);
-            // 왜: TTL 초과 시에도 SWR 특성상 우선 표시 후 재검증 위해 반환은 유지
-            return parsed;
-        } catch (_) {
-            return null;
-        }
-    }
-
-    writeCache(key, value) {
-        try {
-            // 저장 데이터는 { data, etag, cachedAt }
-            localStorage.setItem(key, JSON.stringify(value));
-        } catch (_) {
-            // 저장 실패 시 조용히 무시 (quota 등)
-        }
-    }
-
     async loadUserInteractionState() {
         try {
             const response = await fetch(`/api/nutrition-info/${this.nutritionInfoId}/interaction-status`, {
@@ -623,17 +530,6 @@ class NutritionInfoDetailManager {
 
     async loadRecommendedInfo() {
         try {
-            // 클라이언트 캐시에서 추천 정보 확인
-            const recKey = `nutritionInfoDetail:rec:${this.nutritionInfoId}`;
-            const cached = this.readCache(recKey);
-            if (cached && cached.data && cached.cachedAt && Date.now() - cached.cachedAt < this.RECOMMENDATION_CACHE_TTL_MS) {
-                // 추천 정보 클라이언트 캐시에서 조회
-                this.renderRecommendedInfo(cached.data);
-                return;
-            }
-
-            // 서버 API를 통해 추천 정보 로드 (서버에서도 캐시 처리됨)
-            // 추천 정보 서버 API 호출
             await this.loadCategoryAndTagBasedRecommendations();
             
             // 추천 섹션에 애니메이션 적용
@@ -698,8 +594,6 @@ class NutritionInfoDetailManager {
             const top = uniqueItems.slice(0, 4);
             
             this.renderRecommendedInfo(top);
-            // 캐시 저장
-            this.writeCache(`nutritionInfoDetail:rec:${this.nutritionInfoId}`, { data: top, cachedAt: Date.now() });
         } catch (error) {
             // 카테고리/태그 기반 추천 실패
             await this.loadFallbackRecommendations();
@@ -718,7 +612,6 @@ class NutritionInfoDetailManager {
                     const recommendedItems = result.data.filter(item => item.id !== this.nutritionInfoId);
                     const top = recommendedItems.slice(0, 4);
                     this.renderRecommendedInfo(top);
-                    this.writeCache(`nutritionInfoDetail:rec:${this.nutritionInfoId}`, { data: top, cachedAt: Date.now() });
                 }
             }
         } catch (error) {
@@ -740,7 +633,6 @@ class NutritionInfoDetailManager {
                     const recommendedItems = result.data.filter(item => item.id !== this.nutritionInfoId);
                     const top = recommendedItems.slice(0, 4);
                     this.renderRecommendedInfo(top);
-                    this.writeCache(`nutritionInfoDetail:rec:${this.nutritionInfoId}`, { data: top, cachedAt: Date.now() });
                 } else {
                     // 데이터가 없는 경우 빈 추천 섹션 표시
                     this.renderRecommendedInfo([]);

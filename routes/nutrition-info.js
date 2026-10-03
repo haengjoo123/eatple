@@ -4,11 +4,25 @@
  */
 
 const express = require('express');
-const router = express.Router();
+const { createHash } = require('crypto');
 const { getSupabaseNutritionDataManager } = require('../utils/supabaseNutritionDataManager');
 
 module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, recommendationService) => {
+    const router = express.Router();
     const supabaseDataManager = nutritionDataManager || getSupabaseNutritionDataManager();
+    const getPublicInfoById = async id => {
+        const info = await supabaseDataManager.getNutritionInfoById(id, { publicOnly: true });
+        return info && info.isActive === true && !info.isDraft ? info : null;
+    };
+    const normalizePagination = input => ({
+        page: Math.max(1, parseInt(input.page, 10) || 1),
+        limit: Math.min(50, Math.max(1, parseInt(input.limit, 10) || 20))
+    });
+    const responseETag = data => `"${createHash('sha256').update(JSON.stringify(data)).digest('hex')}"`;
+    router.use((req, res, next) => {
+        res.setHeader('Cache-Control', 'private, no-store');
+        next();
+    });
 
     // 헬퍼 함수들
     const parseFiltersAndPagination = (query) => {
@@ -34,7 +48,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
         if (query.sortBy) filters.sortBy = query.sortBy;
         if (query.sortOrder) filters.sortOrder = query.sortOrder;
         
-        return { filters, pagination };
+        return { filters, pagination: normalizePagination(pagination) };
     };
 
     const safeToJSON = (item) => {
@@ -64,7 +78,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
         if (body.page) pagination.page = parseInt(body.page);
         if (body.limit) pagination.limit = parseInt(body.limit);
         
-        return { filters, pagination };
+        return { filters, pagination: normalizePagination(pagination) };
     };
 
     /**
@@ -94,9 +108,9 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
 
             // HTTP 캐시 헤더 설정 (성능 최적화)
             try {
-                // 영양정보 목록은 5분 캐시, 1분 stale-while-revalidate
-                res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
-                res.setHeader('ETag', `"${Buffer.from(JSON.stringify(responseData)).toString('base64').slice(0, 16)}"`);
+                // Revalidate publication changes on every request.
+                res.setHeader('Cache-Control', 'public, no-cache');
+                res.setHeader('ETag', responseETag(responseData));
             } catch (e) {
                 // 헤더 설정 실패는 무시
             }
@@ -275,7 +289,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             filters.excludeDrafts = true;
 
             // 로컬 데이터에서 검색
-            const result = await supabaseDataManager.searchNutritionInfo(query, filters);
+            const result = await supabaseDataManager.searchNutritionInfo(query, filters, pagination);
             
             // 안전하게 데이터 처리
             const data = result && result.data ? result.data : [];
@@ -318,7 +332,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             filters.excludeDrafts = true;
 
             // 로컬 데이터에서 검색
-            const result = await supabaseDataManager.searchNutritionInfo(query, filters);
+            const result = await supabaseDataManager.searchNutritionInfo(query, filters, pagination);
             
             // 안전하게 데이터 처리
             const data = result && result.data ? result.data : [];
@@ -355,8 +369,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             }
 
             const userId = req.session.user.id;
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 20;
+            const { page, limit } = normalizePagination(req.query);
 
             // 사용자 선호도 가져오기 (에러 처리 강화)
             let userPrefs;
@@ -393,7 +406,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             
             for (const id of bookmarkIds) {
                 try {
-                    const info = await supabaseDataManager.getNutritionInfoById(id);
+                    const info = await getPublicInfoById(id);
                     if (info && info.isActive) {
                         validBookmarkedInfo.push(info.toJSON());
                     }
@@ -476,7 +489,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             let actualCount = 0;
             for (const id of bookmarkIds) {
                 try {
-                    const info = await supabaseDataManager.getNutritionInfoById(id);
+                    const info = await getPublicInfoById(id);
                     if (info && info.isActive) {
                         actualCount++;
                     }
@@ -511,7 +524,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             } catch (_) {}
 
             // 영양 정보 존재 여부 확인
-            const nutritionInfo = await supabaseDataManager.getNutritionInfoById(nutritionInfoId);
+            const nutritionInfo = await getPublicInfoById(nutritionInfoId);
             if (!nutritionInfo) {
                 return res.status(404).json({
                     success: false,
@@ -574,6 +587,9 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
         try {
             const nutritionInfoId = req.params.id;
 
+            const fullData = await getPublicInfoById(nutritionInfoId);
+            if (!fullData) return res.status(404).json({ success: false, error: '해당 영양 정보를 찾을 수 없습니다.' });
+
             // SSE (Server-Sent Events) 헤더 설정
             res.writeHead(200, {
                 'Content-Type': 'text/event-stream',
@@ -591,13 +607,6 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
 
             // 시작 이벤트
             sendData('start', { message: '상세 정보를 불러오는 중입니다...' });
-
-            // 전체 영양 정보 조회 (기존 방식 사용)
-            const fullData = await supabaseDataManager.getNutritionInfoById(nutritionInfoId);
-            
-            if (!fullData) {
-                throw new Error('영양 정보를 찾을 수 없습니다.');
-            }
 
             // 1단계: 기본 정보 (제목, 요약, 메타 데이터)
             sendData('progress', { section: 'basic', message: '기본 정보 로딩 중..' });
@@ -720,7 +729,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             const { id } = req.params;
             
             // 로컬 데이터에서 조회
-            const nutritionInfo = await supabaseDataManager.getNutritionInfoById(id);
+            const nutritionInfo = await getPublicInfoById(id);
             
             if (!nutritionInfo) {
                 console.error(`[ERROR] 영양정보 ${id}를 로컬에서 찾을 수 없음`);
@@ -757,14 +766,14 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
                         );
                     } else {
                         // 비로그인 사용자는 카테고리/태그 기반 추천
-                        const categoryFilter = { category: responseData.category };
+                        const categoryFilter = { category: responseData.category, excludeDrafts: true };
                         const categoryResult = await supabaseDataManager.getNutritionInfoList(
                             categoryFilter, 
                             { limit: 3 }
                         );
                         
                         const tagFilter = responseData.tags && responseData.tags.length > 0 ? 
-                            { tags: responseData.tags.slice(0, 2) } : {};
+                            { tags: responseData.tags.slice(0, 2), excludeDrafts: true } : { excludeDrafts: true };
                         const tagResult = await supabaseDataManager.getNutritionInfoList(
                             tagFilter, 
                             { limit: 2 }
@@ -785,10 +794,10 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
 
             // HTTP 캐시 헤더 설정 (성능 최적화)
             try {
-                const etag = `W/"ni-${responseData.id}-${new Date(responseData.collectedDate || responseData.publishedDate || 0).getTime()}-${responseData.viewCount || 0}"`;
+                const etag = responseETag({ data: responseData, recommended: recommendedItems.map(safeToJSON) });
                 res.setHeader('ETag', etag);
-                // 상세 조회는 10분 캐시, 2분 stale-while-revalidate
-                res.setHeader('Cache-Control', 'public, max-age=600, stale-while-revalidate=120');
+                // Personalized recommendations and publication status must be rechecked.
+                res.setHeader('Cache-Control', 'private, no-store');
                 
                 const ifNoneMatch = req.headers['if-none-match'];
                 if (ifNoneMatch && ifNoneMatch === etag) {
@@ -869,7 +878,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
                 });
             }
 
-            const nutritionInfo = await supabaseDataManager.getNutritionInfoById(nutritionInfoId);
+            const nutritionInfo = await getPublicInfoById(nutritionInfoId);
             if (!nutritionInfo) {
                 return res.status(404).json({
                     success: false,
@@ -880,14 +889,8 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             let result;
             if (action === 'add') {
                 result = await recommendationService.recordUserInteraction(userId, nutritionInfoId, 'bookmarks');
-                await supabaseDataManager.updateNutritionInfo(nutritionInfoId, {
-                    bookmarkCount: (nutritionInfo.bookmarkCount || 0) + 1
-                });
             } else {
                 result = await recommendationService.removeUserInteraction(userId, nutritionInfoId, 'bookmarks');
-                await supabaseDataManager.updateNutritionInfo(nutritionInfoId, {
-                    bookmarkCount: Math.max(0, (nutritionInfo.bookmarkCount || 0) - 1)
-                });
             }
 
             res.json({
@@ -935,7 +938,7 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
                 });
             }
 
-            const nutritionInfo = await supabaseDataManager.getNutritionInfoById(nutritionInfoId);
+            const nutritionInfo = await getPublicInfoById(nutritionInfoId);
             if (!nutritionInfo) {
                 return res.status(404).json({
                     success: false,
@@ -946,14 +949,8 @@ module.exports = (nutritionDataManager, contentAggregator, aiContentProcessor, r
             let result;
             if (action === 'add') {
                 result = await recommendationService.recordUserInteraction(userId, nutritionInfoId, 'likes');
-                await supabaseDataManager.updateNutritionInfo(nutritionInfoId, {
-                    likeCount: (nutritionInfo.likeCount || 0) + 1
-                });
             } else {
                 result = await recommendationService.removeUserInteraction(userId, nutritionInfoId, 'likes');
-                await supabaseDataManager.updateNutritionInfo(nutritionInfoId, {
-                    likeCount: Math.max(0, (nutritionInfo.likeCount || 0) - 1)
-                });
             }
 
             res.json({

@@ -559,8 +559,8 @@ router.get('/posts/:id', requireAdmin, async (req, res) => {
             created_at: postData.createdAt || postData.created_at || postData.publishedDate || postData.published_date,
             updated_at: postData.updatedAt || postData.updated_at || postData.collectedDate || postData.collected_date,
             is_active: isActive,
-            is_draft: false,
-            status: isActive ? 'active' : 'inactive'
+            is_draft: postData.isDraft === true,
+            status: postData.isDraft ? 'draft' : (isActive ? 'active' : 'inactive')
         };
 
         // 관리자만 자신의 포스팅을 조회할 수 있도록 제한 (선택사항)
@@ -595,29 +595,17 @@ router.get('/posts', requireAdmin, async (req, res) => {
         const {
             status,
             categoryId,
+            category,
             search,
             page = 1,
             limit = 20
         } = req.query;
 
-        const adminId = req.session.user.id;
-
-        // 필터 옵션 준비
-        const filters = {};
-        if (status) filters.status = status;
-        if (categoryId) filters.categoryId = categoryId;
-        if (search) filters.search = search;
-
-        // 로컬 데이터에서 영양정보 목록 조회
-        const nutritionFilters = {};
+        const nutritionFilters = { includeInactive: true };
+        if (status) nutritionFilters.status = status;
         if (search) nutritionFilters.search = search;
-        if (categoryId) {
-            // categoryId를 카테고리 이름으로 변환 (필요시)
-            nutritionFilters.category = categoryId;
-        }
-        
-        // 임시저장이 아닌 포스팅만 조회 (관리자 포스팅 목록용)
-        nutritionFilters.excludeDrafts = true;
+        if (categoryId) nutritionFilters.categoryId = categoryId;
+        else if (category) nutritionFilters.category = category;
         
         const pagination = {
             page: parseInt(page),
@@ -686,8 +674,8 @@ router.get('/posts', requireAdmin, async (req, res) => {
                 created_at: itemData.createdAt || itemData.created_at || itemData.publishedDate || itemData.published_date,
                 updated_at: itemData.updatedAt || itemData.updated_at || itemData.collectedDate || itemData.collected_date,
                 is_active: isActive,
-                is_draft: false,
-                status: isActive ? 'active' : 'inactive'
+                is_draft: itemData.isDraft === true,
+                status: itemData.isDraft ? 'draft' : (isActive ? 'active' : 'inactive')
             };
         });
 
@@ -1226,35 +1214,8 @@ router.post('/validate-url', requireAdmin, async (req, res) => {
 router.get('/stats', requireAdmin, async (req, res) => {
     try {
         
-        // 전체 포스팅 수 조회 (모든 상태 포함)
-        const allPosts = await nutritionDataManager.getNutritionInfoList({}, { page: 1, limit: 1000 });
-        const totalPosts = allPosts && allPosts.data ? allPosts.data.length : 0;
-        
-        // 게시된 포스팅 수 (활성화되고 임시저장이 아닌 포스팅)
-        const publishedPosts = await nutritionDataManager.getNutritionInfoList(
-            { excludeDrafts: true, activeOnly: true }, 
-            { page: 1, limit: 1000 }
-        );
-        const publishedCount = publishedPosts && publishedPosts.data ? publishedPosts.data.length : 0;
-        
-        // 임시저장 포스팅 수 (draft 상태)
-        const draftPosts = await nutritionDataManager.getNutritionInfoList(
-            { draftsOnly: true }, 
-            { page: 1, limit: 1000 }
-        );
-        const draftCount = draftPosts && draftPosts.data ? draftPosts.data.length : 0;
-        
-        // 비활성 포스팅 수 (비활성화된 포스팅, 임시저장 제외)
-        const inactivePosts = await nutritionDataManager.getNutritionInfoList(
-            { excludeDrafts: true, inactiveOnly: true }, 
-            { page: 1, limit: 1000 }
-        );
-        const inactiveCount = inactivePosts && inactivePosts.data ? inactivePosts.data.length : 0;
+        const supabase = nutritionDataManager.supabase;
 
-        // 데이터베이스에서 직접 조회하는 방법으로 변경
-        const { createClient } = require('@supabase/supabase-js');
-        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-        
         // 전체 포스팅 수
         const { count: totalCount } = await supabase
             .from('nutrition_posts')

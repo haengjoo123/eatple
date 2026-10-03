@@ -352,6 +352,8 @@ class SupabaseNutritionDataManager {
           collected_date,
           trust_score,
           view_count,
+          like_count,
+          bookmark_count,
           thumbnail_url,
           image_url,
           category_id,
@@ -370,7 +372,7 @@ class SupabaseNutritionDataManager {
             product_image_url,
             display_order
           )
-        `, { count: 'estimated' });
+        `, { count: 'exact' });
 
       // 필터 적용
       if (filters.search) {
@@ -379,7 +381,9 @@ class SupabaseNutritionDataManager {
         query = query.or(`title.ilike.%${searchTerm}%,summary.ilike.%${searchTerm}%`);
       }
 
-      if (filters.category) {
+      if (filters.categoryId) {
+        query = query.eq('category_id', filters.categoryId);
+      } else if (filters.category) {
         const categoryNames = Array.isArray(filters.category) ? filters.category : [filters.category];
         
         // 성능 최적화: 한 번에 모든 카테고리 ID 조회
@@ -436,20 +440,26 @@ class SupabaseNutritionDataManager {
       }
 
       // 임시저장 제외 필터 (관리자 포스팅 목록용)
-      if (filters.excludeDrafts) {
+      if (filters.draftsOnly || filters.status === 'draft') {
+        query = query.eq('is_draft', true);
+      } else if (filters.excludeDrafts || ['published', 'active', 'inactive'].includes(filters.status)) {
         query = query.eq('is_draft', false);
       }
 
       // 활성 상태 필터
-      query = query.eq('is_active', true);
+      if (filters.inactiveOnly || filters.status === 'inactive' || filters.isActive === false) {
+        query = query.eq('is_active', false);
+      } else if (filters.activeOnly || ['published', 'active'].includes(filters.status) || filters.isActive === true || !filters.includeInactive) {
+        query = query.eq('is_active', true);
+      }
 
       // 정렬 (이미 변환된 필드명 사용)
       const sortOrder = filters.sortOrder || 'desc';
       query = query.order(sortBy, { ascending: sortOrder === 'asc' });
 
       // 페이지네이션
-      const page = pagination.page || 1;
-      const limit = pagination.limit || 20;
+      const page = Math.max(1, parseInt(pagination.page, 10) || 1);
+      const limit = Math.min(1000, Math.max(1, parseInt(pagination.limit, 10) || 20));
       const offset = (page - 1) * limit;
       
       query = query.range(offset, offset + limit - 1);
@@ -491,12 +501,18 @@ class SupabaseNutritionDataManager {
           collectedDate: post.collected_date,
           trustScore: post.trust_score,
           viewCount: post.view_count || 0,
+          likeCount: post.like_count || 0,
+          bookmarkCount: post.bookmark_count || 0,
           thumbnailUrl: post.thumbnail_url,
           imageUrl: post.image_url,
           category: post.categories?.name || null,
           tags: tags,
           related_products: related_products,
-          isActive: post.is_active
+          isActive: post.is_active,
+          isDraft: post.is_draft,
+          categoryId: post.category_id,
+          createdAt: post.created_at,
+          updatedAt: post.updated_at
         });
       });
 
@@ -525,14 +541,16 @@ class SupabaseNutritionDataManager {
   /**
    * 특정 영양 정보 조회
    */
-  async getNutritionInfoById(id) {
+  async getNutritionInfoById(id, { publicOnly = false } = {}) {
     try {
-      const { data: post, error } = await this.supabase
+      let query = this.supabase
         .from('nutrition_posts')
         .select('*')
-        .eq('id', id)
-        .single();
+        .eq('id', id);
+      if (publicOnly) query = query.eq('is_active', true).eq('is_draft', false);
+      const { data: post, error } = await query.maybeSingle();
       
+      if (error?.code === '22P02') return null;
       if (error) throw error;
       if (!post) return null;
 
@@ -570,12 +588,18 @@ class SupabaseNutritionDataManager {
         collectedDate: post.collected_date,
         trustScore: post.trust_score,
         viewCount: post.view_count || 0,
+        likeCount: post.like_count || 0,
+        bookmarkCount: post.bookmark_count || 0,
         thumbnailUrl: post.thumbnail_url,
         imageUrl: post.image_url,
         category: categoryInfo ? categoryInfo.name : null,
         tags: tags,
         related_products: relatedProducts,
-        isActive: post.is_active
+        isActive: post.is_active,
+        isDraft: post.is_draft,
+        categoryId: post.category_id,
+        createdAt: post.created_at,
+        updatedAt: post.updated_at
       });
 
       return nutritionInfo;
@@ -588,10 +612,30 @@ class SupabaseNutritionDataManager {
   /**
    * 영양 정보 검색
    */
-  async searchNutritionInfo(query, filters = {}) {
+  async searchNutritionInfo(query, filters = {}, pagination = {}) {
     // 검색어를 필터에 추가
     const searchFilters = { ...filters, search: query };
-    return await this.getNutritionInfoList(searchFilters);
+    return await this.getNutritionInfoList(searchFilters, pagination);
+  }
+
+  // Compare-and-swap keeps concurrent requests from overwriting a newer count.
+  async adjustInteractionCount(id, interactionType, delta) {
+    const columns = { bookmarks: 'bookmark_count', likes: 'like_count', views: 'view_count' };
+    const column = columns[interactionType];
+    if (!column || ![1, -1].includes(delta)) throw new Error('잘못된 상호작용 집계 요청입니다.');
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const { data: post, error: readError } = await this.supabase
+        .from('nutrition_posts').select(column).eq('id', id).maybeSingle();
+      if (readError) throw readError;
+      if (!post) throw new Error('해당 영양 정보를 찾을 수 없습니다.');
+      const value = Math.max(0, (post[column] || 0) + delta);
+      let update = this.supabase.from('nutrition_posts').update({ [column]: value }).eq('id', id);
+      update = post[column] == null ? update.is(column, null) : update.eq(column, post[column]);
+      const { data, error } = await update.select(column).maybeSingle();
+      if (error) throw error;
+      if (data) return { previous: post[column] || 0, current: value };
+    }
+    throw new Error('집계가 변경 중입니다. 잠시 후 다시 시도해주세요.');
   }
 
   /**
@@ -599,27 +643,7 @@ class SupabaseNutritionDataManager {
    */
   async incrementViewCount(id, userInfo = null) {
     try {
-      // 현재 조회수를 먼저 가져온 다음 증가
-      const { data: currentPost, error: fetchError } = await this.supabase
-        .from('nutrition_posts')
-        .select('view_count')
-        .eq('id', id)
-        .single();
-      
-      if (fetchError) throw fetchError;
-      
-      const newViewCount = (currentPost.view_count || 0) + 1;
-      
-      // nutrition_posts 테이블의 view_count 업데이트
-      const { error } = await this.supabase
-        .from('nutrition_posts')
-        .update({ 
-          view_count: newViewCount,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
-      
-      if (error) throw error;
+      await this.adjustInteractionCount(id, 'views', 1);
       
       // nutrition_post_views 테이블에 조회 기록 추가
       try {

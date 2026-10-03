@@ -5,11 +5,12 @@
 
 const fs = require('fs').promises;
 const path = require('path');
-const NutritionDataManager = require('./nutritionDataManager');
+const { getSupabaseNutritionDataManager } = require('./supabaseNutritionDataManager');
+const { withPreferenceLock, readPreferences, writePreferences } = require('./nutritionPreferenceStore');
 
 class NutritionRecommendationService {
-    constructor() {
-        this.nutritionDataManager = new NutritionDataManager();
+    constructor(nutritionDataManager = getSupabaseNutritionDataManager()) {
+        this.nutritionDataManager = nutritionDataManager;
         this.usersFile = path.join(__dirname, '../data/users.json');
         this.userPreferencesFile = path.join(__dirname, '../data/user-preferences.json');
         
@@ -37,25 +38,28 @@ class NutritionRecommendationService {
      * 사용자 선호도 데이터 로드
      */
     async loadUserPreferences() {
-        try {
-            const data = await fs.readFile(this.userPreferencesFile, 'utf8');
-            return JSON.parse(data);
-        } catch (error) {
-            console.log('사용자 선호도 파일이 없거나 읽을 수 없습니다. 빈 객체를 반환합니다.');
-            return {};
-        }
+        return readPreferences(this.userPreferencesFile);
     }
 
     /**
      * 사용자 선호도 데이터 저장
      */
     async saveUserPreferences(preferences) {
-        try {
-            await fs.writeFile(this.userPreferencesFile, JSON.stringify(preferences, null, 2));
-        } catch (error) {
-            console.error('사용자 선호도 저장 오류:', error);
-            throw error;
+        return writePreferences(this.userPreferencesFile, preferences);
+    }
+
+    ensureUserPreferences(allPreferences, userId) {
+        if (!Object.hasOwn(allPreferences, userId)) {
+            allPreferences[userId] = {
+                userId,
+                preferences: structuredClone(this.defaultPreferences),
+                interactions: { bookmarks: [], likes: [], views: [] }
+            };
         }
+        const user = allPreferences[userId];
+        user.interactions ||= {};
+        for (const type of ['bookmarks', 'likes', 'views']) user.interactions[type] ||= [];
+        return user;
     }
 
     /**
@@ -82,7 +86,7 @@ class NutritionRecommendationService {
             // 기본 선호도 반환
             return {
                 userId,
-                preferences: { ...this.defaultPreferences },
+                preferences: structuredClone(this.defaultPreferences),
                 interactions: {
                     bookmarks: [],
                     likes: [],
@@ -98,83 +102,59 @@ class NutritionRecommendationService {
      * 사용자 선호도 업데이트
      */
     async updateUserPreferences(userId, preferences) {
-        const allPreferences = await this.loadUserPreferences();
-        
-        if (!allPreferences[userId]) {
-            allPreferences[userId] = {
-                userId,
-                preferences: { ...this.defaultPreferences },
-                interactions: {
-                    bookmarks: [],
-                    likes: [],
-                    views: []
-                }
-            };
-        }
-        
-        // 선호도 업데이트
-        allPreferences[userId].preferences = {
-            ...allPreferences[userId].preferences,
-            ...preferences
-        };
-        
-        await this.saveUserPreferences(allPreferences);
-        return allPreferences[userId];
-    }
-
-    /**
-     * 사용자 상호작용 기록 (북마크, 좋아요, 조회)
-     */
-    async recordUserInteraction(userId, nutritionInfoId, interactionType) {
-        const allPreferences = await this.loadUserPreferences();
-        
-        if (!allPreferences[userId]) {
-            allPreferences[userId] = {
-                userId,
-                preferences: { ...this.defaultPreferences },
-                interactions: {
-                    bookmarks: [],
-                    likes: [],
-                    views: []
-                }
-            };
-        }
-        
-        const interactions = allPreferences[userId].interactions;
-        
-        // 중복 방지
-        if (!interactions[interactionType].includes(nutritionInfoId)) {
-            interactions[interactionType].push(nutritionInfoId);
-            
-            // 최근 100개만 유지 (조회 기록의 경우)
-            if (interactionType === 'views' && interactions[interactionType].length > 100) {
-                interactions[interactionType] = interactions[interactionType].slice(-100);
-            }
-        }
-        
-        await this.saveUserPreferences(allPreferences);
-        return allPreferences[userId];
-    }
-
-    /**
-     * 사용자 상호작용 제거 (북마크 해제, 좋아요 취소)
-     */
-    async removeUserInteraction(userId, nutritionInfoId, interactionType) {
-        const allPreferences = await this.loadUserPreferences();
-        
-        if (!allPreferences[userId]) {
-            return null;
-        }
-        
-        const interactions = allPreferences[userId].interactions;
-        const index = interactions[interactionType].indexOf(nutritionInfoId);
-        
-        if (index > -1) {
-            interactions[interactionType].splice(index, 1);
+        return withPreferenceLock(this.userPreferencesFile, async () => {
+            const allPreferences = await this.loadUserPreferences();
+            const user = this.ensureUserPreferences(allPreferences, userId);
+            user.preferences = { ...user.preferences, ...preferences };
             await this.saveUserPreferences(allPreferences);
+            return user;
+        });
+    }
+
+    async recordUserInteraction(userId, nutritionInfoId, interactionType) {
+        return this.changeUserInteraction(userId, nutritionInfoId, interactionType, true);
+    }
+
+    async removeUserInteraction(userId, nutritionInfoId, interactionType) {
+        return this.changeUserInteraction(userId, nutritionInfoId, interactionType, false);
+    }
+
+    async changeUserInteraction(userId, nutritionInfoId, interactionType, add) {
+        if (!['bookmarks', 'likes', 'views'].includes(interactionType)) {
+            throw new Error('잘못된 상호작용 요청입니다.');
         }
-        
-        return allPreferences[userId];
+        return withPreferenceLock(this.userPreferencesFile, async () => {
+            const allPreferences = await this.loadUserPreferences();
+            const user = this.ensureUserPreferences(allPreferences, userId);
+            const items = user.interactions[interactionType];
+            const index = items.indexOf(nutritionInfoId);
+            if (add === (index >= 0)) return user;
+
+            if (add) items.push(nutritionInfoId);
+            else items.splice(index, 1);
+            if (interactionType === 'views') user.interactions.views = items.slice(-100);
+
+            const delta = add ? 1 : -1;
+            const updateCount = interactionType !== 'views';
+            let counterChange;
+            if (updateCount) {
+                counterChange = await this.nutritionDataManager.adjustInteractionCount(nutritionInfoId, interactionType, delta);
+            }
+            try {
+                await this.saveUserPreferences(allPreferences);
+            } catch (error) {
+                // A failed local write must not leave a count for an unsaved interaction.
+                if (updateCount && counterChange.current !== counterChange.previous) {
+                    try {
+                        await this.nutritionDataManager.adjustInteractionCount(nutritionInfoId, interactionType, -delta);
+                    } catch (rollbackError) {
+                        console.error('상호작용 집계 복구 실패:', rollbackError);
+                    }
+                }
+                throw error;
+            }
+            return user;
+        });
     }
 
     /**
@@ -231,7 +211,8 @@ class NutritionRecommendationService {
             const allNutritionInfo = await this.nutritionDataManager.getNutritionInfoList(
                 { 
                     minTrustScore: userPreferences.preferences.minTrustScore,
-                    isActive: true 
+                    isActive: true,
+                    excludeDrafts: true
                 },
                 { limit: 1000 } // 충분히 많은 수를 가져와서 추천 알고리즘 적용
             );
@@ -308,8 +289,8 @@ class NutritionRecommendationService {
             const recommendations = [];
             for (const id of Array.from(recommendedIds).slice(0, limit)) {
                 try {
-                    const info = await this.nutritionDataManager.getNutritionInfoById(id);
-                    if (info && info.isActive) {
+                    const info = await this.nutritionDataManager.getNutritionInfoById(id, { publicOnly: true });
+                    if (info && info.isActive && !info.isDraft) {
                         recommendations.push(info.toJSON());
                     }
                 } catch (error) {
@@ -340,7 +321,7 @@ class NutritionRecommendationService {
             
             for (const id of interactedIds) {
                 try {
-                    const info = await this.nutritionDataManager.getNutritionInfoById(id);
+                    const info = await this.nutritionDataManager.getNutritionInfoById(id, { publicOnly: true });
                     if (info) {
                         // 카테고리 빈도 계산
                         categoryFrequency[info.category] = (categoryFrequency[info.category] || 0) + 1;
@@ -386,4 +367,3 @@ class NutritionRecommendationService {
 }
 
 module.exports = NutritionRecommendationService;
-            

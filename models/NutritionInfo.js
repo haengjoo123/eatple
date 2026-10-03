@@ -24,6 +24,10 @@ class NutritionInfo {
         this.videoId = data.videoId || '';
         this.language = data.language || 'ko';
         this.isActive = data.isActive !== undefined ? data.isActive : true;
+        this.isDraft = data.isDraft === true;
+        this.categoryId = data.categoryId || null;
+        this.createdAt = data.createdAt || null;
+        this.updatedAt = data.updatedAt || null;
         this.viewCount = data.viewCount || 0;
         this.likeCount = data.likeCount || 0;
         this.bookmarkCount = data.bookmarkCount || 0;
@@ -119,6 +123,10 @@ class NutritionInfo {
             videoId: this.videoId,
             language: this.language,
             isActive: this.isActive,
+            isDraft: this.isDraft,
+            categoryId: this.categoryId,
+            createdAt: this.createdAt,
+            updatedAt: this.updatedAt,
             viewCount: this.viewCount,
             likeCount: this.likeCount,
             bookmarkCount: this.bookmarkCount,

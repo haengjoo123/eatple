@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 data/users.json.*.tmp
+data/user-preferences.json.*.tmp
 
 node_modules/
 npm-debug.log*

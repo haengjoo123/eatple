@@ -56,20 +56,13 @@ router.get('/list', requireAdmin, async (req, res) => {
         } = req.query;
 
         // 필터 구성
-        const filters = {};
+        const filters = { includeInactive: true };
+        if (status && status !== 'all') filters.status = status;
         if (search) filters.search = search;
         if (category) filters.category = category;
         if (sourceType) filters.sourceType = [sourceType];
         if (sortBy) filters.sortBy = sortBy;
         if (sortOrder) filters.sortOrder = sortOrder;
-
-        // 상태 필터 (관리자는 비활성화된 항목도 볼 수 있음)
-        if (status === 'active') {
-            // 활성화된 항목만
-        } else if (status === 'inactive') {
-            // 비활성화된 항목만 (현재 로컬 데이터 매니저에서는 구현 필요)
-        }
-        // status가 없으면 모든 항목
 
         // 페이지네이션 구성
         const pagination = {
