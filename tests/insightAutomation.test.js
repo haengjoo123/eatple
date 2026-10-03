@@ -8,6 +8,7 @@ const { InsightService,kstDate,kstHour }=require('../utils/insightService');
 const { createInsightRouters }=require('../routes/insight-automation');
 const {insightPage}=require('../routes/insight-page');
 const {assessSeo}=require('../utils/insightSeo');
+const {normalizePaper}=require('../utils/insightResearch');
 
 jest.setTimeout(30000);
 let db,category;
@@ -161,6 +162,10 @@ test('all AI stages explicitly use Luna and reserve cost before invocation',asyn
 test('KST scheduling handles UTC previous day correctly',()=>{
     expect(kstDate(new Date('2026-10-03T22:00:00Z'))).toBe('2026-10-04');
     expect(kstHour(new Date('2026-10-03T22:00:00Z'))).toBe(7);
+});
+test('Europe PMC core records retain journal and author provenance',()=>{
+    const paper=normalizePaper({id:1,title:'Study',journalInfo:{journal:{title:'Nutrients'}},authorList:{author:[{fullName:'A. Researcher'},{firstName:'B',lastName:'Editor'}]}});
+    expect(paper.journal).toBe('Nutrients');expect(paper.authors).toBe('A. Researcher, B Editor');
 });
 
 test('invalid source quotes get one bounded correction, never a silent fallback',async()=>{

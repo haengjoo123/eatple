@@ -21,10 +21,10 @@ function normalizePaper(record) {
     return {
         key: record.doi ? `doi:${record.doi.toLowerCase()}` : `pmid:${record.id}`,
         pmid: String(record.id), pmcid: record.pmcid || null, doi: record.doi || null,
-        title: record.title || '', journal: record.journalTitle || '',
+        title: record.title || '', journal: record.journalTitle || record.journalInfo?.journal?.title || '',
         publishedDate: record.firstPublicationDate || record.pubYear || null,
         url: record.doi ? `https://doi.org/${record.doi}` : `https://pubmed.ncbi.nlm.nih.gov/${record.id}/`,
-        authors: record.authorString || '', articleTypes: record.pubTypeList?.pubType || [],
+        authors: record.authorString || (record.authorList?.author || []).map(a=>a.fullName || [a.firstName,a.lastName].filter(Boolean).join(' ')).join(', '), articleTypes: record.pubTypeList?.pubType || [],
         abstract: cheerio.load(record.abstractText || '').text().slice(0, 12000),
     };
 }
