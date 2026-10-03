@@ -8,6 +8,7 @@ jest.mock('dotenv', () => ({ config: jest.fn() }));
 jest.mock('../utils/realtimeMonitoringSystem', () => ({ getRealtimeMonitoring: () => ({}) }));
 jest.mock('../utils/memoryMonitor', () => ({ getMemoryMonitor: () => ({}) }));
 jest.mock('../utils/supabaseNutritionDataManager', () => ({ getSupabaseNutritionDataManager: () => ({}) }));
+jest.mock('../utils/supabaseClient', () => ({ supabaseAdmin: {} }));
 jest.mock('../utils/nutritionRecommendationService', () => jest.fn());
 jest.mock('../routes/auth', () => {
     const router = require('express').Router();

@@ -106,7 +106,7 @@ module.exports = (dataManager) => {
 
         // 영양 정보 상세 페이지 추가
         nutritionItems.forEach(item => {
-            const itemUrl = `${siteUrl}/nutrition-info-detail.html?id=${item.id}`;
+            const itemUrl = `${siteUrl}/nutrition-info-detail?id=${item.id}`;
             const itemDate = item.publishedDate || item.collectedDate;
             const lastmod = itemDate ? new Date(itemDate).toISOString().split('T')[0] : now;
             

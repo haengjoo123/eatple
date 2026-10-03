@@ -1,0 +1,35 @@
+# Deploy this Blueprint separately in My Workspace. The existing web service is referenced, not modified.
+services:
+  - type: cron
+    name: eatple-insight-pipeline
+    runtime: node
+    repo: https://github.com/haengjoo123/eatple
+    branch: main
+    region: oregon
+    plan: starter
+    schedule: "*/30 * * * *"
+    buildCommand: npm ci --omit=dev
+    startCommand: npm run insight:cron
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        fromService:
+          type: web
+          name: eatple
+          envVarKey: SUPABASE_URL
+      - key: SUPABASE_KEY
+        fromService:
+          type: web
+          name: eatple
+          envVarKey: SUPABASE_KEY
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        fromService:
+          type: web
+          name: eatple
+          envVarKey: SUPABASE_SERVICE_ROLE_KEY
+      - key: OPENAI_API_KEY
+        fromService:
+          type: web
+          name: eatple
+          envVarKey: OPENAI_API_KEY

@@ -253,6 +253,7 @@ class SupabaseNutritionDataManager {
         product_link: product.product_link,
         product_price: product.product_price,
         product_image_url: product.product_image_url,
+        delivery_type: product.delivery_type || null,
         created_at: product.created_at
       }));
       
@@ -504,6 +505,7 @@ class SupabaseNutritionDataManager {
           likeCount: post.like_count || 0,
           bookmarkCount: post.bookmark_count || 0,
           thumbnailUrl: post.thumbnail_url,
+          thumbnailAlt: post.thumbnail_alt,
           imageUrl: post.image_url,
           category: post.categories?.name || null,
           tags: tags,
@@ -591,6 +593,7 @@ class SupabaseNutritionDataManager {
         likeCount: post.like_count || 0,
         bookmarkCount: post.bookmark_count || 0,
         thumbnailUrl: post.thumbnail_url,
+        thumbnailAlt: post.thumbnail_alt,
         imageUrl: post.image_url,
         category: categoryInfo ? categoryInfo.name : null,
         tags: tags,

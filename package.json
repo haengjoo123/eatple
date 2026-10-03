@@ -5,8 +5,9 @@
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
-        "test": "jest --runInBand",
-        "check": "node scripts/check-syntax.js"
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+        "check": "node scripts/check-syntax.js",
+        "insight:cron": "node scripts/insight-cron.js"
     },
     "engines": {
         "node": ">=22"
@@ -37,6 +38,7 @@
         "xml2js": "^0.6.2"
     },
     "devDependencies": {
+        "@electric-sql/pglite": "^0.5.8",
         "@types/node-fetch": "^2.6.13",
         "jest": "^30.0.4",
         "purgecss": "^7.0.2",

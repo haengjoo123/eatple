@@ -52,6 +52,12 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 
+const { InsightService } = require('./utils/insightService');
+const { createInsightRouters } = require('./routes/insight-automation');
+const insightService = new InsightService(require('./utils/supabaseClient').supabaseAdmin);
+const insightRouters = createInsightRouters(insightService);
+app.use('/api/admin/insight-automation', insightRouters.admin);
+
 // URL 리라이트 미들웨어: .html 확장자 제거
 // 1. .html로 끝나는 URL을 확장자 없는 URL로 301 리다이렉트
 app.use((req, res, next) => {
@@ -63,6 +69,7 @@ app.use((req, res, next) => {
 });
 
 // 2. 확장자 없는 URL 요청 시 .html 파일 제공
+app.get('/nutrition-info-detail', require('./routes/insight-page').insightPage(require('./utils/supabaseClient').supabaseAdmin));
 app.use((req, res, next) => {
   // API 라우트나 정적 파일(이미지, CSS, JS)은 제외
   if (req.path.startsWith('/api/') || 

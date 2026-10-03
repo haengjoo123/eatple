@@ -44,7 +44,7 @@ function extractOutputText(response) {
     return text;
 }
 
-async function generateText(prompt, { signal, timeout = 60000, maxOutputTokens = 16384, json = false, schema, schemaName = 'result', instructions } = {}) {
+async function generateText(prompt, { signal, timeout = 60000, maxOutputTokens = 16384, json = false, schema, schemaName = 'result', instructions, model: modelOverride, includeUsage = false } = {}) {
     if (!isOpenAIConfigured()) {
         throw new AIServiceError('AI 서비스가 설정되지 않았습니다.', 'AI_NOT_CONFIGURED', 503);
     }
@@ -52,7 +52,7 @@ async function generateText(prompt, { signal, timeout = 60000, maxOutputTokens =
         throw new AIServiceError('유효한 프롬프트가 필요합니다.', 'INVALID_PROMPT', 400);
     }
 
-    const model = resolveOpenAIModel();
+    const model = modelOverride || resolveOpenAIModel();
     try {
         const { data } = await axios.post(RESPONSES_URL, {
             model,
@@ -71,7 +71,8 @@ async function generateText(prompt, { signal, timeout = 60000, maxOutputTokens =
             signal,
             timeout,
         });
-        return { text: extractOutputText(data), model: data.model || model };
+        return { text: extractOutputText(data), model: data.model || model,
+            ...(includeUsage ? { usage: data.usage || null } : {}) };
     } catch (error) {
         if (error instanceof AIServiceError) throw error;
         if (signal?.aborted || ['ECONNABORTED', 'ETIMEDOUT', 'ERR_CANCELED'].includes(error.code)) {

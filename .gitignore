@@ -192,3 +192,12 @@ data/cache/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Insight local browser/session files must stay outside source control.
+.insight/
+.playwright-cli/
+.playwright/
+!public/
+public/*
+!public/insight-automation.js
+!public/insight-automation.css

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="insight-automation.css?v=1">
     <title>영양 정보 상세 - 잇플</title>
     <!-- 파비콘 -->
     <link rel="icon" type="image/png" href="images/eatplefavicon.png" />
@@ -14,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- 중요 리소스 우선 로딩 -->
-    <link rel="preload" href="nutrition-info-detail.js?v=dc8de97ecd66" as="script">
+    <link rel="preload" href="nutrition-info-detail.js?v=insight1" as="script">
     <link rel="preload" href="style.css" as="style">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="nutrition-info-styles.css">
@@ -372,11 +373,11 @@
                         <!-- 관련 상품 -->
                         <div class="detail-products-section" id="detailProductsSection" style="display: none;">
                             <h3 class="section-subtitle">관련 상품</h3>
+                            <div class="partnership-notice">
+                                <p>이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+                            </div>
                             <div class="detail-products" id="detailProducts">
                                 <!-- 상품들이 동적으로 추가됩니다 -->
-                            </div>
-                            <div class="partnership-notice">
-                                <p>쿠팡 파트너스 프로그램을 통해, 위 링크에서 제품 구매 시 이에 따른 약간의 수수료를 받습니다. 여러분의 영양 관리에 도움이 될 좋은 제품들만 골라봤어요!</p>
                             </div>
                         </div>
 
@@ -472,7 +473,7 @@
     </footer>
 
     <!-- JavaScript 번들 최적화 -->
-    <script src="nutrition-info-detail.js?v=dc8de97ecd66" defer></script>
+    <script src="nutrition-info-detail.js?v=insight1" defer></script>
     <script src="script.js" defer></script>
     <script>
         // 모바일 네비게이션 토글 (index.html과 동일)

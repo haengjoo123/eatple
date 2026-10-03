@@ -143,6 +143,7 @@ class NutritionInfoDetailManager {
 
     // 점진적 렌더링 메서드
     async renderProgressively() {
+        document.getElementById('insightServerArticle')?.remove();
         // 1단계: 기본 정보 렌더링 (제목, 메타 정보)
         await this.renderBasicInfo();
         await this.delay(50); // 지연 시간 단축
@@ -278,6 +279,10 @@ class NutritionInfoDetailManager {
         this.breadcrumbTitle.classList.add('progressive-fade-in');
 
         // 헤더 정보
+        if(this.detailTitle.tagName!=='H1') {
+            const heading=document.createElement('h1');heading.id='detailTitle';heading.className=this.detailTitle.className;
+            this.detailTitle.replaceWith(heading);this.detailTitle=heading;
+        }
         this.detailTitle.textContent = info.title;
         this.detailSource.textContent = info.sourceName;
         this.detailDate.textContent = this.formatDate(info.publishedDate);
@@ -299,13 +304,14 @@ class NutritionInfoDetailManager {
         const info = this.nutritionInfo;
 
         // 이미지 지연 로딩 및 WebP 최적화
-        this.detailImage.loading = 'lazy';
+        this.detailImage.loading = 'eager';
+        this.detailImage.fetchPriority = 'high';
         this.detailImage.decoding = 'async';
         
         // WebP 지원 확인 및 최적화된 이미지 URL 생성
         const imageUrl = this.getOptimizedImageUrl(info);
         this.detailImage.src = imageUrl;
-        this.detailImage.alt = info.title;
+        this.detailImage.alt = info.thumbnailAlt || info.title;
 
         // 이미지 로드 완료 시 애니메이션 적용
         this.detailImage.onload = () => {
@@ -501,12 +507,20 @@ class NutritionInfoDetailManager {
             return;
         }
 
-        productsContainer.innerHTML = products.map(product => `
+        productsContainer.innerHTML = products.map(product => {
+            let url;
+            try { url = new URL(product.product_link); } catch { url = null; }
+            const host = url?.hostname;
+            const safe = url?.protocol === 'https:' && !url.username && !url.password && !url.port &&
+                ['link.coupang.com', 'coupa.ng', 'ads-partners.coupang.com'].includes(host);
+            const card = safe && (host === 'link.coupang.com' || (host === 'coupa.ng' && Boolean(product.delivery_type)));
+            const shipping = product.delivery_type === 'rocket' ? '로켓배송 (선정 시 확인)' : product.delivery_type === 'rocket_fresh' ? '로켓프레시 (선정 시 확인)' : '배송 조건은 상품 페이지에서 확인해주세요.';
+            return `
             <div class="product-item">
                 <div class="product-info">
                     <div class="product-name">${this.escapeHtml(product.product_name)}</div>
                 </div>
-                ${product.product_link ? `
+                ${card ? `<p class="insight-delivery-label">${this.escapeHtml(shipping)}</p><a class="insight-card-link" href="${this.escapeHtml(url.href)}" target="_blank" rel="sponsored noopener noreferrer">쿠팡에서 상품 확인</a>` : safe ? `
                     <div class="product-iframe-container">
                         <iframe src="${this.escapeHtml(product.product_link)}" 
                                 width="120" 
@@ -523,7 +537,8 @@ class NutritionInfoDetailManager {
                     </div>
                 `}
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         productsSection.style.display = 'block';
     }
