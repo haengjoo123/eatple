@@ -19,6 +19,6 @@ async function createCover(article, db) {
     const { error } = await db.storage.from('nutrition-images').upload(file,bytes,{ contentType:'image/webp',cacheControl:'31536000',upsert:false });
     if (error) throw new Error('대표 이미지 저장에 실패했습니다. 검수 화면에서 업로드해주세요.');
     const { data: stored } = db.storage.from('nutrition-images').getPublicUrl(file);
-    return { thumbnail:{url:stored.publicUrl,alt:`${article.seo.primaryKeyword} 주제를 설명하는 음식 이미지`,caption:'AI가 생성한 주제 설명용 이미지입니다.',generated:true},images:[],usage:data.usage || null };
+    return { thumbnail:{url:stored.publicUrl,alt:`${article.seo.primaryKeyword} 주제를 설명하는 음식 이미지`,caption:'',generated:true},images:[],usage:data.usage || null };
 }
 module.exports = { createCover, IMAGE_MODEL };

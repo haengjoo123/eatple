@@ -121,6 +121,10 @@ function validateProducts(products) {
     });
 }
 function escapeHtml(value) { return String(value).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+function imageCaption(image) {
+    const caption = image?.caption || '';
+    return caption.trim() === 'AI가 생성한 주제 설명용 이미지입니다.' ? '' : caption;
+}
 function imageUrl(value) {
     try {
         const url = new URL(value);
@@ -134,7 +138,7 @@ function validateMedia(media = { thumbnail: null, images: [] }, sectionCount = 8
     const image = value => {
         if (!value || !imageUrl(value.url) || typeof value.alt !== 'string' || !value.alt.trim() || value.alt.length > 200 ||
             (value.caption !== undefined && (typeof value.caption !== 'string' || value.caption.length > 500))) fail('이미지 URL과 대체 텍스트를 확인해주세요.');
-        return { url: imageUrl(value.url), alt: value.alt.trim(), caption: value.caption || '', generated: value.generated === true };
+        return { url: imageUrl(value.url), alt: value.alt.trim(), caption: imageCaption(value), generated: value.generated === true };
     };
     if (required && !media.thumbnail) fail('게시 전 대표 이미지를 준비해주세요.');
     return { thumbnail: media.thumbnail ? image(media.thumbnail) : null, images: media.images.map(value => {
@@ -150,11 +154,11 @@ function renderArticle(article, candidate, evidence, media = { images: [] }) {
         const entry = faqEntry(p);
         return `<h3>Q. ${escapeHtml(entry.question)}</h3><p>A. ${escapeHtml(entry.answer)}</p>`;
     }).join('')}</section>` +
-        media.images.filter(i => i.afterSection === index).map(i => `<figure><img src="${escapeHtml(i.url)}" alt="${escapeHtml(i.alt)}" loading="lazy" decoding="async" width="1200" height="800" style="max-width:100%;height:auto"><figcaption>${escapeHtml(i.caption || (i.generated ? 'AI가 생성한 주제 설명용 이미지입니다.' : ''))}</figcaption></figure>`).join('')).join('') +
+        media.images.filter(i => i.afterSection === index).map(i => `<figure><img src="${escapeHtml(i.url)}" alt="${escapeHtml(i.alt)}" loading="lazy" decoding="async" width="1200" height="800" style="max-width:100%;height:auto">${imageCaption(i) ? `<figcaption>${escapeHtml(imageCaption(i))}</figcaption>` : ''}</figure>`).join('')).join('') +
         `<section><h2>연구 정보와 출처</h2><p>${escapeHtml(candidate.title)} · ${escapeHtml(candidate.journal)} · ${escapeHtml(candidate.publishedDate || '발행일 확인 필요')}</p>` +
         `<p>원문 저자: ${escapeHtml(candidate.authors || '확인 불가')}</p>` +
         `<p>연구비: ${escapeHtml(evidence.funding)}</p>` +
-        (media.thumbnail?.caption || media.thumbnail?.generated ? `<p>대표 이미지: ${escapeHtml(media.thumbnail.caption || 'AI가 생성한 주제 설명용 이미지입니다.')}</p>` : '') +
+        (imageCaption(media.thumbnail) ? `<p>대표 이미지: ${escapeHtml(imageCaption(media.thumbnail))}</p>` : '') +
         `<p>이 글은 AI가 초안을 작성하고 잇플 운영자가 검수했습니다. 개인의 치료나 복용량을 결정하는 자료로 사용하지 마세요.</p>` +
         `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">논문 원문·서지정보 확인</a></section>`;
 }

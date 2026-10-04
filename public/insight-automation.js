@@ -158,7 +158,7 @@ $('insightPreview').replaceChildren();
     function preview() {
         if(!current?.article)return;
         const {article,media,products}=draft();const target=$('insightPreview');target.replaceChildren(el('h1',article.title),el('p',article.summary));
-        const image=i=>{const figure=el('figure');const img=el('img');try{const url=new URL(i.url);if(url.protocol!=='https:' || !url.hostname.endsWith('.supabase.co'))return figure;img.src=url.href;}catch{return figure;}img.alt=i.alt;figure.append(img,el('figcaption',i.caption));return figure;};
+        const image=i=>{const figure=el('figure');const img=el('img');try{const url=new URL(i.url);if(url.protocol!=='https:' || !url.hostname.endsWith('.supabase.co'))return figure;img.src=url.href;}catch{return figure;}img.alt=i.alt;figure.append(img);if(i.caption?.trim() && i.caption.trim()!=='AI가 생성한 주제 설명용 이미지입니다.')figure.append(el('figcaption',i.caption));return figure;};
         if(media.thumbnail)target.append(image(media.thumbnail));
         article.sections.forEach((section,index)=>{
             target.append(el('h2',section.heading));
