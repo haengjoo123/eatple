@@ -80,7 +80,8 @@ $('insightPreview').replaceChildren();
         job.article.sections.forEach((section,index)=>{
             const box=el('div',undefined,'insight-section-editor');
             const heading=field(`소제목 ${index+1}`,section.heading);heading.input.dataset.sectionHeading=index;
-            const paragraphs=field('본문 (빈 줄로 문단 구분)',section.paragraphs.join('\n\n'),'textarea');paragraphs.input.dataset.sectionBody=index;
+            const bodyLabel=section.heading.trim()==='자주 묻는 질문(FAQ)' ? 'FAQ (Q. 질문 다음 줄에 A. 답변, 질문 쌍 사이는 빈 줄)' : '본문 (빈 줄로 문단 구분)';
+            const paragraphs=field(bodyLabel,section.paragraphs.join('\n\n'),'textarea');paragraphs.input.dataset.sectionBody=index;
             const claims=field('연결할 근거 ID (쉼표로 구분)',section.claimIds.join(', '));claims.input.dataset.sectionClaims=index;
             box.append(heading.wrapper,paragraphs.wrapper,claims.wrapper);form.append(box);
         });
@@ -159,7 +160,15 @@ $('insightPreview').replaceChildren();
         const {article,media,products}=draft();const target=$('insightPreview');target.replaceChildren(el('h1',article.title),el('p',article.summary));
         const image=i=>{const figure=el('figure');const img=el('img');try{const url=new URL(i.url);if(url.protocol!=='https:' || !url.hostname.endsWith('.supabase.co'))return figure;img.src=url.href;}catch{return figure;}img.alt=i.alt;figure.append(img,el('figcaption',i.caption));return figure;};
         if(media.thumbnail)target.append(image(media.thumbnail));
-        article.sections.forEach((section,index)=>{target.append(el('h2',section.heading));section.paragraphs.forEach(p=>target.append(el('p',p)));media.images.filter(i=>i.afterSection===index).forEach(i=>target.append(image(i)));});
+        article.sections.forEach((section,index)=>{
+            target.append(el('h2',section.heading));
+            section.paragraphs.forEach(p=>{
+                const faq=section.heading.trim()==='자주 묻는 질문(FAQ)' && p.trim().match(/^Q\.\s*([^\r\n]+)\r?\nA\.\s*([\s\S]+)$/);
+                if(faq)target.append(el('h3',`Q. ${faq[1].trim()}`),el('p',`A. ${faq[2].trim()}`));
+                else target.append(el('p',p));
+            });
+            media.images.filter(i=>i.afterSection===index).forEach(i=>target.append(image(i)));
+        });
         if(products.length){target.append(el('h2','관련 상품'));products.forEach(p=>target.append(el('p',`${p.name} · ${p.delivery} · ${p.link}`)));}
     }
     function changed(){dirty=true;buttons();preview();$('insightSeoReport').replaceChildren(el('p','내용이 변경됐습니다. 저장 후 SEO 점검 결과를 다시 확인해주세요.'));$('insightMessage').textContent='수정한 내용을 저장하고 다시 검증한 뒤 승인해주세요.';}
