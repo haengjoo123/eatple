@@ -21,7 +21,8 @@ const products=[{name:'오트밀',originalUrl:'https://www.coupang.com/vp/produc
 const article=()=>({title:'통곡물 연구 읽기',summary:'연구 결과와 한계를 살펴봅니다.',categoryId:category,tags:['식이섬유'],seo:{primaryKeyword:'통곡물',searchIntent:'통곡물 연구 결과와 한계'},
     sections:[{heading:'연구',paragraphs:['통곡물과 식이섬유를 살펴봅니다. '.repeat(45)],claimIds:['c1']},
         {heading:'연구의 한계점',paragraphs:['관찰연구이므로 인과관계를 확정할 수 없습니다. '.repeat(15)],claimIds:[]},
-        {heading:'실생활',paragraphs:['제품을 선택할 때 원재료와 알레르기 정보를 확인하세요. '.repeat(15)],claimIds:[]}]});
+        {heading:'실생활 적용법',paragraphs:['제품을 선택할 때 원재료와 알레르기 정보를 확인하세요. '.repeat(15)],claimIds:[]},
+        {heading:'자주 묻는 질문(FAQ)',paragraphs:['Q. 어떤 결과를 확인했나요?\nA. 식이섬유 섭취량의 차이를 살폈습니다.','Q. 무엇부터 확인하나요?\nA. 제품의 원재료명을 확인하세요.'],claimIds:['c1']}]});
 const q=async(sql,args=[])=>db.query(sql,args);
 const one=async(sql,args=[])=> (await q(sql,args)).rows[0];
 async function job(date='2026-10-04'){
@@ -159,6 +160,27 @@ test('focused articles require verification of all used evidence and reject unkn
     const usesBoth=article();usesBoth.sections[1].claimIds=['c2'];
     expect(()=>c.validateReview(checks,extra,usesBoth)).toThrow('검증');
     expect(()=>c.validateReview({...checks,checkedClaimIds:['c1','unknown']},extra,article())).toThrow();
+});
+test('practical application and FAQ follow limitations as separate sections',()=>{
+    const reversed=article();[reversed.sections[2],reversed.sections[3]]=[reversed.sections[3],reversed.sections[2]];
+    expect(()=>c.validateArticle(reversed,evidence,[{id:category}])).toThrow('순서');
+    const missing=article();missing.sections[2].heading='추가 설명';
+    expect(()=>c.validateArticle(missing,evidence,[{id:category}])).toThrow('실생활 적용법');
+    const duplicate=article();duplicate.sections[0].heading='실생활 적용법';
+    expect(()=>c.validateArticle(duplicate,evidence,[{id:category}])).toThrow('각각 하나');
+    const emptyFaq=article();emptyFaq.sections[3].paragraphs=['Q. 질문만 있는가?\nA. 답변 하나'];
+    expect(()=>c.validateArticle(emptyFaq,evidence,[{id:category}])).toThrow('2~4개');
+    const brokenFaq=article();brokenFaq.sections[3].paragraphs[0]='질문과 답변 표시가 없습니다.';
+    expect(()=>c.validateArticle(brokenFaq,evidence,[{id:category}])).toThrow('Q.');
+    const html=c.renderArticle(article(),{url:'https://doi.org/10.1/paper',title:'Paper',journal:'Journal'},evidence);
+    expect(html.indexOf('<h2>연구의 한계점')).toBeLessThan(html.indexOf('<h2>실생활 적용법'));
+    expect(html.indexOf('<h2>실생활 적용법')).toBeLessThan(html.indexOf('<h2>자주 묻는 질문(FAQ)'));
+    expect(html).toContain('<h3>Q. 어떤 결과를 확인했나요?</h3><p>A. 식이섬유 섭취량의 차이를 살폈습니다.</p>');
+    const unsafe=article();unsafe.sections.at(-1).paragraphs[0]='Q. <img src=x onerror=alert(1)>?\nA. <script>alert(1)</script>';
+    const escaped=c.renderArticle(unsafe,{url:'https://doi.org/10.1/paper',title:'Paper',journal:'Journal'},evidence);
+    expect(escaped).toContain('&lt;script&gt;');
+    expect(escaped).not.toContain('<script>');
+    expect(escaped).not.toContain('<img src=x');
 });
 test('review defects must point to text actually present in the current article',()=>{
     const result={...checks,passed:false,issues:[{quote:'현재 글에 없는 통계 전문 용어',message:'쉬운 말로 설명하세요.'}]};

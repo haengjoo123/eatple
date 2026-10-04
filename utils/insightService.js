@@ -2,7 +2,7 @@ const { generateText, isOpenAIConfigured } = require('./openaiClient');
 const researchDefault = require('./insightResearch');
 const c = require('./insightContracts');
 const { WRITE_SEO, assessSeo } = require('./insightSeo');
-const { LIMITATIONS_HEADING, WRITE_STYLE, REVIEW_STYLE } = require('./insightEditorial');
+const { hasReaderSections, WRITE_STYLE, REVIEW_STYLE } = require('./insightEditorial');
 const { createCover, IMAGE_MODEL } = require('./insightImages');
 const MODEL = 'gpt-6-luna';
 const error = (message, status = 409) => Object.assign(new Error(message), { status });
@@ -203,7 +203,7 @@ class InsightService {
                     'Create a Korean article with 1000-2500 characters in the combined paragraphs (exclude title/headings). Include reader question, study results, population and an evidence-grounded Korean diet interpretation. Do not recommend products, brands, purchases, supplement doses or affiliate links. Use only provided category IDs and evidence claim IDs. '+WRITE_STYLE+' '+WRITE_SEO,value=>c.validateArticle(value,job.evidence,categories));
                 job = { ...job, ...await this.patchJob(job,{ article,stage:'verify' }) };
             }
-            if (!job.article.seo || !job.article.sections.some(s => s.heading.trim() === LIMITATIONS_HEADING)) {
+            if (!job.article.seo || !hasReaderSections(job.article)) {
                 const {productQueries,...oldArticle}=job.article;
                 const categories=await this.categories();
                 const article=await this.generated(job,'write',c.articleSchema,{paper:job.candidate.paper,evidence:job.evidence,categories,previousDraft:oldArticle},WRITE_STYLE+' '+WRITE_SEO+' Rewrite the complete article with 1000-2500 characters in the combined paragraphs. Preserve evidence and correct unsupported assertions.',value=>c.validateArticle(value,job.evidence,categories));
