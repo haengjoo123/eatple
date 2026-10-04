@@ -75,12 +75,12 @@ function validateReview(value, evidence, article) {
 }
 function validateReviewResponse(value, evidence, article, media = {}, products = []) {
     validateShape(value, reviewResponseSchema);
-    const readerText = [article.title,article.summary,...article.sections.flatMap(s=>[s.heading,...s.paragraphs]),
+    const readerPassages = [article.title,article.summary,...article.sections.flatMap(s=>[s.heading,...s.paragraphs]),
         media.thumbnail?.alt,media.thumbnail?.caption,...(media.images || []).flatMap(i=>[i.alt,i.caption]),
-        ...products.flatMap(p=>[p.name,p.reason])].filter(Boolean).join('\n');
+        ...products.flatMap(p=>[p.name,p.reason])].filter(Boolean);
     for (const issue of value.issues) {
-        if (issue.quote.trim().length < 3 || !readerText.includes(issue.quote) || !issue.message.trim())
-            fail('검증 지적은 현재 글에 실제로 있는 문구와 수정 이유를 제시해야 합니다.');
+        if (issue.quote.trim().length < 3 || !readerPassages.includes(issue.quote) || !issue.message.trim())
+            fail('검증 지적은 현재 글에 실제로 있는 제목·요약·문단 전체 또는 이미지·상품 설명과 수정 이유를 제시해야 합니다. 문단 일부를 잘라 맥락을 생략하지 마세요.');
     }
     return validateReview({...value,issues:value.issues.map(i=>`“${i.quote}”: ${i.message}`)},evidence,article);
 }
