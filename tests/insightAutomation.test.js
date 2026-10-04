@@ -153,6 +153,13 @@ test('article needs one nonempty dedicated limitations section',()=>{
     empty.sections[0].paragraphs.push('연구 결과를 쉽게 설명합니다. '.repeat(30));
     expect(()=>c.validateArticle(empty,evidence,[{id:category}])).toThrow();
 });
+test('focused articles require verification of all used evidence and reject unknown IDs',()=>{
+    const extra={...evidence,claims:[...evidence.claims,{...evidence.claims[0],id:'c2'}]};
+    expect(()=>c.validateReview(checks,extra,article())).not.toThrow();
+    const usesBoth=article();usesBoth.sections[1].claimIds=['c2'];
+    expect(()=>c.validateReview(checks,extra,usesBoth)).toThrow('검증');
+    expect(()=>c.validateReview({...checks,checkedClaimIds:['c1','unknown']},extra,article())).toThrow();
+});
 test('product URLs are restricted and names obey ingredient/exclusion rules',()=>{
     expect(c.safeUrl('https://link.coupang.com.evil.test/a/x','affiliate')).toBeNull();
     expect(()=>c.validateProducts([{...products[0],link:'javascript:alert(1)'}])).toThrow();

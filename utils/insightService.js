@@ -214,8 +214,8 @@ class InsightService {
                 job={...job,...await this.patchJob(job,{media})};
             }
             const checks = c.validateReview(await this.aiJson(job,'verify',c.validationSchema,
-                { article:job.article,evidence:job.evidence,fullText:job.full_text.text,media:job.media,products:job.products },
-                'Independently check EVERY claim, number, dose, unit, causal inference, human applicability, and all practical recommendations against the supplied full text. Health or efficacy claims anywhere (including title/summary and image captions/product reasons) need support. Check that the keyword and search intent match the evidence, without keyword stuffing or clickbait. Fail unsupported assertions, missing limitations, or treatment advice. issues must contain ONLY actual defects requiring correction, not findings that match the paper. Claim IDs link factual sections, not each individual sentence; fullText can support statements beyond quoted claims. Do not demand an ID for every sentence. Return all reviewed claim IDs. Warnings are nonblocking topics needing human care, including supplements, pregnancy, diseases, medications. Image pixels require human review; do not claim you verified their visual content. '+REVIEW_STYLE),job.evidence);
+                { article:job.article,evidence:job.evidence,requiredClaimIds:[...new Set(job.article.sections.flatMap(s=>s.claimIds))],fullText:job.full_text.text,media:job.media,products:job.products },
+                'Independently check EVERY claim, number, dose, unit, causal inference, human applicability, and all practical recommendations against the supplied full text. Health or efficacy claims anywhere (including title/summary and image captions/product reasons) need support. Check that the keyword and search intent match the evidence, without keyword stuffing or clickbait. Fail unsupported assertions, missing limitations, or treatment advice. issues must contain ONLY actual defects requiring correction, not findings that match the paper. Claim IDs link factual sections, not each individual sentence; fullText can support statements beyond quoted claims. Do not demand an ID for every sentence. Review every requiredClaimId against the full text and return them all in checkedClaimIds. Evidence claims not used in this article need not be listed. Warnings are nonblocking topics needing human care, including supplements, pregnancy, diseases, medications. Image pixels require human review; do not claim you verified their visual content. '+REVIEW_STYLE),job.evidence,job.article);
             await this.saveDraft(job,{ checks,state:checks.passed ? 'review' : 'failed',verified:checks.passed });
             return true;
         } catch (failure) {
@@ -247,7 +247,7 @@ class InsightService {
         if (job.revision !== revision) throw error('INSIGHT_STALE_REVISION');
         const state = await this.research.integrity(job.candidate.paper.doi);
         if (!state.checked || state.blocked) throw error('게시 전 정정·철회 확인을 통과하지 못했습니다.',422);
-        c.validateReview(job.checks,job.evidence);
+        c.validateReview(job.checks,job.evidence,job.article);
         c.validateArticle(job.article,job.evidence,await this.categories());
         c.validateProducts(job.products);
         c.validateMedia(job.media,job.article.sections.length,true);

@@ -61,9 +61,12 @@ function validateArticle(value, evidence, categories) {
     }
     return value;
 }
-function validateReview(value, evidence) {
+function validateReview(value, evidence, article) {
     validateShape(value, validationSchema);
-    if (value.passed && (value.issues.length || evidence.claims.some(c => !value.checkedClaimIds.includes(c.id)))) fail('검증되지 않은 근거가 있습니다.');
+    const known = new Set(evidence.claims.map(c => c.id));
+    const required = article ? [...new Set(article.sections.flatMap(s => s.claimIds))] : [...known];
+    if (value.checkedClaimIds.some(id => !known.has(id)) ||
+        (value.passed && (value.issues.length || required.some(id => !value.checkedClaimIds.includes(id))))) fail('검증되지 않은 근거가 있습니다.');
     return value;
 }
 function safeUrl(value, kind = 'source') {
