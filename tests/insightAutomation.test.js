@@ -160,6 +160,12 @@ test('focused articles require verification of all used evidence and reject unkn
     expect(()=>c.validateReview(checks,extra,usesBoth)).toThrow('검증');
     expect(()=>c.validateReview({...checks,checkedClaimIds:['c1','unknown']},extra,article())).toThrow();
 });
+test('review defects must point to text actually present in the current article',()=>{
+    const result={...checks,passed:false,issues:[{quote:'현재 글에 없는 통계 전문 용어',message:'쉬운 말로 설명하세요.'}]};
+    expect(()=>c.validateReviewResponse(result,evidence,article())).toThrow('실제로');
+    result.issues[0].quote='관찰연구이므로 인과관계를 확정할 수 없습니다.';
+    expect(c.validateReviewResponse(result,evidence,article()).issues[0]).toContain(result.issues[0].quote);
+});
 test('product URLs are restricted and names obey ingredient/exclusion rules',()=>{
     expect(c.safeUrl('https://link.coupang.com.evil.test/a/x','affiliate')).toBeNull();
     expect(()=>c.validateProducts([{...products[0],link:'javascript:alert(1)'}])).toThrow();
