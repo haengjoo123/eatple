@@ -20,7 +20,7 @@ const media={thumbnail:{url:'https://ovncracjrivndsjjfyoe.supabase.co/storage/v1
 const products=[{name:'오트밀',originalUrl:'https://www.coupang.com/vp/products/123',link:'https://link.coupang.com/a/example',reason:'통곡물 식재료',delivery:'rocket'}];
 const article=()=>({title:'통곡물 연구 읽기',summary:'연구 결과와 한계를 살펴봅니다.',categoryId:category,tags:['식이섬유'],seo:{primaryKeyword:'통곡물',searchIntent:'통곡물 연구 결과와 한계'},
     sections:[{heading:'연구',paragraphs:['통곡물과 식이섬유를 살펴봅니다. '.repeat(45)],claimIds:['c1']},
-        {heading:'한계',paragraphs:['관찰연구이므로 인과관계를 확정할 수 없습니다. '.repeat(15)],claimIds:[]},
+        {heading:'연구의 한계점',paragraphs:['관찰연구이므로 인과관계를 확정할 수 없습니다. '.repeat(15)],claimIds:[]},
         {heading:'실생활',paragraphs:['제품을 선택할 때 원재료와 알레르기 정보를 확인하세요. '.repeat(15)],claimIds:[]}]});
 const q=async(sql,args=[])=>db.query(sql,args);
 const one=async(sql,args=[])=> (await q(sql,args)).rows[0];
@@ -141,6 +141,17 @@ test('quotes must exist verbatim and article references must resolve',()=>{
     expect(()=>c.validateArticle({...article(),categoryId:'wrong'},evidence,[{id:category}])).toThrow('카테고리');
     expect(()=>c.validateReview({...checks,checkedClaimIds:[]},evidence)).toThrow('검증');
     expect(()=>c.validateArticle({...article(),sections:article().sections.map(s=>({...s,claimIds:['unknown']}))},evidence,[{id:category}])).toThrow();
+});
+
+test('article needs one nonempty dedicated limitations section',()=>{
+    expect(()=>c.validateArticle(article(),evidence,[{id:category}])).not.toThrow();
+    const missing=article();missing.sections[1].heading='추가 설명';
+    expect(()=>c.validateArticle(missing,evidence,[{id:category}])).toThrow('한계점');
+    const duplicate=article();duplicate.sections[2].heading='연구의 한계점';
+    expect(()=>c.validateArticle(duplicate,evidence,[{id:category}])).toThrow('한계점');
+    const empty=article();empty.sections[1].paragraphs=[' '];
+    empty.sections[0].paragraphs.push('연구 결과를 쉽게 설명합니다. '.repeat(30));
+    expect(()=>c.validateArticle(empty,evidence,[{id:category}])).toThrow();
 });
 test('product URLs are restricted and names obey ingredient/exclusion rules',()=>{
     expect(c.safeUrl('https://link.coupang.com.evil.test/a/x','affiliate')).toBeNull();

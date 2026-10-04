@@ -2,6 +2,7 @@ const { generateText, isOpenAIConfigured } = require('./openaiClient');
 const researchDefault = require('./insightResearch');
 const c = require('./insightContracts');
 const { WRITE_SEO, assessSeo } = require('./insightSeo');
+const { LIMITATIONS_HEADING, WRITE_STYLE, REVIEW_STYLE } = require('./insightEditorial');
 const { createCover, IMAGE_MODEL } = require('./insightImages');
 const MODEL = 'gpt-6-luna';
 const error = (message, status = 409) => Object.assign(new Error(message), { status });
@@ -199,13 +200,13 @@ class InsightService {
                 const categories = await this.categories();
                 const article = await this.generated(job,'write',c.articleSchema,
                     { paper:job.candidate.paper,evidence:job.evidence,categories },
-                    'Create a Korean article with 1500-2500 characters in the combined paragraphs (exclude title/headings). Include reader question, study results, population, limitations and cautious Korean diet interpretation. Do not recommend products, brands, purchases, supplement doses or affiliate links. Use only provided category IDs and evidence claim IDs. '+WRITE_SEO,value=>c.validateArticle(value,job.evidence,categories));
+                    'Create a Korean article with 1500-2500 characters in the combined paragraphs (exclude title/headings). Include reader question, study results, population and an evidence-grounded Korean diet interpretation. Do not recommend products, brands, purchases, supplement doses or affiliate links. Use only provided category IDs and evidence claim IDs. '+WRITE_STYLE+' '+WRITE_SEO,value=>c.validateArticle(value,job.evidence,categories));
                 job = { ...job, ...await this.patchJob(job,{ article,stage:'verify' }) };
             }
-            if (!job.article.seo) {
+            if (!job.article.seo || !job.article.sections.some(s => s.heading.trim() === LIMITATIONS_HEADING)) {
                 const {productQueries,...oldArticle}=job.article;
                 const categories=await this.categories();
-                const article=await this.generated(job,'write',c.articleSchema,{paper:job.candidate.paper,evidence:job.evidence,categories,previousDraft:oldArticle},WRITE_SEO+' Preserve evidence and correct unsupported assertions.',value=>c.validateArticle(value,job.evidence,categories));
+                const article=await this.generated(job,'write',c.articleSchema,{paper:job.candidate.paper,evidence:job.evidence,categories,previousDraft:oldArticle},WRITE_STYLE+' '+WRITE_SEO+' Rewrite the complete article with 1500-2500 characters in the combined paragraphs. Preserve evidence and correct unsupported assertions.',value=>c.validateArticle(value,job.evidence,categories));
                 job={...job,...await this.patchJob(job,{article})};
             }
             if (!job.media?.thumbnail) {
@@ -214,7 +215,7 @@ class InsightService {
             }
             const checks = c.validateReview(await this.aiJson(job,'verify',c.validationSchema,
                 { article:job.article,evidence:job.evidence,fullText:job.full_text.text,media:job.media,products:job.products },
-                'Independently check EVERY claim, number, dose, unit, causal inference, human applicability, and all practical recommendations against the supplied full text. Health or efficacy claims anywhere (including title/summary and image captions/product reasons) need support. Check that the keyword and search intent match the evidence, without keyword stuffing or clickbait. Fail unsupported assertions, missing limitations, or treatment advice. issues must contain ONLY actual defects requiring correction, not findings that match the paper. Claim IDs link factual sections, not each individual sentence; fullText can support statements beyond quoted claims. Do not demand an ID for every sentence. Return all reviewed claim IDs. Warnings are nonblocking topics needing human care, including supplements, pregnancy, diseases, medications. Image pixels require human review; do not claim you verified their visual content.'),job.evidence);
+                'Independently check EVERY claim, number, dose, unit, causal inference, human applicability, and all practical recommendations against the supplied full text. Health or efficacy claims anywhere (including title/summary and image captions/product reasons) need support. Check that the keyword and search intent match the evidence, without keyword stuffing or clickbait. Fail unsupported assertions, missing limitations, or treatment advice. issues must contain ONLY actual defects requiring correction, not findings that match the paper. Claim IDs link factual sections, not each individual sentence; fullText can support statements beyond quoted claims. Do not demand an ID for every sentence. Return all reviewed claim IDs. Warnings are nonblocking topics needing human care, including supplements, pregnancy, diseases, medications. Image pixels require human review; do not claim you verified their visual content. '+REVIEW_STYLE),job.evidence);
             await this.saveDraft(job,{ checks,state:checks.passed ? 'review' : 'failed',verified:checks.passed });
             return true;
         } catch (failure) {
@@ -247,6 +248,7 @@ class InsightService {
         const state = await this.research.integrity(job.candidate.paper.doi);
         if (!state.checked || state.blocked) throw error('게시 전 정정·철회 확인을 통과하지 못했습니다.',422);
         c.validateReview(job.checks,job.evidence);
+        c.validateArticle(job.article,job.evidence,await this.categories());
         c.validateProducts(job.products);
         c.validateMedia(job.media,job.article.sections.length,true);
         if (assessSeo(job.article,job.media,job.candidate.paper).score < 80) throw error('SEO 점검 결과를 보완해주세요.',422);
