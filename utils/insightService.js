@@ -200,13 +200,13 @@ class InsightService {
                 const categories = await this.categories();
                 const article = await this.generated(job,'write',c.articleSchema,
                     { paper:job.candidate.paper,evidence:job.evidence,categories },
-                    'Create a Korean article with 1500-2500 characters in the combined paragraphs (exclude title/headings). Include reader question, study results, population and an evidence-grounded Korean diet interpretation. Do not recommend products, brands, purchases, supplement doses or affiliate links. Use only provided category IDs and evidence claim IDs. '+WRITE_STYLE+' '+WRITE_SEO,value=>c.validateArticle(value,job.evidence,categories));
+                    'Create a Korean article with 1000-2500 characters in the combined paragraphs (exclude title/headings). Include reader question, study results, population and an evidence-grounded Korean diet interpretation. Do not recommend products, brands, purchases, supplement doses or affiliate links. Use only provided category IDs and evidence claim IDs. '+WRITE_STYLE+' '+WRITE_SEO,value=>c.validateArticle(value,job.evidence,categories));
                 job = { ...job, ...await this.patchJob(job,{ article,stage:'verify' }) };
             }
             if (!job.article.seo || !job.article.sections.some(s => s.heading.trim() === LIMITATIONS_HEADING)) {
                 const {productQueries,...oldArticle}=job.article;
                 const categories=await this.categories();
-                const article=await this.generated(job,'write',c.articleSchema,{paper:job.candidate.paper,evidence:job.evidence,categories,previousDraft:oldArticle},WRITE_STYLE+' '+WRITE_SEO+' Rewrite the complete article with 1500-2500 characters in the combined paragraphs. Preserve evidence and correct unsupported assertions.',value=>c.validateArticle(value,job.evidence,categories));
+                const article=await this.generated(job,'write',c.articleSchema,{paper:job.candidate.paper,evidence:job.evidence,categories,previousDraft:oldArticle},WRITE_STYLE+' '+WRITE_SEO+' Rewrite the complete article with 1000-2500 characters in the combined paragraphs. Preserve evidence and correct unsupported assertions.',value=>c.validateArticle(value,job.evidence,categories));
                 job={...job,...await this.patchJob(job,{article})};
             }
             if (!job.media?.thumbnail) {

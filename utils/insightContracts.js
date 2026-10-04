@@ -53,7 +53,7 @@ function validateArticle(value, evidence, categories) {
     if (value.sections.length < 3 || value.sections.length > 8 || value.tags.length > 8) fail('글 구성 범위를 확인해주세요.');
     if (value.sections.filter(s => s.heading.trim() === LIMITATIONS_HEADING).length !== 1) fail('연구의 한계점 섹션을 하나로 모아 작성해주세요.');
     const length = value.sections.map(s => s.paragraphs.join('\n')).join('\n').length;
-    if (length < 1500 || length > 2500) fail('본문은 1,500~2,500자여야 합니다.');
+    if (length < 1000 || length > 2500) fail(`본문은 1,000~2,500자여야 합니다. 현재 ${length}자입니다.`);
     const ids = new Set(evidence.claims.map(c => c.id));
     if (!value.sections.some(s => s.claimIds.length)) fail('본문에 논문 근거 연결이 필요합니다.');
     for (const section of value.sections) {
@@ -121,7 +121,7 @@ function renderArticle(article, candidate, evidence, media = { images: [] }) {
         media.images.filter(i => i.afterSection === index).map(i => `<figure><img src="${escapeHtml(i.url)}" alt="${escapeHtml(i.alt)}" loading="lazy" decoding="async" width="1200" height="800" style="max-width:100%;height:auto"><figcaption>${escapeHtml(i.caption || (i.generated ? 'AI가 생성한 주제 설명용 이미지입니다.' : ''))}</figcaption></figure>`).join('')).join('') +
         `<section><h2>연구 정보와 출처</h2><p>${escapeHtml(candidate.title)} · ${escapeHtml(candidate.journal)} · ${escapeHtml(candidate.publishedDate || '발행일 확인 필요')}</p>` +
         `<p>원문 저자: ${escapeHtml(candidate.authors || '확인 불가')}</p>` +
-        `<p>연구 설계: ${escapeHtml(evidence.design)} · 대상: ${escapeHtml(evidence.population)}</p><p>연구비: ${escapeHtml(evidence.funding)}</p>` +
+        `<p>연구비: ${escapeHtml(evidence.funding)}</p>` +
         (media.thumbnail?.caption || media.thumbnail?.generated ? `<p>대표 이미지: ${escapeHtml(media.thumbnail.caption || 'AI가 생성한 주제 설명용 이미지입니다.')}</p>` : '') +
         `<p>이 글은 AI가 초안을 작성하고 잇플 운영자가 검수했습니다. 개인의 치료나 복용량을 결정하는 자료로 사용하지 마세요.</p>` +
         `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">논문 원문·서지정보 확인</a></section>`;
